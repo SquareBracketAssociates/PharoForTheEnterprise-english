@@ -1,0 +1,11 @@
+*.aux
+*.glo
+*.idx
+*.log
+*.out
+/PFTE.pdf
+/PFTE.synctex.gz
+*.toc
+*.url
+/Zinc/Zinc.tex
+auto/
