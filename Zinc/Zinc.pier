@@ -16,7 +16,7 @@ HTTP, short for Hypertext Transfer Protocol, functions as a request-response pro
 
 A client, often called user-agent, submits an HTTP request to a server which will respond with an HTTP response. The initiative of the communication lies with the client. Requests and responses are quite similar and are often called HTTP messages.
 
-In HTTP parlance, you request a resource. A resource, sometimes called an entity, is the combination of a collection of bytes and a mime-type. A simple text resource will consist of bytes encoding the string in some encoding, for example UTF–8, and the mime-type ‘text/plain;charset=utf–8’. An HTML resource will have a mime-type like ‘text/html;charset=utf–8’.
+In HTTP parlance, you request a resource. A resource, sometimes called an entity, is the combination of a collection of bytes and a mime-type. A simple text resource will consist of bytes encoding the string in some encoding, for example UTF-8, and the mime-type 'text/plain;charset=utf-8'. An HTML resource will have a mime-type like 'text/html;charset=utf-8'.
 
 To specify which resource you want, a URL (Uniform Resource Locator) is used. Web addresses are the most common form of URL. For example, http://www.pharo-project.org/images/pharo.png, is a URL that referes to a PNG image resource on a specific server.
 
@@ -24,7 +24,7 @@ The reliable transport connection between an HTTP client and server is used bidi
 
 !! Zinc HTTP Components
 
-Zinc HTTP Components is an open source Smalltalk framework to deal with HTTP. It models most concepts of HTTP and its related standards and offers both client and server functionality. One of its key goals is to offer understandability (Smalltalk’s design principle number one). Anyone with a basic understanding of Smalltalk and the HTTP principles should be able to understand what is going on and learn, by looking at the implementation. Zinc, or Zn, after its namespace prefix, is an integral part of Pharo Smalltalk since version 1.3. It has been ported to other Smalltalk implementations such as Squeak and Gemstone.
+Zinc HTTP Components is an open source Smalltalk framework to deal with HTTP. It models most concepts of HTTP and its related standards and offers both client and server functionality. One of its key goals is to offer understandability (Smalltalk's design principle number one). Anyone with a basic understanding of Smalltalk and the HTTP principles should be able to understand what is going on and learn, by looking at the implementation. Zinc, or Zn, after its namespace prefix, is an integral part of Pharo Smalltalk since version 1.3. It has been ported to other Smalltalk implementations such as Squeak and Gemstone.
 
 The reference Zn implementation lives in several places:
 
@@ -36,13 +36,13 @@ Installation or updating instructions can be found there.
 
 !! Doing a simple request
 
-The key object to programmatically execute HTTP requests is called ZnClient. You instantiate it, use its rich API to configure and execute an HTTP request and access the response. ZnClient is a stateful object to be treated like a builder. Let’s get started with the simplest possible usage.
+The key object to programmatically execute HTTP requests is called ZnClient. You instantiate it, use its rich API to configure and execute an HTTP request and access the response. ZnClient is a stateful object to be treated like a builder. Let's get started with the simplest possible usage.
 
 [[[
 ZnClient new get: 'http://zn.stfx.eu/zn/small.html'.
 ]]]
 
-Select the above expression and inspect or print it. If all goes well, you’ll get a String back containing a very small HTML document. The #get: method belongs to the convenience API. Let’s be a bit more explicit about what happened.
+Select the above expression and inspect or print it. If all goes well, you'll get a String back containing a very small HTML document. The #get: method belongs to the convenience API. Let's be a bit more explicit about what happened.
 
 [[[
 ZnClient new
@@ -174,7 +174,7 @@ HTTP defines a whole set of so called status codes to define various situations.
 ZnConstants httpStatusCodes.
 ]]]
 
-A good overview can be found in the Wikipedia article List of HTTP status codes. The most common code, the one that indicates success is numeric code 200 with reason ‘OK’. Have a look at the testing protocol of ZnResponse for how to interpret some of them.
+A good overview can be found in the Wikipedia article List of HTTP status codes. The most common code, the one that indicates success is numeric code 200 with reason 'OK'. Have a look at the testing protocol of ZnResponse for how to interpret some of them.
 
 So if you do an HTTP request and get something back, you cannot just assume that all is well. You first have to make sure that the call itself (more specifically the response) was successful. As mentioned before, you can do so by sending #isSuccess to the response or the client.
 
@@ -199,7 +199,7 @@ ZnClient new
   get: 'http://zn.stfx.eu/zn/numbers.txt'.
 ]]]
 
-Maybe it doesn’t look like a big difference, but combined with some other options and features of ZnClient that we’ll see later on, code does become more elegant and more reliable at the same time.
+Maybe it doesn't look like a big difference, but combined with some other options and features of ZnClient that we'll see later on, code does become more elegant and more reliable at the same time.
 
 !! Dealing with networking reality
 
@@ -209,14 +209,14 @@ As a network protocol, HTTP is much more complicated than an ordinary message se
 - Latency is zero.
 - Bandwidth is infinite.
 - The network is secure.
-- Topology doesn’t change.
+- Topology doesn't change.
 - There is one administrator.
 - Transport cost is zero.
 - The network is homogeneous.
 
 Zn will signal various exceptions when things go wrong, at different levels. ZnClient and the underlying framework have constants, settings and options to deal with various aspects related to these issues.
 
-Doing an HTTP request-response cycle can take an unpredictable amount of time. Client code has to specify a timeout, the maximum amount of time we are prepared to wait for a response, and be prepared for when that timeout is exceeded. The fact you don’t get an answer within a specified timeout can mean that some networking component is extremely slow, but it could also mean that the server simply refuses to answer.
+Doing an HTTP request-response cycle can take an unpredictable amount of time. Client code has to specify a timeout, the maximum amount of time we are prepared to wait for a response, and be prepared for when that timeout is exceeded. The fact you don't get an answer within a specified timeout can mean that some networking component is extremely slow, but it could also mean that the server simply refuses to answer.
 
 Setting the timeout directly on a ZnClient is the easiest.
 
@@ -256,7 +256,7 @@ ZnClient new
 
 In the above example, the request will be tried up to 3 times, with a 2 second delay between attempts. Note that the definition of failure/success is broad: it includes for example the option to enforce HTTP success.
 
-!! Building URL’s
+!! Building URL's
 
 Zn uses ZnUrl objects to deal with URLs. ZnClient also contains API to build URLs. Let us revisit our initial example, using explicit URL construction with the ZnClient API.
 
@@ -269,9 +269,9 @@ ZnClient new
   get.
 ]]]
 
-Instead of giving a string argument to be parsed into a ZnUrl, we now provide the necessary elements to construct the URL manually, by sending messages to our ZnClient object. With #http we set what is called the scheme. Then we set the hostname. Since we don’t specify a port, the default port for HTTP will be used, port 80. Next we add path elements, extending the path one by one.
+Instead of giving a string argument to be parsed into a ZnUrl, we now provide the necessary elements to construct the URL manually, by sending messages to our ZnClient object. With #http we set what is called the scheme. Then we set the hostname. Since we don't specify a port, the default port for HTTP will be used, port 80. Next we add path elements, extending the path one by one.
 
-A URL can also contain query parameters. Let’s do a Google search.
+A URL can also contain query parameters. Let's do a Google search.
 
 [[[
 ZnClient new
@@ -326,7 +326,7 @@ The above example sets up a client to connect to a specific host. Then it collec
 
 Neither party is required to keep the connection open for a long time, as this consumes resources. Both parties should be prepared to deal with connections closing, this is not an error. ZnClient will try to reuse an existing connection and reconnect once if this reuse fails. The option connectionReuseTimeout limits how old a connection can be for reuse to be attempted.
 
-Note how we also close the client. A network connection is an external resource, like a file, that should be properly closed after use. If you don’t do that, they will get cleaned up eventually by the system, but it is more efficient to do it yourself.
+Note how we also close the client. A network connection is an external resource, like a file, that should be properly closed after use. If you don't do that, they will get cleaned up eventually by the system, but it is more efficient to do it yourself.
 
 In many situations, you only want to do one single request. HTTP 1.1 has provisions for this situation. The beOneShot option of ZnClient will do just that.
 
@@ -340,7 +340,7 @@ With the beOneShot option, the client notifies the server that it will do just o
 
 !! Basic Authentication
 
-There are various techniques to add authentication, a mechanism to control who accesses which resources, to HTTP. This is orthogonal to HTTP itself. The simplest and most common form of authentication is called ‘Basic Authentication’.
+There are various techniques to add authentication, a mechanism to control who accesses which resources, to HTTP. This is orthogonal to HTTP itself. The simplest and most common form of authentication is called 'Basic Authentication'.
 
 [[[
 ZnClient new
