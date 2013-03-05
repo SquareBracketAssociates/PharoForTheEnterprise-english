@@ -9,3 +9,11 @@
 *.url
 /Zinc/Zinc.tex
 auto/
+/Pharo.changes
+/Pharo.image
+/vm-ui.sh
+/vm.sh
+vm/
+/Zinc/Zinc.gut.pdf
+/Zinc/Zinc.gut.tex
+files/
