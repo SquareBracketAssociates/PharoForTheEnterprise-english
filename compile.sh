@@ -7,18 +7,16 @@ for chapter in $chapters; do
     echo COMPILING $chapter
     echo =========================================================
 
-    # e.g., chapter = Zinc/Zinc.gut.tex
+    # e.g., chapter = Zinc/Zinc.pier.tex
 
-    file=$(basename $chapter) # e.g., Zinc.gut.tex
-    file_gut=$(basename $chapter .tex) # e.g., Zinc.gut
-    dir=$(dirname $chapter)
+    file=$(basename $chapter) # e.g., Zinc.pier.tex
+    file_pier=$(basename $chapter .tex) # e.g., Zinc.pier
+    dir=$(dirname $chapter) # e.g., Zinc
 
-    echo "GutembergConsole generateSBALaTeXChapterFromPier: '${dir}/${file_gut}'. WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: true andQuit: true ]."
+    echo "GutembergConsole generateSBALaTeXChapterFromPier: '${dir}/${file_pier}'. WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: true andQuit: true ]." | ./vm.sh Pharo.image eval
 
-    # ./vm.sh Pharo.image eval
-
-    # cd $dir # e.g., Zinc
-    # pdflatex $file
-    # pdflatex $file
-    # cd ..
+    cd $dir         # e.g., cd Zinc/
+    pdflatex $file
+    pdflatex $file
+    cd ..
 done
