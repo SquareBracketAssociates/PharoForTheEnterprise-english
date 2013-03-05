@@ -14,6 +14,7 @@ for chapter in $chapters; do
     dir=$(dirname $chapter) # e.g., Zinc
 
     echo "GutembergConsole generateSBALaTeXChapterFromPier: '${dir}/${file_pier}'. WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: true andQuit: true ]." | ./vm.sh Pharo.image eval
+    echo "GutembergConsole generateStandaloneHTMLFromPier: '${dir}/${file_pier}'. WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: true andQuit: true ]." | ./vm.sh Pharo.image eval
 
     cd $dir         # e.g., cd Zinc/
     pdflatex $file
