@@ -1,9 +1,5 @@
 #!/bin/bash
 
-# stop the script if a single command fails
-set -e
-
-
 function download() {
     VM_URL="http://files.pharo.org/script/ciPharoVM.sh"
     IMAGE_URL="https://ci.inria.fr/pharo-contribution/job/Pier3BookOnPharo20/lastSuccessfulBuild/artifact/Pier3BookOnPharo20.zip"
@@ -55,5 +51,3 @@ function compile() {
         # cd ..
     done
 }
-
-compile
