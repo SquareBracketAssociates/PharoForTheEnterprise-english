@@ -6,9 +6,9 @@ Naturally, Pharo Smalltalk has out of the box support for HTTP.
 
 !! An introduction to HTTP
 
-HTTP, short for Hypertext Transfer Protocol, functions as a request-response protocol in the client-server computing model. As an application level protocol it is layered on top of a reliable transport such as a TCP socket stream. The most important standard specification document describing HTTP version 1.1 is RFC 2616. As usual another good starting point is the Wikipedia article on HTTP.
+HTTP, short for Hypertext Transfer Protocol, functions as a request-response protocol in the client-server computing model. As an application level protocol it is layered on top of a reliable transport such as a TCP socket stream. The most important standard specification document describing HTTP version 1.1 is *RFC 2616>http://tools.ietf.org/html/rfc2616*. As usual another good starting point is the Wikipedia article on *HTTP>http://en.wikipedia.org/wiki/Http*.
 
-[[[
+[[[language=
     +------>> request >>------+
 [client]                   [server]
     +------<< response <<-----+
@@ -18,19 +18,19 @@ A client, often called user-agent, submits an HTTP request to a server which wil
 
 In HTTP parlance, you request a resource. A resource, sometimes called an entity, is the combination of a collection of bytes and a mime-type. A simple text resource will consist of bytes encoding the string in some encoding, for example UTF-8, and the mime-type 'text/plain;charset=utf-8'. An HTML resource will have a mime-type like 'text/html;charset=utf-8'.
 
-To specify which resource you want, a URL (Uniform Resource Locator) is used. Web addresses are the most common form of URL. For example, http://www.pharo-project.org/images/pharo.png, is a URL that referes to a PNG image resource on a specific server.
+To specify which resource you want, a URL (Uniform Resource Locator) is used. Web addresses are the most common form of URL. For example, *http://www.pharo-project.org/images/pharo.png*, is a URL that referes to a PNG image resource on a specific server.
 
 The reliable transport connection between an HTTP client and server is used bidirectionally: both to send the request as well as to receive the response. It can be used for just one request/response cycle, as was the case for HTTP version 1.0, or it can be reused for multiple request/response cycles, as is the default for HTTP version 1.1.
 
 !! Zinc HTTP Components
 
-Zinc HTTP Components is an open source Smalltalk framework to deal with HTTP. It models most concepts of HTTP and its related standards and offers both client and server functionality. One of its key goals is to offer understandability (Smalltalk's design principle number one). Anyone with a basic understanding of Smalltalk and the HTTP principles should be able to understand what is going on and learn, by looking at the implementation. Zinc, or Zn, after its namespace prefix, is an integral part of Pharo Smalltalk since version 1.3. It has been ported to other Smalltalk implementations such as Squeak and Gemstone.
+*Zinc HTTP>http://zn.stfx.eu/* Components is an open source Smalltalk framework to deal with HTTP. It models most concepts of HTTP and its related standards and offers both client and server functionality. One of its key goals is to offer understandability (Smalltalk's design principle number one). Anyone with a basic understanding of Smalltalk and the HTTP principles should be able to understand what is going on and learn, by looking at the implementation. Zinc, or Zn, after its namespace prefix, is an integral part of Pharo Smalltalk since version 1.3. It has been ported to other Smalltalk implementations such as Squeak and Gemstone.
 
 The reference Zn implementation lives in several places:
 
-- http://www.squeaksource.com/ZincHTTPComponents
-- http://mc.stfx.eu/ZincHTTPComponents
-- https://www.github.com/svenvc/zinc
+- *http://www.squeaksource.com/ZincHTTPComponents*
+- *http://mc.stfx.eu/ZincHTTPComponents*
+- *https://www.github.com/svenvc/zinc*
 
 Installation or updating instructions can be found there.
 
@@ -51,7 +51,7 @@ ZnClient new
   response.
 ]]]
 
-Here we explicitly set the url using #url:, execute an HTTP GET using #get and ask for the response object using #response.
+Here we explicitly set the url using ==#url:==, execute an HTTP GET using ==#get== and ask for the response object using #response.
 The above returns a ZnResponse object. It consists of 3 elements:
 
 # a ZnStatusLine object
@@ -60,8 +60,8 @@ The above returns a ZnResponse object. It consists of 3 elements:
 
 The status line says HTTP/1.1 200 OK, which means the request was successful. This can be tested by sending #isSuccess to either the response object or the client itself. The headers contain meta data related to the response, including:
 
-- the content-type (a mime-type), accessed with #contentType
-- the content-length (a byte count), accessed with #contentLength
+- the content-type (a mime-type), accessed with ==#contentType==
+- the content-length (a byte count), accessed with ==#contentLength==
 - the date the response was generated
 - the server that generated the response
 
@@ -81,7 +81,7 @@ Transcript flush.
 
 If you have the Transcript open, you should see something like the following:
 
-[[[
+[[[language=html
 HTTP/1.1 200 OK
 Date: Tue, 08 May 2012 19:00:25 GMT
 Modification-Date: Thu, 10 Feb 2011 08:32:30 GMT
@@ -112,7 +112,7 @@ Transcript flush.
 
 In an open Transcript you will now see:
 
-[[[
+[[[language=
 GET /zn/small.html HTTP/1.1
 Accept: */*
 User-Agent: Zinc HTTP Components 1.0
@@ -143,7 +143,7 @@ ZnClient new
 
 This will print out lots of information on the Transcript, except for the entity (resource) itself because that might be too large.
 
-[[[
+[[[language=
 2012-05-09 14:30:59 866904 I Wrote a ZnRequest(GET /zn/small.html)
 2012-05-09 14:30:59 866904 D Sent headers
 Accept: */*
@@ -174,9 +174,9 @@ HTTP defines a whole set of so called status codes to define various situations.
 ZnConstants httpStatusCodes.
 ]]]
 
-A good overview can be found in the Wikipedia article List of HTTP status codes. The most common code, the one that indicates success is numeric code 200 with reason 'OK'. Have a look at the testing protocol of ZnResponse for how to interpret some of them.
+A good overview can be found in the Wikipedia article *List of HTTP status codes>http://en.wikipedia.org/wiki/List_of_HTTP_status_codes*. The most common code, the one that indicates success is numeric code 200 with reason 'OK'. Have a look at the testing protocol of ZnResponse for how to interpret some of them.
 
-So if you do an HTTP request and get something back, you cannot just assume that all is well. You first have to make sure that the call itself (more specifically the response) was successful. As mentioned before, you can do so by sending #isSuccess to the response or the client.
+So if you do an HTTP request and get something back, you cannot just assume that all is well. You first have to make sure that the call itself (more specifically the response) was successful. As mentioned before, you can do so by sending ==#isSuccess== to the response or the client.
 
 [[[
 | client |
@@ -187,7 +187,7 @@ client isSuccess
   ifFalse: [ self inform: 'Something went wrong' ]
 ]]]
 
-To make it easier to write better HTTP client code, ZnClient offers some useful API. You can ask the client to consider non-successful HTTP responses as errors with the #enforceHTTPSuccess option. The client will then automatically throw a ZnHTTPUnsuccesful exception. This is generally useful when upstream code handles errors.
+To make it easier to write better HTTP client code, ZnClient offers some useful API. You can ask the client to consider non-successful HTTP responses as errors with the ==#enforceHTTPSuccess== option. The client will then automatically throw a ZnHTTPUnsuccesful exception. This is generally useful when upstream code handles errors.
 
 To install a local failure handler, there is the #ifFail: option. This will invoke a block, optionally passing an exception, whenever something goes wrong. Together, this allows the above code to be rewritten as follows.
 
@@ -203,7 +203,7 @@ Maybe it doesn't look like a big difference, but combined with some other option
 
 !! Dealing with networking reality
 
-As a network protocol, HTTP is much more complicated than an ordinary message send. The famous Fallacies of Distributed Computing eloquently list the issues involved:
+As a network protocol, HTTP is much more complicated than an ordinary message send. The famous *Fallacies of Distributed Computing>http://en.wikipedia.org/wiki/Fallacies_of_Distributed_Computing* eloquently list the issues involved:
 
 - The network is reliable.
 - Latency is zero.
