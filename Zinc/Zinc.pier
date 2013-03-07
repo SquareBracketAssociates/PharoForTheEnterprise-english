@@ -42,7 +42,7 @@ The key object to programmatically execute HTTP requests is called ZnClient. You
 ZnClient new get: 'http://zn.stfx.eu/zn/small.html'.
 ]]]
 
-Select the above expression and inspect or print it. If all goes well, you'll get a String back containing a very small HTML document. The #get: method belongs to the convenience API. Let's be a bit more explicit about what happened.
+Select the above expression and inspect or print it. If all goes well, you'll get a String back containing a very small HTML document. The ==#get:== method belongs to the convenience API. Let's be a bit more explicit about what happened.
 
 [[[
 ZnClient new
@@ -51,14 +51,14 @@ ZnClient new
   response.
 ]]]
 
-Here we explicitly set the url using ==#url:==, execute an HTTP GET using ==#get== and ask for the response object using #response.
+Here we explicitly set the url using ==#url:==, execute an HTTP GET using ==#get== and ask for the response object using ==#response==.
 The above returns a ZnResponse object. It consists of 3 elements:
 
 # a ZnStatusLine object
 # a ZnHeaders object
 # an optional ZnEntity object
 
-The status line says HTTP/1.1 200 OK, which means the request was successful. This can be tested by sending #isSuccess to either the response object or the client itself. The headers contain meta data related to the response, including:
+The status line says HTTP/1.1 200 OK, which means the request was successful. This can be tested by sending ==#isSuccess== to either the response object or the client itself. The headers contain meta data related to the response, including:
 
 - the content-type (a mime-type), accessed with ==#contentType==
 - the content-length (a byte count), accessed with ==#contentLength==
@@ -67,7 +67,7 @@ The status line says HTTP/1.1 200 OK, which means the request was successful. Th
 
 The entity is the actual resource: the bytes that should be interpreted in the context of the content-type mime-type. Zn will automatically convert non-binary mime-types into Strings using the correct encoding. In our example, the entity will be an instance of ZnStringEntity, a concrete subclass of ZnEntity.
 
-Like any Smalltalk object, you can inspect or explore the ZnResponse object. You might be wondering how this response was actually transferred over the network. That is easy with Zn, as the key HTTP objects all implement #writeOn: for this purpose.
+Like any Smalltalk object, you can inspect or explore the ZnResponse object. You might be wondering how this response was actually transferred over the network. That is easy with Zn, as the key HTTP objects all implement ==#writeOn:== for this purpose.
 
 [[[
 | response |
@@ -189,7 +189,7 @@ client isSuccess
 
 To make it easier to write better HTTP client code, ZnClient offers some useful API. You can ask the client to consider non-successful HTTP responses as errors with the ==#enforceHTTPSuccess== option. The client will then automatically throw a ZnHTTPUnsuccesful exception. This is generally useful when upstream code handles errors.
 
-To install a local failure handler, there is the #ifFail: option. This will invoke a block, optionally passing an exception, whenever something goes wrong. Together, this allows the above code to be rewritten as follows.
+To install a local failure handler, there is the ==#ifFail:== option. This will invoke a block, optionally passing an exception, whenever something goes wrong. Together, this allows the above code to be rewritten as follows.
 
 [[[
 ZnClient new
@@ -243,7 +243,7 @@ ZnNetworkingUtils defaultSocketStreamTimeout: 60.
 
 This setting affects most framework level operations, if nothing else is specified.
 
-During the execution of HTTP, various network exceptions, as subclasses of NetworkError, might be thrown. These will all be caught by the #ifFail: block when installed.
+During the execution of HTTP, various network exceptions, as subclasses of NetworkError, might be thrown. These will all be caught by the ==#ifFail:== block when installed.
 
 To deal with temporary or intermittent network or server problems, ZnClient offers a retry protocol. You can set how many times a request should be retried and how many seconds to wait between retries.
 
@@ -269,7 +269,7 @@ ZnClient new
   get.
 ]]]
 
-Instead of giving a string argument to be parsed into a ZnUrl, we now provide the necessary elements to construct the URL manually, by sending messages to our ZnClient object. With #http we set what is called the scheme. Then we set the hostname. Since we don't specify a port, the default port for HTTP will be used, port 80. Next we add path elements, extending the path one by one.
+Instead of giving a string argument to be parsed into a ZnUrl, we now provide the necessary elements to construct the URL manually, by sending messages to our ZnClient object. With ==#http== we set what is called the scheme. Then we set the hostname. Since we don't specify a port, the default port for HTTP will be used, port 80. Next we add path elements, extending the path one by one.
 
 A URL can also contain query parameters. Let's do a Google search.
 
@@ -296,8 +296,8 @@ ZnUrl new
 
 The printable representation of the URL is
 
-[[[
-http://www.google.com/search?q=Pharo%20Smalltalk
+[[[language=
+http://www.google.com/search?q=Pharo%20Smalltalk==
 ]]]
 
 This can easily be parsed again into a ZnUrl object
