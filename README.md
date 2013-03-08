@@ -1,5 +1,5 @@
-PharoForTheEnterprise-english
-=============================
+Pharo for the Enterprise (english version)
+==========================================
 
 An experiment of writing a book with the Pier syntax using plain-text editors.
 
