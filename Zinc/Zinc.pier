@@ -1104,11 +1104,11 @@ Zn is well suited to the implementation of REST web services, both the client an
 
 The service will allow arbitrary *JSON>http://www.json.org/* objects to be stored on the server, each identified by an URI allocated by the server. Here is the REST API exposed by the server.
 
-- =GET /== - returns a list of all known stored object URIs
-- =GET /n== - returns the JSON object known under URI ==/n==
-- =POST /== - creates a new entry with JSON as contents, returns the new URI
-- =PUT /n== - updates (replaces) the contents of an existing JSON object known under URI ==/n==
-- =DELETE /n== - remove the JSON object known under URI ==/n==
+- ==GET /== - returns a list of all known stored object URIs
+- ==GET /n== - returns the JSON object known under URI ==/n==
+- ==POST /== - creates a new entry with JSON as contents, returns the new URI
+- ==PUT /n== - updates (replaces) the contents of an existing JSON object known under URI ==/n==
+- ==DELETE /n== - remove the JSON object known under URI ==/n==
 
 A proper implementation should best use a couple of classes, depending on how far you want to go. The following implementation is written in a workspace, not using any classes. Start by creating one global variable to hold the objects. This will be a standard dictionary mapping string URIs to objects.
 
