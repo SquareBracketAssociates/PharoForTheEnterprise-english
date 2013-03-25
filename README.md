@@ -35,3 +35,8 @@ Finally, to build the book
 The `compile.sh` script will only compile the files that are included
 from the `PFTE.tex` file. If you write a new chapter, don't forget to
 reference it in the `PFTE.tex` file to have it compiled.
+
+Sample
+======
+
+Download and check a [Sample.pier file](https://github.com/DamienCassou/pier-cl/blob/master/Sample.pier), [Sample.pier.html file](https://github.com/DamienCassou/pier-cl/blob/master/Sample.pier.html?raw=true), or a [Sample.pier.pdf file](https://github.com/DamienCassou/pier-cl/blob/master/Sample.pier.pdf?raw=true).
