@@ -7,3 +7,26 @@ This book is continuously built on an [Inria Jenkins server](https://ci.inria.fr
 
 The engine used to build PDF and HTML outputs is hosted on
 [SmalltalkHub](http://www.smalltalkhub.com/#!/~DamienCassou/Pier-Gutemberg](SmalltalkHub).
+
+How to
+======
+
+You first have to download this project
+
+```bash
+# if you have commit access:
+git clone git@github.com:SquareBracketAssociates/PharoForTheEnterprise-english.git
+# if you don't
+git clone git://github.com/SquareBracketAssociates/PharoForTheEnterprise-english.git
+```
+
+Then you must download the Pharo VM and image
+
+```bash
+./download.sh vm image
+./compile.sh
+```
+
+The `compile.sh` script will only compile the files that are included
+from the `PFTE.tex` file. If you write a new chapter, don't forget to
+reference it in the `PFTE.tex` file to have it compiled.
