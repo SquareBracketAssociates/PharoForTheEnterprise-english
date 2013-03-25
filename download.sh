@@ -41,7 +41,7 @@ get_image() {
     done
 }
 
-if [ $# -eq 0 ]; then 
+if [ $# -eq 0 ]; then
     get_image
     exit 0
 else
@@ -59,4 +59,3 @@ else
         shift
     done
 fi
-
