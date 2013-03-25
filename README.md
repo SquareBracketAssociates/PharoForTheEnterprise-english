@@ -5,8 +5,10 @@ An experiment of writing a book with the Pier syntax using plain-text editors.
 
 This book is continuously built on an [Inria Jenkins server](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/).
 
-The engine used to build PDF and HTML outputs is hosted on
-[SmalltalkHub](http://www.smalltalkhub.com/#!/~DamienCassou/Pier-Gutemberg](SmalltalkHub).
+The [engine used](http://www.smalltalkhub.com/#!/~DamienCassou/Pier-Gutemberg](SmalltalkHub) to build PDF and HTML outputs is hosted on
+SmalltalkHub.
+
+There is an [Emacs plugin](https://github.com/DamienCassou/pier-cl) to help you write Pier file within Emacs.
 
 How to
 ======
