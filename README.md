@@ -24,6 +24,11 @@ Then you must download the Pharo VM and image
 
 ```bash
 ./download.sh vm image
+```
+
+Finally, to build the book
+
+```bash
 ./compile.sh
 ```
 
