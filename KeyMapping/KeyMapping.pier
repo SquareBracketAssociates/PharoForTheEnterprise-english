@@ -46,7 +46,14 @@ $a command win | $b command unix     "Cmd+A on windows, but Cmd+B on unix"
 
 Now you know how to build key combinations for your purposes, you probably want to go to the action. Map those combinations to actions and make them work!
 
-soon more
+!!!Single shortcut configuration
+
+The simplest way to attach a shortcut to a morph is by sending him the ==on:do:== message. The first argument expected is a key combination and the second one is an action. In the example below, a workspace is created with two shortcuts:
+
+
+- when Cmd\+Shift\+A is pressed, the workspace is deleted
+- when Cmd\+Shift\+D is pressed, an information growl should appear yelling 'this shortcut works!'
+
 
 % Local Variables:
 % eval: (flyspell-mode -1)
