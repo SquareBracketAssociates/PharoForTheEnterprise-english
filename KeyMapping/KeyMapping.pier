@@ -54,6 +54,59 @@ The simplest way to attach a shortcut to a morph is by sending him the ==on:do:=
 - when Cmd\+Shift\+A is pressed, the workspace is deleted
 - when Cmd\+Shift\+D is pressed, an information growl should appear yelling 'this shortcut works!'
 
+[[[ 
+w:= Workspace new.
+morph := w openLabel: 'keymapping test'.
+morph on: $a shift command do: [ morph delete ].
+morph on: $d shift command do: [ UIManager default inform: 'this shortcut works!' ].
+]]]
+
+Easy, huh? So let's move on...
+
+
+!!!Shortcut categories
+
+Sometimes you want to group and organize shortcuts in a meaningful way and apply them all together on a morph. Sometimes you want some morphs from different hierarchies to share the same group of shortcuts easily. Those groups of shortcuts are what keymapping calls Categories. A category is a group of shortcuts, so far (will change in the future) defined statically by using a keymap pragma on class side:
+
+[[[
+"defining a category"
+SystemWindow class>>buildShortcutsOn: aBuilder 
+     <keymap>
+]]]
+
+A class side method marked as ==<keymap>== will be called with a builder object, which can be used to define a named set of shortcuts:
+
+[[[ 
+SystemWindow class>>buildShortcutsOn: aBuilder 
+    <keymap>
+    (aBuilder shortcut:  #close) 
+         category:  WindowShortcuts
+         default: $w ctrl | $w command mac 
+         do: [ :target | target delete ] 
+         description: 'Close this window'.
+]]]
+
+Shortcuts defined through the builder specify the name of the category they belong to, a default key combination, an action, and a description. All this metadata is there to be used as settings in the future.
+
+Finally  to get your morph handle those shortcuts you can use the ==attachKeymapCategory:== message as in:
+
+[[[
+w:= Workspace#new.
+morph:= w openLabel: 'keymapping test'. 
+morph attachKeymapCategory: #Growling.
+]]]
+
+
+remove a key binding ???
+
+!!Bubbling
+
+Keymappings' shortcuts bubble to their parent (sd: which one?) if not handled, up until the main world morph. That has two main consequences:
+
+- Shortcuts for your application can be designed in a hierarchical way and;
+- Every time a shortcut does not work for you, it means that a morph below you has handled it ;) (be careful with text editors that handle many of key combinations)
+
+SD: can't we disable them?
 
 % Local Variables:
 % eval: (flyspell-mode -1)
