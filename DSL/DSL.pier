@@ -1,25 +1,199 @@
-! Keymappings
+Crafting an Embedded DSL
 
-Since its 2.0 release, Pharo includes the Keymappings library. Keymappings is a library for configuring shortcuts
-for the current UI library (Morphic). It models concepts like: shortcuts, key combinations and event bubbling. It is a very simple library which we’ll introduce gradually in this post.
-We gradually present the key concepts.
 
-!! Key combinations
+In this chapter we will develop a simple DSL for rolling dice. An example of such DSL is ==2 D20 + 1 D6== which means that we should roll two times a 20-faces dice and one time a 6 faces dice. This chapter will show how we can (1) simply reuse traditional operator such as ==+==, (2) develop an embedded DSL and show a usage of class extensions.
 
-Keymappings main task is its ability to associate a key combination to an action. So we have to build up those key combinations. The simplest key combination is the one that gets activated when a single key is pressed. We call these combinations single key combinations. We create them using the message ==asShortcut==.
+
+! Getting started
+
+
+
+!! Defining the class Dice
+
 
 [[[
-$a asShortcut. "single key combination for the key a."
-Character cr asShortcut.   "single key combination for the space key."
+Object subclass: #Dice
+	instanceVariableNames: 'faces'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Dice rolling'
 ]]]
 
 
-Usually key combinations get a bit more complex. It is very common to combine single keys with meta keys or modifiers. These meta keys or modifiers are the well known ctrl, shift, alt and command keys. To build a modified key combination we can do as follows:
+in the initialize release category define the method ==initialize== as follows
+[[[
+Dice>>initialize 
+	super initialize.
+	faces := 6
+]]]
+
+To roll a dice we will use the method from Number ==atRandom== which draw randomly a 
+number between one and the receiver. 
+
+[[[
+Dice>>roll
+
+	^ faces atRandom
+]]]
+
+Now we can create an instance ==Dice new== and send it the message  ==roll== and get a result.
+Do ==Dice new inspect== and then type in the bottom pane ==self roll==.
+
+We would like to get a simpler way to create Dice. We define the class method ==faces:== as follows
+
+[[[
+Dice>>faces: aNumber
+	
+	^ self new faces: aNumber; yourself
+]]]
+
+This method is strictly equivalent to the one below that creates an instance, then set the number of faces of the receiver and finally return the newly instance. 
+[[[
+Dice>>faces: aNumber
+
+	| instance |
+	instance := self new.
+	instance faces: aNumber.
+	^ instance
+]]]
+
+Since we did not create yet the method ==faces:== this is now the time to define it.
+
+
+[[[
+Dice>>faces: aNumber
+
+	faces := aNumber
+]]]
+
+
+Now you can create an instance executing ==Dice faces: 10== and get a 10 faces dice. 
+
+
+
+[[[
+TestCase subclass: #DiceTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'RolePlaying'
+]]]
+
+
+
+
+
+
+
+[[[
+DiceTest>>testCreationIsOk
+	
+		self shouldnt: [ Dice faces: 10 ] raise: Error
+]]]
+
+! Handle of Dice
+
+[[[
+Object subclass: #DiceHandle
+	instanceVariableNames: 'dice'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'RolePlaying'
+]]]
+
+[[[
+DiceHandle>>initialize
+	super initialize.
+	dice := OrderedCollection new.
+]]]
+
+[[[
+DiceHandle>>addDice: aDice 
+	dice add: aDice
+]]]
+
+!! Creating a Handle
+
+[[[
+DiceHandle new 
+	addDice: (Dice faces: 6);
+	addDice: (Dice faces: 10);
+	yourself
+]]]
+
+Now when you open an inspector you cannot see well the dice. so we will enhance the ==printOn:== method.
+
+
+[[[
+Dice>>printOn: aStream
+
+	super printOn: aStream.
+	aStream nextPutAll: ' (', faces printString, ')'
+]]]
+
+
+!! Testing Handle Dice
+[[[
+TestCase subclass: #DiceHandleTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'RolePlaying'
+]]]
+
+[[[
+DiceHandleTest>>testCreationIsOk
+
+	| handle |
+	handle := DiceHandle new 
+			addDice: (Dice faces: 6);
+			addDice: (Dice faces: 10);
+			yourself.
+	self assert: handle diceNumber = 2.
+]]]
+
+Now we should add the method diceNumber to the ==DiceHandle==
+[[[
+DiceHandle>>diceNumber  
+
+	^ dice size
+]]]
+
+Now we can define the rolling of a handle of dice by simply summing the dice roll.
+[[[
+DiceHandle>>roll
+	
+	| res |
+	res := 0.
+	dice do: [ :each | res := res + each roll ].
+	^ res
+]]]
 
 [[[
 $a ctrl. "a modified key combination for Ctrl+A"
 $a ctrl shift.   "a modified key combination for Ctrl+Shift+A"
 ]]]
+
+[[[
+$a ctrl. "a modified key combination for Ctrl+A"
+$a ctrl shift.   "a modified key combination for Ctrl+Shift+A"
+]]]
+
+[[[
+$a ctrl. "a modified key combination for Ctrl+A"
+$a ctrl shift.   "a modified key combination for Ctrl+Shift+A"
+]]]
+
+[[[
+$a ctrl. "a modified key combination for Ctrl+A"
+$a ctrl shift.   "a modified key combination for Ctrl+Shift+A"
+]]]
+
+[[[
+$a ctrl. "a modified key combination for Ctrl+A"
+$a ctrl shift.   "a modified key combination for Ctrl+Shift+A"
+]]]
+
 
 important
 It is important to notice that all key combinations are not case sensitive. It takes a and A characters as the same, since they are the same key.
