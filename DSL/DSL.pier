@@ -1,8 +1,7 @@
 !Crafting a little Embedded DSL
 
 
-In this chapter we will develop a simple domain specific language (DSL) for rolling dice. Players of game such as Dungeon and Dragon are familiar with the DSL we will implement. An example of such DSL is ==2 D20 + 1 D6== which means that we should roll two times a 20-faces dice and one time a 6 faces dice. This chapter will show how we can (1) simply reuse traditional operator such as ==+==, (2) develop an embedded DSL and (3) show a nice usage of class extensions.
-
+In this chapter we will develop a simple domain specific language (DSL) for rolling dice. Players of games such as Dungeon and Dragons are familiar with the DSL we will implement. An example of such DSL is ==2 D20 + 1 D6== which means that we should roll two times a 20-faces dice and one time a 6 faces dice. This chapter will show how we can (1) simply reuse traditional operator such as ==+==, (2) develop an embedded DSL and (3) show a nice usage of class extensions.
 
 !! Getting started
 
@@ -19,16 +18,41 @@ Object subclass: #Dice
 	category: 'Dice rolling'
 ]]]
 
+In the ==initialize== category, define the method ==initialize== as follows. It simply set the default number of faces to 6. 
 
-in the initialize release category define the method ==initialize== as follows
 [[[
 Dice>>initialize 
 	super initialize.
 	faces := 6
 ]]]
 
-To roll a dice we will use the method from Number ==atRandom== which draw randomly a 
-number between one and the receiver. 
+
+!! Creating a test 
+
+It is always empowering to verify that the code we write is always working as we defining it. For 
+this purpose we will create a unit test. Remember unit testing was promoted by K. Beck first in Smalltalk. Nowadays this is a common practice but this is always useful to remember our roots!
+
+So we define the class ==DiceTest== as a subclass of ==TestCase==.
+
+[[[
+TestCase subclass: #DiceTest
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'RolePlaying'
+]]]
+
+
+[[[
+DiceTest>>testInitializeIsOk
+
+		self shouldnt: [ Dice new ] raise: Error
+]]]
+
+!! Rolling a dice
+To roll a dice we will use the method from Number ==atRandom== which draws randomly a 
+number between one and the receiver. For example ==10 at random== draws number between 1 to 10. 
+Therefore we define the method ==roll== as follows.
 
 [[[
 Dice>>roll
@@ -38,6 +62,24 @@ Dice>>roll
 
 Now we can create an instance ==Dice new== and send it the message  ==roll== and get a result.
 Do ==Dice new inspect== and then type in the bottom pane ==self roll==.
+
+
+
+!! Creating another test
+We will define a test that verifies that rolling a new created dice with a default 6 faces only returns 
+value comprised between 1 and 6. This is what the following test method is actually specifying.
+ 
+[[[
+DiceTest>>testRolling
+	
+	| d |
+	d := Dice new. 
+	10 timesRepeat: [ self assert: (d roll between: 1 and: 6) ]
+]]]
+
+Note that often it is better to define the test even before the code it tests. Why? Because you can think about the API of your objects and a scenario that illustrate their correct behavior. It helps you to program your solution.
+
+!! Instance creation interface.
 
 We would like to get a simpler way to create Dice. We define the class method ==faces:== as follows
 
@@ -59,7 +101,6 @@ Dice>>faces: aNumber
 
 Since we did not create yet the method ==faces:== this is now the time to define it.
 
-
 [[[
 Dice>>faces: aNumber
 
@@ -69,27 +110,14 @@ Dice>>faces: aNumber
 
 Now you can create an instance executing ==Dice faces: 10== and get a 10 faces dice. 
 
-
-
-[[[
-TestCase subclass: #DiceTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'RolePlaying'
-]]]
-
-
-
-
-
-
-
 [[[
 DiceTest>>testCreationIsOk
 	
 		self shouldnt: [ Dice faces: 10 ] raise: Error
 ]]]
+
+
+
 
 !! Handle of Dice
 
