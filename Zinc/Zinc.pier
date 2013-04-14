@@ -2,7 +2,7 @@
 
 HTTP is arguably the most important application level network protocol for what we consider to be the internet. It is the protocol that allows web browsers and web servers to communicate. It is also becoming the most popular protocol for implementing web services.
 
-Naturally, Pharo Smalltalk has out of the box support for HTTP.
+Naturally, Pharo has out of the box support for HTTP with Zinc a new HTTP client server library.
 
 !! An introduction to HTTP
 
@@ -18,7 +18,7 @@ A client, often called user-agent, submits an HTTP request to a server which wil
 
 In HTTP parlance, you request a resource. A resource, sometimes called an entity, is the combination of a collection of bytes and a mime-type. A simple text resource will consist of bytes encoding the string in some encoding, for example UTF-8, and the mime-type ==text/plain;charset=utf-8==. An HTML resource will have a mime-type like ==text/html;charset=utf-8==.
 
-To specify which resource you want, a URL (Uniform Resource Locator) is used. Web addresses are the most common form of URL. For example, *http://www.pharo-project.org/images/pharo.png*, is a URL that referes to a PNG image resource on a specific server.
+To specify which resource you want, a URL (Uniform Resource Locator) is used. Web addresses are the most common form of URL. For example, *http://www.pharo-project.org/images/pharo.png*, is a URL that refers to a PNG image resource on a specific server.
 
 The reliable transport connection between an HTTP client and server is used bidirectionally: both to send the request as well as to receive the response. It can be used for just one request/response cycle, as was the case for HTTP version 1.0, or it can be reused for multiple request/response cycles, as is the default for HTTP version 1.1.
 
