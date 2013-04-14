@@ -1,12 +1,12 @@
-!Crafting an Embedded DSL
+!Crafting a little Embedded DSL
 
 
-In this chapter we will develop a simple DSL for rolling dice. An example of such DSL is ==2 D20 + 1 D6== which means that we should roll two times a 20-faces dice and one time a 6 faces dice. This chapter will show how we can (1) simply reuse traditional operator such as ==+==, (2) develop an embedded DSL and show a usage of class extensions.
+In this chapter we will develop a simple domain specific language (DSL) for rolling dice. Players of game such as Dungeon and Dragon are familiar with the DSL we will implement. An example of such DSL is ==2 D20 + 1 D6== which means that we should roll two times a 20-faces dice and one time a 6 faces dice. This chapter will show how we can (1) simply reuse traditional operator such as ==+==, (2) develop an embedded DSL and (3) show a nice usage of class extensions.
 
 
 !! Getting started
 
-
+Using the code browser, define a package named ==Dice== or any name your like.
 
 !!! Defining the class Dice
 
@@ -169,17 +169,44 @@ DiceHandle>>roll
 	^ res
 ]]]
 
+
+Now we can send the message ==roll== to a dice handle.
 [[[
- 
+handle := DiceHandle new 
+		addDice: (Dice faces: 6);
+		addDice: (Dice faces: 10);
+		yourself.
+handle roll
 ]]]
 
-[[[
- 
-]]]
+!! Role playing syntax
+
+Now we are ready to offer a syntax following practice of role playing game, i.e., using ==2 D20== to create a handle of two 20 faces dice.  For this purpose we will define class extensions: we will define methods in the class ==Integer== but these methods will be only available when the package Dice will be loaded. 
+
+But first let us specify  what we would like to obtain by writing a new  test in the class ==DiceHandleTest==. Remember
+to always take  any opportunity to write tests.  When we execute ==2 D20== we  should get a new handle  composed of two
+dice and can verify that. This is what the method ==testSimpleHandle== is doing.
 
 [[[
- 
+DiceHandleTest>>testSimpleHandle
+
+	| handle |
+	handle := 2 D20 
+	self assert: handle diceNumber = 5.
 ]]]
+
+Verify that the test is not working! It is much more satisfactory to get a test running when it was not working before. Now define the method \ct{D20} with a category name that is ==*Dice== (if you named your package Dice). This method simply creates a new dice handle, add the correct number of dice to this handle and return it.
+
+[[[
+Integer>>D20
+	
+	| handle |
+	handle := DiceHandle new.
+	self timesRepeat: [ handle addDice:  (Dice faces: 20)].
+	^ handle
+]]]
+
+Now you test should pass and this is probably a good moment to save your work either by publishing your package to SmalltalkHub and to save your image. 
 
 [[[
  
