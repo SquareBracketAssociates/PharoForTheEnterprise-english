@@ -80,16 +80,17 @@ DiceTest>>testRolling
 Note that often it is better to define the test even before the code it tests. Why? Because you can think about the API of your objects and a scenario that illustrate their correct behavior. It helps you to program your solution.
 
 !! Instance creation interface.
-
-We would like to get a simpler way to create Dice. We define the class method ==faces:== as follows
+We would like to get a simpler way to create Dice. For example we want to create a 20-faces dice as follows: ==Dice faces: 20==. Let us define a test for it.
 
 [[[
-Dice>>faces: aNumber
+DiceTest>>testCreationIsOk
 	
-	^ self new faces: aNumber; yourself
+		self shouldnt: [ Dice faces: 20 ] raise: Error
 ]]]
 
-This method is strictly equivalent to the one below that creates an instance, then set the number of faces of the receiver and finally return the newly instance. 
+
+We define the class method ==faces:== as follows. It creates an instance then send the message ==faces:== to it and returns the instance.
+
 [[[
 Dice>>faces: aNumber
 
@@ -99,23 +100,22 @@ Dice>>faces: aNumber
 	^ instance
 ]]]
 
-Since we did not create yet the method ==faces:== this is now the time to define it.
+This method is strictly equivalent to the one below. The trick is that ==yourself== is a simple method defined on ==Object== class. ==yourself== returns the receiver of a message and the use of ==;== sends the message to the receiver of the previous message (here ==faces:==), therefore ==yourself== is sent to the object resulting from the execution of the expression ==self new== (which returns a new instance of the class ==Dice==). 
 
+[[[
+Dice>>faces: aNumber
+	
+	^ self new faces: aNumber; yourself
+]]]
+
+If you execute it will not work since we did not create yet the method ==faces:== this is now the time to define it.
 [[[
 Dice>>faces: aNumber
 
 	faces := aNumber
 ]]]
 
-
-Now you can create an instance executing ==Dice faces: 10== and get a 10 faces dice. 
-
-[[[
-DiceTest>>testCreationIsOk
-	
-		self shouldnt: [ Dice faces: 10 ] raise: Error
-]]]
-
+Now your tests should run. 
 
 
 
