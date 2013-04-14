@@ -15,7 +15,7 @@ Object subclass: #Dice
 	instanceVariableNames: 'faces'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Dice rolling'
+	category: 'Dice'
 ]]]
 
 In the ==initialize== category, define the method ==initialize== as follows. It simply set the default number of faces to 6. 
@@ -39,7 +39,7 @@ TestCase subclass: #DiceTest
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'RolePlaying'
+	category: 'Dice'
 ]]]
 
 
@@ -117,16 +117,19 @@ Dice>>faces: aNumber
 
 Now your tests should run. 
 
-
+So even if the class ==Dice== could implement more behavior, we are ready to implement a dice handle. 
 
 !! Handle of Dice
+
+Let us define a new class ==DiceHandle== that represents a dice handle. 
+This class defines one instance variables to hold dices it contains. 
 
 [[[
 Object subclass: #DiceHandle
 	instanceVariableNames: 'dice'
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'RolePlaying'
+	category: 'Dice'
 ]]]
 
 [[[
