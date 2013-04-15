@@ -21,8 +21,14 @@ EOF
 function mypdflatex() {
     pier_file="$1"
 
-    pdflatex -halt-on-error -file-line-error -interaction batchmode "$pier_file"
-
+    echo "Compiling PDF..."
+    pdflatex -halt-on-error -file-line-error -interaction batchmode "$pier_file" 2>&1 1>/dev/null
+    ret=$?
+    if [[ $ret -ne 0 ]]; then
+        cat $pier_file.log
+        echo "Can't generate the PDF!"
+        exit 1
+    fi
 }
 
 function produce_pdf() {
