@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VM_INSTALL_URL="http://files.pharo.org/script/ciPharoVM.sh"
+VM_INSTALL_URL="http://get.pharo.org/vm"
 IMAGE_URL="https://ci.inria.fr/pharo-contribution/job/Pier3BookOnPharo20/lastSuccessfulBuild/artifact/Pier3BookOnPharo20.zip"
 
 usage() {
