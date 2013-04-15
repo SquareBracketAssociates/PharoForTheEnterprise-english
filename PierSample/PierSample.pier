@@ -147,7 +147,7 @@ To create links to externals resources, use the ==*====Pharo>http://pharo-projec
 To include a picture, use the syntax ==\+caption>file://filename|parameters+==:
 
 [[[
-+Label of the picture>file://pier-logo.png|width=50|label=pierLogo+
++Caption of the picture>file://pier-logo.png|width=50|label=pierLogo+
 ]]]
 
 generates Figure *pierLogo* (this reference has been generated using ==\*pierLogo*==).
