@@ -38,6 +38,12 @@ The `compile.sh` script will only compile the files that are included
 from the `PFTE.tex` file. If you write a new chapter, don't forget to
 reference it in the `PFTE.tex` file to have it compiled.
 
+You can also compile just one chapter by doing:
+
+```bash
+./compile.sh DSL/DSL.pier
+```
+
 Sample
 ======
 
