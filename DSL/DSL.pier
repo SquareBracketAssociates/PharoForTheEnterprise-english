@@ -5,7 +5,7 @@ In this chapter we will develop a simple domain specific language (DSL) for roll
 
 todo add pictures
 
-+Dice details>file://DiceDetail.png|width=50|label=diceDetail+
+
 
 !! Getting started
 
@@ -66,6 +66,9 @@ Dice>>roll
 
 Now we can create an instance ==Dice new== and send it the message  ==roll== and get a result.
 Do ==Dice new inspect== and then type in the bottom pane ==self roll==.
+You should get an inspector like the one shown in Figure *figDiceNoDetail*. With it you can interact with the dice by writing expression in the bottom pane.
+
++Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
 
 
 
@@ -202,6 +205,18 @@ DiceHandle>>addDice: aDice
 	dice add: aDice
 ]]]
 
+Now you can execute the code snippet and inspect it. You should get an inspector as shown in Figure *diceHandleNoDetail* 
+[[[
+DiceHandle new 
+	addDice: (Dice faces: 6);
+	addDice: (Dice faces: 10);
+	yourself
+]]]
+
++Inspecting a Dice>file://figures/DiceHandleNoDetail.pdf|width=50|label=diceHandleNoDetail+
+
+
+
 Finally we should add the method ==diceNumber== to the ==DiceHandle== class to be able to get the number of dice of the handle. We just returns the size of the dices collection.
 
 [[[
@@ -236,9 +251,11 @@ Dice>>printOn: aStream
 	aStream nextPutAll: ' (', faces printString, ')'
 ]]]
 
-Now in your inspector you can see effectively the number of faces a dice handle has. 
+Now in your inspector you can see effectively the number of faces a dice handle has as shown by Figure *diceDetail* and it is now easier to check the dice contained inside a handle (See Figure *diceHandleDetail*).
 
++Dice details>file://DiceDetail.png|width=50|label=diceDetail+ 
 
++Dice Handle with more information>file://DiceHandleDetail.png|width=50|label=diceHandleDetail+ 
 !! Rolling a dice handle
 
 Now we can define the rolling of a handle of dice by simply summing the dice rolls.
