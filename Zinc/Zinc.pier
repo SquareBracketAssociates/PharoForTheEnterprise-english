@@ -56,14 +56,14 @@ Here we explicitly set the url using ==url:==, execute an HTTP GET using ==get==
 
 The status line says HTTP/1.1 200 OK, which means the request was successful. This can be tested by sending ==isSuccess== to either the response object or the client itself. The headers contain meta data related to the response, including:
 
-- the content-type (a mime-type), accessed with ==contentType==
-- the content-length (a byte count), accessed with ==contentLength==
+- the content-type (a mime-type), accessed with the message ==contentType==
+- the content-length (a byte count), accessed with the message ==contentLength==
 - the date the response was generated
 - the server that generated the response
 
-The entity is the actual resource: the bytes that should be interpreted in the context of the content-type mime-type. Zn will automatically convert non-binary mime-types into ==String==s using the correct encoding. In our example, the entity will be an instance of ==ZnStringEntity==, a concrete subclass of ==ZnEntity==.
+The entity is the actual resource: the bytes that should be interpreted in the context of the content-type mime-type. Zn  automatically converts non-binary mime-types into ==String==s using the correct encoding. In our example, the entity is an instance of ==ZnStringEntity==, a concrete subclass of ==ZnEntity==.
 
-Like any Smalltalk object, you can inspect or explore the ==ZnResponse== object. You might be wondering how this response was actually transferred over the network. That is easy with Zn, as the key HTTP objects all implement ==writeOn:== for this purpose.
+Like any Smalltalk object, you can inspect or explore the ==ZnResponse== object. You might be wondering how this response was actually transferred over the network. That is easy with Zinc, as the key HTTP objects all implement ==writeOn:== for this purpose. @@so?? You can simply ask a response to write itself onto the Transcript. Still I do not understand how this is answering the question? We should address that point@@
 
 [[[
 | response |
@@ -106,7 +106,7 @@ request writeOn: Transcript.
 Transcript flush.
 ]]]
 
-In an open Transcript you will now see:
+In an opened Transcript you will now see:
 
 [[[language=
 GET /zn/small.html HTTP/1.1
@@ -117,15 +117,15 @@ Host: zn.stfx.eu
 
 A ==ZnRequest== object consists of 3 elements:
 
-# a ==ZnRequestLine== object
-# a ==ZnHeaders== object
-# an optional ==ZnEntity== object
+# a ==ZnRequestLine== object, 
+# a ==ZnHeaders== object and
+# an optional ==ZnEntity== object.
 
 The request line contains the HTTP method (sometimes called verb), URL and the HTTP protocol version. Next come the request headers, similar to the response headers, meta data including:
 
-- the host we want to talk to
-- the kind of mime-types that we accept or prefer
-- the user-agent that we are
+- the host we want to talk to, 
+- the kind of mime-types that we accept or prefer, and
+- the user-agent that we are.
 
 If you look carefully at the Transcript you will see the empty line terminating the headers. For most kinds of requests, like for a GET, there is no entity.
 
@@ -170,7 +170,7 @@ HTTP defines a whole set of so called status codes to define various situations.
 ZnConstants httpStatusCodes.
 ]]]
 
-A good overview can be found in the Wikipedia article *List of HTTP status codes>http://en.wikipedia.org/wiki/List_of_HTTP_status_codes*. The most common code, the one that indicates success is numeric code 200 with reason 'OK'. Have a look at the testing protocol of ==ZnResponse== for how to interpret some of them.
+A good overview can be found in the Wikipedia article *List of HTTP status codes>http://en.wikipedia.org/wiki/List_of_HTTP_status_codes*. The most common code, the one that indicates success is numeric code 200 with reason 'OK'. Have a look at the ==testing== protocol of ==ZnResponse== for how to interpret some of them.
 
 So if you do an HTTP request and get something back, you cannot just assume that all is well. You first have to make sure that the call itself (more specifically the response) was successful. As mentioned before, you can do so by sending ==isSuccess== to the response or the client.
 
@@ -183,7 +183,7 @@ client isSuccess
   ifFalse: [ self inform: 'Something went wrong' ]
 ]]]
 
-To make it easier to write better HTTP client code, ==ZnClient== offers some useful API. You can ask the client to consider non-successful HTTP responses as errors with the ==enforceHTTPSuccess== option. The client will then automatically throw a ==ZnHTTPUnsuccesful== exception. This is generally useful when upstream code handles errors.
+To make it easier to write better HTTP client code, ==ZnClient== offers some useful API. You can ask the client to consider non-successful HTTP responses as errors with the ==enforceHTTPSuccess== option. The client will then automatically throw a ==ZnHTTPUnsuccesful== exception. This is generally useful when upstream code handles errors. @@What is an upstream code???@@.
 
 To install a local failure handler, there is the ==ifFail:== option. This will invoke a block, optionally passing an exception, whenever something goes wrong. Together, this allows the above code to be rewritten as follows.
 
@@ -290,7 +290,8 @@ ZnUrl new
   yourself.
 ]]]
 
-The printable representation of the URL is
+The printable representation of the URL is the following. Now you can inspect the following expressions.
+@@add a screen shot@@
 
 [[[language=
 http://www.google.com/search?q=Pharo%20Smalltalk==
@@ -307,7 +308,7 @@ Note how the ==ZnUrl== parser is forgiving with respect to the space, like most 
 
 !! ZnClient lifecycle
 
-HTTP 1.1 defaults to keeping the client connection to a server open, and the server will do the same. This is useful and faster if you to issue more than one request. ==ZnClient== implements this behavior by default.
+HTTP 1.1 defaults to keeping the client connection to a server open, and the server will do the same. This is useful and faster if you need to issue more than one request. ==ZnClient== implements this behavior by default.
 
 [[[
 Array streamContents: [ :stream | | client |
@@ -320,9 +321,9 @@ Array streamContents: [ :stream | | client |
 
 The above example sets up a client to connect to a specific host. Then it collects the results of 10 different requests, asking for random strings of a specific size. All request will go over the same network connection.
 
-Neither party is required to keep the connection open for a long time, as this consumes resources. Both parties should be prepared to deal with connections closing, this is not an error. ==ZnClient== will try to reuse an existing connection and reconnect once if this reuse fails. The option connectionReuseTimeout limits how old a connection can be for reuse to be attempted.
+Neither party is required to keep the connection open for a long time, as this consumes resources. Both parties should be prepared to deal with connections closing, this is not an error. ==ZnClient== will try to reuse an existing connection and reconnect once if this reuse fails. The option ==connectionReuseTimeout== limits how old a connection can be for reuse to be attempted. @@ to be reused? @@
 
-Note how we also close the client. A network connection is an external resource, like a file, that should be properly closed after use. If you don't do that, they will get cleaned up eventually by the system, but it is more efficient to do it yourself.
+Note how we also close the client using the message ==close== @@?@@. A network connection is an external resource, like a file, that should be properly closed after use. If you don't do that, they will get cleaned up eventually by the system, but it is more efficient to do it yourself.
 
 In many situations, you only want to do one single request. HTTP 1.1 has provisions for this situation. The beOneShot option of ==ZnClient== will do just that.
 
@@ -354,7 +355,7 @@ Beware that basic authentication is not the same as a web application where you 
 
 !! Submitting HTML forms
 
-In many web applications HTML forms are used. Examples are forms to enter a search string, a form with a username and password to log in or complicated registration forms. The classic, most common way this is implemented is by sending the data entered in the fields of a form to the server when a submit button is clicked. It is possible to implement the same behavior programmatically using ==ZnClient==.
+In many web applications HTML forms are used. Examples are forms to enter a search string, a form with a username and password to log in or complicated registration forms. In the classic and most common way, this is implemented by sending the data entered in the fields of a form to the server when a submit button is clicked. It is possible to implement the same behavior programmatically using ==ZnClient==.
 
 First you have to find out how the form is implemented by looking at the HTML code. Here is an example.
 
@@ -365,7 +366,7 @@ First you have to find out how the form is implemented by looking at the HTML co
 </form>
 ]]]
 
-This form shows one text input field, preceded by a ‘Search for:’ label and followed by a submit button with ‘Go!’ as label. Assuming this appears on a page with URL ==http://www.search-engine.com/== we can implement the behavior of the browser when the user clicks the button, submitting or sending the form data to the server.
+This form shows one text input field, preceded by a ‘Search for:’ label and followed by a submit button with ‘Go!’ as label. Assuming this appears on a page with URL ==http://www.search-engine.com/==, we can implement the behavior of the browser when the user clicks the button, submitting or sending the form data to the server.
 
 [[[
 ZnClient new
@@ -374,7 +375,7 @@ ZnClient new
   post.
 ]]]
 
-The URL is composed by combining the URL of the page that contains the form with the action specified. The default form encoding is, as explicitly specified here, ==application/x-www-form-urlencoded==. By using the ==formAt:put:== method to set the value of a field, an entity of type ==ZnApplicationFormUrlEncodedEntity== will be created if needed, and the field name/value association will be stored in it. When finally ==post== is invoked, the HTTP request sent to the server will include a properly encoded entity. As far as the server is concerned, it will seems as if a real user submitted the form. Consequently, the response should be the same as when you submit the form manually using a browser. Be careful to include all relevant fields, even the hidden ones.
+The URL is composed by combining the URL of the page that contains the form with the action specified. The default form encoding is, as explicitly specified here, ==application/x-www-form-urlencoded== @@ where? by application/@@. By using the ==formAt:put:== method to set the value of a field, an entity of type ==ZnApplicationFormUrlEncodedEntity== will be created if needed, and the field name/value association will be stored in it. When finally ==post== is invoked, the HTTP request sent to the server will include a properly encoded entity. As far as the server is concerned, it will seem as if a real user submitted the form. Consequently, the response should be the same as when you submit the form manually using a browser. Be careful to include all relevant fields, even the hidden ones.
 
 There is a second type of form encoding called ==multipart/form-data==. Instead of adding fields, you add ==ZnMimePart== instances. The HTML form will specify a different enctype.
 
@@ -385,7 +386,7 @@ There is a second type of form encoding called ==multipart/form-data==. Instead 
 </form>
 ]]]
 
-The code to do the upload would then be as follows.
+The code to do the upload would then be as follows. @@ we talked about search before? now upload I'm getting confused@@
 
 [[[
 ZnClient new
@@ -461,7 +462,7 @@ ZnClient new
 
 In the last example we explicitly set the entity to be XML and do a POST. In the first two examples, the convenience contents system is used to automatically create a ==ZnStringEntity== of type ==ZnMimeType textPlain== and a ==ZnByteArrayEntity== of type ==ZnMimeType applicationOctectStream==.
 
-The difference between PUT and POST is semantic. POST is generally used to create a new resource inside an existing collection or container, or to initiate some action or process. For this reason, the normal response to a POST request is to return the URL (or URI) of the newly created resource. Conventionally, the response will contain a ==Location== header accessible via ==location== and will often repeat that in the entity is sends back.
+The difference between PUT and POST is semantic. POST is generally used to create a new resource inside an existing collection or container, or to initiate some action or process. For this reason, the normal response to a POST request is to return the URL (or URI) of the newly created resource. Conventionally, the response will contain a ==Location== header accessible via the message ==location== and will often repeat that @@what@@ in the entity it sends back.
 
 When a POST successfully created the resource, its HTTP response will be 201 Created. PUT is generally used to update an existing resource of which you know the exact URL (of URI). When a PUT is successful, its HTTP response will be just 200 OK and nothing else will be returned. In the subsection about REST Web Service APIs, we will come back to this.
 
@@ -479,7 +480,7 @@ ZnClient new
    response.
 ]]]
 
-Since the OPTIONS request does not return an entity, but only meta data we access the response. Have a look at the ==Allow== header.
+Since the OPTIONS request does not return an entity, but only meta data we access the response @@?? we get as return value the response instead?@@. Have a look at the ==Allow== header.
 
 !! Content-types, mime-types and the accept header
 
@@ -487,12 +488,13 @@ Just because you ask for some resource which you think is of a certain mime-type
 
 Zn models mime-types using its ==ZnMimeType== object which has 3 components
 
-- a main type, for example text or image
-- a sub type, for example plain or html, or jpeg, png or gif
-- a number of attributes, for example ==charset=utf-8==
+- a main type, for example text or image, 
+- a sub type, for example plain or html, or jpeg, png or gif, and 
+- a number of attributes, for example ==charset=utf-8==.
 
 The class side of ==ZnMimeType== has some convenience methods for accessing well known mime-types. Note that for textual (non-binary) types, the encoding defaults to UTF-8, the prevalent internet standard. Creating a ==ZnMimeType== object is as easy as sending ==asZnMimeType== to a ==String==.
 
+@@why should we invoke ZnMimeType textHtml.@@
 [[[
 ZnMimeType textHtml.
 'text/html;charset=utf-8' asZnMimeType.
@@ -513,11 +515,11 @@ ZnClient new
   get: 'http://zn.stfx.eu/zn/numbers.txt'.
 ]]]
 
-The above code will tell the server that we want a ==text/plain== type resouce by means of the ==Accept== header. When the response comes back and it is not of that type, the client will raise a ==ZnUnexpectedContentType== exception. Again, this will be handled by the ==ifFail:== block, when specified. This technique further improves your HTTP interaction.
+The above code indicates to the server that we want a ==text/plain== type resouce by means of the ==Accept== header. When the response comes back and it is not of that type, the client will raise a ==ZnUnexpectedContentType== exception. Again, this will be handled by the ==ifFail:== block, when specified. This technique further improves your HTTP interaction.
 
 !! Redirects
 
-Sometimes when requesting a URL, an HTTP server will not answer immediately but redirect you to another location. Seaside actually does this on each request. This is done with a 301 or 302 response code. You can ask a ==ZnResponse== whether its a redirect with ==isRedirect==. In case of a redirect response, the ==Location== header will contain the location the server redirects you to. You can access that URL using ==location==.
+Sometimes when requesting a URL, an HTTP server will not answer immediately but redirect you to another location. Seaside actually does this on each request. This is done with a 301 or 302 response code. You can ask a ==ZnResponse== whether it's a redirect with ==isRedirect==. In case of a redirect response, the ==Location== header will contain the location the server redirects you to. You can access that URL using ==location==.
 
 By default, ==ZnClient== will follow redirects automatically for up to 3 redirects. You won't even notice unless you activate logging.
 
