@@ -3,9 +3,6 @@
 
 In this chapter we will develop a simple domain specific language (DSL) for rolling dice. Players of games such as Dungeon and Dragons are familiar with the DSL we will implement. An example of such DSL is ==2 D20 + 1 D6== which means that we should roll two times a 20-faces dice and one time a 6 faces dice. This chapter will show how we can (1) simply reuse traditional operator such as ==+==, (2) develop an embedded DSL and (3) show a nice usage of class extensions.
 
-todo add pictures
-
-
 
 !! Getting started
 
