@@ -286,7 +286,7 @@ dice and can verify that. This is what the method ==testSimpleHandle== is doing.
 [[[
 DiceHandleTest>>testSimpleHandle
 
-	self assert: 2 D20 diceNumber = 5.
+	self assert: 2 D20 diceNumber = 2.
 ]]]
 
 Verify that the test is not working! It is much more satisfactory to get a test running when it was not working before. Now define the method ==D20== with a category name that is ==*Dice== (if you named your package Dice). This method simply creates a new dice handle, add the correct number of dice to this handle and return it.
