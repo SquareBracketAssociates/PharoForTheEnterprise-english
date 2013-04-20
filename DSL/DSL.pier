@@ -372,8 +372,8 @@ Now we can execute the method ==(2 D20 + 1 D6) roll== nicely and start playing r
 
 !! Conclusion
 
-This chapter illustrates how to create a small DSL based on the definition of some domain classes (here 
-==Dice== and ==DiceHandle==) and the extension of core class such ==Integer==.
+This chapter illustrates how to create a small DSL based on the definition of some domain classes (here ==Dice== and  
+ ==DiceHandle==) and the extension of core class such ==Integer==.
 It shows that in Pharo we can use usual operators to express natural models.
 
 
