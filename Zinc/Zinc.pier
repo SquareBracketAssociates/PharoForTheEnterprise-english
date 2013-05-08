@@ -48,7 +48,7 @@ ZnClient new
   response.
 ]]]
 
-Here we explicitly set the url using ==url:==, execute an HTTP GET using ==get== and ask for the response object using ====response==. The above returns a ==ZnResponse== object. Of course you can inspect it. It consists of 3 elements:
+Here we explicitly set the url using ==url:==, execute an HTTP GET using ==get== and ask for the response object using ==response==. The above returns a ==ZnResponse== object. Of course you can inspect it. It consists of 3 elements:
 
 # a ==ZnStatusLine== object,
 # a ==ZnHeaders== object and
