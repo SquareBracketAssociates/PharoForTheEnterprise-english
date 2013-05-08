@@ -1,0 +1,76 @@
+!Crafting a little Embedded DSL
+
+
+BabyMock is a visual mock object library for Pharo Smalltalk, that supports test-driven development. Like other mock object libraries such as JMock, BabyMock helps you design and test the interactions between the objects in your programs. BabyMock makes these interactions visible, which may help you identify test smells easier.
+
+
+!! Getting started
+
+The following expression loads both the core and the visualisation package of BabyMock.
+
+
+[[[
+Gofer new
+    smalltalkhubUser: 'zeroflag' project: 'BabyMock';
+    package: 'ConfigurationOfBabyMockGUI';
+    load.
+
+((Smalltalk at: #ConfigurationOfBabyMockGUI) project version: '1.0') load.
+]]]
+
+If you don't need the visualization package you can use this script to load the core package only.
+
+[[[
+Gofer new
+    smalltalkhubUser: 'zeroflag' project: 'BabyMock';
+    package: 'ConfigurationOfBabyMock';
+    load.
+
+((Smalltalk at: #ConfigurationOfBabyMock) project version: '1.0') load.
+]]]
+
+BabyMock comes also with a package of examples that you can
+
+[[[
+((Smalltalk at: #ConfigurationOfBabyMock) project version: '1.0') load: #('Examples')
+]]]
+
+
+
+
+
+%!!! Creating a test 
+
+%It is always empowering to verify that the code we write is always working as we defining it. For 
+%this purpose we will create a unit test. Remember unit testing was promoted by K. Beck first in Smalltalk. Nowadays this is a common practice but this is always %useful to remember our roots!
+
+%So we define the class ==DiceTest== as a subclass of ==TestCase==.
+
+%[[[
+%TestCase subclass: #DiceTest%
+%	instanceVariableNames: ''
+%	classVariableNames: ''
+%	poolDictionaries: ''
+%	category: 'Dice'
+%]]]
+
+
+
+%+Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
+
+
+
+
+
+
+%Now in your inspector you can see effectively the number of faces a dice handle has as shown by Figure *diceDetail* and it is now easier to check the dice contained %inside a handle (See Figure *diceHandleDetail*).
+
+%+Dice details>file://DiceDetail.png|width=50|label=diceDetail+ 
+
+%+Dice Handle with more information>file://DiceHandleDetail.png|width=50|label=diceHandleDetail+ 
+
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:
