@@ -1,8 +1,8 @@
-!Crafting a little Embedded DSL
+!A Visual Mock Library
 
 
 BabyMock is a visual mock object library for Pharo Smalltalk, that supports test-driven development. Like other mock object libraries such as JMock, BabyMock helps you design and test the interactions between the objects in your programs. BabyMock makes these interactions visible, which may help you identify test smells easier.
-
+BabyMock was designed and developed by Attila Magyar who also is the main author of this chapter. 
 
 !! Getting started
 
@@ -29,13 +29,79 @@ Gofer new
 ((Smalltalk at: #ConfigurationOfBabyMock) project version: '1.0') load.
 ]]]
 
-BabyMock comes also with a package of examples that you can
+BabyMock comes also with a package of examples that you can load using the following expression. 
+Examples contains some simple examples such as a ache, a barcodeCommand translator and a cash register.
 
 [[[
 ((Smalltalk at: #ConfigurationOfBabyMock) project version: '1.0') load: #('Examples')
 ]]]
 
+Now In the following sections, we will develop a complete sample application written with TDD.
 
+
+!!A Simple Publisher System
+
+We are going to write a test for a simple publisher/subscriber system. Subscribers can be registered to the publisher in order to receive notifications about events. We want to test the publisher, but to do so we need a mocked subscriber to check the outgoing messages coming from the publisher.
+
+The recommended way to use BabyMock is to extend your test from ==BabyMockTestCase==, which is a subclass of the SUnit ==TestCase== class. After that you can run your test just like any other SUnit based unit test.
+
+[[[
+BabyMockTestCase subclass: #PublisherTest
+    instanceVariableNames: 'subscriber'
+    classVariableNames: ''
+    poolDictionaries: ''
+    category: 'Demo'
+]]]
+
+Mocks can be created by sending the message  ==mock:== to the context with an arbitrary name string. The context is an instance variable in ==BabyMockTestCase==, and it represents the peer objects (the subscribers) of the object under test.
+
+[[[
+PublisherTest>>testNotifiesSubscriberAboutAnEvent
+	subscriber := context mock: 'subscriber'.
+
+]]]
+
+The inter-object protocol between the publisher and the subscriber is fairly simple. When we are publishing an event using the publisher, it will notify all the registered subscribers. These outgoing messages are what we are interested in.
+
+In this testcase we are registering one subscriber mock to the publisher, and we expect the publisher to send the eventReceived: message with the correct argument to the subscriber mock.
+
+[[[
+	| event publisher subscriber |
+	event := 'test event'.
+	publisher := Publisher new.
+	subscriber := context mock: 'subscriber'.
+	publisher addSubscriber: subscriber.
+
+	subscriber should receive: #eventReceived:; with: event.
+	publisher publish: event.
+]]]
+
+The "subscriber should receive: #eventReceived:; with: event" is an expectation on the subscriber mock that specifies the messages to be sent to the subscriber.
+The test will fail:
+
+- if the expected message is not sent to the mock during the test
+- if the expected message is sent more than once
+- if the argument of the message is different
+- if an other, unexpected message is sent to the mock
+
+
+
+For attila: It would be good to have a complete example so that the reader can execute steps by steps
+
+
+!!! Visual Mode
+
+What is cool with BabyMock is that we can visualize the flow of messages.
+To enable the visual mode send the ==visualize:== message to the context with the object under test as a parameter.
+
+You can put this expression in the ==setUp== method to affect all tests, or at the beginning of the test method you want to visualize.
+
+BabyMock intercepts the messages between the test, the object under test and the mocks. After you executed the unit test, it will draw these interactions on a window. Then you can replay or step through the animation.
+
+For Attila: how do we open the window?
+Note: we should add a screenshot.
+
+Arrows with different colors indicate expected, unexpected or missing messages. An allowed or expected message is represented as a green arrow. Unexpected messages are red, and expected but missing messages are gray. A yellow arrow indicates an exception.
 
 
 
