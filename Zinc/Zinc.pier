@@ -515,7 +515,7 @@ ZnClient new
   get: 'http://zn.stfx.eu/zn/numbers.txt'.
 ]]]
 
-The above code indicates to the server that we want a ==text/plain== type resouce by means of the ==Accept== header. When the response comes back and it is not of that type, the client will raise a ==ZnUnexpectedContentType== exception. Again, this will be handled by the ==ifFail:== block, when specified. This technique further improves your HTTP interaction.
+The above code indicates to the server that we want a ==text/plain== type resource by means of the ==Accept== header. When the response comes back and it is not of that type, the client will raise a ==ZnUnexpectedContentType== exception. Again, this will be handled by the ==ifFail:== block, when specified. This technique further improves your HTTP interaction.
 
 !! Redirects
 
