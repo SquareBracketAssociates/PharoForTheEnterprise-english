@@ -1,8 +1,10 @@
 !A Visual Mock Library
 
 
-BabyMock is a visual mock object library for Pharo Smalltalk, that supports test-driven development. Like other mock object libraries such as JMock, BabyMock helps you design and test the interactions between the objects in your programs. BabyMock makes these interactions visible, which may help you identify test smells easier.
-BabyMock was designed and developed by Attila Magyar who also is the main author of this chapter. 
+BabyMock is a visual mock object library for Pharo Smalltalk, that supports test-driven development. Like other mock object libraries such as JMock, BabyMock helps you design and test the interactions between the objects in your programs. BabyMock makes these interactions visible, which may help you identify test smells easier. BabyMock was designed and developed by Attila Magyar. 
+
+	"Stef:  Attila, in general we should try to get more problem oriented. So I tried to write the chapter like that but we should go over it again and I would like to really have an example through the chapter."
+
 
 !! Getting started
 
@@ -84,9 +86,7 @@ The test will fail:
 - if the argument of the message is different
 - if an other, unexpected message is sent to the mock
 
-
-
-For attila: It would be good to have a complete example so that the reader can execute steps by steps
+"For attila: It would be good to have a complete example so that the reader can execute steps by steps"
 
 
 !!! Visual Mode
@@ -98,41 +98,216 @@ You can put this expression in the ==setUp== method to affect all tests, or at t
 
 BabyMock intercepts the messages between the test, the object under test and the mocks. After you executed the unit test, it will draw these interactions on a window. Then you can replay or step through the animation.
 
-For Attila: how do we open the window?
-Note: we should add a screenshot.
+"For Attila: how do we open the window?"
+"Note: we should add a screenshot."
 
 Arrows with different colors indicate expected, unexpected or missing messages. An allowed or expected message is represented as a green arrow. Unexpected messages are red, and expected but missing messages are gray. A yellow arrow indicates an exception.
 
+The following sections will present some aspects supported by BabyMock such as how to express cardinalities, arguments, or errors.  
 
 
-%!!! Creating a test 
+!!Cardinalities
 
-%It is always empowering to verify that the code we write is always working as we defining it. For 
-%this purpose we will create a unit test. Remember unit testing was promoted by K. Beck first in Smalltalk. Nowadays this is a common practice but this is always %useful to remember our roots!
+The expression ==should receive:== without any modifiers can be used when we expect exactly one message to be received by the mock object. Therefore the two following expectations are equivalent:
 
-%So we define the class ==DiceTest== as a subclass of ==TestCase==.
+[[[
+mock should receive: #message.
+mock should receive: #message; exactly: #once
+]]]
 
-%[[[
-%TestCase subclass: #DiceTest%
-%	instanceVariableNames: ''
-%	classVariableNames: ''
-%	poolDictionaries: ''
-%	category: 'Dice'
-%]]]
+It is possible to define an exact message count, or an interval. The valid arguments of the ==exactly:== message are #once, #twice, #threeTimes .. #tenTimes
 
 
+Expecting messages at least n times, or at most n times is expressed using ==minimum:== and ==maximum:== as the following example shows it.
 
+[[[
+mock should receive: #message; minimum: #once.
+mock should receive: #message; maximum: #twice.
+mock should receive: #message; minimum: #once; maximum: #twice.
+]]]
+
+If you need to express that you should not receive a given message, you can use the 
+message ==shouldnt==. Note that this expectation is equivalent to not having it at all.
+
+[[[
+mock shouldnt receive: #message.
+]]]
+
+This is often used to make tests more explicit and so easier to understand.
+
+!! Returning values from mocked methods
+
+Using the message ==answers:== we can specify the value that is returned by the mocked method.
+The following expression specifies that the mock should receive the message ==theUltimateQuestion== and 
+that this message will return 42.
+
+[[[
+mock should receive: #theUltimateQuestion; answers: 42.
+]]]
+
+The following code snippet shows the expected behavior.
+
+[[[
+mock theUltimateQuestion "-> returns 42"
+]]]
+
+!! Specifying message arguments
+
+We often need to specify that messages are send with specific arguments. BabyMock offers the message ==with:== to specify arguments. 
+
+
+For example imagine that we want to specify that the calculator should work in 16 base using the message      
+   ==base:==. We want to write the following expression.
+
+[[[
+calculator base: 16.
+]]]
+
+
+And we specify it as follow using the message ==with:==:
+
+[[[
+calculator should receive: #base: ; with: 16
+]]]
+
+When the message has multiple arguments use the message ==with:and:== as illustrated by the following case.
+
+[[[
+calculator 
+    can receive: #add:to:; 
+    with: 1 and: 2; 
+    answers: 3.
+]]]
+
+
+!! Allowing versus expecting
+
+BabyMock allows one to specify whether a message must be received or simply can be received. 
+The first one uses ==should== as we showed previously while the second uses the message ==can==. 
+
+The difference between allowing and expecting makes the tests easier to understand and maintain. Not to mention that it also could make the coupling between the test and the implementation looser.
+
+Let us take the following example. Using ==should== we express that the phonebook should receive 
+the message ==findNumber:== with a user as argument and that it should answer a given phone number.
+
+[[[
+phonebook should receive: #findNumber:; with: user; answers: '+3630405060'.
+]]]
+
+The second example uses the ==can== message. Now the phonebook may receive the ==findNumber== message any number of times it wants (including never).
+
+[[[
+phonebook can receive: #findNumber:; with: user; answers: '+3630405060'.
+]]]
+
+The ==findNumber== message is not a command, but a query (-- what is that??). It is reasonable to expect that the ==findNumber== method doesn't have any side effects, so you can invoke it any number of times you want. Usually it is not needed to test these outgoing queries explicitly. Using the "should" message would make the test unnecessary brittle.
+
+Here is a simple rule to follow: allow queries (use can) and expect commands (use should). Of course, this is an oversimplified rule that does not hold all the time, but in can be useful in many cases.
+
+[[[
+phonebook should receive: #saveNumber:; with: '+36304050'.
+]]]
+
+The ==saveNumber== message is a command, sending it multiple times may cause bad things happen.
+"Should be more precise here"
+
+
+!!Consecutive messages
+
+When you want to answer different values to the same message, you can do so by cascading the ==answers:== message.
+
+Here the we say that the result of the message ==message== will first return 1, then the second time 2, then the third time 3. 
+
+[[[
+mock can receive: #message; answers: 1; answers: 2; answers: 3.
+]]]
+
+When the mock object gets the message ==message== it effectively returns these values
+[[[
+mock message. "-> prints 1"
+mock message. "-> prints 2"
+mock message. "-> prints 3"
+mock message. "-> prints 3"
+]]]
+
+Note that after the third message the mock keeps returning the return value of the previous method.
+
+!! Matching parameter values
+
+Often we would like to specify different results based on different arguments sent to the same mock.
+For example, sending the message ==add:to:== to a calculator should return the sum of its arguments as shown in the following code snippet
+
+[[[
+calculator add: 1 to: 2. "-> prints 3".
+calculator add: 3 to: 4. "-> prints 7"
+]]]
+
+BabyMock lets you express this simply as follow. We just specifies each case individually.
+
+[[[
+calculator 
+    can receive: #add:to:; 
+    with: 1 and: 2; 
+    answers: 3.
+
+calculator 
+    can receive: #add:to:; 
+    with: 3 and: 4; 
+    answers: 7.
+]]]
+
+!! Blocks as argument matchers
+
+We often need to specify that certain arguments can lead to problems. For example imagine that 
+we want to specify that the calculator should raised an error when it receives the message ==sqrt:== with 
+a negative number. 
+
+[[[
+calculator sqrt: -1. "-> will signal MathDomainException"
+]]]
+
+To solve this problem BabyMock offers block to specify arguments.
+For example
+
+[[[
+calculator 
+    can receive: #sqrt:;
+    with: [:number | number < 0];
+    signals: MathDomainException.
+]]]
+
+
+Any block that returns booleans, and has the correct number of arguments can be used as an argument matcher.
+
+
+
+
+
+You can use different blocks for each arguments, or one block which has the same number of arguments as the method has.
+
+
+calculator 
+    can receive: #subtract:from:;
+    with: [:a :b | a > b];
+    signals: NegativeNotSupportedException.
+
+calculator subtract: 3 from: 1. "-> will signal NegativeNotSupportedException"
+
+calculator 
+    can receive: #add:to:;
+    with: [:a | a > 10] and: [:b | b < 20];
+    answers: 'something'.
+
+
+
+
+
+
+
+% how to add reference and figure
 %+Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
-
-
-
-
-
-
 %Now in your inspector you can see effectively the number of faces a dice handle has as shown by Figure *diceDetail* and it is now easier to check the dice contained %inside a handle (See Figure *diceHandleDetail*).
-
 %+Dice details>file://DiceDetail.png|width=50|label=diceDetail+ 
-
 %+Dice Handle with more information>file://DiceHandleDetail.png|width=50|label=diceHandleDetail+ 
 
 
