@@ -196,17 +196,22 @@ phonebook should receive: #findNumber:; with: user; answers: '+3630405060'.
 
 The second example uses the ==can== message. Now the phonebook may receive the ==findNumber== message any number of times it wants (including never).
 
+
 [[[
 phonebook can receive: #findNumber:; with: user; answers: '+3630405060'.
 ]]]
 
-The ==findNumber== message is not a command, but a query (-- what is that??). It is reasonable to expect that the ==findNumber== method doesn't have any side effects, so you can invoke it any number of times you want. Usually it is not needed to test these outgoing queries explicitly. Using the "should" message would make the test unnecessary brittle.
+
+
+The ==findNumber== message is not a command, but a query (what is that??). It is reasonable to expect that the ==findNumber== method doesn't have any side effects, so you can invoke it any number of times you want. Usually it is not needed to test these outgoing queries explicitly. Using the "should" message would make the test unnecessary brittle.
 
 Here is a simple rule to follow: allow queries (use can) and expect commands (use should). Of course, this is an oversimplified rule that does not hold all the time, but in can be useful in many cases.
+
 
 [[[
 phonebook should receive: #saveNumber:; with: '+36304050'.
 ]]]
+
 
 The ==saveNumber== message is a command, sending it multiple times may cause bad things happen.
 "Should be more precise here"
@@ -267,7 +272,8 @@ calculator sqrt: -1. "-> will signal MathDomainException"
 ]]]
 
 To solve this problem BabyMock offers block to specify arguments.
-For example
+For example we can specify a block that verifies that argument of message ==sqrt:== are strictly positive
+and raise an error otherwise.
 
 [[[
 calculator 
@@ -276,16 +282,9 @@ calculator
     signals: MathDomainException.
 ]]]
 
+In fact, any block that returns booleans, and has the correct number of arguments can be used as an argument matcher. You can use different blocks for each arguments, or one block which has the same number of arguments as the method has.
 
-Any block that returns booleans, and has the correct number of arguments can be used as an argument matcher.
-
-
-
-
-
-You can use different blocks for each arguments, or one block which has the same number of arguments as the method has.
-
-
+[[[
 calculator 
     can receive: #subtract:from:;
     with: [:a :b | a > b];
@@ -297,8 +296,38 @@ calculator
     can receive: #add:to:;
     with: [:a | a > 10] and: [:b | b < 20];
     answers: 'something'.
+]]]
 
 
+!!	Ignoring an irrelevant mock object
+Sometimes you want to express that a message or the argument of a message   can be anything. For this situationm, BabyMock provides the value ==anything==. The anything is an instance variable in of the ==BabyMockTestCase== class. For example, with the following snippet we say that a mack can receive any message. 
+
+[[[
+mock can receive: anything.
+]]]
+
+In such case the default answer will be nil.
+
+
+!! Using states
+
+States are handy if you want to bring your object under test in a particular state, and check whether an action was take in the correct state, without accessing the object's internals.
+
+ state := context states: 'machine state' startsAs: #ready.
+
+vendingMachine 
+    should receive: #insertCoin:; with: 1 dollar;
+    when: state is: #ready;
+    then: state is: #hasCoin.
+
+vendingMachine
+    should receive: #press:; with: 2
+    when: state is: #hasCoin. 
+
+vendingMachine
+    should receive: #press:; with: 5;
+    when: state is: #hasCoin.
+The user of the vending machine could press the button "2" and "5" in any order, as long as the vending machine is in the #hasCoin state, the test will pass. What is important is that the insertCoin should happen first. States are useful for loosening ordering constraints (one event happens first and others follow it in any order).
 
 
 
