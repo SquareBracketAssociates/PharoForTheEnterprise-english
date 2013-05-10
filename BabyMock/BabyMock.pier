@@ -1,4 +1,4 @@
-!A Visual Mock Library
+!BabyMock: A Visual Mock Library
 
 
 BabyMock is a visual mock object library for Pharo Smalltalk, that supports test-driven development. Like other mock object libraries such as JMock, BabyMock helps you design and test the interactions between the objects in your programs. BabyMock makes these interactions visible, which may help you identify test smells easier. BabyMock was designed and developed by Attila Magyar. 
@@ -311,10 +311,22 @@ In such case the default answer will be nil.
 
 !! Using states
 
+Often you would like to express that your object is in a given state and test against this state.
 States are handy if you want to bring your object under test in a particular state, and check whether an action was take in the correct state, without accessing the object's internals.
 
- state := context states: 'machine state' startsAs: #ready.
+BabyMock provides support for handling states with a couple of messages. The first one is ==states:startsAs:== with takes as argument a list of state in the form of a string where states are separated by space and .... not idea what it is in fact.
 
+atilla why not state := context states: #(hasCoin ready) startsAs: #ready.
+I do not get the following expression. 
+
+[[[
+state := context states: 'machine state' startsAs: #ready.
+]]]
+
+Once you have define the state you can use the state as follows. You can check the state status using the message ==when:is:==.
+Then we can express a transition from the state ==#ready== to ==#hasCoin== using the the message ==then:is:==. 
+
+[[[
 vendingMachine 
     should receive: #insertCoin:; with: 1 dollar;
     when: state is: #ready;
@@ -327,10 +339,51 @@ vendingMachine
 vendingMachine
     should receive: #press:; with: 5;
     when: state is: #hasCoin.
-The user of the vending machine could press the button "2" and "5" in any order, as long as the vending machine is in the #hasCoin state, the test will pass. What is important is that the insertCoin should happen first. States are useful for loosening ordering constraints (one event happens first and others follow it in any order).
+]]]
 
 
+The user of the vending machine could press the button "2" and "5" in any order, as long as the vending machine is in the ==#hasCoin== state, the test will pass. What is important is that the message ==insertCoin== should be received first. States are useful for loosening ordering constraints (one event happens first and others follow it in any order).
 
+!!Mocking object methods
+
+Methods defined in the Object or ProtoObject class cannot be mocked by default. If you need to mock or stub them for some reason, send the following message ==excludedObjectMethods:== to the context with the list of methods.
+
+[[[
+context excludedObjectMethods: #('methodYouWantToMock').
+]]]
+
+For example with the following expression you will be able to receive the message ==class==. In previous version of Pharo it was not 
+a message. 
+
+[[[
+context excludedObjectMethods: #('class').
+]]]
+
+[[[
+mock can receive: #class; answers: String.
+mock class. "-> prints String instead of BmMock"
+]]]
+
+Now don't use this feature unless you have a good reason to do so.
+
+!!Syntax cheat sheet
+
+You know everything about BabyMock. Now we give you a cheat sheet with all the important messages you can use.
+
+[[[
+mock 
+    should/shouldnt/can receive: aSymbol;
+    with: arg1 and: [:arg2 | arg2 > 3] and: ..;
+    minimum: #once;
+    maximum: #twice;
+    exactly: #threeTimes;
+    answers: anything;
+    signals: Error;
+    when: state is: #state1;
+    then: state is: #state2.
+]]]
+
+Note that not all combinations are valid, or make sense.
 
 
 % how to add reference and figure
