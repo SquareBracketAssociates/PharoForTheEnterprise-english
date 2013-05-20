@@ -291,7 +291,7 @@ ZnUrl new
 ]]]
 
 The printable representation of the URL is the following. Now you can inspect the following expressions.
-@@add a screen shot@@
+% @@todo add a screen shot@@
 
 [[[language=
 http://www.google.com/search?q=Pharo%20Smalltalk==
@@ -494,7 +494,7 @@ Zn models mime-types using its ==ZnMimeType== object which has 3 components
 
 The class side of ==ZnMimeType== has some convenience methods for accessing well known mime-types. Note that for textual (non-binary) types, the encoding defaults to UTF-8, the prevalent internet standard. Creating a ==ZnMimeType== object is as easy as sending ==asZnMimeType== to a ==String==.
 
-@@why should we invoke ZnMimeType textHtml.@@
+% @@why should we invoke ZnMimeType textHtml.@@
 [[[
 ZnMimeType textHtml.
 'text/html;charset=utf-8' asZnMimeType.
