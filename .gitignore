@@ -21,3 +21,4 @@
 auto/
 files/
 /crash.dmp
+/package-cache
