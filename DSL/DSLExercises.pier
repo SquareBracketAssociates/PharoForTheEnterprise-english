@@ -1,4 +1,4 @@
-!Crafting a Simple Embedded DSL
+!Crafting a Simple Embedded DSL with Pharo
 
 In this tutorial we develop a simple Domain Specific Language (DSL) for rolling dice. Players of games such as Dungeon and Dragons are familiar with the DSL we implement. An example of such DSL is
 
