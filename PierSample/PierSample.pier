@@ -144,25 +144,25 @@ To create links to externals resources, use the ==*====Pharo>http://pharo-projec
 
 !!Pictures
 
-To include a picture, use the syntax ==\+caption>file://filename|parameters+==. For example the following snippet will add the image with the specified caption and numbering.
+To include a picture, use the syntax ==\+caption>file://filename|parameters+==. For example the following snippet will add the image with the specified caption and numbering as shown below.
 
 
 [[[
 +Pier Logo with i in Red>file://pier-logo.png|width=50|label=pierLogo+
 ]]]
 
-generates Figure *pierLogo* (this reference has been generated using ==\*pierLogo*==).
+generates Figure *pierLogo* (Note that this reference has been generated using ==\*pierLogo*==).
 
-+This is the label of the picture>file://pier-logo.png|width=50|label=pierLogo+
++Pier Logo with i in Red>file://pier-logo.png|width=50|label=pierLogo+
 
 !!Scripts
 This is important to be able to add code to illustrate functionality. 
 For this surround the code with three opening and closing square brackets: ==[[[== and ==]]]==. 
-STEF: Damien we have a bug since the latex displays something different.
+STEF: Damien this looks strange
 
 [[[
 [[[
-foo bar
+foo bar 
 ]]]
 ]]]
 
@@ -175,9 +175,9 @@ foo bar
 If you want either a label (to reference the script later) or a caption (to give a nice title to the script), write the following:
 
 [[[
-\[[[label=script1|caption=My script that works
+[[[label=script1|caption=My script that works
 foo bar
-\]]]
+]]]
 ]]]
 
 which produces
@@ -186,6 +186,7 @@ which produces
 foo bar
 ]]]
 
+STEF: Damien the reference does not wrok anymore
 This script can then be referenced with ==\*script1\*== (produces *script1*).
 
 This is another script (referenced as *script2*), with no caption this time:
