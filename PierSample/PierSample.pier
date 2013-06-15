@@ -144,10 +144,11 @@ To create links to externals resources, use the ==*====Pharo>http://pharo-projec
 
 !!Pictures
 
-To include a picture, use the syntax ==\+caption>file://filename|parameters+==:
+To include a picture, use the syntax ==\+caption>file://filename|parameters+==. For example the following snippet will add the image with the specified caption and numbering.
+
 
 [[[
-+Caption of the picture>file://pier-logo.png|width=50|label=pierLogo+
++Pier Logo with i in Red>file://pier-logo.png|width=50|label=pierLogo+
 ]]]
 
 generates Figure *pierLogo* (this reference has been generated using ==\*pierLogo*==).
@@ -155,11 +156,14 @@ generates Figure *pierLogo* (this reference has been generated using ==\*pierLog
 +This is the label of the picture>file://pier-logo.png|width=50|label=pierLogo+
 
 !!Scripts
+This is important to be able to add code to illustrate functionality. 
+For this surround the code with three opening and closing square brackets: ==[[[== and ==]]]==. 
+STEF: Damien we have a bug since the latex displays something different.
 
 [[[
-\[[[
+[[[
 foo bar
-\]]]
+]]]
 ]]]
 
 generates
