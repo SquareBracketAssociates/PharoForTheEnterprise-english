@@ -392,7 +392,7 @@ Damien Pollet},
 \lstdefinelanguage{Smalltalk}{
 %  morekeywords={self,super,true,false,nil,thisContext}, % This is overkill
   morestring=[d]',
-  morecomment=[s]{"}{"},
+  %morecomment=[s]{"}{"},  -sd - we do not want " to be slanted
   alsoletter={\#:},
   escapechar={¶},
   literate=
@@ -650,3 +650,9 @@ Damien Pollet},
 %\renewcommand{\baselinestretch}{1.1}
 %=============================================================
 \usepackage{tikz}
+
+%\newenvironment{note}{\newline Note:}{}
+\newenvironment{note}{\begin{center}\begin{minipage}{8cm}\hrule\vspace{0.2cm}
+\textbf{Note:}}{\vspace{0.3cm}\hrule\end{minipage}\end{center}}
+\newenvironment{todo}{\begin{center}\begin{minipage}{8cm}
+\textbf{Book Todo:}}{\end{minipage}\end{center}}
