@@ -1,0 +1,61 @@
+!Benchmarking with SMark
+
+SMark is the attempt to build a common benchmarking framework for Smalltalk developed By Stefan Marr. 
+It inspired by unit testing in SUnit and following this idea, a benchmark is implemented by adding a method name ==benchMyBenchmark== to a subclass of ==SBenchmarkSuite==. This enables performance regression tracking in the same way as unit-testing allows one to track functional regressions.
+
+
+
+
+
+!! Getting Started
+
+The code is originally based on PBenchmark the benchmark framework used for the PinocchioVM and RoarBenchmark a framework used for performance regression testing of the RoarVM.
+
+[[[
+
+]]]
+
+
+!! SMarkSuite
+
+A benchmark suite is a set of benchmarks. Such suite knows what exactly needs to be executed. However, it does not really know how to execute it. It knows how to set up and tear down the environment for the benchmarks, but does not have the knowledge of how many iterations need to be done and how to evaluate any results that might be produced. 
+The abstract class representing suites is ==SMarkSuite==.
+Let us start to see how to execute existing bench suites.
+
+
+
+!!! Runnning a bench suite using ==run== and ==run:==
+
+==SMarkCompiler== is a subclass of 
+
+[[[
+SMarkCompiler run: 10 
+	
+Report for: SMarkCompiler
+Benchmark Compiler
+Compiler total: iterations=10 runtime: 0.70ms +/-0.66
+
+
+SMarkSlopstone run: 10 
+
+ Report for: SMarkSlopstone
+Benchmark Stone
+Stone total: iterations=10 runtime: 0.00ms +/-0.00
+]]]
+
+
+
+
+[[[
+(SMarkLoops new runOnly: #benchFloatLoop) run
+]]]
+
+
+!! Conclusion 
+
+This is just the start of the chapter.
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:
