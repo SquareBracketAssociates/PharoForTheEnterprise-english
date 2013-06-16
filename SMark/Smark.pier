@@ -85,8 +85,37 @@ SMarkLoops>>benchArrayAccess
 
 Using the message ==profile: aSelector== you can invoke a time profiler on the given benchmark. 
 
+@@todo add screenshot
 
 You can also specify the number of iteration using the message ==profile: aSelector iterations: anInteger==.
+
+!!! Select a benchmark
+You can also select and run only one benchmark of a suite using the message ==runOnly:== and ==runOnly:iterations:==
+
+[[[
+SMarkLoops runOnly: #benchArrayAccess
+
+Report for: SMarkLoops
+Benchmark ArrayAccess
+ArrayAccess total: iterations=1 runtime: 0ms
+]]]
+
+!! A better API
+[[[
+SMarkHarness run: {'SMarkHarness'. 'SMarkLoops.benchIntLoop'. 1. 1. 5}
+
+Runner Configuration:
+  iterations: 1
+  processes: 1
+  problem size: 5
+Report for: SMarkLoops
+Benchmark IntLoop
+IntLoop total: iterations=1 runtime: 0ms
+]]]
+
+
+!! What is a  Runner
+
 
 
 !! Conclusion 
