@@ -1,6 +1,8 @@
 !Benchmarking with SMark
 
-SMark is the attempt to build a common benchmarking framework for Smalltalk developed By Stefan Marr. 
+It is a common understanding that when we write application we can gain around 30\% to 50\% once we profiled it. 
+Pharo offers several tools to profile execution and they are presented in the Deep into Pharo. 
+Now Smark is another interesting approach to build benchmarks. SMark is benchmarking framework for Smalltalk developed By Stefan Marr. 
 It inspired by unit testing in SUnit and following this idea, a benchmark is implemented by adding a method name ==benchMyBenchmark== to a subclass of ==SBenchmarkSuite==. This enables performance regression tracking in the same way as unit-testing allows one to track functional regressions.
 
 
@@ -26,22 +28,56 @@ Let us start to see how to execute existing bench suites.
 
 !!! Runnning a bench suite using ==run== and ==run:==
 
-==SMarkCompiler== is a subclass of 
+ ==SMarkLoops== is a subclass of ==SMarkSuite==. It defines one suite of benchmark for evaluating loops performance. This suite is simple since it does not define resources or environment set up and tear down behavior. However as the following execution shows it, the suite is composed of multiple benchmarks.
 
 [[[
-SMarkCompiler run: 10 
-	
-Report for: SMarkCompiler
-Benchmark Compiler
-Compiler total: iterations=10 runtime: 0.70ms +/-0.66
+SMarkLoops run: 10  
 
+Report for: SMarkLoops
+Benchmark ClassVarBinding
+ClassVarBinding total: iterations=10 runtime: 0.30ms +/-0.54
 
-SMarkSlopstone run: 10 
+Benchmark FloatLoop
+FloatLoop total: iterations=10 runtime: 1.40ms +/-0.72
 
- Report for: SMarkSlopstone
-Benchmark Stone
-Stone total: iterations=10 runtime: 0.00ms +/-0.00
+Benchmark Send
+Send total: iterations=10 runtime: 0.00ms +/-0.00
+
+Benchmark InstVarAccess
+InstVarAccess total: iterations=10 runtime: 0.20ms +/-0.36
+
+Benchmark SendWithManyArguments
+SendWithManyArguments total: iterations=10 runtime: 0.20ms +/-0.36
+
+Benchmark IntLoop
+IntLoop total: iterations=10 runtime: 0.00ms +/-0.00
+
+Benchmark ArrayAccess
+ArrayAccess total: iterations=10 runtime: 1.10ms +/-0.69
 ]]]
+
+
+
+!!! Defining a benchmark
+Defining a benchmark is simple, you just need to define methods with a selector starting with the suffix =='bench'==.
+For example ==SMarkCompiler== defines the method ==benchCompiler== as follows. 
+
+[[[
+benchCompiler
+	"was Benchmark>>testCompiler"
+	SMarkCompilerTargetClass new compile:
+		'somethingDummy: aBlock repeated: nTimes | i emptyBlock emptyTime blockTime |
+		nTimes > 1000 ifTrue: [^self time: aBlock repeatedK: nTimes // 1000].
+		emptyBlock := [].
+		emptyTime := Time millisecondsToRun:
+						[i := 0.
+						 [(i := i + 1) <= nTimes] whileTrue: [emptyBlock value]].
+		blockTime := Time millisecondsToRun:
+						[i := 0.
+						 [(i := i + 1) <= nTimes] whileTrue: [aBlock value]].
+		^blockTime - emptyTime'.
+]]]
+
 
 
 
