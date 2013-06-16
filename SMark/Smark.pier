@@ -28,7 +28,9 @@ Let us start to see how to execute existing bench suites.
 
 !!! Runnning a bench suite using ==run== and ==run:==
 
- ==SMarkLoops== is a subclass of ==SMarkSuite==. It defines one suite of benchmark for evaluating loops performance. This suite is simple since it does not define resources or environment set up and tear down behavior. However as the following execution shows it, the suite is composed of multiple benchmarks.
+ ==SMarkLoops== is a subclass of ==SMarkSuite==. It defines one suite of benchmarks for evaluating loops performance. 
+This suite is simple since it does not define resources or environments set up and tear down behavior. 
+However as the following execution shows it, the suite is composed of multiple benchmarks.
 
 [[[
 SMarkLoops run: 10  
@@ -56,35 +58,35 @@ Benchmark ArrayAccess
 ArrayAccess total: iterations=10 runtime: 1.10ms +/-0.69
 ]]]
 
-
+	==run== executes the benchmarks once while ==run: anInteger== performs a given number of iterations.
 
 !!! Defining a benchmark
 Defining a benchmark is simple, you just need to define methods with a selector starting with the suffix =='bench'==.
-For example ==SMarkCompiler== defines the method ==benchCompiler== as follows. 
+For example ==SMarkLoops== defines the method ==benchArrayAccess== as follows:
 
 [[[
-benchCompiler
-	"was Benchmark>>testCompiler"
-	SMarkCompilerTargetClass new compile:
-		'somethingDummy: aBlock repeated: nTimes | i emptyBlock emptyTime blockTime |
-		nTimes > 1000 ifTrue: [^self time: aBlock repeatedK: nTimes // 1000].
-		emptyBlock := [].
-		emptyTime := Time millisecondsToRun:
-						[i := 0.
-						 [(i := i + 1) <= nTimes] whileTrue: [emptyBlock value]].
-		blockTime := Time millisecondsToRun:
-						[i := 0.
-						 [(i := i + 1) <= nTimes] whileTrue: [aBlock value]].
-		^blockTime - emptyTime'.
+SMarkLoops>>benchArrayAccess
+	| i obj array |
+	
+	array := Array new: 1.
+	obj   := Object new.
+	
+	i := self problemSize.
+	[i > 0] whileTrue: [
+		array at: 1.
+		array at: 1 put: obj.
+		
+		i := i - 1.
+	].
 ]]]
 
 
+!! Profiling a specific benchmark
+
+Using the message ==profile: aSelector== you can invoke a time profiler on the given benchmark. 
 
 
-
-[[[
-(SMarkLoops new runOnly: #benchFloatLoop) run
-]]]
+You can also specify the number of iteration using the message ==profile: aSelector iterations: anInteger==.
 
 
 !! Conclusion 
