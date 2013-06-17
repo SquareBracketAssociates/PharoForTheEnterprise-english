@@ -100,6 +100,49 @@ Benchmark ArrayAccess
 ArrayAccess total: iterations=1 runtime: 0ms
 ]]]
 
+
+!! Profiling Small Operations
+Imagine that we want to benchmark...
+
+[[[
+benchFib
+
+
+	32 fib
+
+
+]]]
+
+
+[[[
+benchFibSmall
+	
+	2 fib
+	
+
+defaultProblemSize
+
+]]]
+
+
+[[[
+benchFib
+
+
+SMarkLoops class>>defaultProblemSize
+
+benchSmall
+
+	1 to: self problemSize do: [:i | 2 fib]
+
+]]]
+
+[[[
+baseXXX
+]]]
+
+
+
 !! A better API
 [[[
 SMarkHarness run: {'SMarkHarness'. 'SMarkLoops.benchIntLoop'. 1. 1. 5}
