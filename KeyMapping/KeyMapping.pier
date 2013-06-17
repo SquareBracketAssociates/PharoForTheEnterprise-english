@@ -1,7 +1,7 @@
 ! Keymappings
 
 Since its 2.0 release, Pharo includes the Keymappings library. Keymappings is a library for configuring shortcuts
-for the current UI library (Morphic). It models concepts like: shortcuts, key combinations and event bubbling. It is a very simple library which we’ll introduce gradually in this post.
+for the current UI library (Morphic). It models concepts like: shortcuts, key combinations and event bubbling. It is a very simple library which we'll introduce gradually in this post.
 We gradually present the key concepts.
 
 !! Key combinations
