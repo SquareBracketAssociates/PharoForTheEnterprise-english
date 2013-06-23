@@ -1,26 +1,7 @@
 
 
 
-!!StartupActions
-Directly putting code in the files is easy, however, it is not the best choice. For example, what happens if there are certain scripts you want to execute only once on a certain image but some other code that you want to execute each time the image starts? To solve that, among other things, we have the reification of StartupAction. Let's see how we use them:
-
-[[[
-| items |
-items := OrderedCollection new.
-items add: (StartupAction
-name: 'Basic settings'
-code: [
-Author fullName: 'MarianoMartinezPeck'.
-Debugger alwaysOpenFullDebugger: true.
-]).
-]]]
-
-StartupLoader default addAtStartupInPreferenceVersionFolder: items named: 'basicSettings.st'.
-What we do first is to create an instance of StartupAction using the message #name:code:. We pass as argument a name and the Smalltalk code we want to run inside a block closure. In this example, I just set my username and I put a setting to always open the debugger (no pre-debugger window). So far nothing weird.
-
-The magic comes with the last line, the message #addAtStartupInPreferenceVersionFolder: items named: aFileName  receives a list of startup actions and a filename and stores the actions in a file with the passes argument. So in this case we have only one action called 'Basic Settings' and it will be placed in a file called 'basicSettings.st'. But where? in which of the 3 folders described previously is it placed? well…it depends on the message. In this case, we used the #addAtStartupInPreferenceVersionFolder:named:  (notice the “InPreferenceVersionFolder”). So it put the files in 2). In addition, you can use the messages #addAtStartupInGeneralPreferenceFolder:named: which stores files in 1) and #addAtStartupInImageDirectory: which stores in 3). Notice that with the first two messages we can specify the file name but with the last one we can't. Remember the last one is always called 'startup.st'. If you are lazy and don't want to think the name yourself, you can just use #addAtStartupInPreferenceVersionFolder: which creates a file called 'startupPharoNN.st' or #addAtStartupInGeneralPreferenceFolder: that creates a file named 'startupPharo.st'.
-
-StartupLoader
+!
 We saw that when executing the message #addAtStartupInPreferenceVersionFolder: items named:aFilename or any of its variant, a file is created with the code we want to evaluate. Then, when the system starts it will find our file and execute our code. But, how is the resulting file? Exactly as the code we provided? No! Look how our example file '/Users/mariano/.config/pharo/2.0/basicSettings.st' is generated:
 
 
