@@ -1,0 +1,71 @@
+! Startup Preference
+
+Pharo supports
+
+!! Why 
+How can we execute something at startup with Pharo? Traditionally there have been two known ways:
+
+!!! Provide a script file to the VM
+Pass a ==.st== file as parameter to the VM, that is, you execute the VM like this:
+
+[[[
+/Users/mariano/Pharo/VM/Pharo.app/Contents/MacOS/Pharo /Users/mariano/Pharo/images/Pharo-1.4.image startup.st
+]]]
+ 
+
+You execute the VM, pass the Pharo image as parameter and then the file (SD:	is is still working like that?). This will be executed during system startup. What's the problem with this? If you always want to execute the startup in different images you always need to open the image this way, from command line. Moreover, this file is hand-coded and not versioned in Monticello. 
+
+!!! Using the start up list.
+Register your own class in the system startup list and implement ==startUp== message to do whatever you want to do. The problem is that your class is not present in the distributed images of Pharo. Therefore you need to manually first load my own code and this is not optimal.
+
+Now since Pharo2.0 there is a startup loader that we will present next.
+
+!! StartupLoader
+
+The ==StartupLoader== class searches for and executes ==.st== files from certain locations that we will explain in details below. On mac it looks into your library preferences 
+
+[[[
+~/Library/Preferences/pharo/mystartup.st
+~/Library/Preferences/pharo/2.0/mystartupFor20only.st
+~/Library/Preferences/pharo/3.0/mystartupFor30only.st
+]]]
+
+
+!! Locations
+To know the locations that are visited to find start up files, you can execute the following expression:
+
+[[[
+StartupLoader preferencesGeneralFolder
+   File @ /Users/ducasse/Library/Preferences/pharo
+
+StartupLoader preferencesVersionFolder
+ File @ /Users/ducasse/Library/Preferences/pharo/3.0
+]]]
+
+ ==preferencesGeneralFolder== returns the location for the startup scripts common to all Pharo versions. 
+ ==preferencesVersionFolder== returns the location for the startup scripts specific to the version of the current image.
+
+The location search order from the most general to the most specific:
+
+
+!!!General preferences folder.
+This is general for all Pharo versions. This folder is shared for all the images you open. 
+On Mac OSX and Pharo 2.0, it is =='Library/Preferences/pharo/==. In this place, StartupLoader will load ALL existing .st files. This type of startup is useful when we have something to execute for all images of all Pharo versions.
+
+!!!Preference version folder.
+This is a specific folder for a specific Pharo version. On Mac OS X it is ==Library/Preferences/pharo/2.0/'==. This type of startup is useful when we have something to execute for all images of a specific Pharo version.
+
+!!!The image folder. 
+The startup only searches for a file called 'startup.st'. So if you have such a file in the same directory where the image is, then such script will be executed automatically. This type of startup is usually used to do something that is application-specific or something that only makes sense for the specific image you are using. Now you might ask why we don't search the image folder for multiple .st files.  This is because it is normal for the image folder to contain .st files not related to started – such as from any file out.  Using one specific file 'startup.st' avoids this while still allowing an image delivered to a client to run a script upon execution on a new system. Be careful if you already were sending your own 'startup.st' as parameter to the VM because it will be executed twice 
+As you can see the order is from the most general to the most specific. Moreover, it does not stop when it finds files in any of them. So all are searched and executed. More specific scripts can even override stuff set in more general ones. It works more or less the same way as variables in UNIX with .bashrc /etc/envirorment, etc…
+
+So you know where the system will search startup files. Now you can directly put your code there and it will be automatically executed during startup. Great!!! So that's all?  we just write scripts there?  Of course not! 
+
+You can query whether the startupLoader is enabled using the messages ==allowStartupScript== and you can change its status using ==allowStartupScript:== sent to the class ==StartupLoader==. 
+
+
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:
