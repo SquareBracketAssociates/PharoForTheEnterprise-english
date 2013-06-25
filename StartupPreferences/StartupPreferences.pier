@@ -57,14 +57,14 @@ The location search order from the most general to the most specific are the fol
 
 !!!General preference folder
 General means that it applied to all Pharo versions. This folder is shared for all the images you open. 
-On Mac OSX and Pharo 2.0, it is =='Library/Preferences/pharo/==. In this place, ==StartupLoader== will load ALL existing =.st= files. This type of startup is useful when we have something to execute for all images of all Pharo versions. SD: what is the location on linux an windows? Please add here.
+On Mac OSX and Pharo 2.0, it is =='Library/Preferences/pharo/==. In this place, ==StartupLoader== will load ALL existing ==.st== files. This type of startup is useful when we have something to execute for all images of all Pharo versions. SD: what is the location on linux an windows? Please add here.
 
 
 !!!Preference version folder
 Now if you want to only get some actions executed for a specific version, define a folder with the version number inside the general preference folder. On Mac OS X, a specific 2.0 folder is ==Library/Preferences/pharo/2.0/'==. This type of startup is useful when we have something to execute for all images of a specific Pharo version.
 
 !!!The image folder
-The startup only searches for a file called 'startup.st'. So if you have such a file in the same directory where the image is, then such script will be executed automatically. This type of startup is usually used to do something that is application-specific or something that only makes sense for the specific image you are using. Now you might ask why we don't search the image folder for multiple .st files.  This is because it is normal for the image folder to contain ==.st== files unrelated to preferences – such as from any file out.  Using one specific file 'startup.st' avoids problems. Be careful if you already were sending your own 'startup.st' as parameter to the VM because it will be executed twice. 
+The startup only searches for a file called 'startup.st'. So if you have such a file in the same directory where the image is, then such script will be executed automatically. This type of startup is usually used to do something that is application-specific or something that only makes sense for the specific image you are using. Now you might ask why we don't search the image folder for multiple .st files.  This is because it is normal for the image folder to contain ==.st== files unrelated to preferences - such as from any file out.  Using one specific file 'startup.st' avoids problems. Be careful if you already were sending your own 'startup.st' as parameter to the VM because it will be executed twice. 
 
 
 
