@@ -5,7 +5,7 @@ Pharo offers several tools to profile execution and they are presented in the De
 Now Smark is another interesting approach to build benchmarks. SMark is benchmarking framework for Smalltalk developed By Stefan Marr. 
 It inspired by unit testing in SUnit and following this idea, a benchmark is implemented by adding a method name ==benchMyBenchmark== to a subclass of ==SBenchmarkSuite==. This enables performance regression tracking in the same way as unit-testing allows one to track functional regressions.
 
-
+Should add: Merged SMark-StephaneDucasse.49. Improved class comments. Added #runOnly:iterations:
 
 
 
