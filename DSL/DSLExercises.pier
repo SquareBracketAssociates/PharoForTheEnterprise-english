@@ -10,7 +10,7 @@ This example means that we should roll two times a 20-faces dice and one time a 
 
 !! Getting started
 
-Using the code browser, define a package named ==Dice==.
+Using the code browser (click on the background to open the ''World menu'' and select ''System Browser''), define a package named ==Dice==.
 
 !!! Defining the class Dice
 
