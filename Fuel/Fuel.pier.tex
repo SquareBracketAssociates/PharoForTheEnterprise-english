@@ -597,12 +597,16 @@ As most classes of Fuel, they have class comments that give an idea their meanin
 %=========================================================================% 
 \section{Object Migration}
 
-Often, we need to load objects whose class has changed since it was saved. In this document how to load them in the different cases. The figure below is useful to explain some of them. Imagine we serialized an instance of \ct{Point} and we need to materialize it when \ct{Point} class has changed.
+Often, we need to load objects whose class has changed since it was saved. In this document how to load them in the different cases. Figure \ref{figClassChanges} is useful to explain some of them. Imagine we serialized an instance of \ct{Point} and we need to materialize it when \ct{Point} class has changed.
 
-\begin{todo}
-Insert here: figures$/$ClassChanges.png
-\end{todo}
-%+figures/ClassChanges.png+
+\begin{figure}[h!tbp]
+	\begin{center}
+		\includegraphics[width=0.7\textwidth]{figures/ClassChanges.png}
+		\caption{Example of changes in a class.\label{figClassChanges}}
+	\end{center}
+\end{figure}
+
+
 Let's start with the easier cases. If a variable was \textbf{inserted}, its value will be \ct{nil}. If \textbf{removed}, it is also obvious: the serialized value will be ignored. In the case the variables are the same the the \textbf{order changed}, Fuel also tolerates it automatically.
 
 A more interesting case is when a variable was \textbf{renamed}, where the user can map old names to new ones. In our example:
@@ -757,12 +761,16 @@ Right-click a node for inspect it. Some examples:
     openPathsToEvery: [:o | o isNumber and: [o > 2] ].
 \end{lstlisting}
 
-They look like:
+Figure \ref{figFuelPreview} shows how they look like.
 
-\begin{todo}
-Insert here: figures$/$FuelPreview
-\end{todo}
-%+figures/FuelPreview+
+\begin{figure}[h!tbp]
+	\begin{center}
+		\includegraphics[width=0.6\textwidth]{figures/FuelPreview.png}
+		\caption{Visual preview of graph that would be serialized.\label{figFuelPreview}}
+	\end{center}
+\end{figure}
+
+
 \subsubsection{FLDebugSerialization}
 I am a serialization which facilitates debugging, by logging the stream position before and after main steps of \ct{FLSerialization}, including cluster information. Obviously, you should be familiar with such class and the algorithm to understand the output log.
 

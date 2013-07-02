@@ -401,12 +401,13 @@ MyNotSerializableObject &gt;&gt; fuelAccept: aGeneralMapper    aGeneralMapper vi
 <!--=========================================================================% -->
     <h2>1.7.  Object Migration</h2>
     <p>
-        Often, we need to load objects whose class has changed since it was saved. In this document how to load them in the different cases. The figure below is useful to explain some of them. Imagine we serialized an instance of <code>Point</code> and we need to materialize it when <code>Point</code> class has changed.
+        Often, we need to load objects whose class has changed since it was saved. In this document how to load them in the different cases. Figure <a href="#figClassChanges">1.1</a> is useful to explain some of them. Imagine we serialized an instance of <code>Point</code> and we need to materialize it when <code>Point</code> class has changed.
     </p>
     <p>
-        Insert here: figures/ClassChanges.png
+                <img src="figures/ClassChanges.png">
+        </img>
+
     </p>
-<!--+figures/ClassChanges.png+-->
     <p>
         Let's start with the easier cases. If a variable was <b>inserted</b>, its value will be <code>nil</code>. If <b>removed</b>, it is also obvious: the serialized value will be ignored. In the case the variables are the same the the <b>order changed</b>, Fuel also tolerates it automatically.
     </p>
@@ -511,12 +512,13 @@ trailer        </li>
             
     </p>
 (FLAnalyzer newDefault    setDebug;    analysisFor: #((1) (2) (3) (4)))    openPathsToEvery: [:o | o isNumber and: [o &gt; 2] ].    <p>
-        They look like:
+        Figure <a href="#figFuelPreview">1.2</a> shows how they look like.
     </p>
     <p>
-        Insert here: figures/FuelPreview
+                <img src="figures/FuelPreview.png">
+        </img>
+
     </p>
-<!--+figures/FuelPreview+-->
     <h4>1.9.3.2. FLDebugSerialization</h4>
     <p>
         I am a serialization which facilitates debugging, by logging the stream position before and after main steps of <code>FLSerialization</code>, including cluster information. Obviously, you should be familiar with such class and the algorithm to understand the output log.
