@@ -1,0 +1,564 @@
+<!doctype html>  
+<html lang="en">  
+  <head>  
+    <meta charset="utf-8">  
+    <title>Truc</title>
+    <link href="favicon.ico" rel="icon" type="image/x-icon" />
+    <link href="http://fonts.googleapis.com/css?family=Tangerine|Lobster|Mate:400,400italic" rel="stylesheet" type="text/css">
+    <style type="text/css">
+		body { 
+			max-width: 40em;
+			margin: auto; 
+		}    
+		</style>
+    <!--[if lt IE 9]>  
+	   <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>  
+	 <![endif]-->  
+  </head><body>
+    <h1>1. Fuel</h1>
+    <p>
+        Fuel is an open-source general-purpose object serialization framework.
+    </p>
+    <h2>1.1.  General Information</h2>
+    <h3>1.1.1. Goals</h3>
+    <dl>
+        <dt>
+ Concrete         </dt>
+        <dd>
+ We don't aspire to have a dialect-interchange format. This enables us to serialize special objects like contexts, block closures, exceptions, compiled methods and classes. Although there are ports to other dialects, Fuel development is Pharo-centric.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ Flexible        </dt>
+        <dd>
+ Depending on the context, there could be multiple ways of serializing the same object. For example, a class can be considered either a global or a regular object. In the former case, it will be encoded just its name; in the latter case, the class will be encoded in detail, with its method dictionary, etc.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ Fast         </dt>
+        <dd>
+ We worry about to have the best performance. We developed a complete benchmark suite to help analyse the performance with diverse sample sets, as well as compare against other serializers. Our pickling algorithm allows outstanding materialization performance, as well as very good serialization performance too.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ Object-Oriented Design        </dt>
+        <dd>
+ From the beginning it was a constraint to have a good object-oriented design and to do not need any special support from the VM. In addition, Fuel has a complete test suite, with a high coverage. We also worry about writing comments on classes and methods.         </dd>
+    </dl>
+    <h3>1.1.2.  Features</h3>
+    <ul>
+        <li>
+ Is a fast, concrete, general-purpose and flexible binary serializer.        </li>
+        <li>
+ Object-Oriented design.        </li>
+        <li>
+ No special VM-support needed.        </li>
+        <li>
+ Modular (clear division in packages).        </li>
+        <li>
+ Can serialize/materialize not only plain objects but also classes, traits, methods, closures, contexts, packages, etc.        </li>
+        <li>
+ Support for global references.        </li>
+        <li>
+ Very customizable: ignore certain instance variables, substitute objects by others, pre and post serialization and materialization actions, etc.        </li>
+        <li>
+ Supports class rename and class reshape.        </li>
+        <li>
+ Good test coverage (almost 600 unit tests).        </li>
+        <li>
+ Large suite of benchmarks.        </li>
+    </ul>
+    <h3>1.1.3.  Development</h3>
+    <h3>1.1.4.  Some links</h3>
+    <ul>
+        <li>
+ <a href=http://code.google.com/p/fuel/issues/list>Issue tracker</a>        </li>
+        <li>
+ <a href=http://ss3.gemstone.com/ss/Fuel.html>Source repository</a>        </li>
+        <li>
+ <a href=http://ci.inria.fr/pharo-contribution/job/Fuel/>Continuous integration</a>        </li>
+    </ul>
+    <h3>1.1.5.  Collaborators</h3>
+    <ul>
+        <li>
+ Martin Dias - tinchodias (at) gmail (dot) com (Developer)        </li>
+        <li>
+ Mariano Martinez Peck - marianopeck (at) gmail (dot) com (Developer)        </li>
+        <li>
+ Max Leske (Developer)        </li>
+        <li>
+ Pavel Krivanek (Developer)        </li>
+        <li>
+ Tristan Bourgois (Past Developer)        </li>
+        <li>
+ Stephane Ducasse (Promotor and financer)        </li>
+    </ul>
+<!--=========================================================================% -->
+    <h2>1.2.  Installation</h2>
+    <a name="Installation">
+        
+    </a>
+    <p>
+        Fuel 1.9 is already loaded in Pharo 2.0. The <b>default packages</b> work out of the box in Pharo 1.1.1, 1.1.2, 1.2, 1.3, 1.4, 2.0 and Squeak 4.1, 4.2, 4.3, 4.4.
+    </p>
+    <h3>1.2.1. Default</h3>
+    <p>
+        For most users should be enough to install just the default packages:
+    </p>
+Gofer it    squeaksource: 'MetacelloRepository';    package: 'ConfigurationOfFuel';    load.((Smalltalk at: #ConfigurationOfFuel) project version: '1.9')     load.    <h3>1.2.2. Basic demo</h3>
+    <p>
+        Open the <code>Transcript</code> and evaluate code below in a <code>Workspace</code>.
+    </p>
+| serializedArray materializedArray |serializedArray :=     Array         with: (Set with: 42)        with: Transcript        with: [:aString | Transcript show: aString; cr ]."Store (serialize)"FLSerializer serialize: serializedArray toFileNamed: 'demo.fl'. "Load (materialize)"materializedArray := FLMaterializer materializeFromFileNamed: 'demo.fl'. Transcript	show: 'The sets are equal: ';	show: serializedArray first = materializedArray first;	cr;	show: 'But not the same: ';	show: serializedArray first ~~ materializedArray first;	cr;	show: 'The global value Transcript is the same: ';	show: serializedArray second == materializedArray second;	cr.materializedArray third 	value: 'The materialized block closure can be properly evaluated.'.<!--=========================================================================% -->
+    <h2>1.3.  Getting Started</h2>
+    <a name="GettingStarted">
+        
+    </a>
+    <h3>1.3.1. Basic examples</h3>
+    <p>
+        We give some class-side messages to facilitate the more common uses of serialization and materialization. The next example writes and reads from file:
+    </p>
+FLSerializer serialize: 'stringToSerialize' toFileNamed: 'demo.fuel'. materializedString := FLMaterializer materializeFromFileNamed: 'demo.fuel'.    <p>
+        We also provide messages for storing into a <code>ByteArray</code>. This can be fine for users of a NoSQL database:
+    </p>
+anArray := FLSerializer serializeToByteArray: 'stringToSerialize'. materializedString := FLMaterializer materializeFromByteArray: anArray.    <h3>1.3.2. FileStream</h3>
+    <p>
+        In this example we work with files. Note that we set the file in binary mode:
+    </p>
+FileStream forceNewFileNamed: 'demo.fuel' do: [:aStream |	FLSerializer newDefault 		serialize: 'stringToSerialize'  		on: aStream binary].FileStream oldFileNamed: 'demo.fuel' do: [:aStream |	materializedString := (FLMaterializer newDefault 		materializeFrom: aStream binary) root].    <p>
+        Note also that we are no longer using the class-side messages of previous examples. Now, for both <code>FLSerializer</code> and <code>FLMaterializer</code>, we first create instances with <code>#newDefault</code> to then perform the desired operations. As we will see in next example, creating the instances brings more possibilities.
+    </p>
+    <h3>1.3.3. Compressing </h3>
+    <p>
+        Of course, you could use stream compressors provided by the system. However, we have detected some errors serializing <code>WideString</code>s. An example of use:
+    </p>
+FileStream forceNewFileNamed: 'number.fuel.zip' do: [:aFileStream | 	|gzip|	aFileStream binary.	gzip := GZipWriteStream on: aFileStream.	FLSerializer newDefault serialize: 123 on: gzip.	gzip close. ].    <p>
+        	
+    </p>
+FileStream oldFileNamed: 'number.fuel.zip' do: [:aFileStream | 	|gzip|	aFileStream binary.	gzip := GZipReadStream on: aFileStream.			materialization := FLMaterializer newDefault 		materializeFrom: gzip.	gzip close. ].    <h3>1.3.4. Showing a progress bar</h3>
+    <p>
+        Sometimes it is nice to see progress updates on screen. Use <code>#showProgress</code> in this cases.
+    </p>
+FileStream forceNewFileNamed: 'numbers.fuel' do: [:aStream |	FLSerializer newDefault 		showProgress;		serialize: (1 to: 200000) asArray 		on: aStream binary ].	FileStream oldFileNamed: 'numbers.fuel' do: [:aStream | 	FLMaterializer newDefault 		showProgress;		materializeFrom: aStream binary ].    <p>
+        Package <code>FuelProgressUpdate</code> must be installed. You can use:
+    </p>
+(ConfigurationOfFuel project version: '1.9') 	load: 'FuelProgressUpdate'.<!--=========================================================================% -->
+    <h2>1.4.  Managing Globals</h2>
+    <a name="ManagingGlobals">
+        
+    </a>
+    <p>
+        Let us assume a <code>CompiledMethod</code> is referenced from the graph to serialize. Sometimes we may be interested in storing just the selector and name of the class, because we know it will be present when materializing the graph. However, sometimes we want to really store the method with full detail.
+    </p>
+    <p>
+        This means that given an object graph, there is not an unique way of serializing it. Fuel offers dynamic and static mechanisms to customize this.
+    </p>
+    <h3>1.4.1. Default globals</h3>
+    <p>
+        By default, Fuel considers following objects as globals, i.e. will store just its name:
+    </p>
+    <ul>
+        <li>
+ <code>nil</code>, <code>true</code>, <code>false</code>, and <code>Smalltalk globals</code>.        </li>
+        <li>
+ Any <code>Class</code>, <code>Trait</code>, <code>Metaclass</code> or <code>ClassTrait</code>.        </li>
+        <li>
+ Any <code>CompiledMethod</code> (except when either it <code>#isInstalled</code> not or <code>#isDoIt</code>, for example, the code is evaluated from Workspace).        </li>
+        <li>
+ Some well-known global variables: <code>Smalltalk</code> <code>SourceFiles</code> <code>Transcript</code> <code>Undeclared</code> <code>Display</code> <code>TextConstants</code> <code>ActiveWorld</code> <code>ActiveHand</code> <code>ActiveEvent</code> <code>Sensor</code> <code>Processor</code> <code>ImageImports</code> <code>SystemOrganization</code> <code>World</code>.        </li>
+    </ul>
+    <h3>1.4.2. Custom globals are duplicated</h3>
+    <p>
+        In this following code snippet we show that by default the global value is not serialized as a global, and so it is duplicated on materialization.
+    </p>
+ "Define a global variable named #SomeGlobal." SomeGlobal := Set new.  "Serialize and materialize the value of #SomeGlobal." FLSerializer  	serialize: SomeGlobal  	toFileNamed: 'g.fuel'.  "The materialized object *is not* the same as the global instance." [ (FLMaterializer materializeFromFileNamed: 'g.fuel') ~~ SomeGlobal ] assert.    <p>
+        But...
+    </p>
+    <h3>1.4.3. How to avoid duplication</h3>
+    <p>
+        Instead, in the code below <code>#considerGlobal:</code> is used to specify that it should be stored as global.
+    </p>
+ | aSerializer |  "Define a global variable named #SomeGlobal." SomeGlobal := Set new.  aSerializer := FLSerializer newDefault.  "Tell the serializer to consider #SomeGlobal as global." aSerializer analyzer considerGlobal: #SomeGlobal.  aSerializer  	serialize: SomeGlobal  	toFileNamed: 'g.fuel'. 	 "In this case, the materialized object *is* the same as the global instance." [ (FLMaterializer materializeFromFileNamed: 'g.fuel') == SomeGlobal ] assert.    <p>
+        This feature is tested in <code>tests-globals</code> protocol of <code>FLBasicSerializationTest</code> as well in <code>FLGlobalEnvironmentTest</code>.
+    </p>
+    <h3>1.4.4. Changing the environment</h3>
+    <p>
+        It is possible to specify where the global will be looked-up during materialization. The method <code>#globalEnvironment:</code> exists for that purpose, as the following example shows. 
+    </p>
+ | aSerializer aMaterializer anEnvironment |  "Define a global variable named #SomeGlobal." SomeGlobal := Set new.  "Tell the serializer to consider #SomeGlobal as global." aSerializer := FLSerializer newDefault. aSerializer analyzer considerGlobal: #SomeGlobal. aSerializer  	serialize: SomeGlobal  	toFileNamed: 'g.fuel'.  "Override value for #SomeGlobal." anEnvironment := Dictionary newFrom: Smalltalk globals. anEnvironment at: #SomeGlobal put: {42}.  "In this case, the materialized object *is the same* as the global instance." FileStream oldFileNamed: 'g.fuel' do: [ :aStream | 	aStream binary. 	aMaterializer := FLMaterializer newDefault. 	 	"Set the environment" 	aMaterializer globalEnvironment: anEnvironment.  	[ (aMaterializer materializeFrom: aStream) root = {42} ] assert ]    <p>
+        This feature is tested in the class <code>FLGlobalEnvironmentTest</code>. The global environment can be setted also for serialization (not only materialization), but we don't include an example for that case.
+    </p>
+<!--=========================================================================% -->
+    <h2>1.5.  Customizing the Graph</h2>
+    <h3>1.5.1. Ignoring Instance Variables</h3>
+    <p>
+        It can happen that instance variables should never be serialized. A practical way to do this is overriding the hook method <code>#fuelIgnoredInstanceVariableNames</code>. 
+    </p>
+    <p>
+        Let's say we have the class <code>User</code> and we do not want to serialize the instance variables <code>'acumulatedLogins'</code> and <code>'applications'</code>. So we implement:
+    </p>
+User class &gt;&gt; fuelIgnoredInstanceVariableNames    ^#('acumulatedLogins' 'applications')    <p>
+        When materialized, such instance variables will be nil. If you want to re-initialize and set values to those instance variables, you can use <code>#fuelAfterMaterialization</code> for that.
+    </p>
+    <p>
+        Be aware that in case of renaming those instance variables, you should rename that method as well. Notice also that the method <code>#fuelIgnoredInstanceVariableNames</code> is implemented at class side. This means that <b>all</b> instances of such class will ignore the defined instances variables. 
+    </p>
+    <p>
+        We test this feature in <code>FLIgnoredVariablesTest</code>.
+    </p>
+    <p>
+        In <code>StOMP</code> serializer this same hook is called <code>#stompTransientInstVarNames</code> and in <code>SIXX</code> it is <code>#sixxIgnorableInstVarNames</code>. 
+    </p>
+    <h3>1.5.2. Post-Materialization Action</h3>
+    <p>
+        The method <code>#fuelAfterMaterialization</code> let us execute something once an object has been materialized. For example, let's say we would like to set back the instance variable <code>'acumulatedLogins'</code> during materialization. Hence, we can implement:
+    </p>
+User &gt;&gt; fuelAfterMaterialization acumulatedLogins := 0.     <h3>1.5.3. Substitution on Serialization</h3>
+    <p>
+        Sometimes you may want to serialize something different than the original object, without altering them.
+    </p>
+    <h4>1.5.3.1. Dynamic way</h4>
+    <p>
+        You can establish a pluggable substitution to a particular serialization. 
+    </p>
+    <p>
+        Let's illustrate with an example, where your graph includes a <code>Stream</code> and you want to serialize <code>nil</code> instead. 
+    </p>
+objectToSerialize := Array with: 'hello' with: '' writeStream.FileStream forceNewFileNamed: 'demo.fuel' do: [ :aStream |    aSerializer := FLSerializer newDefault.    aSerializer analyzer         when: [ :o | o isStream ]         substituteBy: [ :o | nil ].    aSerializer                 serialize: objectToSerialize        on: aStream binary ].    <p>
+        So, when loading you will get <code>#('hello' nil)</code>, without any instance of a stream.
+    </p>
+    <p>
+        You can find this code in <code>FLUserGuidesTest&gt;&gt;testPluggableSubstitution</code>.
+    </p>
+    <h4>1.5.3.2.  Static way</h4>
+    <p>
+        You have to override <code>#fuelAccept:</code> in the class of the object to be substituted. Fuel visits each object in the graph by sending this message, to determine how to trace and serialize it. Note that this will affect every serialization, in contrast with the 'dynamic way' we explained above; but it could be much faster.
+    </p>
+    <p>
+        As an example, imagine we want to replace an object directly with nil. In other words, we want to make a whole object transient, say <code>CachedResult</code>. For that, we should implement:
+    </p>
+CachedResult &gt;&gt; fuelAccept: aGeneralMapper    ^ aGeneralMapper visitSubstitution: self by: nil    <p>
+        As another example, we have a <code>Proxy</code> class and when serializing we want to serialize its <code>target</code> instead of the proxy. So we implement:
+    </p>
+Proxy &gt;&gt; fuelAccept: aGeneralMapper    ^ aGeneralMapper visitSubstitution: self by: target    <p>
+        Notice that <code>#fuelAccept:</code> is the same as the previous example. The last example is when an object needs to change the value of its instance variables. Say we have again the class <code>User</code> and we want to <code>nil</code> the instance variable <code>'history'</code> when its size is greater than 100. 
+    </p>
+User &gt;&gt; fuelAccept: aGeneralMapper    ^self history size &gt; 100         ifTrue: [             aGeneralMapper                 visitSubstitution: self                 by: (self copy history: Array new) ].        ifFalse: [ super fuelAccept: aGeneralMapper ]    <p>
+        <b>Note</b> we are substituting the original user by another instance of <code>User</code>, which Fuel will visit with the same <code>#fuelAccept:</code> method. We could easily fall in an infinite sequence of substitutions if we don't take care. To avoid this problem, it is useful <code>#visitSubstitution:by:onRecursionDo:</code>, where you define an alternative mapping for the case of mapping an object which is already a substitute of another one:
+    </p>
+User &gt;&gt; fuelAccept: aGeneralMapper    aGeneralMapper         visitSubstitution: self         by: (self copy history: #())        onRecursionDo: [ super fuelAccept: aGeneralMapper ]    <p>
+        In the case, the substitute user (i.e. the one with the empty history) is will be visited via its super implementation.
+    </p>
+    <p>
+        You can see tests for this functionality at <code>FLHookedSubstitutionTest</code>.
+    </p>
+    <h3>1.5.4.  Substitution on Materialization</h3>
+    <h4>1.5.4.1.  Global Sends</h4>
+    <p>
+        Suppose we have a special instance of <code>User</code> that represents the admin user, and it is an unique instance in the image. In case the admin user is referenced in our graph, we want to treat that object as a global. We can do that in this way:
+    </p>
+User &gt;&gt; fuelAccept: aGeneralMapper    ^self == User admin        ifTrue: [             aGeneralMapper                 visitGlobalSend: self                 name: #User                 selector: #admin ]        ifFalse: [ super fuelAccept: aGeneralMapper ]    <p>
+        So what will happen is that during serialization, the admin user won't be completly serialized (with all its intance variables) but instead its global name and selector are stored. Then, at materialization time, Fuel will send <code>#admin</code> to the class <code>User</code>, and use what that answers as the admin user of the materialized graph. 
+    </p>
+    <p>
+        We test this feature in <code>FLGlobalSendSerializationTest</code>.
+    </p>
+    <h4>1.5.4.2.  Hooking instance creation</h4>
+    <p>
+        Fuel provides two hook methods to customise how instances are created: <code>#fuelNew</code> and <code>#fuelNew:</code>.
+    </p>
+    <p>
+        For (regular) fixed objects, the method <code>#fuelNew</code> is defined in <code>Behavior</code> as:
+    </p>
+fuelNew	^ self basicNew    <p>
+        But we can override it to our needs, for example:
+    </p>
+fuelNew	^ self uniqueInstance    <p>
+        This similarly applies to variable objects through the method <code>#fuelNew:</code>, which by default answers <code>#basicNew:</code>.
+    </p>
+    <p>
+        We test this feature in <code>FLSingletonTest</code>.
+    </p>
+    <h3>1.5.5. Not Serializable Objects</h3>
+    <p>
+        You may want to be sure that some objects are not serialized. For this case we provide <code>#visitNotSerializable:</code>, which in next example forbids serialization of any instance of <code>MyNotSerializableObject</code>.
+    </p>
+MyNotSerializableObject &gt;&gt; fuelAccept: aGeneralMapper    aGeneralMapper visitNotSerializable: self    <p>
+        We test this feature in <code>FLBasicSerializationTest&gt;&gt;testNotSerializableObject</code>.
+    </p>
+<!--=========================================================================% -->
+    <h2>1.6.  Errors</h2>
+    <p>
+        We provide a hierarchy of errors which allow to clearly identify the problem if something went wrong:
+    </p>
+    <ul>
+        <li>
+ <code>FLError</code>            <ul>
+                <li>
+ <code>FLSerializationError</code>                    <ul>
+                        <li>
+ <code>FLNotSerializable</code>                        </li>
+                        <li>
+ <code>FLObjectNotFound</code>                        </li>
+                        <li>
+ <code>FLObsolete</code>                        </li>
+                    </ul>
+                </li>
+                <li>
+ <code>FLMaterializationError</code>                    <ul>
+                        <li>
+ <code>FLBadSignature</code>                        </li>
+                        <li>
+ <code>FLBadVersion</code>                        </li>
+                        <li>
+ <code>FLClassNotFound</code>                        </li>
+                        <li>
+ <code>FLGlobalNotFound</code>                        </li>
+                        <li>
+ <code>FLMethodChanged</code>                        </li>
+                        <li>
+ <code>FLMethodNotFound</code>                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </li>
+    </ul>
+    <p>
+        As most classes of Fuel, they have class comments that give an idea their meanings:
+    </p>
+    <dl>
+        <dt>
+ FLError        </dt>
+        <dd>
+ I represent an error produced during Fuel operation.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLSerializationError        </dt>
+        <dd>
+ I represent an error happened during serialization.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLNotSerializable        </dt>
+        <dd>
+ I represent an error which may happen while tracing in the graph an object that is forbidden of being serialized.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLObjectNotFound        </dt>
+        <dd>
+ I represent an error which may happen during serialization, when trying to encode on the stream a reference to an object that should be encoded before, but it is not. This usually happens when the graph changes during serialization. Another possible cause is a bug in the analysis step of serialization.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLObsolete        </dt>
+        <dd>
+ I am an error produced during serialization, signaled when trying to serialize an obsolete class as global. It is a prevention, because such class is likely to be absent during materialization.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLMaterializationError        </dt>
+        <dd>
+ I represent an error happened during materialization.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLBadSignature        </dt>
+        <dd>
+ I represent an error produced during materialization when the serialized signature doesn't match the materializer's signature (accessible via <code>FLMaterializer&gt;&gt;signature</code>). A signature is a byte prefix that should prefix a well-serialized stream.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLBadVersion        </dt>
+        <dd>
+ I represent an error produced during materialization when the serialized version doesn't match the materializer's version (accessible via <code>FLMaterializer&gt;&gt;version</code>). A version is encoded in 16 bits and is encoded heading the serialized stream, after the signature.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLClassNotFound        </dt>
+        <dd>
+ I represent an error produced during materialization when a serialized class or trait name doesn't exist.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLGlobalNotFound        </dt>
+        <dd>
+ I represent an error produced during materialization when a serialized global name doesn't exist (at <code>Smalltalk globals</code>).        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLMethodChanged        </dt>
+        <dd>
+ I represent an error produced during materialization when is detected a change in the bytecodes of a method serialized as global. This error was born when testing the materialization of a <code>BlockClosure</code> defined in a method that changed. The test produced a VM crash.        </dd>
+    </dl>
+    <dl>
+        <dt>
+ FLMethodNotFound        </dt>
+        <dd>
+ I represent an error produced during materialization when a serialized method in a class or trait name doesn't exist (at <code>Smalltalk globals</code>).        </dd>
+    </dl>
+<!--=========================================================================% -->
+    <h2>1.7.  Object Migration</h2>
+    <p>
+        Often, we need to load objects whose class has changed since it was saved. In this document how to load them in the different cases. The figure below is useful to explain some of them. Imagine we serialized an instance of <code>Point</code> and we need to materialize it when <code>Point</code> class has changed.
+    </p>
+    <p>
+        Insert here: figures/ClassChanges.png
+    </p>
+<!--+figures/ClassChanges.png+-->
+    <p>
+        Let's start with the easier cases. If a variable was <b>inserted</b>, its value will be <code>nil</code>. If <b>removed</b>, it is also obvious: the serialized value will be ignored. In the case the variables are the same the the <b>order changed</b>, Fuel also tolerates it automatically.
+    </p>
+    <p>
+        A more interesting case is when a variable was <b>renamed</b>, where the user can map old names to new ones. In our example:
+    </p>
+FLMaterializer newDefault	migrateClassNamed: #Point	variables: {'x' -&gt; 'posX'. 'y' -&gt; 'posY'}.    <p>
+        Not surprisingly, if nothing specified the change will be understood by Fuel as two independent operations, an insertion and a removal.
+    </p>
+    <p>
+        The last change in the figure is a <b>class rename</b>. This should be specified this way:
+    </p>
+FLMaterializer newDefault	migrateClassNamed: #Point	toClass: Coordinate.    <p>
+        It is also available <code>#migrateClassNamed:toClass:variables:</code> to combine both <b>class and variable rename</b>.
+    </p>
+    <p>
+        Although not illustrated in the figure, a class could also change its <b>layout</b>. For example, Point could change from being <b>fixed</b> to <b>variable</b>. This should be also automatically tolerated by Fuel. Unfortunately, the inverse (variable to fixed) is not supported so far.
+    </p>
+    <p>
+        You can find tests related to this guide in <code>FLMigrationTest</code>.
+    </p>
+    <p>
+        Additionally, the method <code>globalEnvironment:</code>, showed in <a href="#ManagingGlobals">1.4</a>, might be useful for migrations: you can prepare an ad-hoc environment dictionary with the same keys that were used during serialization, but with the new classes as values.
+    </p>
+<!--=========================================================================% -->
+    <h2>1.8.  Fuel Format Migration</h2>
+    <p>
+        Until now, each Fuel version has its own stream format. Furthermore, each version is <b>not</b> compatible with the others. This means that when upgrading Fuel version, we will need to convert our serialized streams. 
+    </p>
+    <p>
+        We include below an example of migration. Let's say we have some files serialized with Fuel 1.7 in a Pharo 1.4 image and we want to migrate them to Fuel 1.9.
+    </p>
+ | oldVersion newVersion fileNames objectsByFileName    materializerClass serializerClass | oldVersion := '1.7'. newVersion := '1.9'. fileNames := #('a.fuel' 'b.fuel' 'c.fuel' 'd.fuel' 'e.fuel'). objectsByFileName := Dictionary new.  (ConfigurationOfFuel project version: oldVersion) load. materializerClass := Smalltalk at: #FLMaterializer.  fileNames do: [ :fileName |  	objectsByFileName  		at: fileName  		put: (materializerClass materializeFromFileNamed: fileName) ].   (ConfigurationOfFuel project version: newVersion) load. serializerClass := Smalltalk at: #FLSerializer.  objectsByFileName keysAndValuesDo: [ :fileName :objects | 	serializerClass  		serialize: objects   		toFileNamed: 'migrated-', fileName 	 ].    <p>
+        Note 1: We assume in this example that the number of objects to migrate can be materialized all together at the same time. This can be false. In such case, we could fix the script to split the list of files and do it in parts.
+    </p>
+    <p>
+        Note 2: It is necessary to fetch the classes in the System Dictionary after the desired Fuel version has been loaded.
+    </p>
+    <p>
+        Note 3: This script should be evaluated in the original image. For example, we don't guarantee that Fuel 1.7 loads in Pharo 2.0, but we know that Fuel 1.9 loads in Pharo 1.4.
+    </p>
+<!--=========================================================================% -->
+    <h2>1.9.  Debugging</h2>
+    <p>
+        There are a couple of packages that help us debugging Fuel. To understand the output of the tools in this guide, you should know some basics of how Fuel internally works. 
+    </p>
+    <h3>1.9.1. Serialization</h3>
+    <p>
+        The most important thing to remark is that serialization is split in two main steps: analysis and encoding.
+    </p>
+    <h4>1.9.1.1. Analysis</h4>
+    <p>
+        It consists in a graph iteration, mapping each traversed object to its correspondent grouping, called <b>cluster</b>. 
+    </p>
+    <h4>1.9.1.2. Encoding</h4>
+    <p>
+        After analysis, we linearly write on the stream, in these steps:
+    </p>
+    <ol>
+        <li>
+header        </li>
+        <li>
+for each cluster, instances part        </li>
+        <li>
+for each cluster, references part        </li>
+        <li>
+trailer        </li>
+    </ol>
+    <h3>1.9.2. Materialization</h3>
+    <p>
+        It consists on progressively recreating the graph.
+    </p>
+    <h4>1.9.2.1. Decoding</h4>
+    <p>
+        This is done by linearly reading from the stream. So, steps are obviously analogous to the ones above:
+    </p>
+    <ol>
+        <li>
+header        </li>
+        <li>
+for each cluster, instances part        </li>
+        <li>
+for each cluster, references part        </li>
+        <li>
+trailer        </li>
+    </ol>
+    <h3>1.9.3. Debug Tools</h3>
+    <p>
+        Ensure you have them with:
+    </p>
+(ConfigurationOfFuel project version: '1.8.1')     load: #(FuelDebug FuelPreview).    <p>
+        Next, a transcript of some useful class comments. 
+    </p>
+    <h4>1.9.3.1. FLGraphViewBuilder</h4>
+    <p>
+        I add draw capabilities to analysis in <code>FuelDebug</code> package.
+    </p>
+    <p>
+        Right-click a node for inspect it. Some examples:
+    </p>
+(FLAnalyzer newDefault    setDebug;    analysisFor: #((1) (2) (3) (4)))    open.(FLAnalyzer newDefault    setDebug;    analysisFor: #((1) (2) (3) (4)))    openPathsTo: 3.    <p>
+            
+    </p>
+(FLAnalyzer newDefault    setDebug;    analysisFor: #((1) (2) (3) (4)))    openPathsToEvery: [:o | o isNumber and: [o &gt; 2] ].    <p>
+        They look like:
+    </p>
+    <p>
+        Insert here: figures/FuelPreview
+    </p>
+<!--+figures/FuelPreview+-->
+    <h4>1.9.3.2. FLDebugSerialization</h4>
+    <p>
+        I am a serialization which facilitates debugging, by logging the stream position before and after main steps of <code>FLSerialization</code>, including cluster information. Obviously, you should be familiar with such class and the algorithm to understand the output log.
+    </p>
+    <p>
+        To use, send <code>#setDebug</code> to your serializer and run as usually. For example:
+    </p>
+FileStream forceNewFileNamed: 'debug.fuel' do: [:aFile |    FLSerializer newDefault        setDebug;        serialize: ''hello'' on: aFile binary ]    <p>
+        Then, inspect the output log:
+    </p>
+FLDebugSerialization last log    <h4>1.9.3.3. FLDebugMaterialization</h4>
+    <p>
+        I am a materialization which facilitates debugging, by logging the stream position before and after main steps of <code>FLMaterialization</code>, including cluster information. Obviously, you should be familiar with such class and the algorithm to understand the output log.
+    </p>
+    <p>
+        To use, send <code>#setDebug</code> to your serializer and run as usually. For example:
+    </p>
+FileStream oldFileNamed: 'debug.fuel' do: [:aFile |    FLMaterializer newDefault        setDebug;        materializeFrom: aFile binary ]    <p>
+        Then, inspect the output log:
+    </p>
+FLDebugMaterialization last log<!--=========================================================================% -->
+    <h2>1.10.  Built-in Header Support</h2>
+    <p>
+        Since the graph of objects serialized in a file can be large, and it can be useful to query some small extra info, Fuel supports the possibility to easily add such information in a header. The following examples show this set of features: 
+    </p>
+| serializer |serializer := FLSerializer newDefault.serializer header 	at: #timestamp	putAdditionalObject: TimeStamp now.serializer header	addPreMaterializationAction: [ 		Transcript show: 'Before serializing'; cr ].serializer header	addPostMaterializationAction: [ :materialization | 		Transcript 			show: 'Serialized at ';			show: (materialization additionalObjectAt: #timestamp); 			cr;			show: 'Materialized at ';			show: TimeStamp now; 			cr ].	serializer 	serialize: 'a big amount of data' 	toFileNamed: 'demo.fl'    <p>
+        Then, you can just materialize the header info:
+    </p>
+| aHeader |aHeader := FLMaterializer materializeHeaderFromFileNamed: 'demo.fl'.aHeader additionalObjectAt: #timestamp.    <p>
+        Printing it, the result is:
+    </p>
+'28 March 2013 12:44:54 pm'    <p>
+        If we normally materialize the whole file with:
+    </p>
+FLMaterializer materializeFromFileNamed: 'demo.fl'     <p>
+        Then, the print of the results is:
+    </p>
+'a big amount of data'    <p>
+        And this is shown in <code>Transcript</code>:
+    </p>
+Before serializingSerialized at 28 March 2013 12:50:50 pmMaterialized at 28 March 2013 1:01:21 pm    <p>
+         For additional examples, you can see tests in <code>FLHeaderSerializationTest</code>.
+    </p>
+</body>
+</html>
