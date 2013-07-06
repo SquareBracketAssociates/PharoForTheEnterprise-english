@@ -180,7 +180,7 @@ A lot better! And It was quite easy, we can see that is well separated the layou
 # We instantiate the components we are going to use in ==initializeWidget==.
 # We define the interactions in: ==initializePresenter==.
 
-This is very nice, but now I have a UI that separates the logic but still has a lot of responsibilities, is the UI who knows if I've accepted a change or if I'm up to date, also knows exactly what to tell me... I don't think that this is the UI responsibility I want to model a class and that the UI shows it and not all in one like we have now.
+This is very nice, but now we have a UI that separates the logic but still has a lot of responsibilities, is the UI who knows if we've accepted a change or if we are up to date, also knows exactly what to tell me... We don't think that this is the UI responsibility I want to model a class and that the UI shows it and not all in one like we have now.
 And how do we do it?
 
 !!Using a Model
@@ -190,7 +190,7 @@ We will have a model behind our window in 3 easy steps:
 
 [[[
 TestSpec>>initialize
-	model := AcceptableText new. “replace for your domain class”
+	model := AcceptableText new. "replace for your domain class"
 	super initialize.
 ]]]
 
