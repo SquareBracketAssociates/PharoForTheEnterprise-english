@@ -12,9 +12,27 @@ First version: February 14, 2012*
 Last update: May 5, 2012*
 
 
-!! Introduction
+!! Getting started
 
+To load STON you can execute
 
+[[[
+Gofer new
+	smalltalkhubUser: 'SvenVanCaekenberghe' project: 'STON';
+	package: 'ConfigurationOfSton';
+	load
+	
+ConfigurationOfSton project load: #stable	
+]]]
+
+The following repository contains the recent code:
+
+[[[
+MCHttpRepository
+	location: 'http://smalltalkhub.com/mc/SvenVanCaekenberghe/STON/main'
+	user: ''
+	password: ''
+]]]
 
 !!! Example
 
@@ -140,16 +158,8 @@ The primitive types are numbers, strings, symbols and boolean.
 - Numbers are either integers or floats.
 - Integers can be of infinite precision. 
 - Floats can be simple fractions or use the full scientific base 10 exponent notation.
-
-- Strings are enclosed using single quotes. A backslash is used as an escape mechanism.
-Some unreadable characters have there own escape code, like in JSON.
-A general Unicode escape mechanism using four hexadecimal digits
-is used to encode any character.
-STON conventionally encodes all non-printable non-ASCII characters.
-
-- Symbols are introduced by a sharp sign. Symbols consisting of a limited character set (letters, numbers,
-a dot, underscore, dash or forward slash) are written literally. Symbols containing characters outside this limited set are encoded like strings, enclosed in single quotes.
-
+- Strings are enclosed using single quotes. A backslash is used as an escape mechanism. Some unreadable characters have there own escape code, like in JSON. A general Unicode escape mechanism using four hexadecimal digits is used to encode any character. STON conventionally encodes all non-printable non-ASCII characters.
+- Symbols are introduced by a sharp sign. Symbols consisting of a limited character set (letters, numbers, a dot, underscore, dash or forward slash) are written literally. Symbols containing characters outside this limited set are encoded like strings, enclosed in single quotes.
 - Booleans consist of the constants ==true== and ==false==.
 
 
@@ -214,9 +224,9 @@ Strings are not treated as objects and are consequently never shared.
 
 In the current working reference implementation in Pharo, a number of classes received a special, custom representation. These are:
 
-- ==Time== a one element array with an ISO style HH:MM:SS string
-- ==Date== a one element array with an ISO style YYYYMMDD string
-- ==DateAndTime==, ==TimeStamp== a one element array with an ISO style YYYY-MM-DDTHH:MM:SS.N+TZ.TZ string
+- ==Time== a one element array with an ISO style ==HH:MM:SS== string
+- ==Date== a one element array with an ISO style ==YYYYMMDD== string
+- ==DateAndTime==, ==TimeStamp== a one element array with an ISO style ==YYYY-MM-DDTHH:MM:SS.N+TZ.TZ== string
 - ==Point== a two element array with the x and y values
 - ==ByteArray== a one element array with a hex string
 - ==Character== a one element array with a one element string
@@ -233,13 +243,8 @@ Custom representations are most useful to increase the readability of small, sim
 !!! Implementation
 
 To validate the Smalltalk Object Notation a reference implementation
-was implemented in [Pharo Smalltalk](http://www.pharo.st). It is available here:
+was implemented in [Pharo Smalltalk](http://www.pharo.st). It is available on SmalltalkHub.
 
-[[[
-- <http://ss3.gemstone.com/ss/STON>
-
-- <https://github.com/svenvc/ston>
-]]]
 
 It works in Pharo Smalltalk versions 1.3, 1.4 and 2.0 as well as in [Squeak](http://www.squeak.org).
 The project contains a full complement of unit tests.
@@ -248,9 +253,9 @@ The key methods are instance method ==stonOn:==
 and class or instance method ==fromSton:==.
 Classes can use another external name using the class method ==stonName==.
 
-Additionally, you have to implement the instance method **stonProcessSubObjects:** 
+Additionally, you have to implement the instance method ==stonProcessSubObjects:== 
 to allow subobjects to be procossed, to resolve forward references to real objects.
-Furthermore, the class method **stonName** allows for class name aliasing.
+Furthermore, the class method ==stonName== allows for class name aliasing.
 That is, the external and internal class names do not have to be identical.
 
 Dale Henrichs did a port to [Gemstone Smalltalk](http://www.gemstone.com/products/gemstone) that is available here: https://github.com/dalehenrich/ston. He is working on ports to Amber.
@@ -258,24 +263,22 @@ Dale Henrichs did a port to [Gemstone Smalltalk](http://www.gemstone.com/product
 
 !!! Usage
 
+This section lists some code examples on how to use the current implementation and its API. The class ==STON== acts as a class facade API to read/write to/from streams/strings 
+while hiding the actual parser or writer classes. It is a central access point, but it is very thin: 
+using the reader or writer directly is perfectly OK too, and offers some more options as well.
 
-This section lists some code examples on how to use the current implementation and its API.
-The class **STON** acts as a class facade API to read/write to/from streams/strings 
-while hiding the actual parser or writer classes. 
-It is a central access point, but it is very thin: 
-using the reader or writer directly is perfectly OK too,
-and offers some more options as well.
+Parsing is the simplest operation, use either the ==fromString:== or ==fromStream:== method, like this:
 
-Parsing is the simplest operation, use either the **fromString:** or **fromStream:** method, like this:
-
+[[[
     STON fromString: 'Rectangle { #origin : Point [ -40, -15 ], #corner : Point [ 60, 35 ]}'.
 
     '/Users/sven/Desktop/foo.ston' asReference 
         fileStreamDo: [ :stream | STON fromStream: stream ].
+]]]
 
 Writing has two variants: the regular compact representation or the pretty printed one.
-The methods to use are **toString:** and **toStringPretty:** 
-or **put:onStream:** and **put:onStreamPretty:**, like this:
+The methods to use are ==toString:== and ==toStringPretty:== 
+or ==put:onStream:== and ==put:onStreamPretty:==, like this:
 
 [[[
     STON toString: World bounds.
@@ -338,15 +341,9 @@ Other options are to signal an error on shared references or circles, or to igno
 
 !! Limitations
 
+STON in its current form cannot serialize a number of objects that are more system or implementation than domain oriented, such as Blocks and classes. 
 
-STON in its current form cannot serialize a number of objects 
-that are more system or implementation than domain oriented, such as:
-
-- Blocks
-- Classes
-
-STON is also less efficient than a binary encoding.
-As a new format, STON has yet to prove itself in practice.
+STON is also less efficient than a binary encoding such as Fuel. As a new format, STON has yet to prove itself in practice.
   
 
 !! BNF
