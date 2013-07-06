@@ -6,9 +6,8 @@ In this chapter we will develop a simple domain specific language (DSL) for roll
 
 !! Getting started
 
-Using the code browser, define a package named ==Dice== or any name your like.
 
-!!! Defining the class Dice
+!!! Starting with Magritte
 
 
 [[[
@@ -19,7 +18,13 @@ Object subclass: #Dice
 	category: 'Dice'
 ]]]
 
-!!
+!! Magritte at Work: Validation
+
+!! Magritte and the Web
+
+!! Handling Relationships with Magritte
+
+
 
 
 !! Conclusion
