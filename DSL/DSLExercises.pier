@@ -86,15 +86,19 @@ DiceTest>>testCreationIsOk
     self shouldnt: [ Dice faces: 20 ] raise: Error
 ]]]
 
-Execute the test and you should get an error message because the class ==Dice== does not have a method ==faces:==. Pharo lets you easily create the missing method from the debugger. Just click the ==Create== button, select the ==Dice== class, and the ==instance creation== protocol. The method first creates an instance, then sends it the message ==faces:==, and returns the instance. You can implement the method right in the debugger.
+Execute the test and you should get an error message because the class ==Dice== does not have a method ==faces:==. The message ==faces:== is sent to the class ==Dice== and not to an instance of this class. Such methods are called class methods or class-side methods; this is equivalent to static methods in Java. To add such a method to a class from the code browser, you have to tick the ==class== checkbox.
+
+Another way to create this method is to do it right from the debugger that pops up when a method does not exist. Just click the ==Create== button in the debugger, select the ==Dice== class, and the ==instance creation== protocol. The method first creates an instance, then sends it the message ==faces:==, and returns the instance. You can implement the method right in the debugger.
 
 [[[
 Your code here
 ]]]
 
+To implement this method, you will have to send the message ==new== to the class: ==self== is the current class when implementing a class method.
+
 @@note If your implementation of the method uses a temporary variable, you may want to simplify it by using the cascade operator ==;== and the ==yourself== message. Look at the implementation of ==Object>>yourself== and its senders (contextual menu, ==Senders of==) to get examples on how to do this.
 
-This method can not yet be executed because you first have to implement the instance-side method ==faces:== that configure a new dice with a number of faces passed as an argument. You can keep on using the debugger to do that or you can go back to the code browser.
+This method can not yet be executed because you first have to implement the instance-side method ==faces:== (the setter for the variable) that configure a new dice with a number of faces passed as an argument. In Java, you would not have to do that because constructors can access instance variables. In Smalltalk, a class method only knows about the class variables not the instance variables. You can keep on using the debugger to do that or you can go back to the code browser.
 
 [[[
 Your code here
@@ -199,11 +203,11 @@ When you open an inspector on a dice handle (such as the one in Figure *diceHand
 
 Enhance the ==printOn:== method of the ==Dice== class to provide more information: simply add the number of faces surrounded by parenthesis to make the result look like the one in Figure *diceHandleDetail*.
 
+@@note You may want to have a look at all the implementors of ==printOn:== (contextual menu of the ==printOn:== method, ==Implementors of==) to get examples.
+
 [[[
 Your code here
 ]]]
-
-@@note You may want to have a look at all the implementors of ==printOn:== (contextual menu of the ==printOn:== method, ==Implementors of==) to get examples.
 
 Now in your inspector you can see the number of faces a dice has as shown by Figure *diceDetail* and it is now easier to check the dice contained inside a handle (see Figure *diceHandleDetail*).
 
@@ -214,6 +218,8 @@ Now in your inspector you can see the number of faces a dice has as shown by Fig
 !! Rolling a dice handle
 
 Now we can define the rolling of a dice handle by simply summing the dice rolls. Implement the ==roll== method of the ==DiceHandle== class. This method must collect the results of rolling each dice of the handle and sum them.
+
+@@note You may want to have a look at the method ==sum== in the class ==Collection==.
 
 [[[
 Your code here
