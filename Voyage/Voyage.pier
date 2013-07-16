@@ -279,6 +279,90 @@ You can do other fancy configurations, like the following one
 - Using the message ==convertNullTo:==. When you are retrieving an object (or a collection of objects) which value is Null (nil), you can 
 instead evaluate the valuable you are passing as an argument.
 
+!! Advanced querying
+Voyage relies in MongoDB query language to perform its search requests, and therefore for Pharo they have the form of dictionaries (they are in fact JSON structures, but that does not change anything for us).
+ 
+Most of the cases, we can simplify the query expressions by using MongoQueries, a package for transformation Pharo syntax into those sometimes annoying dictionaries. 
+
+In the next lines, I will try to cover some of the main problems that I have seen while trying to perform complex queries.
+
+!!!Sorting and limiting object retrieval
+
+Voyage has a group of protocols to perform search that can be more or less mapped to regular collection protocols: 
+
+- "#selectAll"
+Retrieves all documents. 
+
+- "#selectOne:" 
+Retrieves one document. This maps to a #detect: method.
+
+- "#selectMany:"
+Retrieves many documents. This maps to a #select: method.
+
+
+As it is said, you can understand this methods just like their equivalents in Collection protocols. But, unlike regular collections which can operate fully on memory, often Voyage collection querying need to be customized in order to optimize memory consumption and/or accessing speed (since there can be literally millions of documents in each collection). 
+To perform this tasks better, we provide some protocols that extend the common operations:
+
+- "#selectAllSortBy:"
+It retrieves all documents from a collection, sorted by the information that you provide as a dictionary. 
+
+[[[
+Customer selectAllSortBy: { #name -> VOOrder ascending } asDictionary.
+]]]
+
+This will answer all objects in collection in ascending order by its attribute ‘name’.
+
+NOTE: The class VOOrder provides constants to pick #ascending or #descending sort order. 
+
+- #selectMany:sortBy:
+Retrieves a collection of objects from mongo database filtered by an expression and sorted. 
+
+[[[
+Customer 
+	selectMany: [ :each | each orders > 10 ] 
+	sortBy: { #name -> VOOrder ascending } asDictionary.
+]]]
+
+- "#selectMany:limit:"
+Retrieves a collection of objects from mongo database filtered by an expression. 
+
+The collection size is restricted to the limit provided.
+ 
+[[[
+Customer 
+	selectMany: [ :each | each orders > 10 ] 
+	limit: 100
+]]]
+
+This is useful when you know that you are not going to use more than a certain amount of objects, or when you know that there is a large number of persistent objects and you do not want to push the environment to its limit.
+
+- "#selectMany:limit:offset:"
+Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided.
+
+The first object retrieved will be at the offset position plus one.
+
+[[[
+Customer 
+	selectMany: [ :each | each orders > 10 ] 
+	limit: 100
+	offset: 100
+]]]
+
+This is especially useful when paginating objects. 
+
+- "#selectMany:sortBy:limit:offset:"
+Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided. The first object retrieved will be at the offset position plus one.
+
+The collection will be sorted by the expression provided.
+
+[[[
+Customer 
+	selectMany: [ :each | each orders > 10 ]
+	sortBy: { #name -> VOOrder ascending } asDictionary
+	limit: 100
+	offset: 100
+]]]
+
 !! Conclusion 
 
 This is just the start of the chapter.
