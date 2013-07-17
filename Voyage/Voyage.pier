@@ -290,20 +290,20 @@ In the next lines, I will try to cover some of the main problems that I have see
 
 Voyage has a group of protocols to perform search that can be more or less mapped to regular collection protocols: 
 
-- "#selectAll"
+- ""#selectAll""
 Retrieves all documents. 
 
-- "#selectOne:" 
+- ""#selectOne:"" 
 Retrieves one document. This maps to a #detect: method.
 
-- "#selectMany:"
+- ""#selectMany:""
 Retrieves many documents. This maps to a #select: method.
 
 
 As it is said, you can understand this methods just like their equivalents in Collection protocols. But, unlike regular collections which can operate fully on memory, often Voyage collection querying need to be customized in order to optimize memory consumption and/or accessing speed (since there can be literally millions of documents in each collection). 
 To perform this tasks better, we provide some protocols that extend the common operations:
 
-- "#selectAllSortBy:"
+- ""#selectAllSortBy:""
 It retrieves all documents from a collection, sorted by the information that you provide as a dictionary. 
 
 [[[
@@ -314,7 +314,7 @@ This will answer all objects in collection in ascending order by its attribute �
 
 NOTE: The class VOOrder provides constants to pick #ascending or #descending sort order. 
 
-- #selectMany:sortBy:
+- ""#selectMany:sortBy:""
 Retrieves a collection of objects from mongo database filtered by an expression and sorted. 
 
 [[[
@@ -323,7 +323,7 @@ Customer
 	sortBy: { #name -> VOOrder ascending } asDictionary.
 ]]]
 
-- "#selectMany:limit:"
+- ""#selectMany:limit:""
 Retrieves a collection of objects from mongo database filtered by an expression. 
 
 The collection size is restricted to the limit provided.
@@ -336,7 +336,7 @@ Customer
 
 This is useful when you know that you are not going to use more than a certain amount of objects, or when you know that there is a large number of persistent objects and you do not want to push the environment to its limit.
 
-- "#selectMany:limit:offset:"
+- ""#selectMany:limit:offset:""
 Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided.
 
 The first object retrieved will be at the offset position plus one.
@@ -350,7 +350,7 @@ Customer
 
 This is especially useful when paginating objects. 
 
-- "#selectMany:sortBy:limit:offset:"
+- ""#selectMany:sortBy:limit:offset:""
 Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided. The first object retrieved will be at the offset position plus one.
 
 The collection will be sorted by the expression provided.
@@ -362,6 +362,54 @@ Customer
 	limit: 100
 	offset: 100
 ]]]
+
+!!!Using MongoQueries 
+The easiest (and recommended when possible) way to query MongoDB database is by using the package MongoQueries. 
+MongoQueries is not part of Voyage but an optional part of the layer in which Voyage is supported, MongoTalk, who provides all the low-level operations for accessing MongoDB. 
+MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries in the form expected by the database. 
+
+In essence, MongoQueries is a Domain Specific Language to create MongoDB queries. It looks like a regular Pharo expression, but is much more restricted than what you can actually do with the language.
+Here is a list of the operators that are available in MongoQueries:
+
+|Operand|Usage|
+|<, <=, >, >=, =, ~=|Regular comparison operators, they work as usual|
+|&|AND operator|
+|{{{|}}}|OR operator|
+|not|NOT operator|
+|at:|Direct access to a field.|
+|where:|Allows the execution of a $where mongo statement|
+ 
+!!!!Using #at: message to access embedded documents
+Since MongoDB stores documents of any complexity, it is very common that one documents is composed by several embedded documents, something like this: 
+
+[[[
+{ 
+	"origin" : { 
+		"x" : 42, 
+		"y" : 1 
+	}, 
+	"corner" : { 
+		"x" : 10, 
+		"y" : 20 
+	}
+}
+]]]
+In this cases, if you want to select objects filtering by one of the embedded document properties, you need to use the message ""#at:"", and the field separator """.""". 
+This is how your query will look:
+
+[[[
+Rectangle selectMany: [ :each | (each at: ‘origin.x’) = 42 ]
+]]]
+
+!!!!Using #where: message to perform complex (in javascript) comparisons
+Sometimes you need to perform queries who are outside the capabilities of MongoQueries or even the JSON MongoDB Query Language. To overcome this problem, MongoDB provides a way to write your queries directly in JavaScript, by using the $where operand. 
+We can use the same by sending the #where: message:
+
+[[[
+Rectangle selectMany: [ :each | each where: ‘this.origin.x == 42’ ].
+]]]
+
+You can see a more accurate documentation about the use of $where in *MongoDB documentation>http://docs.mongodb.org/manual/reference/operator/where/#op._S_where*.
 
 !! Conclusion 
 
