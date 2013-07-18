@@ -14,15 +14,6 @@ image: $IMAGE_URL
 HELP
 }
 
-### setup
-
-# stop the script if a single command fails
-set -e
-
-# on mac os wget can be quite old and not recognizing --no-check-certificate
-CERTCHECK="--no-check-certificate"
-wget --help | grep -- "$CERTCHECK" 2>&1 > /dev/null || CERTCHECK=''
-
 get_vm() {
     wget ${CERTCHECK} --output-document - "$VM_INSTALL_URL" | bash
 }
@@ -41,8 +32,17 @@ get_image() {
     done
 }
 
+# stop the script if a single command fails
+set -e
+
+# on mac os wget can be quite old and not recognizing --no-check-certificate
+CERTCHECK="--no-check-certificate"
+wget --help | grep -- "$CERTCHECK" 2>&1 > /dev/null || CERTCHECK=''
+
+
 if [ $# -eq 0 ]; then
     get_image
+    get_vm
     exit 0
 else
     while [ $# -gt 0 ]; do
