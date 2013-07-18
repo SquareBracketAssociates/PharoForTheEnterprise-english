@@ -1,4 +1,4 @@
-!Persisting Object with Voyage
+!Persisting Objects with Voyage
 
 
 Voyage is a small persistence framework developed by E. Lorenzano. It is  purely object-oriented and with the goal to present a common API to most common development usages. 
@@ -22,6 +22,8 @@ Gofer it
 
 That will load all you need to persist your object model into a Mongo database.
 
+!!! Should no we install Mongo?
+
 !!! Create a repository
 
 Start a new repository or connect with an existing one is very simple, you just need to do:
@@ -38,9 +40,9 @@ Alternatively you can specify the port to connect by using protocol ==VOMongoRep
 repository enableSingleton.
 ]]]
 
-WARNING: executing this line will remove older repositories from Singleton mode!
+@@note WARNING: executing this line will remove older repositories from Singleton mode!
 
-NOTE: In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode should be straightforward (just take a look at VORepository persistence protocol).
+@@note NOTE: In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode should be straightforward (just take a look at VORepository persistence protocol).
 
 
 
@@ -284,38 +286,42 @@ Voyage relies in MongoDB query language to perform its search requests, and ther
  
 Most of the cases, we can simplify the query expressions by using MongoQueries, a package for transformation Pharo syntax into those sometimes annoying dictionaries. 
 
-In the next lines, I will try to cover some of the main problems that I have seen while trying to perform complex queries.
+In the following, we cover some of the main problems that we have seen while performing complex queries.
 
 !!!Sorting and limiting object retrieval
 
 Voyage has a group of protocols to perform search that can be more or less mapped to regular collection protocols: 
 
-- ""#selectAll""
-Retrieves all documents. 
+- ""==selectAll=="" Retrieves all documents in the database.
 
-- ""#selectOne:"" 
-Retrieves one document. This maps to a #detect: method.
+- ""==selectOne:=="" Retrieves one document. This maps to a ==detect:== method.
+@@note what is the argument? show an example
 
-- ""#selectMany:""
-Retrieves many documents. This maps to a #select: method.
+- ""==selectMany:=="" Retrieves many documents. This maps to a ==select:== method.
+@@note what is the argument? show an example
 
 
-As it is said, you can understand this methods just like their equivalents in Collection protocols. But, unlike regular collections which can operate fully on memory, often Voyage collection querying need to be customized in order to optimize memory consumption and/or accessing speed (since there can be literally millions of documents in each collection). 
-To perform this tasks better, we provide some protocols that extend the common operations:
+@@note may be put an example here for the three queries
 
-- ""#selectAllSortBy:""
-It retrieves all documents from a collection, sorted by the information that you provide as a dictionary. 
+
+As it is said, you can understand these methods just like their equivalents in Collection protocols. But, unlike regular collections which can operate fully on memory, often Voyage collection queries need to be customized in order to optimize memory consumption and/or accessing speed (since there can be literally millions of documents in each collection). 
+To perform this task better, we provide some protocols that extend the common operations:
+
+- ""==selectAllSortBy:=="" It retrieves all documents from a collection, sorted by the information that you provide as a dictionary. 
 
 [[[
 Customer selectAllSortBy: { #name -> VOOrder ascending } asDictionary.
 ]]]
 
-This will answer all objects in collection in ascending order by its attribute ‘name’.
+@@note esteban why this is not sortedBy?
 
-NOTE: The class VOOrder provides constants to pick #ascending or #descending sort order. 
+@@note estebam 
 
-- ""#selectMany:sortBy:""
-Retrieves a collection of objects from mongo database filtered by an expression and sorted. 
+This will answer all objects in ?? which collection?? collection in ascending order by its attribute 'name'. ?? what is VOOrder??
+
+@@note NOTE: The class ==VOOrder== provides constants to pick ==ascending== or ==descending== sort order. 
+
+- ""==selectMany: aBlock sortBy: aDictionary=="" Retrieves a collection of objects from mongo database filtered by an expression (a block) and sorted according to a dictionary mapping. 
 
 [[[
 Customer 
@@ -323,8 +329,10 @@ Customer
 	sortBy: { #name -> VOOrder ascending } asDictionary.
 ]]]
 
-- ""#selectMany:limit:""
-Retrieves a collection of objects from mongo database filtered by an expression. 
+@@note Esteban you should explain when we should pass a block and when a dictionary. This is unclear. And in addition 
+
+
+- ""==selectMany: aBlock limit: anInteger=="" Retrieves a collection of objects from mongo database filtered by an expression. 
 
 The collection size is restricted to the limit provided.
  
@@ -336,8 +344,7 @@ Customer
 
 This is useful when you know that you are not going to use more than a certain amount of objects, or when you know that there is a large number of persistent objects and you do not want to push the environment to its limit.
 
-- ""#selectMany:limit:offset:""
-Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided.
+- ""==selectMany: aBlock limit: anInteger offset: anInteger=="" Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided.
 
 The first object retrieved will be at the offset position plus one.
 
@@ -350,8 +357,7 @@ Customer
 
 This is especially useful when paginating objects. 
 
-- ""#selectMany:sortBy:limit:offset:""
-Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided. The first object retrieved will be at the offset position plus one.
+- ""==selectMany:sortBy:limit:offset:=="" Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided. The first object retrieved will be at the offset position plus one.
 
 The collection will be sorted by the expression provided.
 
@@ -363,7 +369,7 @@ Customer
 	offset: 100
 ]]]
 
-!!!Using MongoQueries 
+!!! Using MongoQueries 
 The easiest (and recommended when possible) way to query MongoDB database is by using the package MongoQueries. 
 MongoQueries is not part of Voyage but an optional part of the layer in which Voyage is supported, MongoTalk, who provides all the low-level operations for accessing MongoDB. 
 MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries in the form expected by the database. 
