@@ -313,15 +313,10 @@ To perform this task better, we provide some protocols that extend the common op
 Customer selectAllSortBy: { #name -> VOOrder ascending } asDictionary.
 ]]]
 
-<<<<<<< HEAD
 @@note esteban why this is not sortedBy?
 
-@@note estebam 
-=======
-This will answer all objects in collection in ascending order by its attribute 'name'.
->>>>>>> 5de73e23a32e31322712afb99dd1e58ead5eaaec
 
-This will answer all objects in ?? which collection?? collection in ascending order by its attribute 'name'. ?? what is VOOrder??
+This will answer all objects in ?? which collection?? collection in ascending order by its attribute 'name'.
 
 @@note NOTE: The class ==VOOrder== provides constants to pick ==ascending== or ==descending== sort order. 
 
@@ -363,7 +358,7 @@ This is especially useful when paginating objects.
 
 - ""==selectMany:sortBy:limit:offset:=="" Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided. The first object retrieved will be at the offset position plus one.
 
-The collection will be sorted by the expression provided.
+The resulting collection will be sorted by the expression provided. In the example below the expression states that the result is sorted in increasing value of the name field.
 
 [[[
 Customer 
@@ -373,12 +368,14 @@ Customer
 	offset: 100
 ]]]
 
-!!! Using MongoQueries 
-The easiest (and recommended when possible) way to query MongoDB database is by using the package MongoQueries. 
-MongoQueries is not part of Voyage but an optional part of the layer in which Voyage is supported, MongoTalk, who provides all the low-level operations for accessing MongoDB. 
-MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries in the form expected by the database. 
 
-In essence, MongoQueries is a Domain Specific Language to create MongoDB queries. It looks like a regular Pharo expression, but is much more restricted than what you can actually do with the language.
+
+!!! Using MongoQueries 
+The easiest (and recommended when possible) way to query MongoDB database is by using the package MongoQueries. MongoQueries is not part of Voyage but an optional part of the  MongoTalk layer. 
+MongoTalk provides all the low-level operations for accessing MongoDB. MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries in the form expected by the database. 
+
+In essence, MongoQueries is a Domain Specific Language to create MongoDB queries. A mongo query looks like a regular Pharo expression, but is much more restricted than what you can actually do with plain Smalltalk.
+
 Here is a list of the operators that are available in MongoQueries:
 
 |Operand|Usage|
@@ -389,7 +386,7 @@ Here is a list of the operators that are available in MongoQueries:
 |at:|Direct access to a field.|
 |where:|Allows the execution of a $where mongo statement|
  
-!!!!Using #at: message to access embedded documents
+!!!!Using ==at:== message to access embedded documents
 Since MongoDB stores documents of any complexity, it is very common that one documents is composed by several embedded documents, something like this: 
 
 [[[
