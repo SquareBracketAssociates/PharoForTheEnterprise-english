@@ -310,7 +310,7 @@ It retrieves all documents from a collection, sorted by the information that you
 Customer selectAllSortBy: { #name -> VOOrder ascending } asDictionary.
 ]]]
 
-This will answer all objects in collection in ascending order by its attribute ‘name’.
+This will answer all objects in collection in ascending order by its attribute 'name'.
 
 NOTE: The class VOOrder provides constants to pick #ascending or #descending sort order. 
 
@@ -398,18 +398,18 @@ In this cases, if you want to select objects filtering by one of the embedded do
 This is how your query will look:
 
 [[[
-Rectangle selectMany: [ :each | (each at: ‘origin.x’) = 42 ]
+Rectangle selectMany: [ :each | (each at: 'origin.x') = 42 ]
 ]]]
 
 !!!!Using #where: message to perform complex (in javascript) comparisons
-Sometimes you need to perform queries who are outside the capabilities of MongoQueries or even the JSON MongoDB Query Language. To overcome this problem, MongoDB provides a way to write your queries directly in JavaScript, by using the $where operand. 
+Sometimes you need to perform queries who are outside the capabilities of MongoQueries or even the JSON MongoDB Query Language. To overcome this problem, MongoDB provides a way to write your queries directly in JavaScript, by using the ==$where== operand. 
 We can use the same by sending the #where: message:
 
 [[[
-Rectangle selectMany: [ :each | each where: ‘this.origin.x == 42’ ].
+Rectangle selectMany: [ :each | each where: 'this.origin.x == 42' ].
 ]]]
 
-You can see a more accurate documentation about the use of $where in *MongoDB $where documentation>http://docs.mongodb.org/manual/reference/operator/where/#op._S_where*.
+You can see a more accurate documentation about the use of ==$where== in *MongoDB where documentation>http://docs.mongodb.org/manual/reference/operator/where/#op._S_where*.
 
 !!!Using JSON queries
 MongoQueries is very powerful and most of the time you will not need to use anything else. Nevertheless, there are some situations that requires a deeper control of what you request. 
@@ -418,26 +418,26 @@ For that, we can always create a JSON query. JSON queries is the internal way of
 
 In a nutshell, a JSON structure is a dictionary with pairs formed by a string and a value who can be a primitive value, a collection or another JSON structure (another dictionary).
 
-In summary, we can create a dictionary that acts as a query for MongoDB. Let’s see some examples:
+In summary, we can create a dictionary that acts as a query for MongoDB. Let's see some examples:
 
 ""MongoQueries version:""
 
 [[[
-[ :each | each name = ‘John Doe’]
+[ :each | each name = 'John Doe']
 ]]]
 
 ""Dictionary query version:""
 
 [[[
-{ ‘name’ -> ‘John Doe’ } asDictionary
+{ 'name' -> 'John Doe' } asDictionary
 ]]]
 
 This is obviously the easiest query possible, but we can easily increase the complexity:
 
 [[[
 { 
-	‘name’ -> ‘John Doe’.
-	‘orders’ -> { ‘$gt’: 10 } asDictionary 
+	'name' -> 'John Doe'.
+	'orders' -> { '$gt': 10 } asDictionary 
 } asDictionary
 ]]]
 
@@ -447,30 +447,30 @@ As you also can see, the more complex our query, more dictionaries we will need 
 For example, this is the query I need to write if I want to select all objects with last name = Doe and more than ten orders OR objects with last name is not Doe and has ten or less orders:
 
 [[[
-{ ‘$or’ : 
+{ '$or' : 
 	{
 		{ 
-			‘name.lastName’ -> ‘Doe’.
-			‘orders’ -> { ‘$gt’: 10 } asDictionary 
+			'name.lastName' -> 'Doe'.
+			'orders' -> { '$gt': 10 } asDictionary 
 		} asDictionary.
 		{ 
-			‘name.lastName’ -> { ‘$ne’: ‘Doe’} asDictionary.
-			‘orders’ -> { ‘$lte’: 10 } asDictionary 
+			'name.lastName' -> { '$ne': 'Doe'} asDictionary.
+			'orders' -> { '$lte': 10 } asDictionary 
 		} asDictionary.
 	}.
 } asDictionary.
 ]]]
 
 Last example can show you the kind of complexity you can easily achieve. 
-But that’s not everything. 
+But that's not everything. 
 
 Imagine that you want to take all entries with last name starting with a letter “D”. You then need a regexp to match your name attributes:
  
 [[[
 {
-	‘name.lastName’ -> { 
-		‘$regexp’: ‘^D.*’.
-		‘$options’: ‘i’.
+	'name.lastName' -> { 
+		'$regexp': '^D.*'.
+		'$options': 'i'.
 	} asDictionary.
 } asDictionary.
 ]]]
