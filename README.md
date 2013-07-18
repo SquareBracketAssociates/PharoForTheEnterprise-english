@@ -25,7 +25,7 @@ git clone git://github.com/SquareBracketAssociates/PharoForTheEnterprise-english
 Then you must download the Pharo VM and image
 
 ```bash
-./download.sh vm image
+./download.sh
 ```
 
 Finally, to build the book
