@@ -387,7 +387,7 @@ Here is a list of the operators that are available in MongoQueries:
 |where:|Allows the execution of a $where mongo statement|
  
 !!!!Using ==at:== message to access embedded documents
-Since MongoDB stores documents of any complexity, it is very common that one documents is composed by several embedded documents, something like this: 
+Since MongoDB stores documents of any complexity, it is very common that one document is composed by several embedded documents, something like this: 
 
 [[[
 { 
@@ -401,31 +401,33 @@ Since MongoDB stores documents of any complexity, it is very common that one doc
 	}
 }
 ]]]
-In this cases, if you want to select objects filtering by one of the embedded document properties, you need to use the message ""#at:"", and the field separator """.""". 
-This is how your query will look:
+
+In this case, if you want to select objects filtered by one of the embedded document elements, you need to use the message ""==at:=="", and the field separator """.""". 
+If you want to select all the rectangles whose origin x value is equal to 42, you should write your query as follow. 
 
 [[[
 Rectangle selectMany: [ :each | (each at: 'origin.x') = 42 ]
 ]]]
 
-!!!!Using #where: message to perform complex (in javascript) comparisons
-Sometimes you need to perform queries who are outside the capabilities of MongoQueries or even the JSON MongoDB Query Language. To overcome this problem, MongoDB provides a way to write your queries directly in JavaScript, by using the ==$where== operand. 
-We can use the same by sending the #where: message:
+!!!!Using ==where:== message to perform complex (in javascript) comparisons
+Sometimes you need to perform queries which are outside the capabilities of MongoQueries or even the JSON MongoDB Query Language. To overcome this problem, MongoDB provides a way to write your queries directly in JavaScript, by using the ==$where== operand. 
+With MongoQueries, we can use the same by sending the ==where:== message:
 
+In the following example, we use the JavaScript expression =='this.origin.x == 42'==.
 [[[
 Rectangle selectMany: [ :each | each where: 'this.origin.x == 42' ].
 ]]]
 
 You can see a more accurate documentation about the use of ==$where== in *MongoDB where documentation>http://docs.mongodb.org/manual/reference/operator/where/#op._S_where*.
 
+
 !!!Using JSON queries
-MongoQueries is very powerful and most of the time you will not need to use anything else. Nevertheless, there are some situations that requires a deeper control of what you request. 
 
-For that, we can always create a JSON query. JSON queries is the internal way of represent queries for MongoDB, and we have a really easy way of taking advantage of it. 
+MongoQueries is very powerful and most of the time you will not need to use anything else. Nevertheless, there are some situations that require a deeper control of what you request. 
 
-In a nutshell, a JSON structure is a dictionary with pairs formed by a string and a value who can be a primitive value, a collection or another JSON structure (another dictionary).
+For that, we can always create a JSON query. JSON queries are the MongDB query internal representation, and we have a really easy way of taking advantage of it. In a nutshell, a JSON structure is a dictionary with pairs formed by a string and a value who can be a primitive value, a collection or another JSON structure (another dictionary). We can create a dictionary that acts as a query for MongoDB. 
 
-In summary, we can create a dictionary that acts as a query for MongoDB. Let's see some examples:
+Let's see two examples expressing the same query, first using a block as offered by MongoQueries and second a JSON dictionary.
 
 ""MongoQueries version:""
 
@@ -439,16 +441,18 @@ In summary, we can create a dictionary that acts as a query for MongoDB. Let's s
 { 'name' -> 'John Doe' } asDictionary
 ]]]
 
-This is obviously the easiest query possible, but we can easily increase the complexity:
+This is obviously the easiest query possible, but we can easily increase the complexity.
+A dictionary pairs are composed following an AND semantics. The following example selects the elements having 'John Doe' has name and whose orders value is greater than 10. 
 
 [[[
 { 
 	'name' -> 'John Doe'.
-	'orders' -> { '$gt': 10 } asDictionary 
+	'orders' -> { '$gt' : 10 } asDictionary 
 } asDictionary
 ]]]
 
-As you can see, to construct the “greater than” statement, we added a new dictionary with the evaluation we want.
+
+As you can see, to construct the "greater than" statement, we added a new dictionary with the evaluation we want.
 As you also can see, the more complex our query, more dictionaries we will need to add.
 
 For example, this is the query I need to write if I want to select all objects with last name = Doe and more than ten orders OR objects with last name is not Doe and has ten or less orders:
