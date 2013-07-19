@@ -452,10 +452,11 @@ A dictionary pairs are composed following an AND semantics. The following exampl
 ]]]
 
 
-As you can see, to construct the "greater than" statement, we added a new dictionary with the evaluation we want.
-As you also can see, the more complex our query, more dictionaries we will need to add.
+As you can see, to construct the "greater than" statement, we added a new dictionary with the evaluation we want. As you also can see, the more complex our query, more dictionaries we will need to add.
 
-For example, this is the query I need to write if I want to select all objects with last name = Doe and more than ten orders OR objects with last name is not Doe and has ten or less orders:
+Now to express an OR condition, we should create a dictionary whose key is =='$or'== and whose values
+are the conditioned expressions. 
+The following example show how to select all objects with last name is Doe and more than ten orders OR objects with last name is not Doe and has ten or less orders:
 
 [[[
 { '$or' : 
@@ -472,10 +473,8 @@ For example, this is the query I need to write if I want to select all objects w
 } asDictionary.
 ]]]
 
-Last example can show you the kind of complexity you can easily achieve. 
-But that's not everything. 
-
-Imagine that you want to take all entries with last name starting with a letter “D”. You then need a regexp to match your name attributes:
+The previous example shows you the kind of complexity you can easily achieve. But we can do more. 
+Imagine that you want to take all entries with last name starting with a letter "D". You then need a regexp to match your name attributes. For this you can use the Mongo expressions ==$regexp== and ==$options$== as follows: 
  
 [[[
 {
@@ -486,14 +485,12 @@ Imagine that you want to take all entries with last name starting with a letter 
 } asDictionary.
 ]]]
 
-This illustrates clearly the power of JSON queries. 
-
-There is a lot of different queries you can construct. You can see a complete list of operators and usages in the *MongoDB operator documentation>http://docs.mongodb.org/manual/reference/operator*
+This illustrates clearly the power of JSON queries.  There is a lot of different queries you can construct. You can see a complete list of operators and usages in the *MongoDB operator documentation>http://docs.mongodb.org/manual/reference/operator*
 
 
 !! Conclusion 
 
-This is just the start of the chapter.
+In this chapter we presented Voyage a simple but powerful layer to store documents. We focused on the Mongo back-end and show that the package MongoQueries supports many possibilities.
 
 
 % Local Variables:
