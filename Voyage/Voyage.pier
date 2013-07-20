@@ -40,9 +40,9 @@ Alternatively you can specify the port to connect by using protocol ==VOMongoRep
 repository enableSingleton.
 ]]]
 
-@@note WARNING: executing this line will remove older repositories from Singleton mode!
+@@note Pay attention: executing this line will remove older repositories from Singleton mode!
 
-@@note NOTE: In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode should be straightforward (just take a look at VORepository persistence protocol).
+@@note In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode should be straightforward (just take a look at VORepository persistence protocol).
 
 
 
@@ -318,7 +318,7 @@ Customer selectAllSortBy: { #name -> VOOrder ascending } asDictionary.
 
 This will answer all objects in ?? which collection?? collection in ascending order by its attribute 'name'.
 
-@@note NOTE: The class ==VOOrder== provides constants to pick ==ascending== or ==descending== sort order. 
+@@note The class ==VOOrder== provides constants to pick ==ascending== or ==descending== sort order. 
 
 - ""==selectMany: aBlock sortBy: aDictionary=="" Retrieves a collection of objects from mongo database filtered by an expression (a block) and sorted according to a dictionary mapping. 
 
