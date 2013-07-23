@@ -5,23 +5,97 @@ In the recent times, there appeared many ways to leverage the installation and d
 However, if you are not in the Pharo mailing lists, you probably have not heard about many of these installation mechanisms, and therefore, you cannot enjoy them. In this chapter we will present 
 the most important ones. 
 
-This chapter written by Guillermo Polito *http://http://playingwithobjects.wordpress.com/>http://http://playingwithobjects.wordpress.com/*. It is based on a blog post and adapted for this book.
+This chapter was orginally written by Guillermo Polito in his blog *http://playingwithobjects.wordpress.com/>http://http://playingwithobjects.wordpress.com/*. 
 
 
 
 
 
-!! Manual download from the webpage
+!! Manual downloading from the webpage
 
-Downloading Pharo manually is the easiest but more primitive approach. Proceed to the download page [1] and download the flavor of Pharo you like the most. You will find in here the 1.3, 1.4 and 2.0 releases, plus the option to load the latest (still in development) version of Pharo 3.0.
+Downloading Pharo manually is the easiest but most primitive approach. Proceed to the download page * http://www.pharo.org/pharo-download>http://www.pharo.org/pharo-download* and download the flavor of Pharo you like the most. You will find in here the 1.3, 1.4 and 2.0 releases, plus the option to load the latest (still in development) version of Pharo 3.0. As general principle, use the most recent and stable version.
 
 Focusing on what is available for Pharo 2.0, you can either install
 
-under the category “Pharo Installers”: a package specific for your operative system containing both virtual machine and the image with the runtime and development environment
-under the category “Custom Downloads”: the possibility to download them by separate. This option is useful if you already have a virtual machine and only want a new image to play with.
-[1] http://www.pharo-project.org/pharo-download
+-under the category "Pharo Installers": a package specific for your operative system containing both virtual machine and the image with the runtime and development environment
+
+- under the category "Custom Downloads": the possibility to download them separately. This option is useful if you already have a virtual machine and only want a new image to work with.
+
+!! Manual downloading from the file server
+
+In the Pharo file server available at *http://files.pharo.org/>http://files.pharo.org/*, you will find  the virtual machine and image releases as well as other resources to download. You can use these urls to create your custom download scripts because this url is the one of the officially maintained Pharo file server.
 
 
+!! Virtual Machine PPA for Ubuntu linux
+
+There is a PPA available for Ubuntu users (probably it works also for any distribution using apt-get package manager) which is in charge of downloading the virtual machine and its dependencies, simplifying its installation and deployment. We thank Damien Cassou for taking finally the initiative of creating the PPA!
+
+
+[[[
+$ sudo add-apt-repository ppa:pharo/stable
+$ sudo apt-get update
+]]]
+
+!! ZeroConf scripts
+
+The ZeroConf scripts *http://get.pharo.org/>http://get.pharo.org/* are already built bash scripts easing the download and installation of Pharo. They have been developed by Camillo Bruni. There are scripts served by get.pharo.org which can be parameterized for getting the pair vm/image you want. There is a full chapter on ZeroConf scripts available in the Deep into Pharo book available at *http://rmod.lille.inria.fr/pbe2/>http://rmod.lille.inria.fr/pbe2/*
+
+Their usage, as written in the ZeroConf webpage can be summarized as
+
+[[[
+curl url | bash
+#or if curl is not available:
+wget -O- url | bash
+]]]
+where url is replaced by the formula ==vmVersion|imageVersion|vmVersion+imageVersion==
+
+For example, some valid usages of ZeroConf are
+
+[[[
+#downloading latest 3.0
+curl get.pharo.org/alpha | bash
+ 
+#downloading stable 2.0 + vm
+curl get.pharo.org/20+vm | bash
+ 
+#downloading latest non stable vm
+curl get.pharo.org/vmLatest | bash
+]]]
+
+You can look for the valid values in the *ZeroConf page>http://get.pharo.org/*. These scripts are currently heavily used by the Pharo ci infrastructure *https://ci.inria.fr/pharo/>https://ci.inria.fr/pharo/*. 
+
+In fact, such scripts are a nice way to download your own images because the url is easy to memorize and using the terminal is pretty straightforward.
+
+
+!! Pharo Launcher
+
+The Pharo Launcher is a cross-platform application to download and manage prebuilt and custom Pharo images developed by Damien Cassou and Erwan Douaille. The Pharo Launcher: 
+- lets you manage your Pharo images (launch, rename, copy and delete);
+- lets you download image templates (i.e., zip archives) from many different sources (Jenkins, files.pharo.org, and your local cache);
+- lets you create new images from any template.
+
+The idea behind the Pharo Launcher is that you should be able to access it very rapidly from your OS application launcher. As a result, launching any image is never more than 3 clicks away.
+Figure *pharoLauncher* shows the Launcher UI.
+
+
++Pharo Launcher>file://launcher_screenshot.png|width=105|label=pharoLauncher+ 
+
+!!! Links
+- Download the launcher at  *https://ci.inria.fr/pharo-contribution/job/PharoLauncher/PHARO=30,VERSION=bleedingEdge,VM=vm/lastSuccessfulBuild/artifact/PharoLauncher.zip*
+- Get access to the source code at ==http://www.smalltalkhub.com/#!/~Pharo/PharoLauncher==
+- Access the integration server job is available at *https://ci.inria.fr/pharo-contribution/job/PharoLauncher>https://ci.inria.fr/pharo-contribution/job/PharoLauncher*
+- Report bugs on the Launcher project at *https://pharo.fogbugz.org>https://pharo.fogbugz.org*
+And of course, you can contribute to the Pharo launcher. 
+
+!! Conclusion
+
+Pharo is growing, and getting more and more exciting. And now you can easy deploy applications, and it will get only easier in the future. What are you waiting?
+
+[[[
+#Just do this!
+curl get.pharo.org/20+vm | bash
+./pharo-ui Pharo.image
+]]]
 
 
 % Local Variables:
