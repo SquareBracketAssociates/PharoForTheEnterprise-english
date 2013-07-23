@@ -1,0 +1,29 @@
+! Installing Pharo in many flavors
+
+In the recent times, there appeared many ways to leverage the installation and deployment of Pharo applications. These installation approaches enhance significantly the Pharo experience, by simplifying either dependency management with OS libraries, enabling to write deploy bash scripts or loading prebuilt images for any (and many) taste(s).
+
+However, if you are not in the Pharo mailing lists, you probably have not heard about many of these installation mechanisms, and therefore, you cannot enjoy them. In this chapter we will present 
+the most important ones. 
+
+This chapter written by Guillermo Polito *http://http://playingwithobjects.wordpress.com/>http://http://playingwithobjects.wordpress.com/*. It is based on a blog post and adapted for this book.
+
+
+
+
+
+!! Manual download from the webpage
+
+Downloading Pharo manually is the easiest but more primitive approach. Proceed to the download page [1] and download the flavor of Pharo you like the most. You will find in here the 1.3, 1.4 and 2.0 releases, plus the option to load the latest (still in development) version of Pharo 3.0.
+
+Focusing on what is available for Pharo 2.0, you can either install
+
+under the category “Pharo Installers”: a package specific for your operative system containing both virtual machine and the image with the runtime and development environment
+under the category “Custom Downloads”: the possibility to download them by separate. This option is useful if you already have a virtual machine and only want a new image to play with.
+[1] http://www.pharo-project.org/pharo-download
+
+
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:
