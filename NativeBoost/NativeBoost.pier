@@ -2,9 +2,6 @@
 
 Here we will create some bindings to X11 Xlib. 
 
-
-
-
 !! Some documentation
 
 - The Xlib documentation: http://www.x.org/docs/X11/xlib.pdf
@@ -12,9 +9,7 @@ Here we will create some bindings to X11 Xlib.
 - Language-side Foreign Function Interfaces with NativeBoost: http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf
 
 
-
-
-!! Must read before start !
+!! Must read before start!
 
 First, as the Pharo VM runs in 32-bit, the libraries you want to bind to (and their dependencies) must be compiled for 32-bit. Major Linux distributions provide 32-bit versions of their packages. For example, on ArchLinux 64-bit, when you search for ==libx11== package:
 
@@ -76,7 +71,7 @@ $ ldd libyaz.so
 
 To add a custom directory globally to ==LD_LIBRARY_PATH==, just add it in ==/etc/ld.so.conf==.
 
-At last, remember that we can write bindings for C librairies easily, other languages such as C++ are beyond the scope of this chapter.
+At last, remember that we can write bindings for C libraries easily, other languages such as C++ are beyond the scope of this chapter.
 
 Oh, do not forget to save your image quite often, a crash can easily occur if we make some mistake on this field !
 
@@ -196,14 +191,14 @@ Display *XOpenDisplay(char *display_name);
 ==Object>>#nbCall:== parses the signature of the function to call as a litteral array. NativeBoost automatically do the marshalling between C and Pharo, given a few rules.
 
 First, in C you have these primitive types: ==int==, ==unsigned int==, ==char *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Primitive types are mapped to Pharo types:
-- uint / int: Integer
-- char *: String
+- uint or int: Integer
+- char ==*==: String
 - bool: Boolean
 - float: Float
 - char: Character
 - oop: Object
 
-Note that C strings (char *) must be null terminated strings. NativeBoost automatically do the arguments conversion if we specify ==String== instead of ==char *== in the signature. So we can change ==NBXLibDisplay class>>open== to:
+Note that C strings ==(char *)== must be null terminated strings. NativeBoost automatically do the arguments conversion if we specify ==String== instead of ==char *== in the signature. So we can change ==NBXLibDisplay class>>open== to:
 
 [[[
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (String displayName))
@@ -331,7 +326,7 @@ display close.
 
 !! Let's start real fun stuff !
 
-The goal of this section is to be able to find our desktop application windows and then to move/resize them. Each window have properties attached, called ==Atom==. Each ==Atom== type have a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html ), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
+The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window have properties attached, called ==Atom==. Each ==Atom== type have a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html ), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
 
 First we need to find the identifier of the Atom ==_NET_CLIENT_LIST_STACKING== using the Xlib function ==XInternAtom==:
 [[[
