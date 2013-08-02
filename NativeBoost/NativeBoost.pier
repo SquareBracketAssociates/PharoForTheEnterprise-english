@@ -407,7 +407,124 @@ NBXLibDisplay>>defaultRootWindow
 ]]]
 
 
-So now this code should answer a ==NBXLibWindow== instance:
+This code should answer a ==NBXLibWindow== instance:
 [[[
 NBXLibDisplay open defaultRootWindow
 ]]]
+
+
+As Xlib functions often need the display and the window for windows manipulations, we should update the code so a ==NBXLibWindow== instance could reference its display:
+
+
+[[[
+NBXLibDisplay>>defaultRootWindow
+	^ self primDefaultRootWindow display: self
+
+
+NBXLibDisplay>>primDefaultRootWindow
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(Window XDefaultRootWindow(self))
+
+
+NBXLibWindow>>display: aNBXLibDisplay
+	display := aNBXLibDisplay
+]]]
+
+
+
+Now the hard part. Xlib has a generic functions to get properties, ==XGetWindowProperty==. The signature is:
+[[[
+int XGetWindowProperty (
+  Display *display, 
+  Window w, 
+  Atom property, 
+  long long_offset, 
+  long long_length, 
+  Bool delete, 
+  Atom req_type,
+  Atom * actual_type_return, 
+  int * actual_format_return, 
+  unsigned long * nitems_return, 
+  unsigned long * bytes_after_return,
+  unsigned char ** prop_return);
+]]]
+
+- The three first parameters are easy: the display, the root window in our case, and the Atom ==_NET_CLIENT_LIST_STACKING==
+- For ==long_offset== and ==long_lenght==, they can be used to do a partial read of the properties. In order to get easy, we will get all, so ==0== for the offset and ==16rFFFF== for the lenght. So we don't care about ==bytes_after_return== in our case
+- For the ==req_type==, we can use the Xlib constant ==AnyPropertyType== and don't care about ==actual_type_return== and ==actual_format_return== actually
+- We need to use ==nitems_return== and ==prop_return== to create all ==NBXLibWindow== objects returned.
+
+==AnyPropertyType== is a special Atom defined to 0. We can add it to the shared pool for later use:
+
+[[[
+NBXLibTypes class>>initialize 
+	super initialize.
+	Display := #NBXLibDisplay.
+	Atom := #ulong.
+	AnyPropertyType := 0.
+]]]
+
+And then define the primitive. Note that ==actual_type_return==, ==actual_format_return==, ==nitems_return==, ==bytes_after_return== and ==prop_return== are output parameters that will be filled by the ==XGetWindowProperty==.
+
+For ==int *== and ==unsigned long *==, we can use a ==ByteArray== buffer. For ==prop_return== that is defined as ==unsigned char **==, NativeBoost provides:
+- ==NBExternalAddress== to hold an address / pointer
+- ==NBExternalArray== to work with arrays which elements are values of some external (C) type
+
+==NBExternalArray== should be subclassed and the class side ==initialize== method have to initialize the element type:
+
+[[[
+NBExternalArray subclass: #NBXLibArrayOfWindows
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'NBXLib'
+
+NBXLibArrayOfWindows class>>initialize
+	self initElementType: 'NBXLibWindow'
+]]]
+
+Run ==NBXLibArrayOfWindows initialize==. Then let's add the primitive:
+
+[[[
+NBXLibWindow>>primGetWindowProperty: anAtom offset: offset length: length delete: delete requiredType: requiredType intoActualType: actualType actualFormat: actualFormat numberOfItems: nbItems bytesAfterReturn: bytesAfterReturn data: data
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	
+	^self nbCall: #(int XGetWindowProperty(Display display, self, Atom  anAtom, long offset, long length, bool delete, Atom requiredType, Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn, NBExternalAddress * data ))
+]]]
+
+and the method that uses it:
+
+[[[
+NBXLibWindow>>managedWindows
+  | numberOfItems dataPtr numberOfItemsBuffer |
+  numberOfItemsBuffer := ByteArray new: 4.
+  dataPtr := NBExternalAddress new.
+
+  self primGetWindowProperty: (display atomNamed: '_NET_CLIENT_LIST_STACKING')
+		offset: 0 
+		length: 16rFFFF
+		delete: false 
+		requiredType: AnyPropertyType
+		intoActualType: (ByteArray new: 4)
+		actualFormat: (ByteArray new: 4)
+		numberOfItems: numberOfItemsBuffer  
+		bytesAfterReturn: (ByteArray new: 4) 
+		data: dataPtr.
+
+    "Retrieves the actual number of items from the buffer"		
+	numberOfItems := numberOfItemsBuffer nbUInt32AtOffset: 0.
+	
+    "Fetch all the windows and init their display reference"	
+  ^ (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems) asArray
+	       do: [ :aWindow| aWindow display: display ]
+]]]
+
+
+You should get all the windows managed by your window manager (including docks and task bars):
+
+[[[
+NBXLibDisplay open defaultRootWindow managedWindows inspect
+]]]
+
+
+
