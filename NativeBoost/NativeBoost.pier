@@ -30,7 +30,7 @@ pacman -S multilib/lib32-libx11
 and the library will be found at ==/usr/lib32/libX11.so==.
 
 
-Sometimes the library isn't available for 32-bit, so you will have to build it. Often libraires rely on autotools for the compilation and it's just a story of setting ==-m32== flags for ==gcc==. Here's the example for ==YAZ== library:
+Sometimes the library isn't available for 32-bit, so you will have to build it. Often libraries rely on autotools for the compilation and it's just a story of setting ==-m32== flags for ==gcc==. Here's the example for ==YAZ== library:
 
 [[[
 $ wget http://ftp.indexdata.dk/pub/yaz/yaz-4.2.63.tar.gz
@@ -49,7 +49,7 @@ $ file /usr/local/lib/libyaz.so.4.0.0
 ]]]
 
 
-We also have to be sure that all dependent librairies are found:
+We also have to be sure that all dependent libraries are found:
 
 [[[
 $ ldd /usr/local/lib/libyaz.so.4.0.0
@@ -71,11 +71,9 @@ $ ldd libyaz.so
 
 To add a custom directory globally to ==LD_LIBRARY_PATH==, just add it in ==/etc/ld.so.conf==.
 
-At last, remember that we can write bindings for C libraries easily, other languages such as C++ are beyond the scope of this chapter.
+At last, remember that we can write bindings for C libraries easily, other languages such as ==C++== are beyond the scope of this chapter.
 
 Oh, do not forget to save your image quite often, a crash can easily occur if we make some mistake on this field !
-
-
 
 
 !! Create a first NativeBoost binding
@@ -161,8 +159,6 @@ and then we can open the default display with:
 [[[
 NBXLibDisplay open
 ]]]
-
-
 
 
 !! About NativeBoostPlugin primitives
@@ -285,8 +281,6 @@ NBXLibDisplay class>>open: displayName
 ]]]
 
 
-
-
 !! Self magic
 
 In order to close the connection to a Xlib Display, we should use the C function:
@@ -320,8 +314,6 @@ Now we can open and close the display:
 display := NBXLibDisplay open.
 display close.
 ]]]
-
-
 
 
 !! Let's start real fun stuff !
@@ -426,7 +418,6 @@ NBXLibWindow>>display: aNBXLibDisplay
 ]]]
 
 
-
 Now the hard part. Xlib has a generic functions to get properties, ==XGetWindowProperty==. The signature is:
 [[[
 int XGetWindowProperty (
@@ -522,7 +513,6 @@ NBXLibDisplay open defaultRootWindow managedWindows inspect
 ]]]
 
 
-
 !! I like to move it, move it
 
 Now the last move. To move and resize windows Xlib has the function:
@@ -547,7 +537,6 @@ aWindow := aDisplay defaultRootWindow managedWindows at: 2.
 aWindow x: 10 y: 50 width: 200 height: 500.
 aDisplay close.
 ]]]
-
 
 
 !! Reading window attributes
@@ -652,13 +641,12 @@ NBXLibWindow>>attributes
 	^ attributes
 ]]]
 
-Now we can read the size of our desktop ! Try to print this:
+Now we can read the size of our desktop! Try to print this:
 [[[
 NBXLibDisplay open defaultRootWindow attributes width
 ]]]
 
 
-
 !! Conclusion
 
-Once all the system is setup for Pharo and NativeBoost to load the librairy - and a lot of things can go wrong with this part - defining your bindings should be straight forward. A major challenge is to define a nice object oriented API around a C library so you can cut the number of parameters to pass to your primitives.
+Once all the system is setup for Pharo and NativeBoost to load the library - and a lot of things can go wrong with this part - defining your bindings should be straight forward. A major challenge is to define a nice object oriented API around a C library so you can cut the number of parameters to pass to your primitives.
