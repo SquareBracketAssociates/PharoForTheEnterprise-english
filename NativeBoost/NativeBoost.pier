@@ -6,7 +6,7 @@ Here we will create some bindings to X11 Xlib.
 
 - The Xlib documentation: http://www.x.org/docs/X11/xlib.pdf
 - NativeBoost project on SmalltalkHub: http://www.smalltalkhub.com/#!/~Pharo/NativeBoost
-
+- Language-side Foreign Function Interfaces with NativeBoost: http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf
 
 !! Must read before start !
 
@@ -71,7 +71,7 @@ $ ldd libyaz.so
 To add a custom directory globally to ==LD_LIBRARY_PATH==, just add it in ==/etc/ld.so.conf==.
 
 
-At last, remember that we can write bindings for C librairies, C++ is not supported.
+At last, remember that we can write bindings for C librairies easily, other languages such as C++ is beyond the scope of this chapter.
 
 
 
@@ -120,6 +120,7 @@ TNBXLibLibrary>>nbLibraryNameOrHandle
 
 
 Then ==NBXLibDisplay== class definition can be updated to:
+
 [[[
 NBExternalObject subclass: #NBXLibDisplay
 	uses: TNBXLibLibrary
@@ -135,10 +136,11 @@ We can now create the binding for the function ==XOpenDisplay==. As it will be u
 [[[
 NBXLibDisplay class>>open: displayName
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	^self nbCall: #(NBXLibDisplay * XOpenDisplay (char * displayName) ) options: #( optReturnNullAsNil )
+	^self nbCall: #(NBXLibDisplay XOpenDisplay (char * displayName))
 ]]]
 
 Then we can try to open the default X display (number 0):
+
 [[[
 NBXLibDisplay  open: ':0'
 ]]]
@@ -148,7 +150,7 @@ that should answer a new instance on ==NBXLibDisplay==. If ==displayName== argum
 [[[
 open
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	^self nbCall: #(NBXLibDisplay "*"XOpenDisplay (nil) ) options: #( optReturnNullAsNil )
+	^self nbCall: #(NBXLibDisplay XOpenDisplay (nil))
 ]]]
 
 and then we can open the default display with:
@@ -158,4 +160,151 @@ NBXLibDisplay open
 ]]]
 
 
+
+
 !! About NativeBoostPlugin primitives
+
+This line:
+
+[[[
+<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+]]]
+
+is called a ==pragma==. It indicates that the ==#primitiveNativeCall== of the ==#NativeBoostPlugin== should be called when this method is executed. If it fails, an ==errorCode== is returned and the Smalltalk code below is executed.
+
+
+[[[
+^self nbCall: #(NBXLibDisplay XOpenDisplay (char * displayName))
+]]]
+
+
+Remember the actual C signature is:
+
+[[[
+Display *XOpenDisplay(char *display_name);
+]]]
+
+
+==Object>>#nbCall:== parses the signature of the function to call as a litteral array. NativeBoost automatically do the marshalling between C and Pharo, given a few rules.
+
+First, in C you have these primitive types: ==int==, ==unsigned int==, ==char *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Primitive types are mapped to Pharo types:
+- uint / int: Integer
+- char *: String
+- bool: Boolean
+- float: Float
+- char: Character
+- oop: Object
+
+Note that C strings (char *) must be null terminated strings. NativeBoost automatically do the arguments conversion if we specify ==String== instead of ==char *== in the signature. So we can change ==NBXLibDisplay class>>open== to:
+
+[[[
+^self nbCall: #(NBXLibDisplay XOpenDisplay (String displayName))
+]]]
+
+
+We can also affect the way NativeBoost resolves types. For example, we would like to keep the type ==Display== used in the C signature instead of writing ==NBXLibDisplay==. So we would end with:
+
+[[[
+^self nbCall: #(Display XOpenDisplay (String displayName))
+]]]
+
+
+To know which class to use for the ==Display== type, NativeBoost look up for the type in this order:
+- class variable
+- shared pool
+- class
+
+If we decide to use class variable, we can change the definition of NBXLibDisplay to:
+
+[[[
+NBExternalObject subclass: #NBXLibDisplay
+	uses: TNBXLibLibrary
+	instanceVariableNames: ''
+	classVariableNames: 'Display'
+	poolDictionaries: ''
+	category: 'NBXLib'
+]]]
+
+and then initialize the ==Display== class variable (do not forget to evaluate ==NBXLibDisplay initialize==):
+
+[[[
+initialize
+	super initialize.
+	Display := #NBXLibDispla
+]]]
+
+When we run again ==NBXLibDisplay open==, NativeBoost will map ==Display== return type to ==NBXLibDisplay== class.
+
+As we often need to have these mapping accross several classes in our package, it is best to use shared pools. Then all our code is:
+
+[[[
+Trait named: #TNBXLibLibrary
+	uses: {}
+	category: 'NBXLib'
+
+TNBXLibLibrary class>>nbLibraryNameOrHandle
+	^ '/your/path/to/32-bit/libX11.so'
+
+TNBXLibLibrary>>nbLibraryNameOrHandle
+	^ self class nbLibraryNameOrHandle
+
+
+
+
+SharedPool subclass: #NBXLibTypes
+	instanceVariableNames: ''
+	classVariableNames: 'Display'
+	poolDictionaries: ''
+	category: 'NBXLib'
+
+NBXLibTypes class>>initialize 
+	super initialize.
+	Display := #NBXLibDisplay.
+
+
+
+
+NBExternalObject subclass: #NBXLibDisplay
+	uses: TNBXLibLibrary
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: 'NBXLibTypes'
+	category: 'NBXLib'
+
+NBXLibDisplay class>>open
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(Display XOpenDisplay (nil))
+
+NBXLibDisplay class>>open: displayName
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(Display XOpenDisplay (String displayName))
+
+]]]
+
+
+
+
+!! Self magic
+
+In order to close the connection to a Xlib Display, we should use the C function:
+
+[[[
+int XCloseDisplay(Display *);
+]]]
+
+
+Since we are in Pharo, we would like to have an oriented object API instead of defining all C functions on class side for example. So we would like to close the connection like this: ==myDisplay close==. Let's define the function in ==NBXLibDisplay==:
+
+[[[
+NBXLibDisplay>>close
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin>
+	^self nbCall: #(int XCloseDisplay(Display self))
+]]]
+
+See how we use ==self== to refer to the object itself. Even more, with ==self== we can omit the type and just write:
+
+[[[
+NBXLibDisplay>>close
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin>
+	^self nbCall: #(int XCloseDisplay(self))
+]]]
