@@ -528,3 +528,34 @@ NBXLibDisplay open defaultRootWindow managedWindows inspect
 
 
 
+!! I like to move it, move it
+
+Now the last move. To move and resize windows Xlib has the function:
+
+[[[
+int XMoveResizeWindow(Display * display, Window w, int x, int y, unsigned int width, unsigned height)
+]]]
+
+That should be straight forward:
+
+[[[
+NBXLibWindow>>x: x y: y width: width height: height
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(int XMoveResizeWindow(NBXLibDisplay display, self, int x, int y, uint width, uint height))
+]]]
+
+
+Now take a window and move it:
+[[[
+aDisplay := NBXLibDisplay open.
+aWindow := aDisplay defaultRootWindow managedWindows at: 2.
+aWindow x: 10 y: 50 width: 200 height: 500.
+aDisplay close.
+]]]
+
+
+
+
+!! Conclusion
+
+Once all the system is setup for Pharo and NativeBoost to load the librairy - and a lot of things can go wrong with this part - defining your bindings should be straight forward. 
