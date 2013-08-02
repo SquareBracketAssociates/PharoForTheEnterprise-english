@@ -4,9 +4,9 @@ Here we will create some bindings to X11 Xlib.
 
 !! Some documentation
 
-- The Xlib documentation: http://www.x.org/docs/X11/xlib.pdf
-- NativeBoost project on SmalltalkHub: http://www.smalltalkhub.com/#!/~Pharo/NativeBoost
-- Language-side Foreign Function Interfaces with NativeBoost: http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf
+- The Xlib documentation: *http://www.x.org/docs/X11/xlib.pdf*
+- NativeBoost project on SmalltalkHub: *http://www.smalltalkhub.com/#!/~Pharo/NativeBoost*
+- Language-side Foreign Function Interfaces with NativeBoost: *http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf*
 
 
 !! Must read before start!
@@ -318,7 +318,7 @@ display close.
 
 !! Let's start real fun stuff !
 
-The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window have properties attached, called ==Atom==. Each ==Atom== type have a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html ), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
+The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window have properties attached, called ==Atom==. Each ==Atom== type have a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see *http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html* ), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
 
 First we need to find the identifier of the Atom ==_NET_CLIENT_LIST_STACKING== using the Xlib function ==XInternAtom==:
 [[[
@@ -440,7 +440,7 @@ int XGetWindowProperty (
 - For the ==req_type==, we can use the Xlib constant ==AnyPropertyType== and don't care about ==actual_type_return== and ==actual_format_return== actually
 - We need to use ==nitems_return== and ==prop_return== to create all ==NBXLibWindow== objects returned.
 
-==AnyPropertyType== is a special Atom defined to 0. We can add it to the shared pool for later use:
+The Atom ==AnyPropertyType== is a special Atom defined to 0. We can add it to the shared pool for later use:
 
 [[[
 NBXLibTypes class>>initialize 
@@ -456,7 +456,7 @@ For ==int *== and ==unsigned long *==, we can use a ==ByteArray== buffer. For ==
 - ==NBExternalAddress== to hold an address / pointer
 - ==NBExternalArray== to work with arrays which elements are values of some external (C) type
 
-==NBExternalArray== should be subclassed and the class side ==initialize== method have to initialize the element type:
+The class ==NBExternalArray== should be subclassed and the class side ==initialize== method have to initialize the element type:
 
 [[[
 NBExternalArray subclass: #NBXLibArrayOfWindows
@@ -582,7 +582,7 @@ NBExternalStructure variableByteSubclass: #NBXLibXWindowAttributes
 	category: 'NBXLib'
 ]]]
 
-Note that the structure use the shared pool ==NBXLibTypes== in order to use the type aliases. Before adding the description of all the fields to ==NBXLibXWindowAttributes==, we should define some types that are needed: Visual, Screen, Colormap. We can either use subclasses of ==NBExernalObject==, but as we don't need them we can just add them to the shared pool as ==ulong== (pointers - Xlib use the name ==XID==).
+Note that the structure use the shared pool ==NBXLibTypes== in order to use the type aliases. Before adding the description of all the fields to ==NBXLibXWindowAttributes==, we should define some types that are needed: ==Visual==, ==Screen==, ==Colormap==. We can either use subclasses of ==NBExernalObject==, but as we don't need them we can just add them to the shared pool as ==ulong== (pointers - Xlib use the name ==XID==).
 [[[
 NBXLibTypes>>initialize 
 	super initialize.
