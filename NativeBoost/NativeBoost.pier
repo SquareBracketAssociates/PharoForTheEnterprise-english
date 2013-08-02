@@ -1,0 +1,161 @@
+! NativeBoost recipes
+
+Here we will create some bindings to X11 Xlib. 
+
+!! Some documentation
+
+- The Xlib documentation: http://www.x.org/docs/X11/xlib.pdf
+- NativeBoost project on SmalltalkHub: http://www.smalltalkhub.com/#!/~Pharo/NativeBoost
+
+
+!! Must read before start !
+
+First, as the Pharo VM runs in 32-bit, the libraries you want to bind to (and their dependencies) must be compiled for 32-bit. Major Linux distributions provide 32-bit versions of their packages. For example, on ArchLinux 64-bit, when you search for ==libx11== package:
+
+[[[
+$ pacman -Ss libx11
+extra/libx11 1.6.1-1 [installed: 1.6.0-1]
+    X11 client-side library
+multilib/lib32-libx11 1.6.1-1
+    X11 client-side library (32-bit)
+]]]
+
+In order to create the bindings, we need to install the 32-bit package: 
+
+[[[
+pacman -S multilib/lib32-libx11
+]]]
+
+and the library will be found in ==/usr/lib32/libX11.so==.
+
+
+Sometimes the library isn't available for 32-bit, so you will have to build it. Often libraires rely on autotools for the compilation and it's just a story of setting ==-m32== flags for ==gcc==. Here's the example for ==YAZ== library:
+
+[[[
+$ wget http://ftp.indexdata.dk/pub/yaz/yaz-4.2.63.tar.gz
+$ tar -xvzf yaz-4.2.63.tar.gz
+$ cd yaz-4.2.63
+$ ./configure CFLAGS="-m32" LDFLAGS="-m32"
+$ make
+$ sudo make install
+]]]
+
+We can check that the library is 32-bit with ==file==
+
+[[[
+$ file /usr/local/lib/libyaz.so.4.0.0 
+/usr/local/lib/libyaz.so.4.0.0: ELF 32-bit LSB  shared object, Intel 80386, version 1 (SYSV), dynamically linked, BuildID[sha1]=479fbc7e495cb53600f145cf575dc1f176703c20, not stripped
+]]]
+
+
+We also have to be sure that all dependent librairies are found:
+
+[[[
+$ ldd /usr/local/lib/libyaz.so.4.0.0
+        linux-gate.so.1 (0xf773a000)
+        libgnutls.so.28 => /usr/lib32/libgnutls.so.28 (0xf745d000)
+        libexslt.so.0 => not found
+        libxslt.so.1 => /usr/lib32/libxslt.so.1 (0xf7417000)
+]]]
+
+Here ==libexslt.so.0== is not found, so we have to make sure it is present, 32-bit and on the right path. On the system I use, ==libexstl== has been installed on ==/usr/local/lib/== and I should either move them to ==/usr/lib32==, or set the environment variable ==LD_LIBRARY_PATH==.
+
+[[[
+$ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+$ ldd libyaz.so
+        linux-gate.so.1 (0xf7728000)
+        libgnutls.so.28 => /usr/lib32/libgnutls.so.28 (0xf744b000)
+        libexslt.so.0 (0xf7434000)
+]]]
+
+To add a custom directory globally to ==LD_LIBRARY_PATH==, just add it in ==/etc/ld.so.conf==.
+
+
+At last, remember that we can write bindings for C librairies, C++ is not supported.
+
+
+
+!! Create a first NativeBoost binding
+
+Before our program can use a display, we must establish a connection to the X server using ==XOpenDisplay==. The signature in ==Xlib.h== is:
+
+[[[
+Display *XOpenDisplay(char *display_name);
+]]]
+
+
+First, we can check that Pharo and NativeBoost could load the Xlib library and find the function. In a workspace, inspect the result of:
+
+[[[
+self nbGetSymbolAddress: 'XOpenDisplay'  module: '/your/path/to/32-bit/libX11.so'
+]]]
+
+That should answer something like ==@ 16rF71D14D0==, the address of the function. If ==nil== is answered, then something is wrong and you should refer to previous section. Else, we can go further !
+
+
+The function ==XOpenDisplay== takes a pointer on char as parameter (thus a String) and return a pointer on a ==Display==. First we need to define a class that will hold an handle for ==Display==. We can do this by creating a subclass of ==NBExternalObject==:
+
+[[[
+NBExternalObject subclass: #NBXLibDisplay
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'NBXLib'
+]]]
+
+
+For each NativeBoost entity we have to define the function ==#nbLibraryNameOrHandle== that answers the path to the module. In order to not define multiple times this function, we can define a ==Trait== to be used by all our ==NBXLib== package classes:
+
+[[[
+Trait named: #TNBXLibLibrary
+	uses: {}
+	category: 'NBXLib'
+
+TNBXLibLibrary class>>nbLibraryNameOrHandle
+	^ '/your/path/to/32-bit/libX11.so'
+
+TNBXLibLibrary>>nbLibraryNameOrHandle
+	^ self class nbLibraryNameOrHandle
+]]]
+
+
+Then ==NBXLibDisplay== class definition can be updated to:
+[[[
+NBExternalObject subclass: #NBXLibDisplay
+	uses: TNBXLibLibrary
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'NBXLib'
+]]]
+
+
+We can now create the binding for the function ==XOpenDisplay==. As it will be used to create a new ==NBXLibDisplay== instance, we should define the primitive on the class side:
+
+[[[
+NBXLibDisplay class>>open: displayName
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(NBXLibDisplay * XOpenDisplay (char * displayName) ) options: #( optReturnNullAsNil )
+]]]
+
+Then we can try to open the default X display (number 0):
+[[[
+NBXLibDisplay  open: ':0'
+]]]
+
+that should answer a new instance on ==NBXLibDisplay==. If ==displayName== argument is ==NULL==, XOpenDisplay defaults to the value of the ==DISPLAY== environment variable. As it's often what we want, we can add:
+
+[[[
+open
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(NBXLibDisplay "*"XOpenDisplay (nil) ) options: #( optReturnNullAsNil )
+]]]
+
+and then we can open the default display with:
+
+[[[
+NBXLibDisplay open
+]]]
+
+
+!! About NativeBoostPlugin primitives
