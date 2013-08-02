@@ -550,7 +550,115 @@ aDisplay close.
 
 
 
+!! Reading window attributes
+
+In order to get actual position and size of a Window, we can use:
+[[[
+Status XGetWindowAttributes(Display* display, Window w, XWindowAttributes* window_attributes_return)
+]]]
+
+Like the previous example, ==XGetWindowAttributes== have an output argument ==window_attributes_return==. In this case, ==XWindowAttributes== is a structure defined like this:
+[[[
+typedef struct {
+    int x, y;			    /* location of window */
+    int width, height;		/* width and height of window */
+    int border_width;		/* border width of window */
+    int depth;          	/* depth of window */
+    Visual *visual;		    /* the associated visual structure */
+    Window root;        	/* root of screen containing window */
+    int c_class;		    /* InputOutput, InputOnly*/
+    int bit_gravity;		/* one of bit gravity values */
+    int win_gravity;		/* one of the window gravity values */
+    int backing_store;		/* NotUseful, WhenMapped, Always */
+    unsigned long backing_planes;/* planes to be preserved if possible */
+    unsigned long backing_pixel;/* value to be used when restoring planes */
+    Bool save_under;		/* boolean, should bits under be saved? */
+    Colormap colormap;		/* color map to be associated with window */
+    Bool map_installed;		/* boolean, is color map currently installed*/
+    int map_state;		    /* IsUnmapped, IsUnviewable, IsViewable */
+    long all_event_masks;	/* set of events all people have interest in*/
+    long your_event_mask;	/* my event mask */
+    long do_not_propagate_mask; /* set of events that should not propagate */
+    Bool override_redirect;	/* boolean value for override-redirect */
+    Screen *screen;		    /* back pointer to correct screen */
+} XWindowAttributes;
+]]]
+
+First we have to create a subclass of ==NBExternalStructure== that will hold this data:
+[[[
+NBExternalStructure variableByteSubclass: #NBXLibXWindowAttributes
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: 'NBXLibTypes'
+	category: 'NBXLib'
+]]]
+
+Note that the structure use the shared pool ==NBXLibTypes== in order to use the type aliases. Before adding the description of all the fields to ==NBXLibXWindowAttributes==, we should define some types that are needed: Visual, Screen, Colormap. We can either use subclasses of ==NBExernalObject==, but as we don't need them we can just add them to the shared pool as ==ulong== (pointers - Xlib use the name ==XID==).
+[[[
+NBXLibTypes>>initialize 
+	super initialize.
+	Display := #NBXLibDisplay.
+	Atom := #ulong.
+	Window := #NBXLibWindow.
+	AnyPropertyType := 0.
+	XID := #ulong.
+	Colormap := XID.
+	Visual := XID.
+	Screen := XID.
+	Bool := #int.
+	Status := #int.
+	XWindowAttributes := #NBXLibXWindowAttributes.
+]]]
+
+Note we also define ==Bool== and ==Status== as aliases of ==int==, ==XWindowAttributes== as an alias of ==#NBXLibXWindowAttributes==. Execute ==NBXLibTypes initialize== then describe the fields in ==NBXLibXWindowAttributes==:
+[[[
+NBXLibXWindowAttributes>>fieldsDesc
+    ^ #(int x;
+        int y;                  " location of window "
+        int width;
+        int height;             " width and height of window "
+        int border_width;       " border width of window "
+        int depth;              " depth of window "
+        Visual visual;          " the associated visual structure "
+        Window root;            " root of screen containing window "
+        int c_class;            " InputOutput, InputOnly"
+        int bit_gravity;        " one of bit gravity values "
+        int win_gravity;        " one of the window gravity values "
+        int backing_store;      " NotUseful, WhenMapped, Always "
+        ulong backing_planes;   " planes to be preserved if possible "
+        ulong backing_pixel;    " value to be used when restoring planes "
+        Bool save_under;        " boolean, should bits under be saved? "
+        Colormap colormap;      " color map to be associated with window "
+        Bool map_installed;     " boolean, is color map currently installed"
+        int map_state;          " IsUnmapped, IsUnviewable, IsViewable "
+        long all_event_masks;   " set of events all people have interest in"
+        long your_event_mask;   " my event mask "
+        long do_not_propagate_mask; " set of events that should not propagate "
+        Bool override_redirect; " boolean value for override-redirect "
+        Screen *screen;         " back pointer to correct screen "
+    )
+]]]
+
+and initialize all accessors with ==NBXLibXWindowAttributes initializeAccessors==. Then we can add the primitive for ==XGetWindowAttributes== in ==NBXLibWindow==:
+[[[
+NBXLibWindow>>primGetAttributesInto: attributes
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(Status XGetWindowAttributes(Display display, self, XWindowAttributes * attributes) )
+
+NBXLibWindow>>attributes
+	| attributes |
+	attributes := NBXLibXWindowAttributes new. 
+	self primGetAttributesInto: attributes. 	
+	^ attributes
+]]]
+
+Now we can read the size of our desktop ! Try to print this:
+[[[
+NBXLibDisplay open defaultRootWindow attributes width
+]]]
+
+
 
 !! Conclusion
 
-Once all the system is setup for Pharo and NativeBoost to load the librairy - and a lot of things can go wrong with this part - defining your bindings should be straight forward. 
+Once all the system is setup for Pharo and NativeBoost to load the librairy - and a lot of things can go wrong with this part - defining your bindings should be straight forward. A major challenge is to define a nice object oriented API around a C library so you can cut the number of parameters to pass to your primitives.
