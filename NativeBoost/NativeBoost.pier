@@ -4,9 +4,9 @@ Here we will create some bindings to X11 Xlib.
 
 !! Some documentation
 
-- The Xlib documentation: *http://www.x.org/docs/X11/xlib.pdf*
-- NativeBoost project on SmalltalkHub: *http://www.smalltalkhub.com/#!/~Pharo/NativeBoost*
-- Language-side Foreign Function Interfaces with NativeBoost: *http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf*
+- The Xlib documentation: http://www.x.org/docs/X11/xlib.pdf
+- NativeBoost project on SmalltalkHub: http://www.smalltalkhub.com/#!/~Pharo/NativeBoost
+- Language-side Foreign Function Interfaces with NativeBoost: http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf
 
 
 !! Must read before start!
@@ -318,7 +318,7 @@ display close.
 
 !! Let's start real fun stuff !
 
-The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window have properties attached, called ==Atom==. Each ==Atom== type have a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see *http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html* ), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
+The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window have properties attached, called ==Atom==. Each ==Atom== type have a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html ), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
 
 First we need to find the identifier of the Atom ==_NET_CLIENT_LIST_STACKING== using the Xlib function ==XInternAtom==:
 [[[
@@ -635,9 +635,12 @@ NBXLibWindow>>primGetAttributesInto: attributes
 	^self nbCall: #(Status XGetWindowAttributes(Display display, self, XWindowAttributes * attributes) )
 
 NBXLibWindow>>attributes
+	^ NBXLibXWindowAttributes window: self.
+
+NBXLibXWindowAttributes class>>window: aWindow
 	| attributes |
-	attributes := NBXLibXWindowAttributes new. 
-	self primGetAttributesInto: attributes. 	
+	attributes := self new. 
+	aWindow primGetAttributesInto: attributes. 	
 	^ attributes
 ]]]
 
