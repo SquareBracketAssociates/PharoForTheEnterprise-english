@@ -13,17 +13,12 @@ Implementations for Pharo Smalltalk, Squeak and Gemstone Smalltalk are available
 
 !! 
 
-JSON seems to have hit a sweet spot: it is very simple, 
-yet just powerful enough to represent some of the most common
-data structures across many different languages.
-JSON is very readable and relatively easy to type.
+JSON seems to have hit a sweet spot: it is very simple, yet just powerful enough to represent some of the most common
+data structures across many different languages. JSON is very readable and relatively easy to type.
 
-However, JSON knows only about lists and maps.
-There is no concept of object types or classes.
-This means that it is not easy to encode arbitrary objects,
-and some of the possible solutions are quite verbose
-(Encoding the type or class as a property and/or
-adding an indirection to encode the object's contents).
+However, JSON knows only about lists and maps. There is no concept of object types or classes.
+This means that it is not easy to encode arbitrary objects, and some of the possible solutions are quite verbose
+(Encoding the type or class as a property and/or adding an indirection to encode the object's contents).
 STON extends JSON by adding a primitive value, class tags for object values and references
 as we will see next.
 
@@ -35,12 +30,12 @@ STON is now hosted on SmalltalkHub. To load STON you can execute:
 Gofer new
 	smalltalkhubUser: 'SvenVanCaekenberghe' project: 'STON';
 	package: 'ConfigurationOfSton';
-	load
+	load.
 	
 ConfigurationOfSton project load: #stable	
 ]]]
 
-The following repository contains the recent code:
+You can also add the following repository to your package browser:
 
 [[[
 MCHttpRepository
@@ -49,13 +44,83 @@ MCHttpRepository
 	password: ''
 ]]]
 
+
 !! Examples
 
 If you have ever seen JSON http://www.json.org -  *Javascript Object Notation>http://www.json.org*, 
 you will be instantly familiar with Smaltalk Object Notation. It uses similar primitive values, with the addition of a symbol type. Some details are slightly different though.
 
-For object values an optional class tag precedes a representation that is either a list of values or a map of keys and values. Exactly how each class is represented is up to the implementation,
-although this document suggests some conventions for well known classes.
+Let us have a look at basic ones using the message ==toString:== and ==toStringPretty:==.
+
+[[[
+STON toString: 40
+    --> 40
+
+STON toString: true
+	--> true
+	
+STON toString: nil 
+	--> 'nil'
+	
+STON toString: 'cool' 
+	--> '''cool'''
+]]]
+
+For object values an optional class tag precedes a representation that is either a list of values or a map of keys and values. Lists are represented by ==[==, ==]== and elements are separated by comma. Map .
+
+[[[
+STON toString: 20@30 
+  --> 'Point[20,30]'
+
+STON toString: Date today 
+ -->'Date[''2013-08-05'']'
+
+STON toString:  { 1. 0. -1. true. false. nil }. 
+  --> '[1,0,-1,true,false,nil]'
+]]]
+
+
+A map is represented by curly braces and elements are separated by ==:== and comma as shown below.
+
+[[[
+STON toString: (Dictionary new at: #blue put: 'bluish' ; at: #green put: 'greenish' ; yourself)
+  --> '{#green:''greenish'',#blue:''bluish''}'
+
+STON toStringPretty: (Dictionary new at: #blue put: 'bluish' ; at: #green put: 'greenish' ; yourself) 
+  --> '{
+	#green : ''greenish'',
+	#blue : ''bluish''
+}'
+]]]
+
+
+!!! A Rectangle
+Here is an example of a Rectangle ==(Rectangle center: 10@10 extent: 100@50)== and its STON representation:
+
+[[[
+STON toString: (Rectangle center: 10@10 extent: 100@50)
+   -> 'Rectangle{#origin:Point[-40,-15],#corner:Point[60,35]}'
+
+STON toStringPretty: (Rectangle center: 10@10 extent: 100@50) 
+	--> 
+Rectangle {
+   #origin : Point [ -40, -15 ],
+   #corner : Point [ 60, 35 ]
+   }
+]]]
+
+
+Exactly how each class is represented is up to the implementation, although this document suggests some conventions for well known classes.
+
+You can 
+[[[
+(STONReader on: ( 'Rectangle {
+   #origin : Point [ -40, -15 ],
+   #corner : Point [ 60, 35 ]
+   }') readStream) next
+]]]
+
+
 
 Next is an example of what pretty printed STON for a simple object looks like.
 Even without further explanation, the semantics should be clear.
@@ -78,20 +143,11 @@ TestDomainObject {
     }
 ]]]
 
-!!! A Rectangle
-Here is an example of a Rectangle and its STON representation:
 
-[[[
-Rectangle center: 10@10 extent: 100@50.
-
-Rectangle {
-   #origin : Point [ -40, -15 ],
-   #corner : Point [ 60, 35 ]
-   }
-]]]
 
 !!! an HTTP Response
 Here is a more complex example, the result of doing an HTTP request using the Zinc HTTP Components framework, a ZnResponse object:
+As you see curly braces are for dictionaries and square brackets for lists.
 
 @@todo how do we get this object from Zinc?
 
@@ -132,7 +188,7 @@ ZnResponse {
 
 @@todo it is not clear to me when we should use key as string or as symbols
 
-As we will see { } defined dictionaries and ==[ ]== lists.
+
 
 !!! About STON features
 
