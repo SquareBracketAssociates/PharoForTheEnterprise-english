@@ -39,9 +39,9 @@ Finally, since Pharo is a cross platform system and it is important to provide a
 $a command win | $b command unix     "Cmd+A on windows, but Cmd+B on unix"
 ]]]
 
-!!Per instance shortcut convfiguration
+!!Per instance shortcut configuration
 
-The simplest way to configure a shortcut for a morph is by sending him the ==bindKeyCombination:toAction:== message. The first argument is a key combination and the second one is a block with an action. In the example below, a workspace is created with two shortcuts:
+The simplest way to configure a shortcut for a morph is by sending it the ==bindKeyCombination:toAction:== message. The first argument is a key combination and the second one is a block with an action. In the example below, a workspace is created with two shortcuts:
 
 - when Cmd\+Shift\+A is pressed, the workspace is deleted
 - when Cmd\+Shift\+D is pressed, an information growl should appear yelling 'this shortcut works!'
@@ -57,19 +57,18 @@ GP: talk about optional block arguments
 
 !!Shortcut categories
 
-Shortcuts are grouped and organized by using keymap categories. A Keymap category is a named set of shortcuts grouped in a meaningful way. When a category is applied to a morph, all it's shortcuts are applied to it.
-Keymap categories allow to share a set of shortcuts between different morphs, even from different hierarchies.
+Shortcuts can be grouped and organized with keymap categories. A Keymap category is a named set of shortcuts grouped in a meaningful way. When a category is applied to a morph, all it's shortcuts are applied to it. Keymap categories allow to share a set of shortcuts between different morphs, even from different hierarchies.
 
 !!!Defining a keymap category
 A Keymap category is defined statically by using a keymap pragma on class side of any class:
 
 [[[
 "defining a category"
-SystemWindow class>>buildShortcutsOn: aBuilder 
+Workspace class>>growlingShortcuts: aBuilder
      <keymap>
 ]]]
 
-A class side method marked as ==<keymap>== will be called with a builder object, which can be used to define a keymap category:
+A class side method marked as ==<keymap>== will be called by the Keymappings framework with a builder object. This builder object can be used to define a keymap category and add shortcuts to it.
 
 [[[ 
 Workspace class>>growlingShortcuts: aBuilder 
@@ -92,7 +91,7 @@ morph:= w openLabel: 'keymapping test'.
 morph attachKeymapCategory: #Growling.
 ]]]
 
-Keymapping allows us also to detach a given category from a given morph using the ==detachKeymapCategory:== message with the category name as argument.
+Keymapping allows us also to detach a category from a morph using the ==detachKeymapCategory:== message with the category name we want to detach as argument.
 
 [[[
 w:= Workspace new.
@@ -103,17 +102,26 @@ morph attachKeymapCategory: #Growling.
 morph detachKeymapCategory: #Growling.
 ]]]
 
-!!Internals
+GP: talk about special attaching and detaching.
 
-!!!Bubbling
+!!Bubbling
 
-Keymappings' shortcuts bubble to their parent (sd: which one?) if not handled, up until the main world morph. That has two main consequences:
+When a morph receives a keyboard event, Keymapping resolves which shortcut action should be executed it in a hierarchical way. A lookup mechanism is activated which bubbles from the morph that received the keyboard event up to the main morph in the system, the world morph.
 
-- Shortcuts for your application can be designed in a hierarchical way and;
-- Every time a shortcut does not work for you, it means that a morph below you has handled it ;) (be careful with text editors that handle many of key combinations)
+-First, the morph which received the event looks for a match inside the shortcuts that were configured for itself using the ==bindKeyCombination:toAction:== message. 
+-If there is no match in the instance shortcuts, it searches for a match inside the keymap categories attached to itself.
+-If the keymap categories contain no match for the event, the same procedure restarts from the owner of the morph that received the event.
 
-SD: can't we disable them?
-GP: not so far
+If in the end, there is no match, the event is considered as not handled and falls back to the normal event handling mechanism of Morphic.
+
+The bubbling lookup has two main consequences:
+
+- shortcuts for your application can be designed in a hierarchical way and;
+- shortcuts in a morph can be overritten from submorphs
+
+!!Disabling Keymappings for a given morph
+
+By default all morphs handle keymappings. However, disabling Keymappings is possible by modifying the ==allowsKeymapping== method to make them return false. 
 
 % Local Variables:
 % eval: (flyspell-mode -1)
