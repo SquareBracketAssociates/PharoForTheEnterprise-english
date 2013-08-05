@@ -1,30 +1,27 @@
 ! Keymappings
 
-Since its 2.0 release, Pharo includes the Keymappings library. Keymappings is a library for configuring shortcuts
-for the current UI library (Morphic). It models concepts like: shortcuts, key combinations and event bubbling. It is a very simple library which we'll introduce gradually in this post.
-We gradually present the key concepts.
+Keymappings is a library for handling shortcuts in the current Pharo UI library, Morphic. Keymappings models the basic concepts of shortcut handling for a GUI application. Keymappings main task is to define and manipulate shortcuts, that is, the associations between keys combinations and the actions they should trigger.
 
 !! Key combinations
 
-Keymappings main task is its ability to associate a key combination to an action. So we have to build up those key combinations. The simplest key combination is the one that gets activated when a single key is pressed. We call these combinations single key combinations. We create them using the message ==asShortcut==.
+A key combination is a set of keys pressed in a given sequence. Keymappings associates these key combinations to actions in order to create shortcuts.
+The simplest key combination is the one formed by a single key. These key combinations, the single key combinations, are created when we send the message ==asKeyCombination== to a Character or Integer object.
+It is important to notice that all key combinations are case insensitive. Whenever we create a key combination for the $a character, it will work also for the $A character since they are represented by the same key.
 
 [[[
-$a asShortcut. "single key combination for the key a."
-Character cr asShortcut.   "single key combination for the space key."
+$a asKeyCombination. "single key combination for the key a."
+Character cr asKeyCombination. "single key combination for the space key."
+1 asKeyCombination. "single key combination for the home key (because it has the character value 1)."
 ]]]
 
-
-Usually key combinations get a bit more complex. It is very common to combine single keys with meta keys or modifiers. These meta keys or modifiers are the well known ctrl, shift, alt and command keys. To build a modified key combination we can do as follows:
+In complex GUIs, key combinations tend to be more complex. It is very common to combine single keys with meta keys or modifiers. These meta keys or modifiers are the well known ctrl, shift, alt and command keys. To build a modified key combination, character and integer objects understand the ==control==, ==command==, ==shift== and ==alt== builder messages:
 
 [[[
-$a ctrl. "a modified key combination for Ctrl+A"
-$a ctrl shift.   "a modified key combination for Ctrl+Shift+A"
+$a control. "a modified key combination for Ctrl+A"
+$a control shift.   "a modified key combination for Ctrl+Shift+A"
 ]]]
 
-important
-It is important to notice that all key combinations are not case sensitive. It takes a and A characters as the same, since they are the same key.
-
-Have you ever used emacs, Eclipse or Visual Studio? Then you probably know sequences of key combinations that launch one only action. Like Alt\+Shift\+X, T (to run JUnit tests in eclipse)? So keymappings can do that too:
+Modern IDEs also make use of key combinations as sequences of simpler key combinations. That is, a sequence of key combinations that launch one only action. For example, the sequence made up from the key combination Alt\+Shift\+X followed by the key T runs JUnit tests in eclipse. In Keymappings we can combine two key combinations as a sequence with the ==,== message:
 
 [[[
 $a command shift, $b shift. "key sequence (Cmd+Shift+A, Shift+B)"
@@ -42,14 +39,9 @@ Finally, since Pharo is a cross platform system and it is important to provide a
 $a command win | $b command unix     "Cmd+A on windows, but Cmd+B on unix"
 ]]]
 
-!! Shortcut configurations
+!!Per instance shortcut configuration
 
-Now you know how to build key combinations for your purposes, you probably want to go to the action. Map those combinations to actions and make them work!
-
-!!!Single shortcut configuration
-
-The simplest way to attach a shortcut to a morph is by sending him the ==on:do:== message. The first argument expected is a key combination and the second one is an action. In the example below, a workspace is created with two shortcuts:
-
+The simplest way to configure a shortcut for a morph is by sending it the ==bindKeyCombination:toAction:== message. The first argument is a key combination and the second one is a block with an action. In the example below, a workspace is created with two shortcuts:
 
 - when Cmd\+Shift\+A is pressed, the workspace is deleted
 - when Cmd\+Shift\+D is pressed, an information growl should appear yelling 'this shortcut works!'
@@ -57,56 +49,79 @@ The simplest way to attach a shortcut to a morph is by sending him the ==on:do:=
 [[[ 
 w:= Workspace new.
 morph := w openLabel: 'keymapping test'.
-morph on: $a shift command do: [ morph delete ].
-morph on: $d shift command do: [ UIManager default inform: 'this shortcut works!' ].
+morph bindKeyCombination: $a shift command toAction: [ morph delete ].
+morph bindKeyCombination: $d shift command toAction: [ UIManager default inform: 'this shortcut works!' ].
 ]]]
 
-Easy, huh? So let's move on...
+GP: talk about optional block arguments
 
+!!Shortcut categories
 
-!!!Shortcut categories
+Shortcuts can be grouped and organized with keymap categories. A Keymap category is a named set of shortcuts grouped in a meaningful way. When a category is applied to a morph, all it's shortcuts are applied to it. Keymap categories allow to share a set of shortcuts between different morphs, even from different hierarchies.
 
-Sometimes you want to group and organize shortcuts in a meaningful way and apply them all together on a morph. Sometimes you want some morphs from different hierarchies to share the same group of shortcuts easily. Those groups of shortcuts are what keymapping calls Categories. A category is a group of shortcuts, so far (will change in the future) defined statically by using a keymap pragma on class side:
+!!!Defining a keymap category
+A Keymap category is defined statically by using a keymap pragma on class side of any class:
 
 [[[
 "defining a category"
-SystemWindow class>>buildShortcutsOn: aBuilder 
+Workspace class>>growlingShortcuts: aBuilder
      <keymap>
 ]]]
 
-A class side method marked as ==<keymap>== will be called with a builder object, which can be used to define a named set of shortcuts:
+A class side method marked as ==<keymap>== will be called by the Keymappings framework with a builder object. This builder object can be used to define a keymap category and add shortcuts to it.
 
 [[[ 
-SystemWindow class>>buildShortcutsOn: aBuilder 
+Workspace class>>growlingShortcuts: aBuilder 
     <keymap>
-    (aBuilder shortcut:  #close) 
-         category:  WindowShortcuts
-         default: $w ctrl | $w command mac 
-         do: [ :target | target delete ] 
-         description: 'Close this window'.
+    (aBuilder shortcut:  #growl) 
+         category:  #Growling
+         default: $g ctrl | $g command mac 
+         do: [ :target | UIManager default inform: 'we growl' ] 
+         description: 'Growl something'.
 ]]]
 
 Shortcuts defined through the builder specify the name of the category they belong to, a default key combination, an action, and a description. All this metadata is there to be used as settings in the future.
 
-Finally  to get your morph handle those shortcuts you can use the ==attachKeymapCategory:== message as in:
+!!!Attaching and detaching shortcut categories
+For a morph to handle a keymap category, and thus the shortcuts inside it, we have to send it the ==attachKeymapCategory:== message with the category name as argument.
 
 [[[
-w:= Workspace#new.
+w:= Workspace new.
 morph:= w openLabel: 'keymapping test'. 
 morph attachKeymapCategory: #Growling.
 ]]]
 
+Keymapping allows us also to detach a category from a morph using the ==detachKeymapCategory:== message with the category name we want to detach as argument.
 
-remove a key binding ???
+[[[
+w:= Workspace new.
+morph:= w openLabel: 'keymapping test'.
+morph attachKeymapCategory: #Growling.
+...
+...
+morph detachKeymapCategory: #Growling.
+]]]
+
+GP: talk about special attaching and detaching.
 
 !!Bubbling
 
-Keymappings' shortcuts bubble to their parent (sd: which one?) if not handled, up until the main world morph. That has two main consequences:
+When a morph receives a keyboard event, Keymapping resolves which shortcut action should be executed it in a hierarchical way. A lookup mechanism is activated which bubbles from the morph that received the keyboard event up to the main morph in the system, the world morph.
 
-- Shortcuts for your application can be designed in a hierarchical way and;
-- Every time a shortcut does not work for you, it means that a morph below you has handled it ;) (be careful with text editors that handle many of key combinations)
+-First, the morph which received the event looks for a match inside the shortcuts that were configured for itself using the ==bindKeyCombination:toAction:== message. 
+-If there is no match in the instance shortcuts, it searches for a match inside the keymap categories attached to itself.
+-If the keymap categories contain no match for the event, the same procedure restarts from the owner of the morph that received the event.
 
-SD: can't we disable them?
+If in the end, there is no match, the event is considered as not handled and falls back to the normal event handling mechanism of Morphic.
+
+The bubbling lookup has two main consequences:
+
+- shortcuts for your application can be designed in a hierarchical way and;
+- shortcuts in a morph can be overritten from submorphs
+
+!!Disabling Keymappings for a given morph
+
+By default all morphs handle keymappings. However, disabling Keymappings is possible by modifying the ==allowsKeymapping== method to make them return false. 
 
 % Local Variables:
 % eval: (flyspell-mode -1)
