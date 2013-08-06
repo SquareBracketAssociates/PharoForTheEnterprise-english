@@ -119,9 +119,19 @@ The bubbling lookup has two main consequences:
 - shortcuts for your application can be designed in a hierarchical way and;
 - shortcuts in a morph can be overritten from submorphs
 
-!!Disabling Keymappings for a given morph
+!!Disabling Keymappings
 
-By default all morphs handle keymappings. However, disabling Keymappings is possible by modifying the ==allowsKeymapping== method to make them return false. 
+A morph handles Keymappings by default. However, keymappings provides a hook to customize it per instance and per class. A morph understands the messages ==allowsKeymapping== and ==allowsKeymapping:==. In order to disable or enable keymappings for a given morph, we should send it the message ==allowsKeymapping:== with a ==false== or a ==true== respectively.
+
+[[[
+"Disabling keymappings from a morph instance"
+aMorph allowsKeymapping: false.
+
+"Enabling back keymappings from a morph instance"
+aMorph allowsKeymapping: true.
+]]]
+
+Additionally, to disable keymappings for all instances of a given morph class, the method ==allowsKeymapping== can be redefined.
 
 % Local Variables:
 % eval: (flyspell-mode -1)
