@@ -29,10 +29,8 @@ STON is now hosted on SmalltalkHub. To load STON you can execute:
 [[[
 Gofer new
 	smalltalkhubUser: 'SvenVanCaekenberghe' project: 'STON';
-	package: 'ConfigurationOfSton';
-	load.
-	
-ConfigurationOfSton project load: #stable	
+	configurationOf: 'Ston';
+	loadStable.
 ]]]
 
 You can also add the following repository to your package browser:
@@ -146,10 +144,9 @@ TestDomainObject {
 
 
 !!! an HTTP Response
-Here is a more complex example, the result of doing an HTTP request using the Zinc HTTP Components framework, a ZnResponse object:
+Here is a more complex example, the result of doing an HTTP request using the Zinc HTTP Components framework, a ZnResponse object.
 As you see curly braces are for dictionaries and square brackets for lists.
-
-@@todo how do we get this object from Zinc?
+You can execute the first expression to get an ZnResponse instance to work with. 
 
 [[[
 ZnEasy get: 'http://zn.stfx.eu/zn/small.html'.
@@ -186,8 +183,8 @@ ZnResponse {
 }
 ]]]
 
-@@todo it is not clear to me when we should use key as string or as symbols
-
+Note that when encoding regular objects, STON uses Symbols as keys.
+For Dictionaries, you can use Symbols, Strings and Numbers as keys.
 
 
 !!! About STON features
@@ -226,8 +223,46 @@ The primitive types are numbers, strings, symbols and boolean.
 - Strings are enclosed using single quotes. A backslash is used as an escape mechanism. Some unreadable characters have there own escape code, like in JSON. A general Unicode escape mechanism using four hexadecimal digits is used to encode any character. STON conventionally encodes all non-printable non-ASCII characters.
 - Symbols are introduced by a sharp sign. Symbols consisting of a limited character set (letters, numbers, a dot, underscore, dash or forward slash) are written literally. Symbols containing characters outside this limited set are encoded like strings, enclosed in single quotes.
 - Booleans consist of the constants ==true== and ==false==.
+- The UndefinedObject, ==nil==
 
-@@todo add examples
+Here are some examples of encoded primitive values
+
+[[[
+123
+]]]
+
+[[[
+-10e6
+]]]
+
+[[[
+'a simple string'
+]]]
+
+[[[
+'\u00E9l\u00E8ves Fran\u00E7aises'
+]]]
+
+[[[
+'a tab \t and a newline \n'
+]]]
+
+[[[
+#foo
+]]]
+
+[[[
+#'Foo-bar'
+]]]
+
+[[[
+true
+]]]
+
+[[[
+nil
+]]]
+
 
 !!! Object Values
 
@@ -280,8 +315,8 @@ The following pairs are thus equivalent:
 
 During encoding, some classes can ask for a short list representation.
 This will instruct the pretty printer to print their encoding on one line.
+Check the senders of STONWriter>>#writeObject:listSingleton: and STONWriter>>#writeObject:streamShortList: for details.
 
-@@todo explain previous two lines 
 
 !! References
 
