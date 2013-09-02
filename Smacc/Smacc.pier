@@ -1,74 +1,94 @@
-SmaCC: The Smalltalk Compiler-Compiler 
-from John Brant and Don Roberts
-(http://www.refactory.com/Software/SmaCC)
+!!SmaCC: The Smalltalk Compiler-Compiler 
 
-Tutorial
+This chapter and tutorial was originally written by John Brant and Don Roberts http://www.refactory.com/Software/SmaCC adapted to Pharo. This Chapter is a walk-through tutorial to demonstrate many of the features of SmaCC, the Smalltalk Compiler Compiler. In this example, we will incrementally develop a simple calculator. 
 
-This is a walk-through tutorial to demonstrate many of the features of SmaCC, the Smalltalk Compiler Compiler. In this example, we will incrementally develop a simple calculator. 
 
-Our first calculator is going to be relatively simple. It is going to take two  numbers  and add them together. To start things off, we have to tell the scanner how to recognize a  number. It starts with one or more digits, possibly followed by an decimal point with zero or more digits after it. The scanner definition for this token is: 
+!!! Getting started
+
+[[[
+(ConfigurationOfSmaCC project version: #stable) load: 'Tools'
+]]]
+
+
+Open 
+
+[[[
+SmaCCParserGenerator open
+]]]
+
+
+
+!!! A calculator
+
+Our first calculator is going to be relatively simple. It is going to take two  numbers  and add them together. 
+
+!!!! Recognizing a Number.
+
+To start things off, we have to tell the scanner how to recognize a  number. It starts with one or more digits, possibly followed by an decimal point with zero or more digits after it. The scanner definition for this token is: 
+
+
+[[[
 <number>        :       [0-9]+ (\. [0-9]*) ? ; 
+]]]
 
-Enter that line into the scanner tab on the interface. Let's go over each part: 
+Enter that line into the scanner tab on the interface as shown by Figure *smaccExpression*. 
 
-<number> 
++Expression>file://ScannerExpression.pdf|width=50|label=smaccExpression+ 
 
-Names the token. The name inside the <> must be a legal Smalltalk variable name. 
 
-:
 
-Separates the name of the token from the token's definition. 
+Let's go over each part: 
 
-[0-9] 
-
-Matches any single character in the range '0' to '9' (a digit). 
-
-+
-
-Matches the previous expression  one or more times. In this case, we are matching one or more digits. 
-
-( ... ) 
-
-Groups subexpressions. 
-
-\. 
-
-Matches the '.' character (. has a special meaning in regular expressions, \ quotes it). 
-
-*
-
-Matches the previous expression zero or more times. 
-
-?
-
-Matches the previous expression  zero or one time (i.e., it is optional). 
-
-;
-
-Terminates a token specification. 
+- ==<number>== Names the token. The name inside the ==<>== must be a legal Smalltalk variable name. 
+- ==:== Separates the name of the token from the token's definition. 
+- ==[0-9]== Matches any single character in the range '0' to '9' (a digit). 
+- ==+== Matches the previous expression  one or more times. In this case, we are matching one or more digits. 
+- ==( ... )== Groups subexpressions. 
+- ==\.== Matches the '.' character (. has a special meaning in regular expressions, ==\== quotes it). 
+- ==*== Matches the previous expression zero or more times. 
+- ==?== Matches the previous expression  zero or one time (i.e., it is optional). 
+- ==;== Terminates a token specification. 
 
 We don't want to have to worry about whitespace in our language, so we need to define what a whitespace is and to ignore it. To do this, enter the following token specification on the next line on the scanner page: 
-<whitespace>    :       \s+; 
 
-\s matches any whitespace character (space, tab, linefeed, etc.). So how do  we tell the scanner to ignore it? If you look in the SmaCCScanner class, you will find a method named 'whitespace'. If a scanner understands a method that has the same name as a token name, that method will get called whenever the scanner matches that kind of token. As you can see, the whitespace method eats whitespace. There is also a 'comment' method that behaves similarly. 
+[[[
+<whitespace>    :       \s+; 
+]]]
+
+
+==\s== matches any whitespace character (space, tab, linefeed, etc.). So how do  we tell the scanner to ignore it? If you look in the SmaCCScanner class, you will find a method named 'whitespace'. If a scanner understands a method that has the same name as a token name, that method will get called whenever the scanner matches that kind of token. As you can see, the whitespace method eats whitespace. There is also a 'comment' method that behaves similarly. 
 
 The only other token that will appear in our system would be the '+' token for addition. However, since this is token is always the same, we don't have to tell the scanner what it looks like. It will figure it out from our grammar. 
 
+
+!!! Defining the grammar
+
 Speaking of our grammar, let's go ahead and define it. Enter the following specification in the Parser tab: 
+[[[
 Expression : 
           Expression "+" Number
         | Number ;
 Number : <number>; 
+]]]
 
-This basically says that an expressions is either a number  or an expression added to a number. 
+This basically says that an expressions is either a number or an expression added to a number. 
 
-We should be able to compile a parser now. Switch to the Compile tab. You need to enter the class name for both  the scanner and parser. Use CalculatorScanner and CalculatorParser respectively.  Once the class names are entered, we are ready to compile the parser. Press the  'Compile LALR(1)' button (you should always push this one unless you know what  you are doing. Basically, it will generate smaller parsers than the other  option). This will create new Smalltalk classes for the CalculatorScanner and  CalculatorParser and compile several methods in those classes. All methods that  SmaCC compiles will go into a "generated-*" method protocol. You should not  change those methods since they are replace each time you compile. 
+!!! Compiling a Parser
 
-Whenever SmaCC creates new classes, they are compiled in the default application/package. If you are using VisualAge,  you will need to make sure that the default application is an open edition and  that it prereqs the SmaCCRuntime application. 
+We should be able to compile a parser now. Switch to the Compile tab. You need to enter the class name for both  the scanner and parser. Use CalculatorScanner and CalculatorParser respectively.  Once the class names are entered, we are ready to compile the parser. Press the  'Compile LALR(1)' button (you should always push this one unless you know what  you are doing. Basically, it will generate smaller parsers than the other  option). This will create new Smalltalk classes for the CalculatorScanner and  CalculatorParser and compile several methods in those classes. All methods that  SmaCC compiles will go into a "generated-*" method protocol. You should not change those methods since they are replace each time you compile. 
+
+
+Do not forget that when you want to use the generated parsers, you will need to include the Smacc-Runtime package as a 
+dependency. Edit your project configuration accordingly. 
+
 
 If you have already created the scanner and parser classes, you can load their  definitions by using the "..." buttons next to the class name entry fields. If  you answer "Yes" to the dialog, the text in the scanner/parser tabs will be  replaced with the definition that was last compiled (assuming that the "Generate  definition comments" was checked during the last compile). 
 
-Now we are ready to test our parser. Go to the test pane, enter 3 + 4, and press the parse button; you will see that the parser correctly parses it. If you press Parse and Inspect you will see and inspector on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect  items. For example, try to parse "3 + + 4" or "3 + a". An  error message should appear in the text. 
+!!!Testing our Parser
+
+Now we are ready to test our parser. Go to the Test pane, enter ==3 + 4==, and press the Parse button; you will see that the parser correctly parses it. 
+
+If you press Parse and Inspect you will see and inspector on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect  items. For example, try to parse "3 + + 4" or "3 + a". An  error message should appear in the text. 
 
 Now we need to define the actions that need to happen when we parse our  expressions. Currently, our parser is just validating that the expression is a  bunch of numbers added together. Generally, you will create some structure that  represents what you've parsed (e.g., a parse tree). However, in this case, we  are not concerned about the structure, but we are concerned about the result  (the value of the expression). For our example, you need to modify the grammar  definition to be: 
 Expression : 
