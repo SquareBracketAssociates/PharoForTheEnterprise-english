@@ -1,6 +1,6 @@
 ! BioPharo
 
-''Author: Hernán Morales Durand <hernan.morales@gmail.com>''
+''Author: HernÃ¡n Morales Durand <hernan.morales@gmail.com>''
 
 !!Introduction
 
@@ -105,7 +105,7 @@ Notice however the IUPAC encoding lacks of symbols for termination, gap (`-`), o
 
 !!! About parsing
 
-Parsing is one of the most important parts of developing software in bioinformatics. Parsing is a process by which a developer makes sense of a sentence, usually by breaking it down into letters or words. A parser is an object that scans an input String, decomposes it into its constituent parts (which you may define), and then optionally processes the parts in some suitable manner. Texts usually refer to writing a parser ''by hand'' when you write a parser without any support programming library, so developers use a “parser generator” and write rules for this generator. Why? Because keeping track of contingencies caused by different inputs and input paths is extremelly difficult, and a generated parser code can be proved mathematically. 
+Parsing is one of the most important parts of developing software in bioinformatics. Parsing is a process by which a developer makes sense of a sentence, usually by breaking it down into letters or words. A parser is an object that scans an input String, decomposes it into its constituent parts (which you may define), and then optionally processes the parts in some suitable manner. Texts usually refer to writing a parser ''by hand'' when you write a parser without any support programming library, so developers use a Â“parser generatorÂ” and write rules for this generator. Why? Because keeping track of contingencies caused by different inputs and input paths is extremelly difficult, and a generated parser code can be proved mathematically. 
 
 !!! Parsing in BioPharo
 
