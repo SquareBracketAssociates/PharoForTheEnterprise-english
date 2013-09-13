@@ -1,40 +1,117 @@
 !SmallLint: static analysis in Pharo
 
-Being able to check that the code of your application follows certain rules is important to control its quality. Pharo offers SmallLint a tool originally developed by John Brant and Don Roberts to identify several families of problems that code may exhibit. SmallLint defines a list of static analyses grouped by topics and that you can run automatically on your code. In Pharo we go a step further. Package meta-data supports lets the developer tag the violation reported by SmallLint. This way false positives or irrelevant rules do not systematically pollute the rule evaluation. In this chapter we will go step by step on a project and present the features of the Code Critic Browser.
+Being able to check that the code of your application follows certain rules is important to control its quality. Pharo offers SmallLint a tool originally developed by John Brant and Don Roberts to identify several families of problems that code may exhibit. SmallLint defines a list of static analyses grouped by topics and that you can run automatically on your code. In Pharo we go a step further. Package meta-data support lets the developer tag the violations reported by SmallLint. This way wrongly reported results or irrelevant rules do not systematically pollute the rule evaluation. In this chapter we will go step by step on a project and present the features of the Code Critic Browser.
 
 -First version: February 14, 2012
 -Last update: May 5, 2012
 
 !! Ensuring Quality
 
-Good design practices are fundamental requisites to address software inherent properties (e.g., complexity, conformity, changeability). But smells are often introduced unintentionally by developers during early software development or software maintenance.
+Good design practices are fundamental requisites to address software inherent properties (e.g., complexity, conformity, changeability). But smells are often introduced unintentionally by developers during software development or software maintenance.
 
-For example, a software designer may adopt well-known established practices during initial design; however, such design may indicate certain structural deficiencies or smells that have arose during the process. 
-Also, software developers who are tasked with software maintenance (e.g., develop new features or fix bugs) may introduce smells into the code.  It is important in both cases to address the smells as to reduce the technical debt and maintain a high structural quality of the software.
-Awareness of smells enable designers to make well-informed design decisions and developers to avoid introducing smells in the software. 
+For example, a software engineer may adopt well-known established practices during initial development and during the evolution of the software, deficiencies or smells can arise.
+Software developers who are tasked with software maintenance (e.g., develop new features or fix bugs) may introduce changes that break some implicit rules or coding practices. 
+The number of violations and problems is nowadays referred as the technical debt of a system.
+
+It is important to address the problems and maintain a high structural quality of software since it will improve its general quality and ease its maintenance. 
+Awareness of smells enable developers to make well-informed design decisions and to avoid introducing smells in the software. 
 
 As defined by Martin Fowler, smells are certain structures in the code that suggest (sometimes they scream for) the possibility of refactoring.
-Basically, three types of smells can be found in source code at different levels: architectural, design and implementation. The architectural level includes smells such as god class and cyclical dependency between packages. The design (or micro-architectural) level includes smells such as cyclic hierarchy and large abstraction. Finally, the implementation level includes smells such as improper name length and variables having constant value. SmallLint supports the detection of smells at design and implementation level as well as domain specific ones. In this chapter we cover two first ones as they are provided by default in the Code Critic Browser. 
+Basically, three types of smells can be found in source code at different levels: architectural, design and implementation. 
 
+- The architectural level includes smells such as god class and cyclical dependency between packages. 
+- The design (or micro-architectural) level includes smells such as cyclic hierarchy and large abstraction. 
+- Finally, the implementation level includes smells such as improper name length and variables having constant value. 
 
-!! Using the Code Critic Browser
+SmallLint supports the detection of smells at design and implementation level as well as domain specific ones. In this chapter we cover two first ones as they are provided by default in the Code Critic Browser. 
 
-The Code critic Browser propose a set of rules to be checked on your code. 
+!! Vocabulary
+
+Here we set some vocabulary by defining the following terms:
+
+- Rule: a rule is a computation that when applied on a software entity return whether it is violated or not. 
+
+- Critic or violation: a critic or violation is an instance of the application of a particular rule.
+
+- False positive: A false positive is said to a violation that was detected by a tool but that was not true
+
+!! Code Critic Browser
+
+The Code critic Browser proposes a set of rules to be checked on your code. 
 Once the rules are run, we obtain a set of rule violations, we have several possibilities:
 
 
 - ''Addressing the problem''. In such a case it can be wise to rerun the rule to verify that it has been addressed.
 
-- ''Marking the problem as a ToDo''. The point here is that tagging a violation as todo makes sure that the violation will not show up as red warning when rules are checked again later. ToDos indicate that the package developer knows that there is an issue that it should be fixed later. Having ToDos is a nice feature because it lets the developer decide when to address a problem while avoiding the tools to always report it as a problems. 
+- ''Marking the problem as a ToDo''. The point here is that tagging a violation as todo makes sure that the violation will not show up as red warning when rules are checked again later. ToDos indicate that the package developer knows that there is an issue that it should be fixed later. Having ToDos is a nice feature because it lets the developer decide when to address a problem while avoiding the tools to always report it as a problems. However, using too many todois a clear sign of laziness, so you should only rarely use them.
 
-- ''Marking the violation as a tool error''. Indeed a rule may be wrong or irrelevant. We call such error a false positive. Marking a violation as a false positive makes sure that the next time the rule execution will be executed
+- ''Marking the violation as a tool error''. Indeed a rule may be wrong or irrelevant. We call such error a false positive. Marking a violation as wrong makes sure that the next time the rule execution will be executed
 
 
-With the Critics Browser we payed attention that once a developer runs and evaluates the violations (\ie addressing, marking them as todos or false positives), he can be sure that a new execution of the rules on the same code will not report again the same problems. 
+With the Critics Browser we payed attention that once a developer runs and evaluates the violations (i.e., addressing, marking them as todos or false positives), he can be sure that a new execution of the rules on the same code will not report again the same problems. 
+
+
+!! Using the Code Critic Browser
+
+You can invoke the Code Critic Browser via the Tools menu. In this Chapter, we will execute it on one of our project named Kozen whose purpose is to generate static web page based on scientific publications. We start from a project on which we never run the rules to illustrate some points.
+
+
+!!!Selecting the packages
+Using the Code Critic Browser, select the packages on which you want to run the rules. Click on a package in the list displayed on the left and press the Add button. The package should be displayed in the right pane as shown by Figure *selectingPackage*. We selected the Kozen packages. Once you are done press the Next button. 
+
++Selecting Packages>file://selectingPackage2.png|width=50|label=selectingPackage+ 
+
+!!!Selecting Rules
+Once you have selected the packages on which you want to run the rules, you can select the rules that you want to run as shown in Figure *ruleselection*. Rules are sorted in different categories such as potential bugs, design flaws or optimizations as explained in Section *existingRules*. By default running all the rules is a good idea.
+
++Selecting rules. Running all the rules is a good 
+idea>file://selectingRules.png|width=50|label=ruleselection+ 
+
+
+!!!First look at Results
+Once the rules are run you get a browser showing you the results as shown in Figure *unclassified*. Note that the results will be different on your code. Here we just use this project as an example. 
+
+The Critics Browser shows the results are grouped by rule kinds.  The top level label labelled ''Selected Rules (To sort: 316, ToDo: 0, Wrong: 316)'' means the following: since we just started to check a new project, we did not mark any violations as wrong. This is why we have ''Wrong: 0'', and since we did not flag violations as point to address in the future we have ''ToDo: 0''. So we have 316 rules to sort. We must check these rules to fix them or classify them as todo or false positives.
+
++Browsing rule results. Two methods are not well classified in the class KzMenuInfoBodySite.>file://UnclassifiedMethods.png|width=50|label=unclassified+
+
+
+Figure *unclassified* shows that in the rules related to style issues, the Kozen packages got two badly classified methods. Since moving the methods to a correct method category is easy, we did it and rerun the rules. We obtain then the situation described by Figure *reapplying*.
+Of course there are more interesting rules such as the one identifying bugs. 
+
+
++Reapplying a rule once addressed. Addressing an issue on the spot and running the rules once again.>file://UnclassifiedMethods.png|width=50|label=reapplying+
+
+
+
+The Critics Browser shows the rules on the left pane. When one rule is selected, the violations appear in the right pane. You can search by typing in the top right input field. The pane at the bottom shows either the rule description or the entity exhibiting the violation. Experiment with it.
+
++Banning one single violation.>file://BanningOneViolation.png|width=50|label=BanningOneViolation+
+
+
+
+!!!Banning a single critic
+Figure *BanningOneViolation* shows a false violation for the rule ''references an undeclared variable'' in the method ==Citeseer>>getCiteseerPage==. Indeed,  this violation does not need to be fixed and is exploration was a loss of time. So, we classified this violation as wrong. This is does by clicking on the Wrong buttom or from the rule menu. Time to time, do not forget to look at the false positives and todos in manifests.
+
+
++Banning a rule for the complete selected packages.>file://BanningTimeStampRules.png|width=50|label=BanningTimeStampRules+
+
+
+!!!Banning a complete rule
+If a rule is irrelevant for your project, you can ban this rule for all selected packages during the rules selection step. To do this, make a right click on the rule menu and select ''Ban this rule for all packages''. After this, all  warnings of this rule are marked as wrong  (see Figure *BanningTimeStampRules*). 
+
+
+!!Existing SmallLint Rules
+@existingRules@
+
+SmallLint is a tool that analyses Pharo code and identifies bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of rules.
+
+%%SmallLint-rules.tex
+
 
 
 !! Conclusion
-STON is a practical and simple text-based object serializer. It is handy to exchange information.
+
 
 % Local Variables:
 % eval: (flyspell-mode -1)
