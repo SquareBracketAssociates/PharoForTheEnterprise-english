@@ -157,8 +157,38 @@ IntLoop total: iterations=1 runtime: 0ms
 ]]]
 
 
-!! What is a  Runner
+!! About problem Size
+this is a copy and paste from camillo mail 
 
+problemSize is used to calibrate your benchmark, so usually you adapt this value for
+your machine. And yes you are right, the result is not divided by the problemSize.
+
+
+!!!Long Answer:
+
+The typical use case is like this:
+
+
+[[[
+MathBench >> benchLoopSinus
+	1 to: self problemSize to: [ :i | i sin ]
+]]]
+Now you have two parameters to modifiy:
+# the number of samples you take (aka, how many times you measure the time of #benchLoopSinus)
+# the problem size (aka, how many times you run #sin inside #benchLoopSinus)
+
+You increase (1) to get a more stable result:
+
+[[[
+MathBench run: 1 "for debugging".
+MathBench run: 100 "will take a long time, but results are more accurate"
+]]]
+
+You modify (2) to change the duration of your benchmark, in my silly example above, the
+method is quite small and the benchmark would finish too quickly. Rule of thumb is to 
+get the run time of your benchmark (here #benchLoopSinus) in the range of 10ms and more.
+This way you don't have to worry about the timer resolution used to capture the duration
+of your method.
 
 
 !! Conclusion 
