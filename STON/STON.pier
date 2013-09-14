@@ -9,7 +9,7 @@ It adds symbols as a primitive value, class tags for object values and reference
 Implementations for Pharo Smalltalk, Squeak and Gemstone Smalltalk are available.
 
 -First version: February 14, 2012
--Last update: May 5, 2012
+-Last update: August 15, 2013
 
 !! 
 

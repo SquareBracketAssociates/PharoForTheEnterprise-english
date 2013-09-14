@@ -100,6 +100,8 @@ Figure *BanningOneViolation* shows a false violation for the rule ''references a
 !!!Banning a complete rule
 If a rule is irrelevant for your project, you can ban this rule for all selected packages during the rules selection step. To do this, make a right click on the rule menu and select ''Ban this rule for all packages''. After this, all  warnings of this rule are marked as wrong  (see Figure *BanningTimeStampRules*). 
 
+We suggest you to experiment with the possibility offered by the tool. Nothing is really complex to understand. So try and learn. 
+
 
 !!Existing SmallLint Rules
 @existingRules@
@@ -107,6 +109,95 @@ If a rule is irrelevant for your project, you can ban this rule for all selected
 SmallLint is a tool that analyses Pharo code and identifies bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of rules.
 
 %%SmallLint-rules.tex
+
+
+
+!! Defining Your Own Rules
+
+SmallLint provides two different way to define rules.
+
+- Block rules use the Smalltalk reflective API. These rules can be defined at two levels: class or method.
+- AST rules, these rules are working on method abstract syntax tree. 
+
+In addition rules can define code transformation to address automatically the problems.
+
+
+!!!Block Rules
+
+Block rules use the Smalltalk reflective API. They can be created to find methods that should be not invoked, style consistency such capitalization or variable name length, class or method size, classes not commented, variables not referenced, instance variables defined in all subclasses, among others. In summary, every thing that is possible to do using the Smalltalk reflective API can be used in a block rule. This includes access to the reflective api which allows the easy navigation through classes (and their superclasses and subclasses), methods, variables, arguments, comments, invocations, etc.
+
+These rules are created by extending the class ==RBBlockLintRule==.
+Block rules can be defined at two levels, class or method. If the rule checks a class property or violation (e.g., the presence of a class comment), this rule must implement such checks by implementing the method ==checkClass:==. Similarly, when a rule checks a method property, it must implement the method ==checkMethod:==.
+
+!!Defining Simple Rules
+Let us take as example the definition of a simple rule:  when a class defines == = ==, it also has to define ==hash==. If ==hash== is not defined then the instances of the class might not be able to be used in sets since equal element must have the same hash.
+
+This rule is already defined by SmallLint as the class ==RBDefinesEqualNotHashRule==. Let us study it. 
+
+Since it is a class check, it is implemented using the method ==ckeckClass:==. 
+The methods ==checkClass:== and ==checkMethod:== receive as parameter the object ==aContext==,  instance of ==RBSmalllintContext==. This object contains information about the method/class who is currently checked. 
+
+For example, the method ==RBSmalllintContext>>selectedClass== returns the class currently checked. In the case where we access to this object from ==checkClass:==, ==aContext== can provide the currently compiled method check (==RBSmalllintContext>>compiledMethod==) or all messages send from this method (==RBSmalllintContext>>messages==).
+
+The method ==ckeckClass:== is then defined as follows: 
+
+[[[
+RBDefinesEqualNfotHashRule>>checkClass: aContext 
+	((aContext selectedClass includesSelector: #=) and: 
+		[ (aContext selectedClass includesSelector: #hash) not ])
+			 ifTrue: [ result addClass: aContext selectedClass ]
+]]]
+
+When the current class check violates the rule, this class is added to the environment which contains the set of found violations: result addClass: aContext selectedClass. 
+
+We have to implement the method ==resultClass==. This method returns the type of environment that  will contain identified rule violations. For a rule at the level of class, the environment is ==RBClassEnvironment== and ==RBMethodEnvironment== for a method level one.
+
+[[[
+RBDefinesEqualNotHashRule>>resultClass
+	^ RBClassEnvironment
+]]]
+
+Finally, the ==RBLintRule== interface defines three methods to implement for a given rule
+- its name (==name==)
+- a description (==longDescription==) and 
+- a category to which the rule belongs (==category==). The currently define categories are ''Bugs'', ''Potential Bugs'', ''Optimizations'', ''Design Flaws'', ''Coding Idiom Violations'' and ''Style''. It is possible to add new category.
+
+Here we show such methods. 
+
+[[[
+RBDefinesEqualNotHashRule>>name
+	^ 'Defines = but not hash'
+]]]
+
+[[[
+RBDefinesEqualNotHashRule>>longDescription
+	^ 'This smell arises when a class defines #= also and not #hash. If #hash is not defined then the instances of the class might not be able to be used in sets since equal element must have the same hash.'
+]]]
+
+[[[
+RBDefinesEqualNotHashRule>>category 
+	^ 'Potential Bugs'
+]]]
+
+!!! Abstract Syntax Tree-Based Rules
+
+These rules are based on the Smalltalk abstract syntax tree (AST). They can be created to find assignments with no effect, weak use of the API (pieces of code can be more efficient or legible), among others. In summary, these rules performs operation in AST nodes to find smells.
+
+These rules are created by extending the class ==RBParseTreeLintRule==. The last match must be defined in the initialize method.
+
+
+		
+		here
+		
+		
+[[[
+RBAssignmentWithoutEffectRule>>initialize
+	super initialize.
+	self matcher 
+		matches: '`var := `var'
+		do: [ :node :answer | node ]
+]]]
+
 
 
 

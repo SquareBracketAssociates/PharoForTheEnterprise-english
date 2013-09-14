@@ -88,31 +88,64 @@ If you have already created the scanner and parser classes, you can load their  
 
 Now we are ready to test our parser. Go to the Test pane, enter ==3 + 4==, and press the Parse button; you will see that the parser correctly parses it. 
 
-If you press Parse and Inspect you will see and inspector on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect  items. For example, try to parse "3 + + 4" or "3 + a". An  error message should appear in the text. 
+If you press Parse and Inspect you will see and inspector on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect  items. For example, try to parse "3 + + 4" or "3 + a". An  error message should appear in the text. 
 
-Now we need to define the actions that need to happen when we parse our  expressions. Currently, our parser is just validating that the expression is a  bunch of numbers added together. Generally, you will create some structure that  represents what you've parsed (e.g., a parse tree). However, in this case, we  are not concerned about the structure, but we are concerned about the result  (the value of the expression). For our example, you need to modify the grammar  definition to be: 
+
+!!! Production actions
+
+Now we need to define the actions that need to happen when we parse our expressions. Currently, our parser is just validating that the expression is a  bunch of numbers added together. Generally, you will create some structure that  represents what you've parsed (e.g., a parse tree). However, in this case, we  are not concerned about the structure, but we are concerned about the result  (the value of the expression). For our example, you need to modify the grammar  definition to be: 
+
+[[[
 Expression : 
-          Expression "+" Number {'1' + '3'} | Number {'1'} ;
+          Expression "+" Number {'1' + '3'} 
+	| Number {'1'} ;
 Number : <number> {'1' value asNumber} ;
+]]]
 
-The text between the braces is Smalltalk code that gets evaluated when the rule is applied. Strings with a number get replaced with the corresponding parse node. In the first Expression rule, the '1' will get replaced by the ParseNode that matches Expression and the '3' gets replaced by the ParseNode that matches Number. The second item in the rule is the "+" token. Since we already know what  it is, it is not interesting. Compile the new parser. Now when you do a 'Parse  and Inspect' from the test pane, you should see the result: 7. 
+The text between the braces is Smalltalk code that gets evaluated when the rule is applied. Strings with a number get replaced with the corresponding parse node. 
+
+- In the first Expression rule, the '1' will get replaced by the ParseNode that matches Expression and the '3' gets replaced by the ParseNode that matches Number. The second item in the rule is the "+" token. Since we already know what  it is, it is not interesting. Compile the new parser. Now when you do a 'Parse  and Inspect' from the test pane, you should see the result: 7. 
+
+!!! Making the parser more robust to changes
 
 One problem with the previous code is that if you need to change a rule then you  may also need to change the code for that rule. For example, suppose you  inserted a new token at the beginning of a rule, then you would need to change  all of your references in the Smalltalk code. We can alleviate this problem by  using named expressions. After each part of a rule, we can specify its name.  Names are specified with single quotes and must be legal Smalltalk variable  names. Doing this for our grammar we get: 
-Expression : 
-          Expression 'expression' "+" Number 'number' {expression + number} | Number 'number' {number} ;
-Number : <number> 'numberToken' {numberToken value asNumber} ;
 
-While this will result in the same language being parsed, it makes it easier  to maintain your parsers. Let's extend our language to add subtraction. Here's the new grammar: 
+
+[[[
 Expression : 
-          Expression 'expression' "+" Number 'number' {expression + number} | Expression 'expression' "-" Number 'number' {expression - number} | Number 'number' {number};
+          Expression 'expression' "+" Number 'number' {expression + number} 
+		| Number 'number' {number} ;
+Number : <number> 'numberToken' {numberToken value asNumber} ;
+]]]
+
+
+While this will result in the same language being parsed, it makes it easier  to maintain your parsers. 
+
+!!! Extending our language
+
+Let's extend our language to add subtraction. Here's the new grammar: 
+
+[[[
+Expression : 
+          Expression 'expression' "+" Number 'number' {expression + number} 
+		| Expression 'expression' "-" Number 'number' {expression - number} 
+		| Number 'number' {number};
 Number : <number> 'numberToken' {numberToken value asNumber}; 
+
+]]]
 
 After you've compiled this, '3 + 4 - 2 ' should return '5'. Next, let's add multiplication and division: 
+
+[[[
 Expression : 
           Expression 'expression' "+" Number 'number' {expression + number}
-        | Expression 'expression' "-" Number 'number' {expression - number} | Expression 'expression' "*" Number 'number' {expression * number}
-        | Expression 'expression' "/" Number 'number' {expression / number} | Number 'number' {number};
+        | Expression 'expression' "-" Number 'number' {expression - number} 
+		| Expression 'expression' "*" Number 'number' {expression * number}
+        | Expression 'expression' "/" Number 'number' {expression / number} 
+		| Number 'number' {number};
 Number : <number> 'numberToken' {numberToken value asNumber}; 
+]]]
+
 
 Here we run into a problem. If you evaluate '2 + 3 * 4' you end up with 20. The problem is that in standard mathematics, multiplication has a higher precedence than addition. Our grammar evaluates strictly left-to-right. The standard solution for this problem is to define additional nonterminals to force the sequence of evaluation. Our grammar with that solution would look like: 
 Expression : 
