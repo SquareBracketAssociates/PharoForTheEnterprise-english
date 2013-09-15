@@ -104,7 +104,7 @@ We suggest you to experiment with the possibility offered by the tool. Nothing i
 
 
 !!Existing SmallLint Rules
-@existingRules@
+@existingRules
 
 SmallLint is a tool that analyses Pharo code and identifies bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of symptoms that they can identify.
 
