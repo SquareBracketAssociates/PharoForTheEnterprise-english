@@ -106,10 +106,233 @@ We suggest you to experiment with the possibility offered by the tool. Nothing i
 !!Existing SmallLint Rules
 @existingRules@
 
-SmallLint is a tool that analyses Pharo code and identifies bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of rules.
+SmallLint is a tool that analyses Pharo code and identifies bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of symptoms that they can identify.
 
 %%SmallLint-rules.tex
+The current category for grouping rules are ''Bugs'', ''Potential Bugs'', ''Optimizations'', ''Design Flaws'', ''Coding Idiom Violations'' and ''Style''. We will illustrate some rules of each category.
 
+
+!!!Bugs
+The first family of rules covers bugs. Let us illustrate two rules:
+
+!!!!''Messages sent but not implemented''.
+This smell arises when a message is sent by a method,  but no class in the system implements such a message. This method sent will certainly cause a doesNotUnderstand: message when they are executed.  Further this rule checks if messages sent to self or super exist in the hierarchy, since these can be statically typed.
+
+!!!! ''Subclass responsibility not defined''.
+This rule checks if all ==subclassResponsibility== methods are defined in all leaf classes. If such a method is not overridden, a subclassResponsibility message can occur when this method is called.
+
+
+Here are all the rules currently defined.
+
+
+|!Bug Rule
+|{Debugging code left in methods 
+|{Messages sent but not implemented
+|{Method source contains linefeeds 
+|{Overrides a special messge
+|{Reference to an undeclared variable 
+|{Sends super new initialize
+|{Variable used, but not defined 
+|{Sends unknown message to global
+|{Uses True/False instead of true/false 
+|{ Subclass responsibility not defined
+
+!!! Potential bugs
+Potential bugs are situations that do not automatically lead to systematic bugs. Here is an example of such rule.
+
+!!!!''Possible missing ==; yourself"==''
+
+When using cascaded messages, it is often important to finish the cascade with a yourself message. Why? for several reasons. First the messages in the cascade may not return the last receiver but the argument as in the well known case of adding elements in a collection.
+
+[[[	
+	| col | 
+	col := (OrderedCollection new: 2) add: 1; add: 2.
+]]]	
+In this example, col will be assigned to 2 instead of an orderedCollection because add: returns its argument and not the receiver.  The correct way to do it is using yourself (since yourself returns the receiver).
+
+[[[	
+	| col | 
+	col := (OrderedCollection new: 2) add: 1; add: 2 ; yourself.
+]]]	
+	
+Second case. Using yourself you can block the influence of redefined method.  Imagine the following example: a method creating an instance, initializing it and returning it.
+
+[[[	
+Box class >> new
+		| inst | 
+		inst := self new.
+		inst initialize. 
+		^ inst
+]]]		
+
+What this code ensures is that the instance is returned. Using ==^ inst initialize== would have return the same (but with the risk that if initialize did not return the receiver the new method would not return the right instance. The previous code can be expressed as follow:
+	
+[[[
+Box class >> new
+	^ self new initialize ; yourself 
+]]]
+		
+Here yourself play the same role as the ==^ inst== above. 
+
+
+Here are all the rules currently defined.
+
+|!Potential bug rules
+|{ Assignment inside unwind block should be outside
+|{ Contains a return in an ensure: block 
+|{ Defines = but not hash 
+|{ Doesn't use the result of = 
+|{  Empty exception handler
+|{ Float equality comparison
+|{ Has class instances variables but no initialize methods
+|{ Instance variable overridden by temporary variable
+|{ Literal array contains a symbol true, false, or nil but the source doesn't
+|{ Missing super sends in selected methods
+|{ Modifies collection while iterating over it
+|{ Number of addDependent: messages > removeDependent:
+|{ Platform dependent user interaction
+|{ Possible missing ==; yourself==
+|{ Possible three element point
+|{ References an abstract class
+|{ Returns a boolean and non boolean
+|{ Returns value of ==ifTrue:/ifFalse:== without ==ifFalse:/ifTrue:== block
+|{ Subclass of collection that has an instance variable but doesn't define copyEmpty
+|{ Temporaries read before written
+|{ Uncommon message send
+|{ Unconditional recursion
+|{ Unpackaged code
+|{ Uses the result of an ==add:== message
+|{ add translations to strings in menus
+
+%|{ ==A+B*C== might be ==A+(B*C)==
+%|{ ==A+B*C== might be ==A+(B*C)==
+
+!!! Optimizations
+The optimization rules often identify code that can be more efficiently written. For example here are two rules falling in this category.
+
+!!!! ''Move variable assignment outside of single statement ifTrue:ifFalse: blocks''
+
+ Moving assignments outside blocks leads to shorter and more efficient code.
+
+For example:
+[[[
+test 
+	ifTrue: [var := 1]
+	ifFlase: [var:= 2]
+is equivalent to:
+var :=  test 
+	ifTrue: [1]
+	ifFlase: [2]
+]]]
+
+!!!!''String concatenation instead of streams''.
+
+Check for string concatenation inside some iteration message. Since string concatenation is O(n2), it is better to use streaming since it is O(n) - assuming that n is large enough. As a general principal avoid , since the receiver is copied. Therefore chaining , messages will lead to multiple useless copies of the receiver. 
+
+Instead of writing
+[[[
+	| string | 
+	string := String new.
+	#(1 2 3) do: [ :each |
+		string := string, each asString].
+	^ string
+]]]
+Write, it is much more efficient.
+
+[[[
+	String streamContents: [:s | 
+		#(1 2 3)  do: [:each | s nextPutAll: each asString]]
+]]]
+
+Here are all the rules currently defined.
+|!Optimization Rule
+|{ Method just sends super message
+|{ Instance variables not read AND written
+|{ Assignment has no effect
+|{ Doesn't use the result of a collect:/select:
+|{ Uses detect:ifNone: instead of contains:
+|{ Unnecessary = true
+|{ Block immediately evaluated
+|{ Non-blocks in special messages
+|{ ifTrue:/ifFalse: returns instead of and:/or:'s
+|{ Literal array contains only characters
+|{ Temporary variables not read AND written
+|{ Uses or's instead of a searching literal
+|{ Unnecessary size check
+|{ String concatenation instead of streams
+|{ Unnecessary assignment to a temporary variable
+|{ Uses (a and: [b]) and: [c] instead of a and: [b and: [c]]
+|{ Uses (to:)do: instead of to:do:
+|{ Doesn't use the result of a yourself message
+|{ Check for same statements at end of ifTrue:ifFalse: blocks
+
+!!! Design Flaws
+Design flaws pointed out potential design problems such as code duplication or unused methods. 
+
+
+!!!! ''Methods equivalently defined in superclass''.
+
+ This violation arises when a method is equivalent to its superclass method. The methods are equivalent when they have the same abstract syntax tree, except for variables names. Such method does not add anything to the computation and can be removed since the superclass method have the same behavior. Furthermore, the methods ==new== and ==initialize== are ignored once they are often overridden for compatibility with other platforms. The ignored methods can be edited in ==RBEquivalentSuperclassMethodsRule>>ignoredSelectors==.
+
+!!!! ''Excessive number of arguments''.
+
+This violation arises when a method contains a long number of argument (five or more), which can indicate that a new object should be created to wrap the numerous parameters. The defined number of arguments can be edited in ==RBExcessiveArgumentsRule>>argumentsCount==.
+
+This violations arises when a method contains a long number of argument (five or more), which can indicate that a new object should be created to wrap the numerous parameters. The defined number of arguments can be edited in ==RBExcessiveArgumentsRule>>argumentsCount==.
+
+|!Design Flaws Rules
+|{ Class not referenced
+|{ Methods equivalently defined in superclass
+|{ Excessive number of arguments
+|{ Excessive inheritance depth
+|{ Excessive number of methods
+|{ Excessive number of variables
+|{ Methods implemented but not sent
+|{ Inconsistent method classification
+|{ Instance variables defined in all subclasses
+|{ Long methods
+|{ Method defined in all subclasses, but not in superclass
+|{ Refers to class name instead of "self class"
+|{ Sends different super message
+|{ Variables not referenced
+|{ Utility methods
+|{ Variable is only assigned a single literal value
+|{ Variable referenced in only one method and always assigned first
+|{ Sends a deprecated message to a known global
+
+
+!!! Coding Idiom Violations
+The coding idiom violations are more related to inconsistencies that can make the code awkward to read. 
+
+
+!!!! ''Sends "questionable" message''.
+
+This violation arises when methods send messages that perform low level things. You might want to limit the number of such messages in your application. Messages such as ==isKindOf:== can signify a lack of polymorphism. You can see which methods are "questionable" by editing the ==RBBadMessageRule>>badSelectors== method. Some examples are: ==respondsTo:==, ==isMemberOf:==, ==perform:== and ==perform:arguments:==.
+
+|!Coding Idiom Violation Rules
+|{ Sends "questionable" message
+|{ Literal array contains a #,
+|{ No class comment
+|{ Unnecessary assignment or return in block
+|{ Sends add:/remove: to external collection
+|{ Uses do: instead of collect: or select:'s
+|{ Uses "size = 0", "= nil",  or "at: 1" instead of "isEmpty",  "isNil", or "first"
+|{ Uses do: instead of contains: or detect:'s
+|{ Guarding clauses
+|{ to:do: doesn't use collect:
+|{ Uses to:do: instead of do:, with:do: or timesRepeat:
+|{ to:do: loop also increments a counter
+|{ Uses whileTrue: instead of to:do:
+
+!!! Style
+The style rules focus on the structure of the symbols and how they convey their associated semantics.
+
+|!Style Rules
+|{ Redundant class name in selector
+|{ Class variable capitalization
+|{ Instance variable capitalization
+|{ Temporary variable capitalization
+|{ Unclassified methods
 
 
 !! Defining Your Own Rules
