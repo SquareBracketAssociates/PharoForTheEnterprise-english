@@ -93,7 +93,7 @@ Object subclass: #MyFirstWebApp
 	category: 'MyFirstWebApp'
 ]]]
 
-Any object can be a web app, it only has to respond to a message called ==handleRequest:== to answer a response based on a request. Now add the following method
+Any object can be a web app, it only has to respond to a message called ==handleRequest:== to answer a response based on a request. Now add the following method:
 
 [[[
 MyFirstWebApp>>handleRequest: request
@@ -102,23 +102,217 @@ MyFirstWebApp>>handleRequest: request
 	^ ZnResponse ok: (ZnEntity text: 'Hello World!')
 ]]]
 
-Create a new protocol called 'public' (by right-clicking in the third column). When the new protocol is selected, a new method template will appear in the bottom pane. Overwrite the whole template with the code above and accept it.
+Create a new protocol called 'public' (by right-clicking in the third column). When the new protocol is selected, a new method template will appear in the bottom pane. Overwrite the whole template with the code above and accept it (as shown Figure *pharo-in-action*).
 
-+Defining the >file://figures/pharo-in-action.png|width=80|label=pharo-in-action+
++Defining a first version of the application.>file://figures/pharo-in-action.png|width=80|label=pharo-in-action+
 
-What we do here is look at the incoming request to make sure the URI path is ==/image== which will be the final name of our web app. If not, we return a Not Found (code 404) response. If so, we create and return an OK response (code 200) with a simple text entity as body or payload.
+What we do here is to look at the incoming request to make sure the URI path is ==/image== which will be the final name of our web app. If not, we return a Not Found (code 404) response. If so, we create and return an OK response (code 200) with a simple text entity as body or payload.
 
 [[[
 MyFirstWebApp>>value: request
 	^ self handleRequest: request
 ]]]
 
-Now do the same for the #value: method, effectively making it an alias of ==handleRequest:== - this is needed so our web app object can be used more flexibly. To test our web app, we'll add it as one of the pages of the default server, like this
+Now we define the methos ==value:== to make it an alias of ==handleRequest:== - this is needed so our web app object can be used more flexibly. To test our web app, we'll add it as one of the pages of the default server, like this
 
 [[[
 ZnServer startDefaultOn: 8080.
 ZnServer default delegate map: #image to: MyFirstWebApp new.
 ]]]
+
+The second expression adds a route from ==/image== to an instance of our web app object. If all is well, ==http://localhost:8080/image== should show your friendly message. Note how we are not even serving HTML, just plain text.
+
+Try changing the text. Try putting a breakpoint in ==MyFirstWebApp>>handleRequest:== (right-click on the method name in the fourth column) and inspecting things. Then just continue the execution. Note how this is a live environment: you make a little change and it is immediately used, you can look into the actual request and response objects moving around (as shown in Figures *debugger1* and *debugger2*.
+
+
++Using the debugger to navigate execution>file://figures/breakpoint-1.png|width=80|label=debugger1+
++Using the debugger to navigate execution>file://figures/breakpoint-2.png|width=80|label=debugger2+
+
+
+Leave the server running. If you want you can enable logging again, or switch to debug mode and inspect the server instance. Don't forget to remove any breakpoints you set.
+
+!! Serving an HTML page
+
+HTML generation and/or using templates can be done with some of the higher level frameworks, here we'll manually compose our HTML. Go ahead and add a new method, #html, while changing a previous one slightly
+
+MyFirstWebApp>>html
+  ^ '<html><head><title>Image</title>
+  <body>
+  <h1>Image</h1>
+  </body></html>'
+
+MyFirstWebApp>>handleRequest: request
+  request uri path = #image
+    ifFalse: [ ^ ZnResponse notFound: request uri ].
+  ^ ZnResponse ok: (ZnEntity html: self html)
+
+Accept the above two methods and test ==http://localhost:8080/image== again to make sure you now see a real HTML page.
+
+You have probably noted the red exclamation mark icon in front of our class name in the browser. This is an indication that we have no class comment, which is not good: documentation is important. Click the 'Comment' button and write some documentation. You can also use the class comment as a notepad for yourself, saving useful expressions that you can later execute in place.
+
+!! Serving an Image
+
+Images for the purpose of our web app can be any of three types: GIF, JPEG or PNG. We will store them in memory as an entity, an object wrapping the actual bytes together with a mime type.
+
+To simplify our app, we will arrange things so that we always start with a default image, then we always have something to show. Let's add a little helper, ==downloadPharoLogo==
+
+
+
+[[[
+MyFirstWebApp>>downloadPharoLogo
+  ^ ZnClient new 
+      beOneShot;
+      get: 'http://www.pharo-project.org/images/pharo.png';
+      entity 
+]]]
+
+
+Quickly test the code by selecting the method body (not including the name) and inspecting the result. You should get an image entity back. Now add the accessor ==image== defined as follow:
+
+
+[[[
+MyFirstWebApp>>image
+	^ image ifNil: [ image := self downloadPharoLogo ]
+]]]
+
+
+When you try to accept this method, you will get an error. We are using an unknown variable, image. Select the option to automatically declare a new instance variable and we are good.
+
+Remember that we decided we were going to serve the raw image itself using a query variable, like ==/image?raw=true==. 
+Make the following modification to existing methods and add a new one
+
+[[[
+MyFirstWebApp>>html
+  ^ '<html><head><title>Image</title>
+  <body>
+  <h1>Image</h1>
+  <img src="image?raw=true"/>
+  </body></html>'
+
+MyFirstWebApp>>handleRequest: request
+  request uri path = #image
+    ifFalse: [ ^ ZnResponse notFound: request uri ].
+  ^ self handleGetRequest: request
+
+MyFirstWebApp>>handleGetRequest: request
+  ^ (request uri queryAt: #raw ifAbsent: [ nil ])
+      ifNil: [ ZnResponse ok: (ZnEntity html: self html) ]
+      ifNotNil: [ ZnResponse ok: self image ]
+]]]
+
+We extended our HTML with a IMG element. We delegate some of our request handling to a new method, ==handleGetRequest:== where we inspect 
+the incoming URI. If it has a non empty query variable raw we serve the raw image directly, else we serve the HTML page like before.
+
+Check it out: you should now see an image in the browser when visiting ==http://localhost:8080/image==!
+
+!! Uploading a new image
+
+
+Interaction is what differentiates a web site from a web application. We will now add the ability for users to upload a new image to change the one on the server. To add this ability we need to use an HTML form. Let's change our HTML one final time.
+
+
+[[[
+MyFirstWebApp>>html
+  ^ '<html><head><title>Image</title>
+  <body>
+  <h1>Image</h1>
+  <img src="image?raw=true"/>
+  <br/>
+  <form enctype="multipart/form-data" action="image" method="POST">
+   <h3>Change the image:</h3>
+   <input type="file" name="file"/>
+   <input type="submit" value= "Upload"/>
+  </form>
+  </body></html>'
+]]]
+
+
+The user will be able to select a file on the local disk for upload. When s/he click the Upload submit button, the web browser will send an HTTP POST to the action URL, ==/image==, encoding the form contents using a technique called multi-part form-data. With the above change, you will be able to see the form, its just won't work, yet.
+
+In our request handling, we have to distinguish between GET and POST requests. Change ==handleRequest:== to its final form.
+
+
+[[[
+MyFirstWebApp>>handleRequest: request
+  request uri path = #image
+    ifTrue: [ 
+      request method = #GET
+        ifTrue: [ ^ self handleGetRequest: request ].
+      request method = #POST
+        ifTrue: [ ^ self handlePostRequest: request ] ].
+  ^ ZnResponse notFound: request uri
+]]]
+
+
+
+Now we have to add an implementation of ==handlePostRequest:== to accept the uploaded image and change the current one.
+
+[[[
+MyFirstWebApp>>handlePostRequest: request
+   | part newImage |
+   part := request entity partNamed: #file.
+   newImage := part entity.
+   image := newImage.
+   ^ ZnResponse redirect: #image
+]]]
+
+We start with a simple version without error handling. The entity of the incoming request is a multi-part form-data object containing named parts. Each part, such as the file part, contains another sub-entity. In our case, the uploaded image. Note also how the response to the POST is a redirect to our main page. You should now have a fully functional web app. Go and try it out!
+
+We have taken a bit of a shortcut in the code above. It is pretty dangerous to just accept what is coming in from the internet without doing some checking. Here is a version that does that.
+
+[[[
+MyFirstWebApp>>handlePostRequest: request
+  | part newImage badRequest |
+  badRequest := [ ^ ZnResponse badRequest: request ].
+  (request hasEntity 
+       and: [ request contentType matches: ZnMimeType multiPartFormData ])
+	ifFalse: badRequest.
+  part := request entity 
+            partNamed: #file
+            ifNone: badRequest.
+  newImage := part entity.
+  (newImage notNil
+      and: [ newImage contentType matches: 'image/*' asZnMimeType ])
+    ifFalse: badRequest.
+  image := newImage.
+  ^ ZnResponse redirect: #image
+]]]
+
+Our standard response when something is wrong will be to return a Bad Request (code 400). We define this behaviour to a local variable so that we can reuse it multiple times over. The first test makes sure there actually is an entity in the POST request and that it is of the correct type. Next we handle the case when there is no file part. Finally, we make sure the file part is actually an image (JPEG, PNG or GIF) by matching with the wildcard image/* mime type.
+
+If you are curious, set a breakpoint in the method and inspect the request object of an actual request. You can learn an awful lot from looking at live objects.
+
+!! Live debugging
+Let's make a deliberate error in our code. Change ==handlePostRequest:== so that the last line reads like
+
+[[[
+^ ZnResponse redirectTo: #image
+]]]
+
+
+The compiler will already complain, ignore the warning and accept the code anyway. Try uploading a new image. The debugger will pop up telling you that ==ZnResponse== does not understand ==redirectTo:== and show you the offending code. You could fix the code and try uploading again to see if it works as shown in Figure *dnu*.
+
+
++Debugging.>file://figures/dnu.png|width=80|label=dnu+
+
+
+But we can do better! Just fix the code and accept it. Now you can restart and proceed the execution. The same request is still active and the server will now do the correct thing. Have a look at your web browser: you will see that your initial action, the upload, that first initially hung, has now succeeded.
+
+Up to now, the suggestion was that you can use the debugger and inspector tools to look at requests and responses. But you can actually change them while they are happening ! Prepare for our experiment by making sure that you change the image to be different from the default one. Now set a breakpoint in ==handleGetRequest:== and reload the main page. There will be two requests coming in: the first one for ==/image== and the second one for ==/image?raw=true==. Proceed the first one.
+
+
++Live change.>file://figures/live-change.png|width=80|label=live+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
