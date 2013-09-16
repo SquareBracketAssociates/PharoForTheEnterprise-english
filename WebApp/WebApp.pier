@@ -4,7 +4,7 @@
 -Second version: September 10, 2012 by Stéphane Ducasse
 
 There are lots of ways to get something on the Web today. However, it remains important that you understand the actual mechanics of building and deploying a web application. This guide explains how to build and deploy your first web application using Pharo.
-Of course, there are an infinite number of ways to make a web app. Even in Pharo, there are multiple frameworks approaching this problem (such as Seaside a web framework or Amber a Javascript Smalltalk). Here, we'll be using the foundational framework called Zinc HTTP Components. By doing so, we'll be touching the fundamentals of HTTP and web apps.
+Of course, there are an infinite number of ways to make a web app. Even in Pharo, there are multiple frameworks approaching this problem, most notably Seaside, AIDAweb and Iliad. Here, we'll be using the foundational framework called Zinc HTTP Components. By doing so, we'll be touching the fundamentals of HTTP and web apps.
 
 This chapter could have been called ''understanding HTTP fundamentals through Zinc HTTP Components''.
 
@@ -17,9 +17,9 @@ Let's get started.
 
 !! The Web App
 
-The web application that we are going to build will show a picture and allow users to change the picture by uploading a new one. Because we want to focus on the basic mechanics, the fundamentals as well as the build and deploy process, there are some simplifications. There will be one picture for all users, no login and we will store the picture in memory.
+The web application that we are going to build will show a picture and allow users to change the picture by uploading a new one as shown by Figure *imageweb*. Because we want to focus on the basic mechanics, the fundamentals as well as the build and deploy process, there are some simplifications. There will be one picture for all users, no login and we will store the picture in memory.
 
-@@Picture here@@
++A simple web application>file://figures/image-web-app.png|width=80|label=imageweb+
 
 In our implementation, ==/image== will serve an HTML page containing the image and a form. To serve the raw image itself, we'll add a parameter, like ==/image?raw=true==. These will be GET HTTP requests. The form will submit its data to ==/image== as a POST request.
 
@@ -28,8 +28,8 @@ In our implementation, ==/image== will serve an HTML page containing the image a
 
 Go to http://www.pharo.org and download the whole self-contained package for your platform, it is just 12 to 14 MB. Select the released version 2.0. Although not recommended for beginners, current development version 3.0 will do just fine as well. Double-click and you enter the Pharo world.
 
++Pharo>file://figures/pharo-in-action.png|width=80|label=pharo-in-action+
 
-@@Picture here@@
 
 Pharo is an incredible sophisticated and deep environment and toolset. The Pharo by Example book available at: http://www.pharobyexample.org is probably the best way to get started if all this is totally new to you. In what follows we assume you at least read the first chapter, 'A Quick Tour of Pharo'.
 
@@ -43,16 +43,16 @@ ZnServer startDefaultOn: 8080.
 Now open the address ==http://localhost:8080== in your favorite browser. You should get the default welcome page of Zinc HTTP Components. If you visit ==http://localhost:8080/help== you will see a list of all available pages. Now add the following line to your workspace and execute it:
 
 [[[
-ZnServer'default'logToTranscript.
+ZnServer default logToTranscript.
 ]]]
 
 Next open the Transcript and visit or reload a page. You should see log output like this
 
 [[[
-2013>07>07'00:22:49 479147 D Executing request/response loop 
+2013>07>07 00:22:49 479147 D Executing request/response loop 
 2013>07>07 00:22:49 479147 I Read a ZnRequest(GET /) 
-2013>07>07'00:22:49 479147 T GET / 200 977B 2ms 
-2013>07>07'00:22:49 479147 I Wrote a ZnResponse(200 OK text/html;charset=utf>8 977B)
+2013>07>07 00:22:49 479147 T GET / 200 977B 2ms 
+2013>07>07 00:22:49 479147 I Wrote a ZnResponse(200 OK text/html;charset=utf>8 977B)
 ]]]
 
 You can see the server entering the request/response loop for a certain connection/thread. A request is read and a response is written. Let's have a look under the hood. Put the server in debug mode and inspect it like this
@@ -61,412 +61,65 @@ You can see the server entering the request/response loop for a certain connecti
 ZnServer default debugMode: true; inspect.
 ]]]
 
-Visit and reload a page. Now you can use the inspector to explore the actual lastRequest and lastResponse objects. Pretty cool, right ?
+Visit and reload a page. Now you can use the inspector to explore the actual lastRequest and lastResponse objects. Pretty cool, right?
 
-
-
-
-
-
-
-Here we set some vocabulary by defining the following terms:
-
-- Rule: a rule is a computation that when applied on a software entity return whether it is violated or not. 
-
-- Critic or violation: a critic or violation is an instance of the application of a particular rule.
-
-- False positive: A false positive is said to a violation that was detected by a tool but that was not true
-
-!! Code Critic Browser
-
-The Code critic Browser proposes a set of rules to be checked on your code. 
-Once the rules are run, we obtain a set of rule violations, we have several possibilities:
-
-
-- ''Addressing the problem''. In such a case it can be wise to rerun the rule to verify that it has been addressed.
-
-- ''Marking the problem as a ToDo''. The point here is that tagging a violation as todo makes sure that the violation will not show up as red warning when rules are checked again later. ToDos indicate that the package developer knows that there is an issue that it should be fixed later. Having ToDos is a nice feature because it lets the developer decide when to address a problem while avoiding the tools to always report it as a problems. However, using too many todois a clear sign of laziness, so you should only rarely use them.
-
-- ''Marking the violation as a tool error''. Indeed a rule may be wrong or irrelevant. We call such error a false positive. Marking a violation as wrong makes sure that the next time the rule execution will be executed
-
-
-With the Critics Browser we payed attention that once a developer runs and evaluates the violations (i.e., addressing, marking them as todos or false positives), he can be sure that a new execution of the rules on the same code will not report again the same problems. 
-
-
-!! Using the Code Critic Browser
-
-You can invoke the Code Critic Browser via the Tools menu. In this Chapter, we will execute it on one of our project named Kozen whose purpose is to generate static web page based on scientific publications. We start from a project on which we never run the rules to illustrate some points.
-
-
-!!!Selecting the packages
-Using the Code Critic Browser, select the packages on which you want to run the rules. Click on a package in the list displayed on the left and press the Add button. The package should be displayed in the right pane as shown by Figure *selectingPackage*. We selected the Kozen packages. Once you are done press the Next button. 
-
-+Selecting Packages>file://selectingPackage2.png|width=50|label=selectingPackage+ 
-
-!!!Selecting Rules
-Once you have selected the packages on which you want to run the rules, you can select the rules that you want to run as shown in Figure *ruleselection*. Rules are sorted in different categories such as potential bugs, design flaws or optimizations as explained in Section *existingRules*. By default running all the rules is a good idea.
-
-+Selecting rules. Running all the rules is a good 
-idea>file://selectingRules.png|width=50|label=ruleselection+ 
-
-
-!!!First look at Results
-Once the rules are run you get a browser showing you the results as shown in Figure *unclassified*. Note that the results will be different on your code. Here we just use this project as an example. 
-
-The Critics Browser shows the results are grouped by rule kinds.  The top level label labelled ''Selected Rules (To sort: 316, ToDo: 0, Wrong: 316)'' means the following: since we just started to check a new project, we did not mark any violations as wrong. This is why we have ''Wrong: 0'', and since we did not flag violations as point to address in the future we have ''ToDo: 0''. So we have 316 rules to sort. We must check these rules to fix them or classify them as todo or false positives.
-
-+Browsing rule results. Two methods are not well classified in the class KzMenuInfoBodySite.>file://UnclassifiedMethods.png|width=50|label=unclassified+
-
-
-Figure *unclassified* shows that in the rules related to style issues, the Kozen packages got two badly classified methods. Since moving the methods to a correct method category is easy, we did it and rerun the rules. We obtain then the situation described by Figure *reapplying*.
-Of course there are more interesting rules such as the one identifying bugs. 
-
-
-+Reapplying a rule once addressed. Addressing an issue on the spot and running the rules once again.>file://UnclassifiedMethods.png|width=50|label=reapplying+
-
-
-
-The Critics Browser shows the rules on the left pane. When one rule is selected, the violations appear in the right pane. You can search by typing in the top right input field. The pane at the bottom shows either the rule description or the entity exhibiting the violation. Experiment with it.
-
-+Banning one single violation.>file://BanningOneViolation.png|width=50|label=BanningOneViolation+
-
-
-
-!!!Banning a single critic
-Figure *BanningOneViolation* shows a false violation for the rule ''references an undeclared variable'' in the method ==Citeseer>>getCiteseerPage==. Indeed,  this violation does not need to be fixed and is exploration was a loss of time. So, we classified this violation as wrong. This is does by clicking on the Wrong buttom or from the rule menu. Time to time, do not forget to look at the false positives and todos in manifests.
-
-
-+Banning a rule for the complete selected packages.>file://BanningTimeStampRules.png|width=50|label=BanningTimeStampRules+
-
-
-!!!Banning a complete rule
-If a rule is irrelevant for your project, you can ban this rule for all selected packages during the rules selection step. To do this, make a right click on the rule menu and select ''Ban this rule for all packages''. After this, all  warnings of this rule are marked as wrong  (see Figure *BanningTimeStampRules*). 
-
-We suggest you to experiment with the possibility offered by the tool. Nothing is really complex to understand. So try and learn. 
-
-
-!!Existing SmallLint Rules
-@existingRules
-
-SmallLint is a tool that analyses Pharo code and identifies bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of symptoms that they can identify.
-
-%%SmallLint-rules.tex
-The current category for grouping rules are ''Bugs'', ''Potential Bugs'', ''Optimizations'', ''Design Flaws'', ''Coding Idiom Violations'' and ''Style''. We will illustrate some rules of each category.
-
-
-!!!Bugs
-The first family of rules covers bugs. Let us illustrate two rules:
-
-!!!!''Messages sent but not implemented''.
-This smell arises when a message is sent by a method,  but no class in the system implements such a message. This method sent will certainly cause a doesNotUnderstand: message when they are executed.  Further this rule checks if messages sent to self or super exist in the hierarchy, since these can be statically typed.
-
-!!!! ''Subclass responsibility not defined''.
-This rule checks if all ==subclassResponsibility== methods are defined in all leaf classes. If such a method is not overridden, a subclassResponsibility message can occur when this method is called.
-
-
-Here are all the rules currently defined.
-
-
-|!Bug Rule
-|{Debugging code left in methods 
-|{Messages sent but not implemented
-|{Method source contains linefeeds 
-|{Overrides a special messge
-|{Reference to an undeclared variable 
-|{Sends super new initialize
-|{Variable used, but not defined 
-|{Sends unknown message to global
-|{Uses True/False instead of true/false 
-|{ Subclass responsibility not defined
-
-!!! Potential bugs
-Potential bugs are situations that do not automatically lead to systematic bugs. Here is an example of such rule.
-
-!!!!''Possible missing ==; yourself"==''
-
-When using cascaded messages, it is often important to finish the cascade with a yourself message. Why? for several reasons. First the messages in the cascade may not return the last receiver but the argument as in the well known case of adding elements in a collection.
-
-[[[	
-	| col | 
-	col := (OrderedCollection new: 2) add: 1; add: 2.
-]]]	
-In this example, col will be assigned to 2 instead of an orderedCollection because add: returns its argument and not the receiver.  The correct way to do it is using yourself (since yourself returns the receiver).
-
-[[[	
-	| col | 
-	col := (OrderedCollection new: 2) add: 1; add: 2 ; yourself.
-]]]	
-	
-Second case. Using yourself you can block the influence of redefined method.  Imagine the following example: a method creating an instance, initializing it and returning it.
-
-[[[	
-Box class >> new
-		| inst | 
-		inst := self new.
-		inst initialize. 
-		^ inst
-]]]		
-
-What this code ensures is that the instance is returned. Using ==^ inst initialize== would have return the same (but with the risk that if initialize did not return the receiver the new method would not return the right instance. The previous code can be expressed as follow:
-	
-[[[
-Box class >> new
-	^ self new initialize ; yourself 
-]]]
-		
-Here yourself play the same role as the ==^ inst== above. 
-
-
-Here are all the rules currently defined.
-
-|!Potential bug rules
-|{ Assignment inside unwind block should be outside
-|{ Contains a return in an ensure: block 
-|{ Defines = but not hash 
-|{ Doesn't use the result of = 
-|{  Empty exception handler
-|{ Float equality comparison
-|{ Has class instances variables but no initialize methods
-|{ Instance variable overridden by temporary variable
-|{ Literal array contains a symbol true, false, or nil but the source doesn't
-|{ Missing super sends in selected methods
-|{ Modifies collection while iterating over it
-|{ Number of addDependent: messages > removeDependent:
-|{ Platform dependent user interaction
-|{ Possible missing ==; yourself==
-|{ Possible three element point
-|{ References an abstract class
-|{ Returns a boolean and non boolean
-|{ Returns value of ==ifTrue:/ifFalse:== without ==ifFalse:/ifTrue:== block
-|{ Subclass of collection that has an instance variable but doesn't define copyEmpty
-|{ Temporaries read before written
-|{ Uncommon message send
-|{ Unconditional recursion
-|{ Unpackaged code
-|{ Uses the result of an ==add:== message
-|{ add translations to strings in menus
-
-%|{ ==A+B*C== might be ==A+(B*C)==
-%|{ ==A+B*C== might be ==A+(B*C)==
-
-!!! Optimizations
-The optimization rules often identify code that can be more efficiently written. For example here are two rules falling in this category.
-
-!!!! ''Move variable assignment outside of single statement ifTrue:ifFalse: blocks''
-
- Moving assignments outside blocks leads to shorter and more efficient code.
-
-For example:
-[[[
-test 
-	ifTrue: [var := 1]
-	ifFlase: [var:= 2]
-is equivalent to:
-var :=  test 
-	ifTrue: [1]
-	ifFlase: [2]
-]]]
-
-!!!!''String concatenation instead of streams''.
-
-Check for string concatenation inside some iteration message. Since string concatenation is O(n2), it is better to use streaming since it is O(n) - assuming that n is large enough. As a general principal avoid , since the receiver is copied. Therefore chaining , messages will lead to multiple useless copies of the receiver. 
-
-Instead of writing
-[[[
-	| string | 
-	string := String new.
-	#(1 2 3) do: [ :each |
-		string := string, each asString].
-	^ string
-]]]
-Write, it is much more efficient.
+Tomplete our little tour, let's try one more thing. We can execute any request programmatically as well, using an HTTP client. To visit a page, try inspecting the result of the following expression:
 
 [[[
-	String streamContents: [:s | 
-		#(1 2 3)  do: [:each | s nextPutAll: each asString]]
+ZnClient new get:'http://localhost:8080/random'
 ]]]
 
-Here are all the rules currently defined.
-|!Optimization Rule
-|{ Method just sends super message
-|{ Instance variables not read AND written
-|{ Assignment has no effect
-|{ Doesn't use the result of a collect:/select:
-|{ Uses detect:ifNone: instead of contains:
-|{ Unnecessary = true
-|{ Block immediately evaluated
-|{ Non-blocks in special messages
-|{ ifTrue:/ifFalse: returns instead of and:/or:'s
-|{ Literal array contains only characters
-|{ Temporary variables not read AND written
-|{ Uses or's instead of a searching literal
-|{ Unnecessary size check
-|{ String concatenation instead of streams
-|{ Unnecessary assignment to a temporary variable
-|{ Uses (a and: [b]) and: [c] instead of a and: [b and: [c]]
-|{ Uses (to:)do: instead of to:do:
-|{ Doesn't use the result of a yourself message
-|{ Check for same statements at end of ifTrue:ifFalse: blocks
-
-!!! Design Flaws
-Design flaws pointed out potential design problems such as code duplication or unused methods. 
-
-
-!!!! ''Methods equivalently defined in superclass''.
-
- This violation arises when a method is equivalent to its superclass method. The methods are equivalent when they have the same abstract syntax tree, except for variables names. Such method does not add anything to the computation and can be removed since the superclass method have the same behavior. Furthermore, the methods ==new== and ==initialize== are ignored once they are often overridden for compatibility with other platforms. The ignored methods can be edited in ==RBEquivalentSuperclassMethodsRule>>ignoredSelectors==.
-
-!!!! ''Excessive number of arguments''.
-
-This violation arises when a method contains a long number of argument (five or more), which can indicate that a new object should be created to wrap the numerous parameters. The defined number of arguments can be edited in ==RBExcessiveArgumentsRule>>argumentsCount==.
-
-This violations arises when a method contains a long number of argument (five or more), which can indicate that a new object should be created to wrap the numerous parameters. The defined number of arguments can be edited in ==RBExcessiveArgumentsRule>>argumentsCount==.
-
-|!Design Flaws Rules
-|{ Class not referenced
-|{ Methods equivalently defined in superclass
-|{ Excessive number of arguments
-|{ Excessive inheritance depth
-|{ Excessive number of methods
-|{ Excessive number of variables
-|{ Methods implemented but not sent
-|{ Inconsistent method classification
-|{ Instance variables defined in all subclasses
-|{ Long methods
-|{ Method defined in all subclasses, but not in superclass
-|{ Refers to class name instead of "self class"
-|{ Sends different super message
-|{ Variables not referenced
-|{ Utility methods
-|{ Variable is only assigned a single literal value
-|{ Variable referenced in only one method and always assigned first
-|{ Sends a deprecated message to a known global
-
-
-!!! Coding Idiom Violations
-The coding idiom violations are more related to inconsistencies that can make the code awkward to read. 
-
-
-!!!! ''Sends "questionable" message''.
-
-This violation arises when methods send messages that perform low level things. You might want to limit the number of such messages in your application. Messages such as ==isKindOf:== can signify a lack of polymorphism. You can see which methods are "questionable" by editing the ==RBBadMessageRule>>badSelectors== method. Some examples are: ==respondsTo:==, ==isMemberOf:==, ==perform:== and ==perform:arguments:==.
-
-|!Coding Idiom Violation Rules
-|{ Sends "questionable" message
-|{ Literal array contains a #,
-|{ No class comment
-|{ Unnecessary assignment or return in block
-|{ Sends add:/remove: to external collection
-|{ Uses do: instead of collect: or select:'s
-|{ Uses "size = 0", "= nil",  or "at: 1" instead of "isEmpty",  "isNil", or "first"
-|{ Uses do: instead of contains: or detect:'s
-|{ Guarding clauses
-|{ to:do: doesn't use collect:
-|{ Uses to:do: instead of do:, with:do: or timesRepeat:
-|{ to:do: loop also increments a counter
-|{ Uses whileTrue: instead of to:do:
-
-!!! Style
-The style rules focus on the structure of the symbols and how they convey their associated semantics.
-
-|!Style Rules
-|{ Redundant class name in selector
-|{ Class variable capitalization
-|{ Instance variable capitalization
-|{ Temporary variable capitalization
-|{ Unclassified methods
-
-
-!! Defining Your Own Rules
-
-SmallLint provides two different way to define rules.
-
-- Block rules use the Smalltalk reflective API. These rules can be defined at two levels: class or method.
-- AST rules, these rules are working on method abstract syntax tree. 
-
-In addition rules can define code transformation to address automatically the problems.
-
-
-!!!Block Rules
-
-Block rules use the Smalltalk reflective API. They can be created to find methods that should be not invoked, style consistency such capitalization or variable name length, class or method size, classes not commented, variables not referenced, instance variables defined in all subclasses, among others. In summary, every thing that is possible to do using the Smalltalk reflective API can be used in a block rule. This includes access to the reflective api which allows the easy navigation through classes (and their superclasses and subclasses), methods, variables, arguments, comments, invocations, etc.
-
-These rules are created by extending the class ==RBBlockLintRule==.
-Block rules can be defined at two levels, class or method. If the rule checks a class property or violation (e.g., the presence of a class comment), this rule must implement such checks by implementing the method ==checkClass:==. Similarly, when a rule checks a method property, it must implement the method ==checkMethod:==.
-
-!!Defining Simple Rules
-Let us take as example the definition of a simple rule:  when a class defines == = ==, it also has to define ==hash==. If ==hash== is not defined then the instances of the class might not be able to be used in sets since equal element must have the same hash.
-
-This rule is already defined by SmallLint as the class ==RBDefinesEqualNotHashRule==. Let us study it. 
-
-Since it is a class check, it is implemented using the method ==ckeckClass:==. 
-The methods ==checkClass:== and ==checkMethod:== receive as parameter the object ==aContext==,  instance of ==RBSmalllintContext==. This object contains information about the method/class who is currently checked. 
-
-For example, the method ==RBSmalllintContext>>selectedClass== returns the class currently checked. In the case where we access to this object from ==checkClass:==, ==aContext== can provide the currently compiled method check (==RBSmalllintContext>>compiledMethod==) or all messages send from this method (==RBSmalllintContext>>messages==).
-
-The method ==ckeckClass:== is then defined as follows: 
+If you would look inside the client object, you would find similar request and response objects - this makes total sense since the client talks to the server and vice versa, over the network. If you want, you can stop the server executing the following expression: 
 
 [[[
-RBDefinesEqualNfotHashRule>>checkClass: aContext 
-	((aContext selectedClass includesSelector: #=) and: 
-		[ (aContext selectedClass includesSelector: #hash) not ])
-			 ifTrue: [ result addClass: aContext selectedClass ]
+ZnServer stopDefault.
 ]]]
 
-When the current class check violates the rule, this class is added to the environment which contains the set of found violations: result addClass: aContext selectedClass. 
+If you are curious, please consult the Zinc HTTP Components documentation available at: @@ http @@
 
-We have to implement the method ==resultClass==. This method returns the type of environment that  will contain identified rule violations. For a rule at the level of class, the environment is ==RBClassEnvironment== and ==RBMethodEnvironment== for a method level one.
+
+
+!! Saying hello world
+
+Let's lay the groundwork for our new web application by making a version that only says 'Hello World!'. We'll be extending the web app gradually until we reach our functional goal.
+
+Open the Nautilus System Browser and create a new package (right click in the first column) called something like "'MyFirstWebApp'". Now create a new class (right click in the second column) with the same name, "MyFirstWebApp". You will be given a template: edit 'NameOfSubclass' and accept by clicking 'OK'. Your definition should now appear in the bottom pane.
 
 [[[
-RBDefinesEqualNotHashRule>>resultClass
-	^ RBClassEnvironment
+Object subclass: #MyFirstWebApp
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'MyFirstWebApp'
 ]]]
 
-Finally, the ==RBLintRule== interface defines three methods to implement for a given rule
-- its name (==name==)
-- a description (==longDescription==) and 
-- a category to which the rule belongs (==category==). The currently define categories are ''Bugs'', ''Potential Bugs'', ''Optimizations'', ''Design Flaws'', ''Coding Idiom Violations'' and ''Style''. It is possible to add new category.
-
-Here we show such methods. 
+Any object can be a web app, it only has to respond to a message called ==handleRequest:== to answer a response based on a request. Now add the following method
 
 [[[
-RBDefinesEqualNotHashRule>>name
-	^ 'Defines = but not hash'
+MyFirstWebApp>>handleRequest: request
+	request uri path = #image
+		ifFalse: [ ^ ZnResponse notFound: request uri ].
+	^ ZnResponse ok: (ZnEntity text: 'Hello World!')
 ]]]
+
+Create a new protocol called 'public' (by right-clicking in the third column). When the new protocol is selected, a new method template will appear in the bottom pane. Overwrite the whole template with the code above and accept it.
+
++Defining the >file://figures/pharo-in-action.png|width=80|label=pharo-in-action+
+
+What we do here is look at the incoming request to make sure the URI path is ==/image== which will be the final name of our web app. If not, we return a Not Found (code 404) response. If so, we create and return an OK response (code 200) with a simple text entity as body or payload.
 
 [[[
-RBDefinesEqualNotHashRule>>longDescription
-	^ 'This smell arises when a class defines #= also and not #hash. If #hash is not defined then the instances of the class might not be able to be used in sets since equal element must have the same hash.'
+MyFirstWebApp>>value: request
+	^ self handleRequest: request
 ]]]
+
+Now do the same for the #value: method, effectively making it an alias of ==handleRequest:== - this is needed so our web app object can be used more flexibly. To test our web app, we'll add it as one of the pages of the default server, like this
 
 [[[
-RBDefinesEqualNotHashRule>>category 
-	^ 'Potential Bugs'
+ZnServer startDefaultOn: 8080.
+ZnServer default delegate map: #image to: MyFirstWebApp new.
 ]]]
 
-!!! Abstract Syntax Tree-Based Rules
-
-These rules are based on the Smalltalk abstract syntax tree (AST). They can be created to find assignments with no effect, weak use of the API (pieces of code can be more efficient or legible), among others. In summary, these rules performs operation in AST nodes to find smells.
-
-These rules are created by extending the class ==RBParseTreeLintRule==. The last match must be defined in the initialize method.
-
-
-		
-		here
-		
-		
-[[[
-RBAssignmentWithoutEffectRule>>initialize
-	super initialize.
-	self matcher 
-		matches: '`var := `var'
-		do: [ :node :answer | node ]
-]]]
-
-
-
-
-!! Conclusion
 
 
 % Local Variables:
