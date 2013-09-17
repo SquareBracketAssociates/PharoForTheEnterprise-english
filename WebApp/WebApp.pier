@@ -304,16 +304,237 @@ Up to now, the suggestion was that you can use the debugger and inspector tools 
 +Live change.>file://figures/live-change.png|width=80|label=live+
 
 
+Now, with the execution being stopped for the second request, click on the image instance variable in the bottom left pane. The pane next to it will show some image entity. Select the whole contents and replace it with ==self downloadPharoLogo== and accept the change. Now proceed the execution. Your previously uploaded image is gone, replaced again by the default Pharo logo. We just changed an object in the middle of the execution. Imagine doing all your development like that, having a real conversation with your application, while you are developing it. Be warned though: once you get used to this, it will be hard to go back.
+
+!! Image Magic 
+
+The abilities to look at the requests and responses coming in and going out of the server, to set breakpoints, to debug live request without redoing the user interaction or to modify data structure live are already great and quite unique. But there is more.
+Pharo is not just a platform for server applications, it can be used to build regular applications with normal graphics as well. In fact, it is very good at it. That is why it has built-in support to work with JPEG, GIF or PNG.
+
+Would it not be cool to be able to actually parse the image that we were manipulating as an opaque collection of bytes up till now? To make sure it is real. To look at it while debugging. Turns out this is quite easy. Are you ready for some image magick, pun intended?
+
+The Pharo object that represents images is called a form. There are objects called ==GIFReadWriter==, ==PNGReadWriter== and ==JPEGReadWriter== that can parse bytes into forms. Add two helper methods, ==formForImageEntity:== and ==form==
+
+[[[
+MyFirstWebApp>>formForImageEntity: imageEntity
+    | imageType parserClassName parserClass parser |
+    imageType := imageEntity contentType sub.
+    parserClassName := imageType asUppercase, #ReadWriter.
+    parserClass := Smalltalk globals at: parserClassName asSymbol.
+    parser := parserClass on: imageEntity readStream.
+	^ parser nextImage
+
+MyFirstWebApp>>form
+    ^ self formForImageEntity: self image
+
+]]]
+
+What we do is use the sub type of the mime type, like "png" in image/png, to find the parser class. Then we instantiate a new parser on a read stream on the actual bytes and invoke the parser with sending ==nextImage==, which will return a form. The ==form== method makes it easy to invoke all this logic on our current image.
+
+Now we can have a look at, for example, the default image like this
+[[[
+MyFirstWebApp new form asMorph openInWindow.
+]]]
+
+Obviously you can do this while debugging too. We can also use the image parsing logic to improve our error checking even further. Here is the final version of ==handlePostRequest:==
 
 
+[[[
+MyFirstWebApp>>handlePostRequest: request
+    | part newImage badRequest |
+    badRequest := [ ^ ZnResponse badRequest: request ].
+    (request hasEntity
+        and: [ request contentType matches: ZnMimeType multiPartFormData ])
+      ifFalse: badRequest.
+    part := request entity
+              partNamed: #file
+              ifNone: badRequest.
+    newImage := part entity.
+    (newImage notNil
+        and: [ newImage contentType matches: 'image/*' asZnMimeType ])
+      ifFalse: badRequest.
+    [ self formForImageEntity: newImage ]
+on: Error
+      do: badRequest.
+    image := newImage.
+    ^ ZnResponse redirect: #image
+]]]
+
+Before making the actual assignment of the new image to our instance variable we added an extra expression. We try parsing the image. We are not interested in the result, but we do want to reply with a bad request when the parsing should fail.
+
+Once we have a form object, the possibilities are almost endless. You can query a form for the its size, depth and other elements. You can manipulate the form in various ways: scaling, resizing, rotating, flipping, cropping, compositing. And you can do all this in an interactive, dynamic environment.
+
+!!Adding tests
+
+We all know that testing is good, but how do we actually test a web app ? Writing some basic tests is actually not difficult, since Zinc HTTP Components covers both the client and the server side with the same objects.
+
+Writing tests is creating objects, letting them interact and then asserting a number of conditions. Create a new subclass of ==TestCase==, ==MyFirstWebAppTests==, and add the following helper method.
+
+[[[
+MyFirstWebAppTests>>withServerDo: block
+    | server |
+    server := ZnServer on: 1700 + 10 atRandom.
+    [
+      server start.
+      self assert: server isRunning & server isListening.
+      server delegate: MyFirstWebApp new.
+      block cull: server 
+	] ensure: [ server stop ]
+]]]
+
+Since we will need a configured server instance with our web app as delegate for each of our tests, we move that logic into #withServerDo: and make sure the server is OK and properly stopped afterwards. Now we are ready for our first test.
 
 
+[[[
+MyFirstWebAppTests>>testMainPage
+    self withServerDo: [ :server |
+      | client |
+      client := ZnClient new.
+      client url: server localUrl; addPath: #image.
+      client get.
+      self assert: client isSuccess.
+      self assert: (client entity contentType matches: ZnMimeType textHtml).
+      self assert: (client contents includesSubstring: 'Image').
+      client close ]
+
+]]]
 
 
+In ==testMainPage== we do a request for the main page, /image, and assert that the request is successful and contains HTML. Make sure the test is green by running it from the system browser (click the round icon in front of the method name in the fourth pane).
 
 
+@@puc@@
+
+Let's try to write a test for the actual raw image being served.
+
+[[[
+MyFirstWebAppTests>>testDefaultImage
+    self withServerDo: [ :server |
+      | client |
+      client := ZnClient new.
+      client url: server localUrl; addPath: #image; queryAt: #raw put: #true.
+      client get.
+      self assert: client isSuccess.
+      self assert: (client entity contentType matches: 'image/*' asZnMimeType).
+      self assert: client entity equals: server delegate image.
+      client close ]
+]]]
+
+Note how we can actually test for equality between the served image and the one inside our app object (the delegate). Run the test.
+
+Our final test will actually do an image upload and check if the served image did actually change to what we uploaded. Here we define the method ==image== that returns a new image.
+
+[[[
+MyFirstWebAppTests>>image
+    ^ ZnClient new
+        beOneShot;
+        get: 'http://zn.stfx.eu/zn/Hot-Air-Balloon.gif';
+        entity
+
+MyFirstWebAppTests>>testUpload
+    self withServerDo: [ :server |
+      | image client |
+      image := self image.
+      client := ZnClient new.
+      client url: server localUrl; addPath: #image.
+      client addPart: (ZnMimePart fieldName: #file entity: image).
+      client post.
+      self assert: client isSuccess.
+      client resetEntity; queryAt: #raw put: #true.
+      client get.
+      self assert: client isSuccess.
+      self assert: client entity equals: image.
+      client close ]
+]]]
+
+The HTTP client object is pretty powerful. It can do a correct multi-part form-data POST, just like a browser. Furthermore, once configured, it can be reused, like for the second GET request.
+
+!! Saving code to a repository
+
+If all is well, you now have a package called ==MyFirstWebApp== containing two classes, ==MyFirstWebApp== and ==MyFirstWebAppTests==. The first one should have 9 methods, the second 5. If you are unsure about your code, you can double check with the full listing at the end of this document. Our web app should now work as expected, and we have some tests to prove it.
+
+But our code currently only lives in our development image. Let's change that and move our code to a source code repository. For this we first have to define a Monticello package. Click on the package name in the first column of the browser and select the option 'Create an MC package'. Use the same name.
+
+@@pic: Creating a monticello package@@
+
+Pharo uses distributed source code management. Your code can live on your local file system, or it can live on a server. The main place for storing Pharo code is on SmalltalkHub http://www.smalltalkhub.com. Go over there and create yourself a new account. Once you have an account, create and register a new project called =='MyFirstWebApp'==. You can leave the public option checked, it means that you and others can download the code without credentials. Go to the project's page.
+
+@@pic: MyFirstWebApp’s project page on SmalltalkHub@@
+
+On this page, select and copy the Monticello registration template (make sure to copy the whole contents, including the username and password parts). Now go back to Pharo and add a repository for your package (right-click on the package name, select Open...  Add a repository).
+
+Select Smalltalkhub.com as repository type and overwrite the presented template with the one you just copied. It should look similar to 
+
+[[[
+MCHttpRepository
+    location: 'http://www.smalltalkhub.com/mc/SvenVanCaekenberghe/MyFirstWebApp/mai
+    user: ''
+    password: ''
+]]]
+
+Now before accepting, fill in your user(name) and password (between the single quotes), the ones you gave during registration on SmalltalkHub.
+
+Open the Monticello Browser to see what we have done. Find your package in the first column and your repository in the second one.
 
 
+@@The Monticello Browser looking at our package and repository
+
+There should be a asterisk (==*==) in front of your package name, indicating that the package is dirty, that it has uncommitted changes. If not, force a change computation by clicking 'Changes' button. You should get a browser showing all the changes that you made. Since this is the first version, all your changes are additions.
+
+!!!!The Changes/Diff Browser for our package.
+
+OK, we're almost done. Go back to the Monticello Browser and click the 'Save' button (with your package and repository selected). Leave the version name, something like MyFirstWebApp-SvenVanCaekenberghe.1 alone, write a nice commit message in the second pane and press Accept to save your code to SmalltalkHub.
+
+!!!!Commiting to SmalltalkHub
+When all goes well, you will see an upload progress bar and finally a version window that confirms the commit. You can close it later on.
+
+[[[
+Name: MyFirstWebApp-SvenVanCaekenberghe.1
+  Author: SvenVanCaekenberghe
+  Time: 9 July 2013, 2:18:24.638381 pm
+  UUID: adad42a6-ff4c-41a4-a2a3-09f8cb29c902
+  Ancestors:
+  First check in of our web app, following 'Building and deploying your first web a
+]]]
+
+!!!Confirmation Version Window.
+
+If something goes wrong, you probably made a typo in your repository specification. You can edit it by right-clicking on it in the Monticello Browser and selecting ‘Edit repository info’. If a save fails, you will get a Version Window after some error message. Don’t close the Version Window. Your code now lives in your local package cache. Click the ‘Copy’ button and select your SmalltalkHub repository to try saving again.
+
+You can now browse back to Smalltalkhub.com to confirm that your code arrived there.
+
+!!!! Looking at our commit on SmalltalkHub.
+
+After a successful commit, it is a good idea to save your image. In any case, your package should now no longer be dirty, and there should be no more differences between the local version and the one on SmalltalkHub.
+
+!!Defining a project configuration
+
+Real software consists of several packages and will depend on extra external libraries and frameworks. In practice, software configuration management, including the management of dependencies and versions, is thus a necessity.
+
+To solve this problem, Pharo is using Metacello (there is a full chapter on the book Deep into Pharo). And although we don’t really need it for our small example, we are going to use it anyway. Of course, we will not go into details as this is a complex subject.
+
+To create a Metacello configuration, you define an object, what else did you expect ? First create a new package as well as a Metacello package called ==ConfigurationOfMyFirstWebApp==. Then go find the class ==MetacelloConfigTemplate==. You have to copy this class (right-click on the class name) and name it ==ConfigurationOfMyFirstWebApp== as well. Now move the copy to your new package by dragging it, or by editing the category field of the class definition.
+
+We are going to define three methods: one defining a baseline for our configuration, one defining concrete package versions for that baseline, and one declaring that version as the stable released version. Here is the code (if you would be working in Pharo 3.0 you will notice that ==MetacelloConfigTemplate== contains some extra template methods, remove any baseline or version related ones and overwrite ==stable:==)
+
+[[[
+ConfigurationOfMyFirstWebApp>>baseline1: spec
+    <version: '1-baseline'>
+    spec for: #common do: [
+      spec
+        blessing: #baseline;
+        repository: 'http://smalltalkhub.com/mc/SvenVanCaekenberghe/MyFirstWebApp/m
+        package: 'MyFirstWebApp' ]
+ConfigurationOfMyFirstWebApp>>version1: spec
+    <version: '1' imports: #('1-baseline')>
+    spec for: #common do: [
+      spec
+        blessing: #release;
+        package: 'MyFirstWebApp' with: 'MyFirstWebApp-SvenVanCaekenberghe.1' ]
+ConfigurationOfMyFirstWebApp>>stable: spec
+    <symbolicVersion: #'stable'>
+    spec for: #common version: '1'
+]]]
 
 
 % Local Variables:
