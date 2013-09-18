@@ -73,7 +73,7 @@ Once the rules are run you get a browser showing you the results as shown in Fig
 
 The Critics Browser shows the results are grouped by rule kinds.  The top level label labelled ''Selected Rules (To sort: 135, ToDo: 0, Wrong: 0)'' means the following: since we just started to check a new project, we did not mark any critic as wrong. This is why we have ''Wrong: 0'', and since we did not flag critics as point to address in the future we have ''ToDo: 0''. So we have 135 critics to sort. We must check these critics to fix them or classify them as ToDo or wrong.
 
-+Browsing rule results. A variable is undeclared in ==CiteSeer>>getCiteseerPage== >file://UndeclaredVariable.png|width=50|label=undeclared+
++Browsing rule results. A variable is undeclared in ==CiteSeer\>\>getCiteseerPage== >file://UndeclaredVariable.png|width=50|label=undeclared+
 
 
 Figure *undeclared* shows that for the rule that looks for undeclared variables, the Kozen packages got one critic. The class ==ZnHttpClient== is not available anymore. By fixing the ==getCiteseerPage== method, the critic automatically disappear from the browser.
