@@ -537,6 +537,353 @@ ConfigurationOfMyFirstWebApp>>stable: spec
 ]]]
 
 
+You can test your configuration by trying to load it.
+
+[[[
+ConfigurationOfMyFirstWebApp load.
+]]]
+
+
+Of course, not much will happen since you already have the specified version loaded. For some feedback, make sure the Transcript is open and inspect the above expression.
+
+
+
+Now add your SmalltalkHub repository to the ConfigurationOfMyFirstWebApp Monticello package. Double-check the changes in the Monticello Browser, remember we copied a whole class. Now commit by saving to your SmalltalkHub repository. Use the web interface to verify that all went well.
+
+
+
+!!Running a real cloud server
+
+
+So we created our first web app and tested it locally. We stored our source code in the SmalltalkHub repository and created a Metacello configuration for it. Now we need a real cloud server to run our web app.
+
+It used to be hard and expensive to get access to a real server permanently connected to the internet. Not any more: prices have comes down and operating cloud servers has become a much easier to use service.
+
+For this guide, we will be using Digital Ocean. The entry level server there, which is more than powerful enough for our experiment, costs just $5 a month. If you stop and remove the server after a couple of days, you will only pay cents. Go ahead and make yourself an account and register a credit card.
+
+!!!First part of the Create Droplet form
+
+A server instance is called a Droplet. Click the ‘Create Droplet ’ button and fill in the form. Pick a hostname, select the smallest size, pick a region close to you. As operating system image, we’ll be using a 32-bit Ubuntu
+http://zn.stfx.eu/zn/build-and-deploy-1st-webapp/ Page 33 of 43Building and deploying your first web app with Pharo 16/9/13 11:14 AM
+Linux, version 13.04 x32. You can optionally use an SSH key pair to log in - it is a good idea, see How to Use SSH Keys with DigitalOcean Droplets - just skip this option for now if you are uncomfortable with it, it is not necessary for this tutorial. Finally click the ‘Create Droplet’ button.
+
+
+!!! Second part of the Create Droplet form
+
+In less than a minute, your new server instance will be ready. Your root password will be emailed to you. If you look at your droplets, you should see your new server in the list. Click on it to see its details.
+
+!!! Looking at your Droplet
+
+The important step now is to get SSH command line access to your new server, preferably using a normal terminal. With the IP address from the control panel and the root password emailed to you, try to log in.
+[[[
+  $ ssh root@82.196.12.54
+]]]
+
+Your server is freshly installed and includes only the most essential core packages. Now we have to install Pharo on it. One easy way to do this is using the functionality offered by http://get.pharo.org. The following command will install a fresh Pharo 2.0 image together with all other files needed.
+
+[[[
+  # curl get.pharo.org/20+vm | bash
+]]]
+
+Make sure the VM+image combination works by asking for the image version.
+
+
+[[[
+# ./pharo Pharo.image printVersion
+[version] 2.0 #20611
+]]]
+
+Let’s quickly test the stock HTTP server that comes with Pharo, like we did in the third section of this guide.
+
+[[[
+# ./pharo Pharo.image eval --no-quit 'ZnServer startDefaultOn: 8080'
+]]]
+
+This command will block. Now access your new HTTP server at http://82.196.12.54:8080 after substituting your own IP address of course. You should see the Zinc HTTP Components welcome page. If this works, you can press ctrl-C in the terminal to end our test.
+
+!! Deploying for production
+
+We now have a running server. It can run Pharo too, but it is currently using a generic image. How do we get our code deployed ? To do this we use the Metacello configuration. But first, we are going to make a copy of the stock Pharo.image that we downloaded. We want to keep the original clean while we make changes to the copy.
+
+[[[
+# ./pharo Pharo.image save myfirstwebapp
+]]]
+
+We now have a new image (and changes) file called myfirstwebapp.image (and myfirstwebapp.changes). Through the config command line option we can load our Metacello configuration. Before actually loading anything, we will ask for all available versions to verify that we can access the repository.
+
+[[[
+# ./pharo myfirstwebapp.image config http://www.smalltalkhub.com/mc/SvenVanCaeken
+  ===============================================================================
+  Notice: Available versions for ConfigurationOfMyFirstWebApp
+  ===============================================================================
+  1
+  1-baseline
+  bleedingEdge
+  last
+  stable
+]]]
+
+Since we have only one version, all the above are equivalent references to the same version. Now we will load and install the stable version.
+
+[[[
+# ./pharo myfirstwebapp.image config http://www.smalltalkhub.com/mc/SvenVanCaeken
+  ===============================================================================
+  Notice: Installing ConfigurationOfMyFirstWebApp stable
+  ===============================================================================
+]]]
+
+
+After loading all necessary code, the config option will also save our image so that it now permanently includes our code. Although we could try to write a (long) one line expression to start our web app in a server and pass it to the eval option, it is better to write a small script. Create a file called ‘run.st’ with the following contents
+
+[[[
+ZnServer defaultOn: 8080.
+  ZnServer default logToStandardOutput.
+  ZnServer default delegate
+    map: 'image' to: MyFirstWebApp new;
+    map: 'redirect-to-image' to: [ :request | ZnResponse redirect: 'image' ];
+    map: '/' to: 'redirect-to-image'.
+ZnServer default start.
+]]]
+
+We added a little twist here: we changed the default root (/) handler to redirect to our new /image web app. Test the startup script like this
+
+[[[
+# ./pharo myfirstwebapp.image run.st
+  2013-07-10 11:46:58 660707 I Starting ZnManagingMultiThreadedServer HTTP port 808
+  2013-07-10 11:46:58 670019 D Initializing server socket
+  2013-07-10 11:47:12 909356 D Executing request/response loop
+  2013-07-10 11:47:12 909356 I Read a ZnRequest(GET /)
+  2013-07-10 11:47:12 909356 T GET / 302 16B 0ms
+  2013-07-10 11:47:12 909356 I Wrote a ZnResponse(302 Found text/plain;charset=utf-
+  2013-07-10 11:47:12 909356 I Read a ZnRequest(GET /image)
+  2013-07-10 11:47:12 909356 T GET /image 200 282B 0ms
+  2013-07-10 11:47:12 909356 I Wrote a ZnResponse(200 OK text/html;charset=utf-8 28
+  2013-07-10 11:47:12 909356 I Read a ZnRequest(GET /image?raw=true)
+  2013-07-10 11:47:12 909356 T GET /image?raw=true 200 18778B 82ms
+  2013-07-10 11:47:12 909356 I Wrote a ZnResponse(200 OK image/png 18778B)
+]]]
+
+Surf to the correct IP address and port to test you application. Note that /welcome, /help and /image are still available too. Type ctrl-c to kill the server again. Now it is time to put the server in background, running for real.
+
+[[[
+# nohup ./pharo myfirstwebapp.image run.st &
+]]]
+
+!!One more step
+
+Did you like the example so far ? Would you like to take one more step ? Here is a little extension, as an exercise.
+Add an extra section at the bottom of the main page that shows a miniature version of the previous image. Initially, you can show an empty image. Here are a couple of hints. Read only as far as you need, try to figure it out yourself.
+
+!!!Hint 1
+You can scale a form object into another one using just one message taking a single argument. You can use the same classes that we used for parsing as a tool to generate PNG, JPEG or GIF images given a form.
+
+When you are done, save your code as a new version. Then update your configuration with a new, stable version. Finally, go to the server, update your image based on the configuration and restart the running vm+image.
+
+!!!Hint 2
+Change the #html method referring to a new variant, ==/image?previous=true==, for the second image. Adjust ==handleGetRequest:== to look for that attribute.
+Add a helper method ==pngImageEntityForForm:== and a ==previousImage== accessor. It is easy to create an empty, blank form as default. Call a ==updatePreviousImage== at the right spot in ==handlePostRequest:== and implement the necessary functionality there.
+
+!!!Hint 3
+If you found it difficult to find the right methods, have a look at the following ones:
+
+-Form>>scaledIntoFormOfSize: 
+-Form class>>extent:depth: 
+-PNGReadWriter>>nextPutImage:
+-ByteArray class>>streamContents: 
+-ZnByteArrayEntity class>>with:type:
+
+!!Solution, part 1, new methods
+
+Here are 3 new methods that are part of the solution.
+
+[[[
+pngImageEntityForForm: form
+    ^ ZnByteArrayEntity
+        with: (ByteArray streamContents: [ :out |
+                 (PNGReadWriter on: out) nextPutImage: form ])
+        type: ZnMimeType imagePng
+
+previousImage
+    ^ previousImage ifNil: [
+        | emptyForm |
+        emptyForm:= Form extent: 128 @ 128 depth: 8.
+        previousImage := self pngImageEntityForForm: emptyForm ]
+
+updatePreviousImage
+    | form scaled |
+    form := self form.
+    scaled := form scaledIntoFormOfSize: 128.
+    previousImage := self pngImageEntityForForm: scaled
+]]]
+
+!!Solution, part 2, changed methods
+
+Here are the changes to 3 existing methods for the complete solution.
+[[[
+  html
+    ^ '<html><head><title>Image</title>
+    <body>
+    <h1>Image</h1>
+    <img src="image?raw=true"/>
+    <br/>
+    <form enctype="multipart/form-data" action="image" method="POST">
+	<h3>Change the image:</h3>
+	     <input type="file" name="file"/>
+	     <input type="submit" value= "Upload"/>
+	    </form>
+	    <h3>Previous Image</h3>
+	    <img src="image?previous=true"/>
+	    </body></html>'
+
+ handleGetRequest: request
+	    (request uri queryAt: #raw ifAbsent: [ nil ])
+	      ifNotNil: [ ^ ZnResponse ok: self image ].
+	    (request uri queryAt: #previous ifAbsent: [ nil ])
+	      ifNotNil: [ ^ ZnResponse ok: self previousImage ].
+	    ^ ZnResponse ok: (ZnEntity html: self html)
+
+  handlePostRequest: request
+	    | part newImage badRequest |
+	    badRequest := [ ^ ZnResponse badRequest: request ].
+	    (request hasEntity
+	        and: [ request contentType matches: ZnMimeType multiPartFormData ])
+	      ifFalse: badRequest.
+	    part := request entity
+	              partNamed: #file
+	              ifNone: badRequest.
+	    newImage := part entity.
+	    (newImage notNil
+	        and: [ newImage contentType matches: 'image/*' asZnMimeType ])
+	      ifFalse: badRequest.
+	    [ self formForImageEntity: newImage ]
+	on: Error
+	      do: badRequest.
+	    self updatePreviousImage.
+	    image := newImage.
+	    ^ ZnResponse redirect: #image
+]]]
+
+!!Solution, part 3, updated configuration
+To update our configuration, add 1 method and change 1 method.
+
+[[[
+version2: spec
+	<version: '2' imports: #('1-baseline')>
+    spec for: #common do: [
+      spec
+        blessing: #release;
+        package: 'MyFirstWebApp' with: 'MyFirstWebApp-SvenVanCaekenberghe.2' ]
+  stable: spec
+    <symbolicVersion: #'stable'>
+    spec for: #common version: '2'
+]]]
+
+Of course, you will have to substitute your name for the concrete version.
+
+!!Conclusion
+Congratulations: you have now built and deployed your first web app with Pharo. Hopefully you are interested in learning more. From the Pharo website you should be able to find all the information you need. Don’t forget about the Pharo by Example book and the mailing lists.
+This guide was an introduction to writing web applications using Pharo, touching on the fundamentals of HTTP. Like we mentioned in the introduction, there are a couple of high level frameworks that offer more extensive support for writing web applications. The three most important ones are Seaside, AIDAweb and Iliad.
+
+!!Listing
+Here is the full code listing of the web app. You can also find the code, including the tests and the Metacello configuration, checked in to SmalltalkHub in my MyFirstWebApp project. A similar example is also included in Zinc HTTP Components itself, under the name ZnImageExampleDelegate[Tests].
+
+[[[
+Object subclass: #MyFirstWebApp
+  instanceVariableNames: ''
+  classVariableNames: ''
+  poolDictionaries: ''
+  category: 'MyFirstWebApp'
+]]]
+
+[[[
+handleRequest: request
+  request uri path = #image
+    ifTrue: [
+      request method = #GET
+        ifTrue: [ ^ self handleGetRequest: request ].
+      request method = #POST
+        ifTrue: [ ^ self handlePostRequest: request ] ].
+  ^ ZnResponse notFound: request uri
+]]]
+
+
+[[[
+value: request
+  ^ self handleRequest: request
+]]]
+
+[[[
+handleGetRequest: request
+  ^ (request uri queryAt: #raw ifAbsent: [ nil ])
+      ifNil: [ ZnResponse ok: (ZnEntity html: self html) ]
+      ifNotNil: [ ZnResponse ok: self image ]
+]]]
+
+[[[
+handlePostRequest: request
+  | part newImage badRequest |
+  badRequest := [ ^ ZnResponse badRequest: request ].
+  (request hasEntity
+      and: [ request contentType matches: ZnMimeType multiPartFormData ])
+    ifFalse: badRequest.
+  part := request entity
+            partNamed: #file
+            ifNone: badRequest.
+  newImage := part entity.
+  (newImage notNil
+      and: [ newImage contentType matches: 'image/*' asZnMimeType ])
+    ifFalse: badRequest.
+  [ self formForImageEntity: newImage ]
+    on: Error
+    do: badRequest.
+   image := newImage.
+	  ^ ZnResponse redirect: #image
+]]]
+
+[[[
+html
+  ^ '<html><head><title>Image</title>
+  <body>
+  <h1>Image</h1>
+  <img src="image?raw=true"/>
+  <br/>
+  <form enctype="multipart/form-data" action="image" method="POST">
+   <h3>Change the image:</h3>
+   <input type="file" name="file"/>
+   <input type="submit" value= "Upload"/>
+  </form>
+  </body></html>'
+]]]
+
+[[[
+downloadPharoLogo
+  ^ ZnClient new
+      beOneShot;
+      get: 'http://www.pharo-project.org/images/pharo.png';
+      entity
+]]]
+
+[[[
+image
+  ^ image ifNil: [ image := self downloadPharoLogo ]
+]]]
+
+
+[[[
+formForImageEntity: imageEntity
+  | imageType parserClassName parserClass parser |
+  imageType := imageEntity contentType sub.
+  parserClassName := imageType asUppercase, #ReadWriter.
+  parserClass := Smalltalk globals at: parserClassName asSymbol.
+  parser := parserClass on: imageEntity readStream.
+    ^ parser nextImage
+]]]
+
+[[[
+form
+  ^ self formForImageEntity: self image
+]]]
+
 % Local Variables:
 % eval: (flyspell-mode -1)
 % End:
