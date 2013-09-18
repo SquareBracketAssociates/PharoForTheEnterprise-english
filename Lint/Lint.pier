@@ -1,6 +1,6 @@
 !SmallLint: static analysis in Pharo
 
-Being able to check that the code of your application follows certain rules is important to control its quality. Pharo offers SmallLint a tool originally developed by John Brant and Don Roberts to identify several families of problems that code may exhibit. SmallLint defines a list of static analyses grouped by topics and that you can run automatically on your code. In Pharo we go a step further. Package meta-data support lets the developer tag the violations reported by SmallLint. This way wrongly reported results or irrelevant rules do not systematically pollute the rule evaluation. In this chapter we will go step by step on a project and present the features of the Code Critic Browser.
+Being able to check that the code of your application follows certain rules is important to control its quality. Pharo offers SmallLint, a tool originally developed by John Brant and Don Roberts to identify several families of problems that code may exhibit. SmallLint defines a list of static analyses grouped by topics and that you can run automatically on your code. In Pharo we go a step further. Package meta-data support lets the developer tag the violations reported by SmallLint. This way wrongly reported results or irrelevant rules do not systematically pollute the rule evaluation. In this chapter we will go step by step on a project and present the features of the Code Critic Browser.
 
 -First version: February 14, 2012
 -Last update: May 5, 2012
@@ -16,11 +16,11 @@ The number of violations and problems is nowadays referred as the technical debt
 It is important to address the problems and maintain a high structural quality of software since it will improve its general quality and ease its maintenance. 
 Awareness of smells enable developers to make well-informed design decisions and to avoid introducing smells in the software. 
 
-As defined by Martin Fowler, smells are certain structures in the code that suggest (sometimes they scream for) the possibility of refactoring.
+As defined by Martin Fowler, smells are certain structures in the code that suggest (sometimes that scream for) the possibility of refactoring.
 Basically, three types of smells can be found in source code at different levels: architectural, design and implementation. 
 
 - The architectural level includes smells such as god class and cyclical dependency between packages. 
-- The design (or micro-architectural) level includes smells such as cyclic hierarchy and large abstraction. 
+- The design (or micro-architectural) level includes smells such as large classes and excessive number of method parameters.
 - Finally, the implementation level includes smells such as improper name length and variables having constant value. 
 
 SmallLint supports the detection of smells at design and implementation level as well as domain specific ones. In this chapter we cover two first ones as they are provided by default in the Code Critic Browser. 
@@ -29,37 +29,37 @@ SmallLint supports the detection of smells at design and implementation level as
 
 Here we set some vocabulary by defining the following terms:
 
-- Rule: a rule is a computation that when applied on a software entity return whether it is violated or not. 
+- Rule: a computation that when applied on a software entity return whether it's violated or not. 
 
-- Critic or violation: a critic or violation is an instance of the application of a particular rule.
+- Critic or violation: an instance of the application of a particular rule.
 
-- False positive: A false positive is said to a violation that was detected by a tool but that was not true
+- Wrong critic or false positive: A critic is said wrong if it's not relevant.
 
 !! Code Critic Browser
 
 The Code critic Browser proposes a set of rules to be checked on your code. 
-Once the rules are run, we obtain a set of rule violations, we have several possibilities:
+Once the rules are run, we obtain a set of critics, we have several possibilities:
 
 
-- ''Addressing the problem''. In such a case it can be wise to rerun the rule to verify that it has been addressed.
+- ''Addressing the critic''. In such a case it can be wise to rerun the rule to verify that it has been addressed.
 
-- ''Marking the problem as a ToDo''. The point here is that tagging a violation as todo makes sure that the violation will not show up as red warning when rules are checked again later. ToDos indicate that the package developer knows that there is an issue that it should be fixed later. Having ToDos is a nice feature because it lets the developer decide when to address a problem while avoiding the tools to always report it as a problems. However, using too many todois a clear sign of laziness, so you should only rarely use them.
+- ''Marking the critic as a ToDo''. The point here is that tagging a critic as ToDo makes sure that the critic will not show up as red warning when rules are checked again later. ToDos indicate that the package developer knows that there is an issue that it should be fixed later. Having ToDos is a nice feature because it lets the developer decide when to address a problem while avoiding the tools to always report it as a problems. However, using too many ToDos is a clear sign of laziness, so you should only rarely use them.
 
-- ''Marking the violation as a tool error''. Indeed a rule may be wrong or irrelevant. We call such error a false positive. Marking a violation as wrong makes sure that the next time the rule execution will be executed
+- ''Marking the critic as wrong''. Indeed a rule may be wrong or irrelevant. We call such error a false positive. Marking a critic as wrong makes sure that the next time the rule is applied this critic won't show up.
 
 
-With the Critics Browser we payed attention that once a developer runs and evaluates the violations (i.e., addressing, marking them as todos or false positives), he can be sure that a new execution of the rules on the same code will not report again the same problems. 
+	With the Critics Browser we payed attention that once a developer runs and evaluates the critics (i.e., addressing, marking them as ToDos or as wrong), he can be sure that a new execution of the rules on the same code will not report again the same problems. 
 
 
 !! Using the Code Critic Browser
 
-You can invoke the Code Critic Browser via the Tools menu. In this Chapter, we will execute it on one of our project named Kozen whose purpose is to generate static web page based on scientific publications. We start from a project on which we never run the rules to illustrate some points.
+You can invoke the Code Critic Browser via the Tools menu . In this Chapter, we will execute it on one of our project named Kozen whose purpose is to generate static web page based on scientific publications. We start from a project on which we never run the rules to illustrate some points.
 
 
 !!!Selecting the packages
 Using the Code Critic Browser, select the packages on which you want to run the rules. Click on a package in the list displayed on the left and press the Add button. The package should be displayed in the right pane as shown by Figure *selectingPackage*. We selected the Kozen packages. Once you are done press the Next button. 
 
-+Selecting Packages>file://selectingPackage2.png|width=50|label=selectingPackage+ 
++Selecting Packages>file://selectingPackage.png|width=50|label=selectingPackage+ 
 
 !!!Selecting Rules
 Once you have selected the packages on which you want to run the rules, you can select the rules that you want to run as shown in Figure *ruleselection*. Rules are sorted in different categories such as potential bugs, design flaws or optimizations as explained in Section *existingRules*. By default running all the rules is a good idea.
@@ -69,36 +69,29 @@ idea>file://selectingRules.png|width=50|label=ruleselection+
 
 
 !!!First look at Results
-Once the rules are run you get a browser showing you the results as shown in Figure *unclassified*. Note that the results will be different on your code. Here we just use this project as an example. 
+Once the rules are run you get a browser showing you the results as shown in Figure *undeclared*. Note that the results will be different on your code. Here we just use this project as an example. 
 
-The Critics Browser shows the results are grouped by rule kinds.  The top level label labelled ''Selected Rules (To sort: 316, ToDo: 0, Wrong: 316)'' means the following: since we just started to check a new project, we did not mark any violations as wrong. This is why we have ''Wrong: 0'', and since we did not flag violations as point to address in the future we have ''ToDo: 0''. So we have 316 rules to sort. We must check these rules to fix them or classify them as todo or false positives.
+The Critics Browser shows the results are grouped by rule kinds.  The top level label labelled ''Selected Rules (To sort: 135, ToDo: 0, Wrong: 0)'' means the following: since we just started to check a new project, we did not mark any critic as wrong. This is why we have ''Wrong: 0'', and since we did not flag critics as point to address in the future we have ''ToDo: 0''. So we have 135 critics to sort. We must check these critics to fix them or classify them as ToDo or wrong.
 
-+Browsing rule results. Two methods are not well classified in the class KzMenuInfoBodySite.>file://UnclassifiedMethods.png|width=50|label=unclassified+
-
-
-Figure *unclassified* shows that in the rules related to style issues, the Kozen packages got two badly classified methods. Since moving the methods to a correct method category is easy, we did it and rerun the rules. We obtain then the situation described by Figure *reapplying*.
-Of course there are more interesting rules such as the one identifying bugs. 
++Browsing rule results. A variable is undeclared in ==CiteSeer\>\>getCiteseerPage== >file://UndeclaredVariable.png|width=50|label=undeclared+
 
 
-+Reapplying a rule once addressed. Addressing an issue on the spot and running the rules once again.>file://UnclassifiedMethods.png|width=50|label=reapplying+
+Figure *undeclared* shows that for the rule that looks for undeclared variables, the Kozen packages got one critic. The class ==ZnHttpClient== is not available anymore. By fixing the ==getCiteseerPage== method, the critic automatically disappear from the browser.
 
+The Critics Browser shows the rules on the left pane. When one rule is selected, the critics appear in the right pane. You can search by typing in the top right input field. The pane at the bottom shows either the rule description or the entity exhibiting the critic. Experiment with it.
 
-
-The Critics Browser shows the rules on the left pane. When one rule is selected, the violations appear in the right pane. You can search by typing in the top right input field. The pane at the bottom shows either the rule description or the entity exhibiting the violation. Experiment with it.
-
-+Banning one single violation.>file://BanningOneViolation.png|width=50|label=BanningOneViolation+
++Banning one single critic.>file://BanningOneCritic.png|width=50|label=BanningOneCritic+
 
 
 
 !!!Banning a single critic
-Figure *BanningOneViolation* shows a false violation for the rule ''references an undeclared variable'' in the method ==Citeseer>>getCiteseerPage==. Indeed,  this violation does not need to be fixed and is exploration was a loss of time. So, we classified this violation as wrong. This is does by clicking on the Wrong buttom or from the rule menu. Time to time, do not forget to look at the false positives and todos in manifests.
+Figure *BanningOneCritic* shows a wrong critic for the rule ''Assignment inside unwind blocks should be outside'' in the method ==KZVisitor>>visitPage==. Indeed, this critic does not need to be fixed and its exploration was a loss of time. So, we classified this critic as wrong. This is done by clicking on the ''Mark as wrong'' button or from the rule menu. Time to time, do not forget to look at the critics marked as wrong or as ToDos in manifests.
 
-
-+Banning a rule for the complete selected packages.>file://BanningTimeStampRules.png|width=50|label=BanningTimeStampRules+
++Banning a rule for the complete selected packages.>file://BanningInconsistentClassificationRule.png|width=50|label=BanningInconsistentClassification+
 
 
 !!!Banning a complete rule
-If a rule is irrelevant for your project, you can ban this rule for all selected packages during the rules selection step. To do this, make a right click on the rule menu and select ''Ban this rule for all packages''. After this, all  warnings of this rule are marked as wrong  (see Figure *BanningTimeStampRules*). 
+If a rule is irrelevant for your project, you can ban this rule for all selected packages during the rules selection step. To do this, make a right click on the rule menu and select ''Ban from all packages''. After this, all  warnings of this rule are marked as wrong (see Figure *BanningInconsistentClassification*). 
 
 We suggest you to experiment with the possibility offered by the tool. Nothing is really complex to understand. So try and learn. 
 
@@ -106,7 +99,8 @@ We suggest you to experiment with the possibility offered by the tool. Nothing i
 !!Existing SmallLint Rules
 @existingRules
 
-SmallLint is a tool that analyses Pharo code and identifies bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of symptoms that they can identify.
+
+SmallLint comes with a rich set of rules to identify bugs, design problems and other mismatches to recommended idioms. You can define your own rules as we will explain later, but before we will present the existing rules. We will show some of the existing rules by presenting one or two rules per category of symptoms.
 
 %%SmallLint-rules.tex
 The current category for grouping rules are ''Bugs'', ''Potential Bugs'', ''Optimizations'', ''Design Flaws'', ''Coding Idiom Violations'' and ''Style''. We will illustrate some rules of each category.
@@ -116,7 +110,7 @@ The current category for grouping rules are ''Bugs'', ''Potential Bugs'', ''Opti
 The first family of rules covers bugs. Let us illustrate two rules:
 
 !!!!''Messages sent but not implemented''.
-This smell arises when a message is sent by a method,  but no class in the system implements such a message. This method sent will certainly cause a doesNotUnderstand: message when they are executed.  Further this rule checks if messages sent to self or super exist in the hierarchy, since these can be statically typed.
+This critic arises when a message is sent by a method, but no class in the system implements such a message. This method sent will certainly cause a doesNotUnderstand: message when they are executed. Further this rule checks if messages sent to self or super exist in the hierarchy, since these can be statically known.
 
 !!!! ''Subclass responsibility not defined''.
 This rule checks if all ==subclassResponsibility== methods are defined in all leaf classes. If such a method is not overridden, a subclassResponsibility message can occur when this method is called.
@@ -135,27 +129,27 @@ Here are all the rules currently defined.
 |{Variable used, but not defined 
 |{Sends unknown message to global
 |{Uses True/False instead of true/false 
-|{ Subclass responsibility not defined
+|{Subclass responsibility not defined
 
 !!! Potential bugs
 Potential bugs are situations that do not automatically lead to systematic bugs. Here is an example of such rule.
 
 !!!!''Possible missing ==; yourself"==''
 
-When using cascaded messages, it is often important to finish the cascade with a yourself message. Why? for several reasons. First the messages in the cascade may not return the last receiver but the argument as in the well known case of adding elements in a collection.
+When using cascaded messages, it is often important to finish the cascade with a ==yourself== message. Why? for several reasons. First the last message in the cascade may not return the receiver but the argument as in the well known case of adding elements in a collection.
 
 [[[	
 	| col | 
 	col := (OrderedCollection new: 2) add: 1; add: 2.
 ]]]	
-In this example, col will be assigned to 2 instead of an orderedCollection because add: returns its argument and not the receiver.  The correct way to do it is using yourself (since yourself returns the receiver).
+In this example, ==col== will be assigned to 2 instead of an orderedCollection because add: returns its argument and not the receiver. The correct way to do it is using yourself (since yourself returns the receiver).
 
 [[[	
 	| col | 
 	col := (OrderedCollection new: 2) add: 1; add: 2 ; yourself.
 ]]]	
 	
-Second case. Using yourself you can block the influence of redefined method.  Imagine the following example: a method creating an instance, initializing it and returning it.
+Secondly if you use yourself you can block the influence of redefined methods.  Imagine the following example: a method creating an instance, initializing it and returning it.
 
 [[[	
 Box class >> new
@@ -172,7 +166,7 @@ Box class >> new
 	^ self new initialize ; yourself 
 ]]]
 		
-Here yourself play the same role as the ==^ inst== above. 
+Here ==yourself== plays the same role as the ==^ inst== above. 
 
 
 Here are all the rules currently defined.
@@ -212,14 +206,18 @@ The optimization rules often identify code that can be more efficiently written.
 
 !!!! ''Move variable assignment outside of single statement ifTrue:ifFalse: blocks''
 
- Moving assignments outside blocks leads to shorter and more efficient code.
+Moving assignments outside blocks leads to shorter, more readable and more efficient code.
 
 For example:
 [[[
 test 
 	ifTrue: [var := 1]
 	ifFlase: [var:= 2]
-is equivalent to:
+]]]
+
+can be rewritten to:
+
+[[[
 var :=  test 
 	ifTrue: [1]
 	ifFlase: [2]
@@ -227,9 +225,9 @@ var :=  test
 
 !!!!''String concatenation instead of streams''.
 
-Check for string concatenation inside some iteration message. Since string concatenation is O(n2), it is better to use streaming since it is O(n) - assuming that n is large enough. As a general principal avoid , since the receiver is copied. Therefore chaining , messages will lead to multiple useless copies of the receiver. 
+Check for string concatenation inside some iteration message. String concatenation is expensive because it creates new strings. It is more performant to create the string out of a stream since only one string object will be created. As a general principal avoid string concatenation since the receiver is copied. Therefore chaining ==,== messages will lead to multiple useless copies of the different receivers.
 
-Instead of writing
+Instead of writing:
 [[[
 	| string | 
 	string := String new.
@@ -237,7 +235,8 @@ Instead of writing
 		string := string, each asString].
 	^ string
 ]]]
-Write, it is much more efficient.
+
+you can create the string from a stream, which is much more efficient.
 
 [[[
 	String streamContents: [:s | 
@@ -272,13 +271,11 @@ Design flaws pointed out potential design problems such as code duplication or u
 
 !!!! ''Methods equivalently defined in superclass''.
 
- This violation arises when a method is equivalent to its superclass method. The methods are equivalent when they have the same abstract syntax tree, except for variables names. Such method does not add anything to the computation and can be removed since the superclass method have the same behavior. Furthermore, the methods ==new== and ==initialize== are ignored once they are often overridden for compatibility with other platforms. The ignored methods can be edited in ==RBEquivalentSuperclassMethodsRule>>ignoredSelectors==.
+ This critic arises when a method is equivalent to its superclass method. The methods are equivalent when they have the same abstract syntax tree, except for variables names. Such method does not add anything to the computation and can be removed since the superclass method have the same behavior. Furthermore, the methods ==new== and ==initialize== are ignored once they are often overridden for compatibility with other platforms. The ignored methods can be edited in ==RBEquivalentSuperclassMethodsRule>>ignoredSelectors==.
 
 !!!! ''Excessive number of arguments''.
 
-This violation arises when a method contains a long number of argument (five or more), which can indicate that a new object should be created to wrap the numerous parameters. The defined number of arguments can be edited in ==RBExcessiveArgumentsRule>>argumentsCount==.
-
-This violations arises when a method contains a long number of argument (five or more), which can indicate that a new object should be created to wrap the numerous parameters. The defined number of arguments can be edited in ==RBExcessiveArgumentsRule>>argumentsCount==.
+This critic arises when a method contains a long number of argument (five or more), which can indicate that a new object should be created to wrap the numerous parameters. The defined number of arguments can be edited in ==RBExcessiveArgumentsRule>>argumentsCount==.
 
 |!Design Flaws Rules
 |{ Class not referenced
@@ -307,7 +304,7 @@ The coding idiom violations are more related to inconsistencies that can make th
 
 !!!! ''Sends "questionable" message''.
 
-This violation arises when methods send messages that perform low level things. You might want to limit the number of such messages in your application. Messages such as ==isKindOf:== can signify a lack of polymorphism. You can see which methods are "questionable" by editing the ==RBBadMessageRule>>badSelectors== method. Some examples are: ==respondsTo:==, ==isMemberOf:==, ==perform:== and ==perform:arguments:==.
+This critic arises when methods send messages that perform low level things. You might want to limit the number of such messages in your application. Messages such as ==isKindOf:== can signify a lack of polymorphism. You can see which methods are "questionable" by editing the ==RBBadMessageRule>>badSelectors== method. Some examples are: ==respondsTo:==, ==isMemberOf:==, ==perform:== and ==perform:arguments:==.
 
 |!Coding Idiom Violation Rules
 |{ Sends "questionable" message
@@ -340,27 +337,26 @@ The style rules focus on the structure of the symbols and how they convey their 
 SmallLint provides two different way to define rules.
 
 - Block rules use the Smalltalk reflective API. These rules can be defined at two levels: class or method.
-- AST rules, these rules are working on method abstract syntax tree. 
+- AST rules are working on abstract syntax trees. 
 
-In addition rules can define code transformation to address automatically the problems.
-
+In addition, rules can define code transformation to address automatically the problems.
 
 !!!Block Rules
 
-Block rules use the Smalltalk reflective API. They can be created to find methods that should be not invoked, style consistency such capitalization or variable name length, class or method size, classes not commented, variables not referenced, instance variables defined in all subclasses, among others. In summary, every thing that is possible to do using the Smalltalk reflective API can be used in a block rule. This includes access to the reflective api which allows the easy navigation through classes (and their superclasses and subclasses), methods, variables, arguments, comments, invocations, etc.
+Block rules use the Smalltalk reflective API. They can be created to find methods that should be not invoked, style consistency such capitalization or variable name length, class or method size, classes not commented, variables not referenced, instance variables defined in all subclasses, among others. In summary, everything that is possible to do using the Smalltalk reflective API can be used in a block rule. This includes access to the reflective api which allows the easy navigation through classes (and their superclasses and subclasses), methods, variables, arguments, comments, invocations, etc.
 
 These rules are created by extending the class ==RBBlockLintRule==.
-Block rules can be defined at two levels, class or method. If the rule checks a class property or violation (e.g., the presence of a class comment), this rule must implement such checks by implementing the method ==checkClass:==. Similarly, when a rule checks a method property, it must implement the method ==checkMethod:==.
+Block rules can be defined at two levels, class or method. If the rule checks a class property or a critic (e.g., the absence of a class comment), this rule must implement such checks by implementing the method ==checkClass:==. Similarly, when a rule checks a method property, it must implement the method ==checkMethod:==.
 
 !!Defining Simple Rules
-Let us take as example the definition of a simple rule:  when a class defines == = ==, it also has to define ==hash==. If ==hash== is not defined then the instances of the class might not be able to be used in sets since equal element must have the same hash.
+Let us take as example the definition of a simple rule:  when a class defines == = ==, it also has to define ==hash==. If ==hash== is not defined then the instances of the class might not be able to be used in sets and dictionaries since equal elements must have the same hash.
 
 This rule is already defined by SmallLint as the class ==RBDefinesEqualNotHashRule==. Let us study it. 
 
-Since it is a class check, it is implemented using the method ==ckeckClass:==. 
-The methods ==checkClass:== and ==checkMethod:== receive as parameter the object ==aContext==,  instance of ==RBSmalllintContext==. This object contains information about the method/class who is currently checked. 
+Since it is a class check, it is implemented using the method ==checkClass:==. 
+The methods ==checkClass:== and ==checkMethod:== receive as parameter an object ==aContext==, instance of ==RBSmalllintContext==. This object contains information about the method/class who is currently checked. 
 
-For example, the method ==RBSmalllintContext>>selectedClass== returns the class currently checked. In the case where we access to this object from ==checkClass:==, ==aContext== can provide the currently compiled method check (==RBSmalllintContext>>compiledMethod==) or all messages send from this method (==RBSmalllintContext>>messages==).
+For example, the method ==RBSmalllintContext>>selectedClass== returns the class currently checked. In the case where we access to this object from ==checkClass:==, ==aContext== can provide the current compiled method (==RBSmalllintContext>>compiledMethod==) or all messages send from this method (==RBSmalllintContext>>messages==).
 
 The method ==ckeckClass:== is then defined as follows: 
 
@@ -371,19 +367,19 @@ RBDefinesEqualNfotHashRule>>checkClass: aContext
 			 ifTrue: [ result addClass: aContext selectedClass ]
 ]]]
 
-When the current class check violates the rule, this class is added to the environment which contains the set of found violations: result addClass: aContext selectedClass. 
+When the current class violates the rule, this class is added to the environment which contains the set of found critics: ==result addClass: aContext selectedClass==. 
 
-We have to implement the method ==resultClass==. This method returns the type of environment that  will contain identified rule violations. For a rule at the level of class, the environment is ==RBClassEnvironment== and ==RBMethodEnvironment== for a method level one.
+	We have to implement the method ==resultClass==. This method returns the type of environment that  will contain identified critic. For a rule at the class level, the environment is ==RBClassEnvironment== and ==RBMethodEnvironment== for a method level one.
 
 [[[
 RBDefinesEqualNotHashRule>>resultClass
 	^ RBClassEnvironment
 ]]]
 
-Finally, the ==RBLintRule== interface defines three methods to implement for a given rule
+Finally, the ==RBLintRule== interface defines three methods to implement for a custom rule
 - its name (==name==)
 - a description (==longDescription==) and 
-- a category to which the rule belongs (==category==). The currently define categories are ''Bugs'', ''Potential Bugs'', ''Optimizations'', ''Design Flaws'', ''Coding Idiom Violations'' and ''Style''. It is possible to add new category.
+- a category to which the rule belongs (==category==). The currently define categories are ''Bugs'', ''Potential Bugs'', ''Optimizations'', ''Design Flaws'', ''Coding Idiom Violations'' and ''Style''. It is possible to define your own categories.
 
 Here we show such methods. 
 
