@@ -66,7 +66,7 @@ Ce premier exemple a permis d'introduire les concepts de bases d'Artefact et a d
 
 !!Définir un document
 
-Artefact représente un document PDF à l'aide de l'objet PDFDocument. Cet objet est un conteneur destiné à recevoir des pages. C'est l'ordre dans lequel ces pages sont ajoutées qui définit l'organisation des données au sein de l'objet PDFDocument et non pas l'ordre dans lequel les pages sont créées. Ce mode de fonctionnement vous permet donc de générer des documents dont le contenu sera dans un premier temps dynamiquement produit puis organisé dans un second temps. L'objet PDFDocument dispose également d'options avancées portant sur le format du document, la gestion de la compression ou encore la définition de méta informations.
+Artefact représente un document PDF à l'aide de l'objet PDFDocument. Cet objet est un conteneur destiné à recevoir des pages. C'est l'ordre dans lequel ces pages sont ajoutées qui définit l'organisation des données au sein de l'objet PDFDocument et non pas l'ordre dans lequel les pages sont créées. Ce mode de fonctionnement vous permet donc de générer des documents dont le contenu sera dans un premier temps dynamiquement produit puis organisé dans un second temps. L'objet PDFDocument dispose également d'options avancées portant sur le format du document, la gestion de la compression, l'ouverture dans le lecteur PDF ou encore la définition de méta informations.
 
 !!!Ajouter des pages
 
@@ -76,11 +76,11 @@ Pour ajouter des pages dans un document, vous disposez d'une méthode nommée #a
 
 Un document PDF peut être configuré pour fixer le format utilisé et gérer la compression.
 
-!!!!format et orientation du document
+!!!!Format et orientation du document
 
 Par défaut, un document est généré en respectant le format A4 mais celui ci n'est pas le seul disponible dans Artefact. Dans le paquet Artefact-Formats, une liste de formats a été définie et couvre de nombreux besoins. Vous pouvez ainsi produire des documents en A3 (PDFA3Format), au format Letter (PDFLetterFormat) mais aussi dans un format adapté aux liseuses électroniques (PDFEbookFormat). Si vous avez besoin d'un format particulier, il vous suffit de le définir. Un format est simplement exprimé par la valeur de retour de la méthode #defaultSize.
 
-L'objet PDFDocument possède une méthode #format: permettant de spécifier le format de toutes les pages du document. Pour chaque page, cette valeur sera prise par défaut si aucun format particulier n'est défini au niveau de la page. L'exemple suivant génère un document utilisant le format A3:
+L'objet PDFDocument possède une méthode #format: permettant de spécifier le format de toutes les pages du document. Pour chaque page, cette valeur sera prise par défaut si aucun format particulier n'est défini à son propre format. L'exemple suivant génère un document utilisant le format A3:
 
 [[[
 PDFDocument new 
@@ -112,19 +112,110 @@ PDFDocument new
 	add: (PDFPage new); exportTo: 'uncompressed.pdf' asFileReference writeStream
 ]]]
 
-Une autre méthode, nommée #compressed, relance la compression si celle ci a été préalablement désactivée.
+Une autre méthode, nommée #compressed, réactive la compression si celle ci a été préalablement désactivée.
+
+!!!!Contrôler l'ouverture du document
+
+Le lecteur Adobe Acrobat supporte différents modes d'affichage à l'ouverture d'un document PDF. Le mode sélectionné est renseigné directement dans le document PDF. Artefact supporte les différentes directives d'affichage à destination du lecteur PDF. Notez que si votre lecteur PDF n'est pas compatible avec ces options, elles seront ignorées.
+
+Les directives fixant le mode d'affichage à l'ouverture d'un document PDF sont réparties en deux catégories: celles fixant la dimension des pages (#fullPage, #fullWidth, #real et #zoom:) et celles fixant l'organisation des pages sur l'écran (#singlePage, #twoPages et #continuousPages). Ces différentes méthodes s'appliquent directement à  une instance de l'objet PDFDocument.
+
+Avec #fullPage, chaque page du document occupe l'intégralité de l'espace d'affichage disponible. Avec #fullWidth, l'affichage est optimisé en fonction de la largeur des pages. Avec #real, l'affichage respecte les dimensions fixées dans le document PDF.
+
+L'exemple suivant génère un document qui occupera tout l'espace d'affichage disponible:
+
+[[[
+pdfdoc := PDFDocument new fullPage.
+]]]
+
+Avec la méthode #zoom:, vous fixez un rapport d'agrandissement exprimé en pourcentage. L'exemple suivant applique un zoom de 400% à l'ouverture du document:
+
+[[[
+pdfdoc := PDFDocument new zoom: 400. 
+]]]
+
+Vous pouvez également choisir d'afficher les pages une par une (#singlePage), deux par deux (#twoPages) ou les unes à la suite des autres (#continousPages) comme dans l'exemple suivant:
+
+[[[
+pdfdoc := PDFDocument new continousPages. 
+]]]
+
+Ces différentes méthodes sont également utilisables conjointement. L'exemple suivant demande l'affichage du document avec un zoom de 200% et un affichage continu des pages:
+
+[[[
+pdfdoc := PDFDocument new 
+	zoom: 200;
+	continuousPages.
+]]]
+
+Ces différentes options sont pratiques mais n'oubliez pas que leur fonctionnement dépend des capacités du lecteur PDF que vous utilisez.
 
 !!!!Renseigner les méta informations
 
-Chaque document PDF contient un ensemble de champs 
- 
+Chaque document PDF contient un ensemble d'informations sur ses origines. Ces données ne sont pas à négliger, en particulier si votre document est destiné à alimenter une solution de type GED (Gestion Electronique de Documents) ou fait parti d'un workflow éditorial. Grâce à ces informations, il est possible de faire des recherches parmi un ensemble de documents PDF et de sélectionner par exemple, ceux écrits par un auteur précis ou encore ceux pour lesquels certains mots clés ont été spécifiés.
+
+Artefact implémente ces informations à l'aide de l'objet PDFMetaData. A chaque nouvelle instance de PDFDocument, une instance de PDFMetaData est associée et est accessible via la variable d'instance metaData. Par défaut, le producteur est fixé à 'Artefact' pour renseigner la nature du logiciel utilisé pour générer le fichier PDF. Vous pouvez indiquer le titre du document, un sujet ou un court résumé, préciser le nom du ou des auteurs, fixer une liste de mots clés et enfin définir le créateur du document.
+
+L'exemple suivant génére un nouveau document et renseigne ses méta informations:
+
+[[[
+pdfdoc := PDFDocument new.
+	
+pdfdoc metaData title: 'Document title'; 
+	subject: 'subject of the document'; 
+	author: 'The Pasta Team'; 
+	keywords: 'cool rock best';
+	creator: 'Pharo'.
+]]]
+
+Artefact supporte l'essentiel des spécifications du format PDF pour la génération de documents. Cependant, un document vide, même bien renseigné, n'a que peu d'utilité. Pour votre futur manuscript ou votre prochain rapport, il vous faut un support pour écrire votre texte ou dessiner vos schémas. Ce sont les pages qui vont jouer ce rôle.
+
 !!Pages, formats et modèles
 
-Gérer l'apparence avec les feuilles de styles
+Les pages sont les supports d'écriture et de dessin présents dans vos documents PDF. Une page a une dimension, une orientation et une position au sein du document PDF. Une page peut être construite à partir d'un modèle qui fournit 
+un fond de page sur lequel est déposé le contenu.
 
-Les composants simples
+!!!Création des pages
 
-Les composants complexes
+!!!Modèle
 
-Créez vos composants
+!!Composition et agencement du contenu rédactorial
+
+!!!Comportement générique des composants
+
+	position
+	dimensions
+
+!!!!Positionnement des composants
+
+!!!Les composants élémentaires
+
+!!!Les composants de haut niveau
+
+!!Créez vos composants
+
+!!Gérer l'apparence avec les feuilles de styles
+
+!!!Qu'est ce qu'une feuille de style ?
+
+!!!Les éléments manipulables avec dans une feuille de style
+
+!!!!Fontes
+	utiliser les deux syntaxes (pour montrer que c'est la même chose)
+	stylesheet textColor: .....
+	textColor: .....
+
+!!!!Couleurs et niveaux de gris
+
+!!!!Alignement
+
+!!!!Pointillés
+
+!!!Généraliser un style 
+
+!!!!Changer le style par défaut du document
+
+!!!!Appliquer un style sur un ensemble d'éléments
+
+
 
