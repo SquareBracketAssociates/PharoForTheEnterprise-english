@@ -172,23 +172,106 @@ Artefact supporte l'essentiel des spécifications du format PDF pour la généra
 
 !!Pages, formats et modèles
 
-Les pages sont les supports d'écriture et de dessin présents dans vos documents PDF. Une page a une dimension, une orientation et une position au sein du document PDF. Une page peut être construite à partir d'un modèle qui fournit 
-un fond de page sur lequel est déposé le contenu.
+Les pages sont les supports d'écriture et de dessin présents dans vos documents PDF. Une page a une dimension, une orientation et une position au sein du document PDF. Une page peut être construite à partir d'un modèle qui fournit un fond de page sur lequel est déposé le contenu.
 
 !!!Création des pages
 
+Une page est représenté par une instance de l'objet PDFPage. La façon la plus simple de construire une nouvelle page est donc:
+
+[[[
+	page := PDFPage new.
+]]]
+
+A ce stade, vous pouvez écrire et dessiner sur la page à l'aide des composants graphiques fournis par Artefact. Une fois le contenu de la page défini, il vous faut ajouter la page dans le document PDF. Une page est ajoutée à l'aide de la méthode  #add: à la suite des pages déjà présentes dans le document.
+
+[[[
+	pdfdoc := PDFDocument new.
+	page := PDFPage new.
+	pdfdoc add: page.
+]]]
+  
+Par défaut, une page adopte les dimensions et l'orientation du document. Si votre document PDF est en A4 paysage, toutes les pages ajoutées utiliseront ces paramètres. Artefact permet d'attribuer à chaque page des dimensions et une orientation spécifiques. Vous pouvez ainsi mélanger dans un même document des pages ayant des caractèristiques différentes. Certaines seront en portrait, d'autres en paysage. D'autres seront en A3 alors que le document sera en A4. 
+
+Pour cela, chaque instance de PDFPage dispose d'une méthode #format: qui reçoit une instance de PDFFormat. L'exemple qui suit génère un document de deux pages. La première utilise le format par défaut du document, la seconde est en A4 paysage.
+
+[[[
+	pdfdoc := PDFDocument new.
+	page1 := PDFPage new.
+	page2 := PDFPage new format: (PDFA3Format new setLandscape).
+	pdfdoc add: page1; add: page2.
+]]]
+
+
 !!!Modèle
+
+Un modèle (PDFTemplate) hérite de la classe PDFPage. Il s'agit d'une page ayant un contenu prédéfini et constituant le fond de page sur lequel vous écrivez ou dessinez. Un fond de page peut être constitué par un entête de lettre, un haut et un bas de page pour un rapport, une surface délimitée pour des travaux de mise en page. Le paquet Artefact-Templates propose deux exemples de modèles pour produire la pochette d'un disque compact ou d'un DVD. Le code suivant produit une page A4 sur laquelle sont dessinés les contours d'une pochette d'un CD.
+
+[[[
+	pdfdoc := PDFDocument new.
+	cover := PDFCompactDiscTemplate new.
+]]]
+
+Un modèle est défini à l'aide de la méthode #drawTemplate qui ajoute les composants graphiques d'Artefact à la page et constitue ainsi le fond de page.
 
 !!Composition et agencement du contenu rédactorial
 
+Le contenu des pages est défini à l'aide de composants graphiques. C'est une idée forte dans Artefact qui est basé sur le concept de composants réutilisables permettant d'écrire et de dessiner sur une page. Artefact dispose de composants elémentaires qui réalisent des opération simples tel que dessiner une ligne, mais également, de composants complexes pouvant, par exemple, afficher des données dans un tableau ou encore générer un code barre. Bien évidemment, il est possible de définir et de diffuser de nouveaux composants. Artefact utilisant le principe de composition, un composant complexe est logiquement un assemblage d'autres composants.
+
 !!!Comportement générique des composants
 
-	position
-	dimensions
+Les composants graphiques d'Artefact adoptent un comportement générique afin de gérer leur positionnement sur la page ainsi que leur dimensionnement. Un repère orthonormé, dont l'origine est en haut à gauche de la page, est utilisé pour indiquer l'emplacement d'un composant. Les valeurs sont exprimées à l'aide d'unités telles que mm, cm ou inch.
 
 !!!!Positionnement des composants
 
+La méthode de classe #from: permet d'instancier un composant graphique et de fixer sa position. L'exemple suivant utilise un composant PDFTextElement et la place à 15 mm du bord gauche et à 30 mm du haut de la page:
+
+[[[
+	PDFTextElement from: 15mm @ 30 mm
+]]]
+
+En complément du positionnement, Artefact propose également des constructeurs fixant simultanément l'emplacement et la dimension d'un composant.
+
+!!!!Dimensionnement des composants
+
+Vous disposez de deux moyens pour indiquer les dimensions d'un composant. Avec la méthode #from:to:, vous préciser la position de départ et la position de fin d'un composant. L'exemple suivant dessine un rectangle, dont l'origine est 15 mm du bord gauche de la page et 30 mm du haut de la page. Son dessin se termine à 90 mm du bord gauche de la page età 80 mm du haut de la page:
+[[[
+	PDFRectElement from: 15mm @ 30 mm to: 90mm @ 80mm
+]]]
+
+Avec la méthode #from:dimension:, vous fixez la position de départ du composant et indiquez ses dimensions. 
+
+[[[
+	PDFRectElement from: 15mm @ 30 mm dimension: 50mm @ 40mm
+]]]
+
+Les méthodes #width et #height retournent la largeur et la hauteur d'un composant.
+
 !!!Les composants élémentaires
+
+Le paquet Artefact-Elements-Basic contient les composants graphiques de base. Ils sont répartis dans trois catégories:
+* l'écriture de texte,
+* le dessin de forme géométrique.
+* l'insertion d'une image.
+
+Pour écrire du texte sur une page, vous devez utiliser le composant PDFTextElement. Le texte à écrire est renseigné à l'aide de la méthode #text. La méthode de classe #from:text: permet faire ces opérations rapidement:
+
+[[[
+	PDFTextElement from: 15mm @ 30mm text: 'hello!'
+]]]
+
+Artefact dispose de composants pour les principales formes géométriques. La classe PDFLineElement dessine une ligne dont les coordonnées de départ et de fin sont fixées à l'aide #from:to:
+
+[[[
+	PDFLineElement from: 15mm @ 30mm to: 90mm@170mm
+]]]
+
+La méthode de class #from:angle:length: permet de dessiner une ligne à partir d'une coordonnée de départ, d'un angle et d'une longueur de tracé.
+
+[[[
+	PDFLineElement from: 10mm @ 20mm angle: 70 length: 50mm
+]]]
+
+Les composants élémentaires réalisent des opérations graphiques extrémement simples tel que placer un texte sur une page ou dessiner une ligne. Ils constituent les briques essentielles pour la constitution des composants de haut niveau.
 
 !!!Les composants de haut niveau
 
