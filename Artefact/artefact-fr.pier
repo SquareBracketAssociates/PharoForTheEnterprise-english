@@ -249,9 +249,9 @@ Les méthodes #width et #height retournent la largeur et la hauteur d'un composa
 !!!Les composants élémentaires
 
 Le paquet Artefact-Elements-Basic contient les composants graphiques de base. Ils sont répartis dans trois catégories:
-* l'écriture de texte,
-* le dessin de forme géométrique.
-* l'insertion d'une image.
+l'écriture de texte,
+le dessin de forme géométrique.
+l'insertion d'une image.
 
 Pour écrire du texte sur une page, vous devez utiliser le composant PDFTextElement. Le texte à écrire est renseigné à l'aide de la méthode #text. La méthode de classe #from:text: permet faire ces opérations rapidement:
 
@@ -270,6 +270,51 @@ La méthode de class #from:angle:length: permet de dessiner une ligne à partir 
 [[[
 	PDFLineElement from: 10mm @ 20mm angle: 70 length: 50mm
 ]]]
+
+Un rectangle est représenté à l'aide de PDFRectElement. La hauteur et la largeur du rectangle peuvent être spécifiés en fournissant les dimensions ou en fixant la position de fin du tracé. Les deux exemples qui suivent sont équivalents:
+
+[[[
+PDFRectElement from: 10 mm@10mm dimension: 100 mm @ 30 mm.
+]]]
+
+[[[
+PDFRectElement from: 10mm@10mm to: 110mm@40mm
+]]]
+
+Artefact fourni également une classe PDFPolygonElement destinée au dessin de polygones. Cette forme géométrique est définie par une position de départ et une suite de points composant les différents segments.
+
+[[[  
+PDFPolygonElement from: 10mm@10mm points: {
+	30mm@30mm. 
+	15mm@40mm. 
+	5mm@20mm
+}
+]]]
+
+Les cercles sont définis à l'aide de la classe PDFCircleElement et de la méthode de classe #center:radius: qui spécifie la position du centre du cercle et son rayon.
+
+[[[
+	PDFCircleElement center: 100mm@100mm radius: 50mm
+]]]
+
+Une courbe de Bezier est représentée par la classe PDFBezierCurveElement et est définie par une position de départ et une suite de points.
+
+[[[
+PDFBezierCurveElement from: 10 mm @ 50 mmpoints:{
+	0 mm @ 0 mm.
+	100 mm @ 20 mm.
+	150 mm @ 0 mm.
+	50 mm @ 50 mm
+}
+]]]
+
+Artefact autorise l'insertion d'images au format JPEG dans un document PDF. 
+
+PDFJpegElement
+height:
+width:
+class from:wh:fromStream:
+class fromStream:
 
 Les composants élémentaires réalisent des opérations graphiques extrémement simples tel que placer un texte sur une page ou dessiner une ligne. Ils constituent les briques essentielles pour la constitution des composants de haut niveau.
 
