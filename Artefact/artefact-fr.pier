@@ -66,7 +66,7 @@ Ce premier exemple a permis d'introduire les concepts de bases d'Artefact et a d
 
 !!Définir un document
 
-Artefact représente un document PDF à l'aide de l'objet PDFDocument. Cet objet est un conteneur destiné à recevoir des pages. C'est l'ordre dans lequel ces pages sont ajoutées qui définit l'organisation des données au sein de l'objet PDFDocument et non pas l'ordre dans lequel les pages sont créées. Ce mode de fonctionnement vous permet donc de générer des documents dont le contenu sera dans un premier temps dynamiquement produit puis organisé dans un second temps. L'objet PDFDocument dispose également d'options avancées portant sur le format du document, la gestion de la compression ou encore la définition de méta informations.
+Artefact représente un document PDF à l'aide de l'objet PDFDocument. Cet objet est un conteneur destiné à recevoir des pages. C'est l'ordre dans lequel ces pages sont ajoutées qui définit l'organisation des données au sein de l'objet PDFDocument et non pas l'ordre dans lequel les pages sont créées. Ce mode de fonctionnement vous permet donc de générer des documents dont le contenu sera dans un premier temps dynamiquement produit puis organisé dans un second temps. L'objet PDFDocument dispose également d'options avancées portant sur le format du document, la gestion de la compression, l'ouverture dans le lecteur PDF ou encore la définition de méta informations.
 
 !!!Ajouter des pages
 
@@ -76,11 +76,11 @@ Pour ajouter des pages dans un document, vous disposez d'une méthode nommée #a
 
 Un document PDF peut être configuré pour fixer le format utilisé et gérer la compression.
 
-!!!!format et orientation du document
+!!!!Format et orientation du document
 
 Par défaut, un document est généré en respectant le format A4 mais celui ci n'est pas le seul disponible dans Artefact. Dans le paquet Artefact-Formats, une liste de formats a été définie et couvre de nombreux besoins. Vous pouvez ainsi produire des documents en A3 (PDFA3Format), au format Letter (PDFLetterFormat) mais aussi dans un format adapté aux liseuses électroniques (PDFEbookFormat). Si vous avez besoin d'un format particulier, il vous suffit de le définir. Un format est simplement exprimé par la valeur de retour de la méthode #defaultSize.
 
-L'objet PDFDocument possède une méthode #format: permettant de spécifier le format de toutes les pages du document. Pour chaque page, cette valeur sera prise par défaut si aucun format particulier n'est défini au niveau de la page. L'exemple suivant génère un document utilisant le format A3:
+L'objet PDFDocument possède une méthode #format: permettant de spécifier le format de toutes les pages du document. Pour chaque page, cette valeur sera prise par défaut si aucun format particulier n'est défini à son propre format. L'exemple suivant génère un document utilisant le format A3:
 
 [[[
 PDFDocument new 
@@ -112,19 +112,238 @@ PDFDocument new
 	add: (PDFPage new); exportTo: 'uncompressed.pdf' asFileReference writeStream
 ]]]
 
-Une autre méthode, nommée #compressed, relance la compression si celle ci a été préalablement désactivée.
+Une autre méthode, nommée #compressed, réactive la compression si celle ci a été préalablement désactivée.
+
+!!!!Contrôler l'ouverture du document
+
+Le lecteur Adobe Acrobat supporte différents modes d'affichage à l'ouverture d'un document PDF. Le mode sélectionné est renseigné directement dans le document PDF. Artefact supporte les différentes directives d'affichage à destination du lecteur PDF. Notez que si votre lecteur PDF n'est pas compatible avec ces options, elles seront ignorées.
+
+Les directives fixant le mode d'affichage à l'ouverture d'un document PDF sont réparties en deux catégories: celles fixant la dimension des pages (#fullPage, #fullWidth, #real et #zoom:) et celles fixant l'organisation des pages sur l'écran (#singlePage, #twoPages et #continuousPages). Ces différentes méthodes s'appliquent directement à  une instance de l'objet PDFDocument.
+
+Avec #fullPage, chaque page du document occupe l'intégralité de l'espace d'affichage disponible. Avec #fullWidth, l'affichage est optimisé en fonction de la largeur des pages. Avec #real, l'affichage respecte les dimensions fixées dans le document PDF.
+
+L'exemple suivant génère un document qui occupera tout l'espace d'affichage disponible:
+
+[[[
+pdfdoc := PDFDocument new fullPage.
+]]]
+
+Avec la méthode #zoom:, vous fixez un rapport d'agrandissement exprimé en pourcentage. L'exemple suivant applique un zoom de 400% à l'ouverture du document:
+
+[[[
+pdfdoc := PDFDocument new zoom: 400. 
+]]]
+
+Vous pouvez également choisir d'afficher les pages une par une (#singlePage), deux par deux (#twoPages) ou les unes à la suite des autres (#continousPages) comme dans l'exemple suivant:
+
+[[[
+pdfdoc := PDFDocument new continousPages. 
+]]]
+
+Ces différentes méthodes sont également utilisables conjointement. L'exemple suivant demande l'affichage du document avec un zoom de 200% et un affichage continu des pages:
+
+[[[
+pdfdoc := PDFDocument new 
+	zoom: 200;
+	continuousPages.
+]]]
+
+Ces différentes options sont pratiques mais n'oubliez pas que leur fonctionnement dépend des capacités du lecteur PDF que vous utilisez.
 
 !!!!Renseigner les méta informations
 
-Chaque document PDF contient un ensemble de champs 
- 
+Chaque document PDF contient un ensemble d'informations sur ses origines. Ces données ne sont pas à négliger, en particulier si votre document est destiné à alimenter une solution de type GED (Gestion Electronique de Documents) ou fait parti d'un workflow éditorial. Grâce à ces informations, il est possible de faire des recherches parmi un ensemble de documents PDF et de sélectionner par exemple, ceux écrits par un auteur précis ou encore ceux pour lesquels certains mots clés ont été spécifiés.
+
+Artefact implémente ces informations à l'aide de l'objet PDFMetaData. A chaque nouvelle instance de PDFDocument, une instance de PDFMetaData est associée et est accessible via la variable d'instance metaData. Par défaut, le producteur est fixé à 'Artefact' pour renseigner la nature du logiciel utilisé pour générer le fichier PDF. Vous pouvez indiquer le titre du document, un sujet ou un court résumé, préciser le nom du ou des auteurs, fixer une liste de mots clés et enfin définir le créateur du document.
+
+L'exemple suivant génére un nouveau document et renseigne ses méta informations:
+
+[[[
+pdfdoc := PDFDocument new.
+	
+pdfdoc metaData title: 'Document title'; 
+	subject: 'subject of the document'; 
+	author: 'The Pasta Team'; 
+	keywords: 'cool rock best';
+	creator: 'Pharo'.
+]]]
+
+Artefact supporte l'essentiel des spécifications du format PDF pour la génération de documents. Cependant, un document vide, même bien renseigné, n'a que peu d'utilité. Pour votre futur manuscript ou votre prochain rapport, il vous faut un support pour écrire votre texte ou dessiner vos schémas. Ce sont les pages qui vont jouer ce rôle.
+
 !!Pages, formats et modèles
 
-Gérer l'apparence avec les feuilles de styles
+Les pages sont les supports d'écriture et de dessin présents dans vos documents PDF. Une page a une dimension, une orientation et une position au sein du document PDF. Une page peut être construite à partir d'un modèle qui fournit un fond de page sur lequel est déposé le contenu.
 
-Les composants simples
+!!!Création des pages
 
-Les composants complexes
+Une page est représenté par une instance de l'objet PDFPage. La façon la plus simple de construire une nouvelle page est donc:
 
-Créez vos composants
+[[[
+	page := PDFPage new.
+]]]
+
+A ce stade, vous pouvez écrire et dessiner sur la page à l'aide des composants graphiques fournis par Artefact. Une fois le contenu de la page défini, il vous faut ajouter la page dans le document PDF. Une page est ajoutée à l'aide de la méthode  #add: à la suite des pages déjà présentes dans le document.
+
+[[[
+	pdfdoc := PDFDocument new.
+	page := PDFPage new.
+	pdfdoc add: page.
+]]]
+  
+Par défaut, une page adopte les dimensions et l'orientation du document. Si votre document PDF est en A4 paysage, toutes les pages ajoutées utiliseront ces paramètres. Artefact permet d'attribuer à chaque page des dimensions et une orientation spécifiques. Vous pouvez ainsi mélanger dans un même document des pages ayant des caractèristiques différentes. Certaines seront en portrait, d'autres en paysage. D'autres seront en A3 alors que le document sera en A4. 
+
+Pour cela, chaque instance de PDFPage dispose d'une méthode #format: qui reçoit une instance de PDFFormat. L'exemple qui suit génère un document de deux pages. La première utilise le format par défaut du document, la seconde est en A4 paysage.
+
+[[[
+	pdfdoc := PDFDocument new.
+	page1 := PDFPage new.
+	page2 := PDFPage new format: (PDFA3Format new setLandscape).
+	pdfdoc add: page1; add: page2.
+]]]
+
+
+!!!Modèle
+
+Un modèle (PDFTemplate) hérite de la classe PDFPage. Il s'agit d'une page ayant un contenu prédéfini et constituant le fond de page sur lequel vous écrivez ou dessinez. Un fond de page peut être constitué par un entête de lettre, un haut et un bas de page pour un rapport, une surface délimitée pour des travaux de mise en page. Le paquet Artefact-Templates propose deux exemples de modèles pour produire la pochette d'un disque compact ou d'un DVD. Le code suivant produit une page A4 sur laquelle sont dessinés les contours d'une pochette d'un CD.
+
+[[[
+	pdfdoc := PDFDocument new.
+	cover := PDFCompactDiscTemplate new.
+]]]
+
+Un modèle est défini à l'aide de la méthode #drawTemplate qui ajoute les composants graphiques d'Artefact à la page et constitue ainsi le fond de page.
+
+!!Composition et agencement du contenu rédactorial
+
+Le contenu des pages est défini à l'aide de composants graphiques. C'est une idée forte dans Artefact qui est basé sur le concept de composants réutilisables permettant d'écrire et de dessiner sur une page. Artefact dispose de composants elémentaires qui réalisent des opération simples tel que dessiner une ligne, mais également, de composants complexes pouvant, par exemple, afficher des données dans un tableau ou encore générer un code barre. Bien évidemment, il est possible de définir et de diffuser de nouveaux composants. Artefact utilisant le principe de composition, un composant complexe est logiquement un assemblage d'autres composants.
+
+!!!Comportement générique des composants
+
+Les composants graphiques d'Artefact adoptent un comportement générique afin de gérer leur positionnement sur la page ainsi que leur dimensionnement. Un repère orthonormé, dont l'origine est en haut à gauche de la page, est utilisé pour indiquer l'emplacement d'un composant. Les valeurs sont exprimées à l'aide d'unités telles que mm, cm ou inch.
+
+!!!!Positionnement des composants
+
+La méthode de classe #from: permet d'instancier un composant graphique et de fixer sa position. L'exemple suivant utilise un composant PDFTextElement et la place à 15 mm du bord gauche et à 30 mm du haut de la page:
+
+[[[
+	PDFTextElement from: 15mm @ 30 mm
+]]]
+
+En complément du positionnement, Artefact propose également des constructeurs fixant simultanément l'emplacement et la dimension d'un composant.
+
+!!!!Dimensionnement des composants
+
+Vous disposez de deux moyens pour indiquer les dimensions d'un composant. Avec la méthode #from:to:, vous préciser la position de départ et la position de fin d'un composant. L'exemple suivant dessine un rectangle, dont l'origine est 15 mm du bord gauche de la page et 30 mm du haut de la page. Son dessin se termine à 90 mm du bord gauche de la page età 80 mm du haut de la page:
+[[[
+	PDFRectElement from: 15mm @ 30 mm to: 90mm @ 80mm
+]]]
+
+Avec la méthode #from:dimension:, vous fixez la position de départ du composant et indiquez ses dimensions. 
+
+[[[
+	PDFRectElement from: 15mm @ 30 mm dimension: 50mm @ 40mm
+]]]
+
+Les méthodes #width et #height retournent la largeur et la hauteur d'un composant.
+
+!!!Les composants élémentaires
+
+Le paquet Artefact-Elements-Basic contient les composants graphiques de base. Ils sont répartis dans trois catégories:
+l'écriture de texte,
+le dessin de forme géométrique.
+l'insertion d'une image.
+
+Pour écrire du texte sur une page, vous devez utiliser le composant PDFTextElement. Le texte à écrire est renseigné à l'aide de la méthode #text. La méthode de classe #from:text: permet faire ces opérations rapidement:
+
+[[[
+	PDFTextElement from: 15mm @ 30mm text: 'hello!'
+]]]
+
+Artefact dispose de composants pour les principales formes géométriques. La classe PDFLineElement dessine une ligne dont les coordonnées de départ et de fin sont fixées à l'aide #from:to:
+
+[[[
+	PDFLineElement from: 15mm @ 30mm to: 90mm@170mm
+]]]
+
+La méthode de class #from:angle:length: permet de dessiner une ligne à partir d'une coordonnée de départ, d'un angle et d'une longueur de tracé.
+
+[[[
+	PDFLineElement from: 10mm @ 20mm angle: 70 length: 50mm
+]]]
+
+Un rectangle est représenté à l'aide de PDFRectElement. La hauteur et la largeur du rectangle peuvent être spécifiés en fournissant les dimensions ou en fixant la position de fin du tracé. Les deux exemples qui suivent sont équivalents:
+
+[[[
+PDFRectElement from: 10 mm@10mm dimension: 100 mm @ 30 mm.
+]]]
+
+[[[
+PDFRectElement from: 10mm@10mm to: 110mm@40mm
+]]]
+
+Artefact fourni également une classe PDFPolygonElement destinée au dessin de polygones. Cette forme géométrique est définie par une position de départ et une suite de points composant les différents segments.
+
+[[[  
+PDFPolygonElement from: 10mm@10mm points: {
+	30mm@30mm. 
+	15mm@40mm. 
+	5mm@20mm
+}
+]]]
+
+Les cercles sont définis à l'aide de la classe PDFCircleElement et de la méthode de classe #center:radius: qui spécifie la position du centre du cercle et son rayon.
+
+[[[
+	PDFCircleElement center: 100mm@100mm radius: 50mm
+]]]
+
+Une courbe de Bezier est représentée par la classe PDFBezierCurveElement et est définie par une position de départ et une suite de points.
+
+[[[
+PDFBezierCurveElement from: 10 mm @ 50 mmpoints:{
+	0 mm @ 0 mm.
+	100 mm @ 20 mm.
+	150 mm @ 0 mm.
+	50 mm @ 50 mm
+}
+]]]
+
+Artefact autorise l'insertion d'images au format JPEG dans un document PDF. 
+
+PDFJpegElement
+height:
+width:
+class from:wh:fromStream:
+class fromStream:
+
+Les composants élémentaires réalisent des opérations graphiques extrémement simples tel que placer un texte sur une page ou dessiner une ligne. Ils constituent les briques essentielles pour la constitution des composants de haut niveau.
+
+!!!Les composants de haut niveau
+
+!!Créez vos composants
+
+!!Gérer l'apparence avec les feuilles de styles
+
+!!!Qu'est ce qu'une feuille de style ?
+
+!!!Les éléments manipulables avec dans une feuille de style
+
+!!!!Fontes
+	utiliser les deux syntaxes (pour montrer que c'est la même chose)
+	stylesheet textColor: .....
+	textColor: .....
+
+!!!!Couleurs et niveaux de gris
+
+!!!!Alignement
+
+!!!!Pointillés
+
+!!!Généraliser un style 
+
+!!!!Changer le style par défaut du document
+
+!!!!Appliquer un style sur un ensemble d'éléments
+
+
 

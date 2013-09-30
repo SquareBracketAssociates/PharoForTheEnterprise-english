@@ -1,0 +1,224 @@
+!Checking and Transforming Programs with Rewrite rules
+
+
+
+
+!!Basic Knowledge on AST and other concepts
+
+[[[
+< aPoint 
+	"Answer whether the receiver is above and to the left of aPoint."
+
+	^x < aPoint x and: [y < aPoint y]	
+]]]	
+
+Getting the AST of a method:
+
+[[[
+( Point >> #<) parseTree
+]]]
+
+!!Basic on ProgramNodes and Subclasses
+
+Classes represent different nodes
+
+ProgramNode is the superclass
+
+Implement several useful methods: parent, nodesDo:, isVariable....
+
+
+
+!!Unification
+The pattern matchin algorithm in the parser tree rewriter is accomplished by a unification algorithm. This algorithm takes as input a tree (to search) and a pattern (a structure containing meta-variables).
+
+The output of the algorithm is either False (there is no match found) or true and a set of assignments describing the variables. 
+
+The set of assignments contains the values of the pattern variables that make the match between the tree and the pattern variables succeed. 
+
+For example:
+[[[
+self X matches self open if X = 'open'
+
+X Y matches self open if X = 'self' and Y = 'foo'
+
+X X does not match self open.
+]]]
+
+
+!!Getting Started
+
+[[[
+| className realClass replacer category |
+className := #MyClass.
+realClass := Smalltalk at: className.
+category := #accessing.
+]]]
+
+If you really just want the string 'tabs', the string 'tabs' with the
+quotes is the search expression.
+
+If you want to find it as part of a substring use something along:
+[[[
+   `#string `{ :node | node value isString and: [ node value
+includesSubString: 'tabs' ] }
+]]]
+
+The ==`#string== is a literal pattern (booleans, characters, arrays,
+strings, numbers, ...) and `{ ... adds a constraint on the preceeding
+match.
+
+
+[[[| className realClass replacer category |
+
+className := #MyClass.
+realClass := Smalltalk at: className.
+category := #accessing.
+
+replacer := RBParseTreeRewriter new
+				replace: '`receiver oldMessage' with: '`receiver newMessage';
+				yourself.
+(realClass organization listAtCategoryNamed: category)
+	collect: [:sel |
+		| parseTree |
+		parseTree := ( realClass >> sel) parseTree.
+		(replacer executeTree: parseTree)
+			ifTrue: [ realClass compile: replacer tree newSource " [1] " ] ]
+]]]
+
+Now some questions:
+
+- In [1] "( RBClass existingNamed: className ) compileTree: replacer
+tree" would be more appropiate? I get a MNU when evaluated with latest
+AST/Refactoring.
+- The above script have some problems, if you want to get replaced
+
+=='this is a string' asString==.
+
+to
+
+=='this is a string' asText==
+
+it won't match. The same happens with: " self model asString " and
+other patterns. 
+
+==answer>>>`#literal asString==
+
+
+How to modify the rewriter to match
+oldMessage/newMessage at any point?
+
+==``@obj oldMessage==
+
+
+i.e. [ :tmp | anObject1 blabla1 blabla2 oldMessage blabla3 ]
+
+Thanks in advance,
+
+
+answer from lukas:
+RBClass is a class private to the framework, you should never need to
+instantiate it directly. And if you do, only through an instance of
+RBNamespace that provides a delta to the current system state. In your
+example you don't need to do that.
+
+!!Junk
+
+!!!Identification de code avec RewriteTool
+
+RewriteTool est un outil de récriture de code basé sur la définition
+de reconnaissance de formes (pattern matching), appliquée sur des
+arbres de syntaxes abstraites. Une documentation plus complète est
+disponible à  http://st-www.cs.uiuc.edu/~brant/RefactoringBrowser/
+Rewrite.html.
+
+Il semble que Squeak ne dispose pas actuellement d'interface graphique
+pour la récriture du code, mais uniquement pour identifier des
+morceaux de code.
+
+
+Cet outil de récriture de code est particulièrement utile lorsqu'on
+doit transformer d'une manière répétitive du code. On peut représenter
+dans les schémas (patterns) de reconnaissance des variables, des
+listes, des instructions récursives et des littéraux.
+
+
+- Variable. Un schéma peut contenir des variables en utilisant
+  le backquote ou accent grave. Ainsi, ==`key== représente n'importe
+  quelle variable, mais pas une expression.
+- Liste. Pour représenter une expression potentiellement
+  complexe, on utilise ==@== qui caractérise une liste. Ainsi, `@key
+  peut représenter aussi bien une variable simple comme temp qu'une
+  expression comme ==(aDict at: self keyForDict)==. Par exemple, | `@Temps
+  | reconnaît une liste de variables temporaires. Le point . reconnaît
+  une instruction dans une séquence de code.==`@.Statements==
+  reconnaît une liste d'instructions. Par exemple, foo `@message:
+  ==`@args== reconnaît n'importe quel message envoyé à  foo.
+- Récursion. Pour que la reconnaissance s'effectue aussi à 
+  l'intérieur de l'expression, il faut doubler la quote. La seconde
+  quote représente la récursion du schéma cherché. Ainsi,
+  ==``@object foo== reconnaît foo, à  quelque objet qu'il soit envoyé,
+  mais observe également pour chaque reconnaissance si une
+  reconnaissance est possible dans la partie représentée par la
+  variable ==``@object==.
+-	Littéraux. ==#== représente les littéraux. ainsi, ==`#literal==
+  reconnaît n'importe quel littéral, par exemple 1, ==#()==, "unechaine"
+  ou ==#unSymbol==.
+
+
+!!!Des exemples d'identification de schémas
+
+Si l'on veut identifier les expressions de type ==aDict at: aKey ifAbsent: aBlock== dans lesquelles les variables peuvent être des expressions composées, on écrit l'expression
+suivante : ==``@aDict at: ``@aKey ifAbsent: ``@aBlock.==
+Une telle expression identifie par exemple les expressions suivantes :
+
+[[[
+instVarMap at: aClass name ifAbsent: [oldClass instVarNames]
+deepCopier references at: argumentTarget ifAbsent: [argumentTarget]
+bestGuesses at: anInstVarName ifAbsent: [self typesFor: anInstVarName]
+object at: (keyArray at: selectionIndex) ifAbsent: [nil]
+]]]
+
+Comme l'interface en Squeak ne permet pas encore de sélectionner les
+classes sur lesquelles on veut travailler, le système analyse les 1
+934 classes et quelque 42 869 méthodes qui sont disponibles dans la
+distribution de base, ce qui peut sensiblement ralentir le traitement.
+
+Voici quelques exemples d'
+expressions qui pourraient être avantageusement transformées :
+
+[[[
+| `@Temps | ``@.Statements. ``@Boolean ifTrue: [^false]. ^true
+| `@Temps | ``@.Statements. ^``@Boolean not
+``@object not ifTrue: ``@block
+``@object ifFalse: ``@block.
+]]]
+
+[[[
+RBParseTreeRewriter new
+ 	replace: '``@aDictionary at: ``@key
+ 		ifAbsent:
+ 			[| `@Temps |
+ 			``@.Statements.
+ 			``@aDictionary at: ``@key put: ``@value]' with: '``@aDictionary at: ``@key
+ 		ifAbsentPut:
+ 			[| `@Temps |
+ 			``@.Statements.
+ 			``@value]';
+	yourself
+]]]
+
+[[[
+rule := RBUnderscoreAssignmentRule new.
+environment := BrowserEnvironment new forPackageNames: #('PackageA'
+'PackageB' ...).
+SmalllintChecker runRule: rule onEnvironment: environment.
+rule open
+]]]
+
+[[[
+ORLintBrowser
+	openRule: (RBCompositeLintRule rules: (RBCompositeLintRule
+rulesGroupedFor: RBSpellingRule) name: 'Spelling')
+	environment: (BrowserEnvironment new forPackageNames: #('Kernel'
+'Collections-Abstract'))
+]]]
