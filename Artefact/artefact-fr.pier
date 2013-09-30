@@ -308,13 +308,27 @@ PDFBezierCurveElement from: 10 mm @ 50 mmpoints:{
 }
 ]]]
 
-Artefact autorise l'insertion d'images au format JPEG dans un document PDF. 
+Artefact autorise l'insertion d'images au format JPEG dans un document PDF. Un objet PDFJpegElement peut être instancié facilement à l'aide des méthodes de classe #fromStream: et #from:dimension:fromStream:. A l'aide des méthodes #width et #height, il est possible de fixer les dimensions d'une image tout en respectant le ratio hauteur/largeur de l'image d'origine. L'exemple qui suit génère un document PDF contenant une page. Sur celle-ci, une image est positionnée en deux endroits différents. Dans le premier cas, l'image mesure 80mm de largeur sur 30mm de hauteur. Dans le second cas, la largeur est fixée à 80mm et la hauteur est automatiquement calculée pour ne pas déformer l'image.
 
-PDFJpegElement
-height:
-width:
-class from:wh:fromStream:
-class fromStream:
+[[[
+	| pdf page |
+	pdf := PDFDocument new.
+	page := PDFPage new.
+	page
+		add:
+			(PDFJpegElement
+				from: 10 mm @ 10 mm
+				dimension: 80 mm @ 30 mm
+				fromStream: (FileStream fileNamed: '/home/enterprise/image.jpg')).
+	page
+		add:
+			((PDFJpegElement fromStream: (FileStream fileNamed: '/home/enterprise/image.jpg'))
+				from: 10 mm @ 50 mm;
+				width: 80 mm).
+	pdf add: page.
+	pdf exportTo: (FileStream forceNewFileNamed: '/home/enterprise/image.pdf')
+]]]
+
 
 Les composants élémentaires réalisent des opérations graphiques extrémement simples tel que placer un texte sur une page ou dessiner une ligne. Ils constituent les briques essentielles pour la constitution des composants de haut niveau.
 
