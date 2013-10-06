@@ -1,0 +1,21 @@
+#('SourceCodeProRegular' 'SourceCodeProBold' 'SourceSansProRegular' 'SourceSansProBold') do: [ :each | 
+		Gofer new 
+			smalltalkhubUser: 'girba' project: 'FreeFonts';
+			package: each;
+			load.
+		(Smalltalk at: each asSymbol) new install ].
+	FreeTypeSystemSettings loadFt2Library: true.
+	StandardFonts 
+		setAllStandardFontsTo: (LogicalFont familyName: 'Source Sans Pro' pointSize: 10);
+		haloFont: (LogicalFont familyName: 'Source Sans Pro' pointSize: 10);
+		windowTitleFont: (LogicalFont familyName: 'Source Sans Pro' pointSize: 14);
+		balloonFont: (LogicalFont familyName: 'Source Sans Pro' pointSize: 10);
+		codeFont: (LogicalFont familyName: 'Source Code Pro' pointSize: 10)
+		
+		
+StandardFonts defaultFont: (LogicalFont familyName: 'Source Code Pro' pointSize: 10).
+							GraphicFontSettings resetAllFontToDefault.
+							StandardFonts 
+								windowTitleFont: (LogicalFont familyName: 'Source Code Pro' pointSize: 11);
+								balloonFont: (LogicalFont familyName: 'Source Code Pro' pointSize: 9);
+								haloFont: (LogicalFont familyName: 'Source Code Pro' pointSize: 9)
