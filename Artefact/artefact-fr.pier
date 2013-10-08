@@ -441,7 +441,6 @@ All the geometric shapes can use a dotted style. It is defined by a PDFDotted ob
 
 [[[
 	((PDFArrowElement from: 125 mm @ 40 mm to:  100 mm @ 80 mm)
-		drawColor: (PDFColor r: 0 g: 255 b: 0);
 		dotted:
 			(PDFDotted new
 				length: 2 mm;
@@ -450,7 +449,50 @@ All the geometric shapes can use a dotted style. It is defined by a PDFDotted ob
 
 !!!!Couleurs et niveaux de gris
 
+Les couleurs et les niveaux de gris sont représentés par la classe PDFColor. Pour définir une couleur, Artefact utilise le mode RGB basé sur le mélange de rouge, de vert et de bleu. La proportion dans le mélange de chacune de ces couleurs est exprimée à l'aide d'une valeur entre 0 et 255. Un noir profond correspond donc au triplé (0,0,0) , la couleur rouge à (255,0,0), la couleur verte à (0,255,0), la couleur bleu à (0,0,255) et le blanc à (255,255,255).
+
+[[[
+	PDFColor r:255 g: 128 b: 64
+]]]
+
+Les niveaux de gris sont exprimés sur une seule valeur allant de 0 à 255. Plus cette valeur est basse, plus le niveau de gris s'assombrit. Une valeur égale à 0 correspond donc à du blanc alors que la valeur 255 équivaut à du noir.
+
+[[[
+	PDFColor greyLevel: 128
+]]]
+
+Pour spécifier la couleur ou le niveau de gris utilisé, vous diposez des méthodes #drawcolor:, #fillColor: et #textColor: qui gèrent respectivement la couleur de dessin, la couleur de remplissage et la couleur du texte. L'exemple qui suit dessine un rectangle dont la bordure sera en bleu et le contenu en rouge:
+
+[[[
+	PDFRectElement new
+		from: 10 mm @ 10 mm;
+		dimension: 100 mm @ 30 mm;
+		fillColor: (PDFColor r: 255 g: 0 b: 0);
+		drawColor: (PDFColor r: 0 g: 0 b: 255).
+]]]
+
+Cet autre exemple place génère un texte écrit en bleu:
+
+[[[
+	PDFTextElement new
+		textColor: (PDFColor r: 0 g: 0 b: 255);
+		from: 10 mm @ 50 mm;
+		text: 'A text in blue';
+]]]
+
+!!!!Epaisseur des tracés
+
 !!!!Alignement
+
+L'alignement du texte est géré à l'aide de la classe PDFAlignment. Un texte peut être aligné à gauche, au centre ou à droite. Les méthodes sont #left, #center et #right. L'exemple qui suit génère un texte aligné à droite:
+
+[[[
+	PDFFormattedTextElement new		
+		from: 0 mm @ 0 mm;
+		dimension: 100 mm @ 10 mm;
+		alignment: (PDFAlignment right)
+		text: 'At right!'.
+]]]
 
 !!!Généraliser un style 
 
