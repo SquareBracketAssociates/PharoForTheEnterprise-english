@@ -5,6 +5,8 @@
 
 !!Basic Knowledge on AST and other concepts
 
+An abstract syntax tree or AST is a data structure that is semantically equivalent to some source code. While source code is just a string of character, an AST is a tree whose nodes correspond to the syntactic construct of the parsed language. In Smalltalk, an AST node can represents a message a method, a variable, a block, a cascade, an assignment... Such a tree is much easier to process than a plain string. As an example, consider the following method. 
+
 [[[
 < aPoint 
 	"Answer whether the receiver is above and to the left of aPoint."
@@ -12,37 +14,44 @@
 	^x < aPoint x and: [y < aPoint y]	
 ]]]	
 
-Getting the AST of a method:
+You can get the AST of this method whith the following expression.
 
 [[[
-( Point >> #<) parseTree
+(Point >> #<) ast
 ]]]
 
-!!Basic on ProgramNodes and Subclasses
+The root of the AST is a method node that has a return node has children. This return node has a message node whose receiver is also a message node (the AST of the expression ==x < aPoint x==), whose selector is ==and:== and that has one block node as an argument. Explore this AST to get familiar with its structure. You can also inspect the ASTs of other methods of the system.
 
-Classes represent different nodes
+!!Basic Knowledge on ProgramNode and its Subclasses
 
-ProgramNode is the superclass
-
-Implement several useful methods: parent, nodesDo:, isVariable....
-
-
+The different kind of nodes correspond to different classes. These classes form a hierarchy whose root is ==RBProgramNode==. This class implements several useful methods: parent, nodesDo:, isVariable.... Browse RBProgramNode and its subclasses to understand the structure of Smalltalk ASTs.
 
 !!Unification
-The pattern matchin algorithm in the parser tree rewriter is accomplished by a unification algorithm. This algorithm takes as input a tree (to search) and a pattern (a structure containing meta-variables).
+The pattern matching algorithm in the AST rewriter is accomplished by a unification algorithm. This algorithm takes as input a tree (to search) and a pattern. A pattern is an enhanced AST that contains special nodes. These nodes abstract over some expression and are called meta-variables (to avoid confusion with the Smalltalk variables). For example, a meta-variable can be used to match any language variable while another to match messages. 
 
-The output of the algorithm is either False (there is no match found) or true and a set of assignments describing the variables. 
+The output of the algorithm is either false (there is no match found) or true. If it is true, that means that at least one match is found. A match is a mapping from meta-variable to AST nodes. 
 
-The set of assignments contains the values of the pattern variables that make the match between the tree and the pattern variables succeed. 
+The mappings corresponds to the values of the meta-variables should take for the pattern to be equal with the input tree. 
 
-For example:
-[[[
-self X matches self open if X = 'open'
+Lets take an example. ==self X== matches ==self open== if the meta-variable X is equals to 'open'. ==X Y== matches ==self open== if X equals 'self' and Y equals 'foo'. As a failing example, ==X X== does not match ==self open==.
 
-X Y matches self open if X = 'self' and Y = 'foo'
+!! Pattern syntax
 
-X X does not match self open.
-]]]
+To express patterns, the rewriter uses a special syntax that extends the standard Smalltalk one with meta-variables. There is several kinds of meta-variables depending on what node you want to match. They all start with a backquote.
+
+==`node== This is the most basic meta-variable. It match any node.
+
+==`@nodes== To match a list of nodes (like message args or temps).
+
+==`#lit== To match literals.
+
+==`[ ... ]== To match block.
+
+==`.stmt== To match statements.
+
+==`@.stmts== To match a list of statements.
+
+==`{ :node | ...Smalltalk code... }== To match the nodes that satisfy the enclosed Smalltalk code.
 
 
 !!Getting Started
@@ -85,41 +94,6 @@ replacer := RBParseTreeRewriter new
 			ifTrue: [ realClass compile: replacer tree newSource " [1] " ] ]
 ]]]
 
-Now some questions:
-
-- In [1] "( RBClass existingNamed: className ) compileTree: replacer
-tree" would be more appropiate? I get a MNU when evaluated with latest
-AST/Refactoring.
-- The above script have some problems, if you want to get replaced
-
-=='this is a string' asString==.
-
-to
-
-=='this is a string' asText==
-
-it won't match. The same happens with: " self model asString " and
-other patterns. 
-
-==answer>>>`#literal asString==
-
-
-How to modify the rewriter to match
-oldMessage/newMessage at any point?
-
-==``@obj oldMessage==
-
-
-i.e. [ :tmp | anObject1 blabla1 blabla2 oldMessage blabla3 ]
-
-Thanks in advance,
-
-
-answer from lukas:
-RBClass is a class private to the framework, you should never need to
-instantiate it directly. And if you do, only through an instance of
-RBNamespace that provides a delta to the current system state. In your
-example you don't need to do that.
 
 !!Junk
 
