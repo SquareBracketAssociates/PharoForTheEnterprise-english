@@ -5,7 +5,9 @@
 
 !!Basic Knowledge on AST and other concepts
 
-An abstract syntax tree or AST is a data structure that is semantically equivalent to some source code. While source code is just a string of character, an AST is a tree whose nodes correspond to the syntactic construct of the parsed language. In Smalltalk, an AST node can represents a message a method, a variable, a block, a cascade, an assignment... Such a tree is much easier to process than a plain string. As an example, consider the following method. 
+An abstract syntax tree or AST is a data structure that is semantically equivalent to some source code. While source code is just a string of characters, an AST is a tree whose nodes correspond to the syntactic constructs of the parsed language. In Smalltalk, an AST node can represent a message, a method, a variable, a block, an assignment, etc... Such a tree is much easier to process than a plain string. That is why this data structure is used by most tools that have to deal with code like the compiler or in the context of this chapter, the code rewriter. 
+
+Lets met our first AST. Consider the following method. 
 
 [[[
 < aPoint 
@@ -14,30 +16,28 @@ An abstract syntax tree or AST is a data structure that is semantically equivale
 	^x < aPoint x and: [y < aPoint y]	
 ]]]	
 
-You can get the AST of this method whith the following expression.
+You can get the AST of this method with the following expression. 
 
 [[[
 (Point >> #<) ast
 ]]]
 
-The root of the AST is a method node that has a return node has children. This return node has a message node whose receiver is also a message node (the AST of the expression ==x < aPoint x==), whose selector is ==and:== and that has one block node as an argument. Explore this AST to get familiar with its structure. You can also inspect the ASTs of other methods of the system.
+The root of the AST is a method node whose child is a return node. This return node has a message node and this message node has a receiver (the AST of the expression ==x < aPoint x==), a selector (==and:==) and a block node as argument. Explore this AST to get familiar with its structure. You can also inspect the ASTs of other methods of the system.
 
 !!Basic Knowledge on ProgramNode and its Subclasses
 
-The different kind of nodes correspond to different classes. These classes form a hierarchy whose root is ==RBProgramNode==. This class implements several useful methods: parent, nodesDo:, isVariable.... Browse RBProgramNode and its subclasses to understand the structure of Smalltalk ASTs.
+Different kinds of nodes correspond to different classes. These classes form a hierarchy whose root is ==RBProgramNode==. This class implements several useful methods like: parent, nodesDo:, isVariable.... Browse it and its subclasses to understand the structure of Smalltalk ASTs.
 
 !!Unification
-The pattern matching algorithm in the AST rewriter is accomplished by a unification algorithm. This algorithm takes as input a tree (to search) and a pattern. A pattern is an enhanced AST that contains special nodes. These nodes abstract over some expression and are called meta-variables (to avoid confusion with the Smalltalk variables). For example, a meta-variable can be used to match any language variable while another to match messages. 
+The pattern matching algorithm in the AST rewriter is accomplished by a unification algorithm. This algorithm takes as input a tree (to search) and a pattern. A pattern is an enhanced AST that contains special nodes. These nodes abstract over some expressions and are called meta-variables (to avoid confusion with the Smalltalk variables). For example, a meta-variable can be used to match a variable while another can be used to match messages. 
 
-The output of the algorithm is either false (there is no match found) or true. If it is true, that means that at least one match is found. A match is a mapping from meta-variable to AST nodes. 
+The output of the algorithm is either false (there is no match found) or true. If it is true, that means that at least one match has been found. A match is a mapping from meta-variable to AST nodes. These mappings correspond to the values the meta-variables of the pattern should take for the pattern to be equal to the input tree. 
 
-The mappings corresponds to the values of the meta-variables should take for the pattern to be equal with the input tree. 
-
-Lets take an example. ==self X== matches ==self open== if the meta-variable X is equals to 'open'. ==X Y== matches ==self open== if X equals 'self' and Y equals 'foo'. As a failing example, ==X X== does not match ==self open==.
+Lets look at a few examples. If X and Y denote meta-variables, the pattern ==self X== matches ==self open== if the meta-variable X is equals to 'open'. ==X Y== matches ==self open== if X equals 'self' and Y equals 'foo'. As a failing example, ==X X== doesn't match ==self open==.
 
 !! Pattern syntax
 
-To express patterns, the rewriter uses a special syntax that extends the standard Smalltalk one with meta-variables. There is several kinds of meta-variables depending on what node you want to match. They all start with a backquote.
+To express patterns, the rewriter uses a special syntax that extends the standard Smalltalk one with meta-variables. There is several kinds of meta-variables depending on what nodes you want to match. They all start with a backquote.
 
 ==`node== This is the most basic meta-variable. It match any node.
 
@@ -51,7 +51,7 @@ To express patterns, the rewriter uses a special syntax that extends the standar
 
 ==`@.stmts== To match a list of statements.
 
-==`{ :node | ...Smalltalk code... }== To match the nodes that satisfy the enclosed Smalltalk code.
+==`{ :node | ... }== To match the nodes that satisfy the enclosed Smalltalk code.
 
 
 !!Getting Started
