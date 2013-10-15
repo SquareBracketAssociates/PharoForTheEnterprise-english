@@ -300,7 +300,7 @@ Les cercles sont définis à l'aide de la classe PDFCircleElement et de la méth
 Une courbe de Bezier est représentée par la classe PDFBezierCurveElement et est définie par une position de départ et une suite de points.
 
 [[[
-	PDFBezierCurveElement from: 10 mm @ 50 mmpoints:{
+	PDFBezierCurveElement from: 10 mm @ 50 mm points:{
 		0 mm @ 0 mm.
 		100 mm @ 20 mm.
 		150 mm @ 0 mm.
@@ -427,12 +427,25 @@ Then, at any upper level (document, page, etc), you can express the specific tit
 
 !!!Les éléments manipulables avec une feuille de style
 
+La définition d'une feuille de style permet de spécifier des attributs de présentation particuliers pour un ensemble d'élements. 
 !!!!Fonts
 	
 Artefact support integrated PDF fonts (PDFCourierFont, PDFHelveticaFont, PDFSymbolFont, PDFTimesFont and PDFZapfdingbatsFont). These fonts are available in any PDF viewer. A PDFFont object supports the basic style: bold and italic.
 
 [[[
 	PDFText from: 10mm@15mm text: 'My title' font: ((PDFTimesFont size: 24 pt) bold).
+]]]
+
+La classe PDFFont propose deux méthodes extrémement pratiques lors de la création d'un document. Avec #getStringWidth:, vous obtenez la largeur d'une chaîne de caractères calculée en fonction des attributs de la fonte utilisée. L'exemple suivant retourne la largeur de la chaine "hello" avec une fonte Courier mesurant 20 points:
+
+[[[
+	(PDFCourierFont size: 20 pt) getStringWidth: 'hello'
+]]]
+
+La méthode #getIdealFontSizeForTheString:width: retourne la taille optimale de la fonte utilisée en fonction de la largeur voulue. L'exemple suivant détermine la taille nécessaire d'une fonte Courier si l'on désire que le texte "hello" ai une largeur de 15 cm:
+
+[[[
+	(PDFCourierFont new) getIdealFontSizeForTheString: 'hello' width: 15 cm
 ]]]
 
 !!!!Dots
@@ -471,7 +484,7 @@ Pour spécifier la couleur ou le niveau de gris utilisé, vous diposez des méth
 		drawColor: (PDFColor r: 0 g: 0 b: 255).
 ]]]
 
-Cet autre exemple place génère un texte écrit en bleu:
+Cet autre exemple produit un texte écrit en bleu:
 
 [[[
 	PDFTextElement new
@@ -481,31 +494,96 @@ Cet autre exemple place génère un texte écrit en bleu:
 ]]]
 
 !!!!Epaisseur des tracés
+	
+L'épaisseur de dessin d'une ligne, d'un segment ou d'une bordure, est controlée par la méthode #thickness:  
+
+[[[
+	(PDFRectElement from: 10 mm @ 10 mm dimension: 50 mm @ 50 mm)
+		thickness:  2 mm
+]]]
 
 !!!!Alignement
 
 L'alignement du texte est géré à l'aide de la classe PDFAlignment. Un texte peut être aligné à gauche, au centre ou à droite. Les méthodes sont #left, #center et #right. L'exemple qui suit génère un texte aligné à droite:
 
 [[[
-	PDFFormattedTextElement new		
-		from: 0 mm @ 0 mm;
-		dimension: 100 mm @ 10 mm;
-		alignment: (PDFAlignment right)
-		text: 'At right!'.
+	(PDFFormattedTextElement from: 0 mm @ 0 mm dimension: 100 mm @ 10 mm)
+		alignment: (PDFAlignment right);
+		text: 'At right!'
 ]]]
 
 !!!Généraliser un style 
 
+
 !!!!Changer le style par défaut du document
+
+Le document embarque une feuille de styles dont les propriétés s'appliquent sur tout élément ne spécifiant pas ses propres propriétés. Par exemple, si vous créez un PDFTextElement sans définir une fonte et une couleur de texte, ce seront les couleurs de texte et de fonte du document qui seront appliquées. De plus, cette feuille de style est systématiquement remplie par Artefact avec des valeurs par défaut. C'est pourquoi vous n'avez pas eu à préciser des valeurs de style lors de votre précédente découverte des éléments.
+
+Pour changer ces valeurs de style du document, il vous suffit de modifier les propriétés de sa feuille de style de la façon suivante:
+
+[[[
+	myDocument := PDFDocument new.
+	myDocument styleSheet textColor: (PDFColor r: 0 g: 100 b: 200);
+			font: (PDFHelveticaFont size: 32pt) italic.
+]]]
 
 !!!!Appliquer un style sur un ensemble d'éléments
 
+Souvent vous avez envie d'appliquer un style sur un ensemble d'éléments mais pas sur tous les éléments d'un document. Artefact vous permet de définir un style et de le nommer afin de pouvoir ensuite, déclarer les éléments devant respecter ce style personnalisé.
+
+Par exemple, si vous désirez que certains éléments de texte soit des citations, vous pouvez définir le style #quote:
+
+[[[
+	myDocument := PDFDocument new.
+	myDocument styleSheet > #quote 
+		textColor: (PDFColor r: 0 g: 50 b: 200);
+		font: (PDFCourierFont size: 8pt) italic.
+]]]
+
+Ainsi, le style des citations est maintenant associé au symbole #quote. Ce style est ici défini en tant que sous-style de celui du document afin de s'appliquer sur tous les éléments de style #quote du document. 
+
+Ensuite, il nous reste plus qu'à attribuer le style #quote aux éléments qui sont des citations.
+
+[[[
+	(PDFTextElement from: 5cm @ 5cm)
+		text: 'my Quote with the quote style';
+		style: #quote
+]]]
+
+Dans l'exemple ci-desssus, nous n'avons qu'un seul niveau de style. Cependant, Artefact gère autant de niveaux de styles que vous le souhaiter. Ce comportement est indispensable dans le cadre des éléments composites dans lesquels l'imbrication des éléments impose l'imbrication des styles.
+
+Dans l'exemple ci-dessous, nous créons une table de données avec un titre à chaque colonne.
+
+[[[
+	(PDFDataTableWithColumnsCaptionElement from: 10 mm @ 20 mm dimension: 190 mm @ 60 mm)
+		captions: #('Name' 'Surname' 'email');
+		data: #(
+			#('Smith' 'Peter' 'peter.smith@mail.org') 
+			#('Jones' 'Mickael' 'mickael.jones@epr.com')
+			#('washington' 'robert' 'robert.washington@blif.com'));
+		style: #dataTableWithColoredCaption;
+		yourself).
+]]]
+
+L'apparence de cette table suit les spécifications du style #dataTableWithColoredCaption.
+
+Artefact>>PDFDataTableWithColumnsCaptionElement est un élément composite fourni par Artefact. Cet élément défini le style de ses sous-éléments #caption et #cell, respectivement associés aux titres et aux cellules. 
+Par imbrication des styles, nous pouvons suivre l'imbrication des éléments et donc définir les styles des cellules uniquement dans le contexte #dataTableWithColoredCaption:
+
+[[[
+	pdfdoc := PDFDocument new.
+	pdfdoc styleSheet > #dataTableWithColoredCaption > #caption
+		fillColor: (PDFColor r: 158 g: 158 b: 79);
+		drawColor: (PDFColor r: 158 g: 158 b: 79).
+	pdfdoc styleSheet > #dataTableWithColoredCaption margin: 4 pt.
+	pdfdoc styleSheet > #dataTableWithColoredCaption > #cell alignment: PDFAlignment right.
+]]]
+
+L'usage du mécanisme de gestion des styles apporte beaucoup de souplesse pour la production d'un document. Il permet de séparer l'aspect présentation de la définition des composants. Cette distinction entre le fond et la forme permet à l'utilisateur de créer facilement ses propres composants, tout aussi personnalisables que ceux fournis avec Artefact.
 
 !!Create your own PDF composite elements
 
-The spirit of Artefact is to reduce the complexity of pdf generation. When you have to create a document, a good idea is to avoid wasting time to reinvent the wheel.
-
-When you create a composite element, if your component is based around a string, inherit from PDFCompositeText. Elsewhere, your component must be a subclass of PDFComposite.
+The spirit of Artefact is to reduce the complexity of pdf generation. When you have to create a document, a good idea is to avoid wasting time to reinvent the wheel. When you create a composite element, if your component is based around a string, inherit from PDFCompositeText. Elsewhere, your component must be a subclass of PDFComposite.
  
 In this tutorial, we will create a clock, which is basically a circle and two arrows. This element will be drawed depending on the provided time and properties (size, colors, thickness).
 
@@ -635,4 +713,7 @@ As you can see, the clock hands have different colors. Moreover, like any elemen
 		thickness: 1 mm.
 	doc exportTo: 'clockTutorialStep5.pdf' asFileReference writeStream
 ]]]
+
+!!Conclusion
+
 
