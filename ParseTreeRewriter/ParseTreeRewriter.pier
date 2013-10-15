@@ -1,51 +1,238 @@
-!Checking and Transforming Programs with Rewrite rules
+!Checking and Transforming Programs with Rewrite Engine
 
+
+Manipulating programs automatically is a really powerful tool. A refactoring tool is a typical example. Another example is a rule checking engine such as the one presented in Chapter XXX. 
+In this Chapter we present the underlying engine, named ParseTreeRewriter on top of which the 
+Pharo refactoring browser and Critics browser are built. The ParseTreeRewriter has been developed by J. Brant and D. Roberts.
+
+This powerful engine allows you to define expressions to spot and transform code. The engine is based on an abstract syntax tree unification algorithm that matches meta-variable to abstract syntax tree nodes and let you manipulate such meta-variables. 
+In this chapter, we will present first the notion of abstract syntax tree, then the syntax of the parse tree rewriter with practical examples. We also present Flamel an advanced editor to help user to express matching expressions. 
+
+
+%http://pharorwrules.wordpress.com/2013/08/06/just-want-to-match/
 
 
 
 !!Basic Knowledge on AST and other concepts
 
+An abstract syntax tree (AST in short) is a data structure that is semantically equivalent to some source code. While source code is just a string of characters, an AST is a tree whose nodes correspond to the syntactic constructs of the parsed language. In Pharo, an AST node can represent a message, a method, a variable, a block, an assignment, etc... Such a tree is much easier to process than a plain string. That is why this data structure is used by most tools that have to deal with code like the compiler or in the context of this chapter, the code rewriter. 
+
+Let's met our first AST. Consider the following method. 
+
 [[[
-< aPoint 
+Point >> < aPoint 
 	"Answer whether the receiver is above and to the left of aPoint."
 
 	^x < aPoint x and: [y < aPoint y]	
 ]]]	
 
-Getting the AST of a method:
+You can get the AST of this method with the following expression. 
 
 [[[
-( Point >> #<) parseTree
+(Point >> #<) ast
 ]]]
 
-!!Basic on ProgramNodes and Subclasses
+The root of the AST is a method node whose child is a return node. This return node has a message node and this message node has a receiver (the AST of the expression ==x < aPoint x==), a selector (==and:==) and a block node as argument. Explore this AST to get familiar with its structure. You can also inspect the ASTs of other methods of the system.
 
-Classes represent different nodes
 
-ProgramNode is the superclass
++An inspector on an AST >file://figures/ASTInspector.pdf|width=50|label=astinspector+
 
-Implement several useful methods: parent, nodesDo:, isVariable....
+
+Sending the message body ==body== to the ast returns the body of the method (as shown in Figure *astinspector* and ==selector== the method selector. 
+
+[[[
+(Point >> #<) ast body 
+]]]
+
+
+For example the AST of the following method is displayed in Figure *methodnode*.
+
+[[[
+selector: arg1 and: arg2
+		  | temp1 temp2 |
+		  temp1 := OrderedCollection new.
+		  temp2 := arg1, arg2.
+		  ^ temp1 + temp2
+]]]
+
++The AST of the method ==selector:and:== >file://figures/methodnode.png|width=50|label=methodnode+
+
+
+!!!Basic Knowledge on ProgramNode and its Subclasses
+
+Different kinds of nodes correspond to different classes. These classes form a hierarchy whose root is ==RBProgramNode==. This class implements several useful methods such as: ==parent==, ==nodesDo:==, ==isVariable==.... Browse it and its subclasses to understand the structure of Pharo ASTs. 
+There is a Visitor supporting the walking and analysis of code structure.
+
+Here is a view on the ProgramNode hierarchy showing the classes and their instance variables. 
+
+[[[
+RBProgramNode #('parent' 'comments' 'properties')
+	RBMethodNode ('scope' 'selector' 'selectorParts' 'body' 'source' 'arguments' 'pragmas' 'replacements' 'nodeReplacements' 'compilationContext')
+	RBParseErrorNode ('token' 'errorMessage')
+	RBPragmaNode ('selector' 'selectorParts' 'arguments' 'left' 'right')
+	RBReturnNode ('return' 'value')
+	RBSequenceNode ('leftBar' 'rightBar' 'statements' 'periods' 'temporaries')
+	RBValueNode ('parentheses')
+		RBArrayNode ('left' 'right' 'statements' 'periods')
+		RBAssignmentNode ('variable' 'assignment' 'value')
+		RBBlockNode ('left' 'right' 'colons' 'arguments' 'bar' 'body' 'scope')
+		RBCascadeNode ('messages' 'semicolons')
+		RBLiteralNode 
+			RBLiteralArrayNode ('isByteArray' 'stop' 'contents' 'start')
+			RBLiteralValueNode ('token')
+		RBMessageNode ('receiver' 'selector' 'selectorParts' 'arguments')
+			RBPatternMessageNode ('isList' 'isCascadeList')
+		RBVariableNode ('token')
+			RBArgumentNode 
+			RBClassReference 
+			RBSelfNode 
+			RBSuperNode 
+			RBTemporaryNode 
+			RBThisContextNode 
+]]]
+
+
+
 
 
 
 !!Unification
-The pattern matchin algorithm in the parser tree rewriter is accomplished by a unification algorithm. This algorithm takes as input a tree (to search) and a pattern (a structure containing meta-variables).
+The pattern matching algorithm in the engine rewriter is accomplished by a unification algorithm. This algorithm takes as input a pattern (that describes what we look for) and a tree (that could or not match the pattern). A pattern is a tree containing meta-variables (i.e., variables whose value will be set by the unification algorithm). A pattern is implemented as an enhanced AST that contains special nodes. 
+These nodes abstract over some expressions and are called meta-variables (to avoid confusion with the Pharo variables). For example, a meta-variable can be used to match a variable while another can be used to match messages. 
 
-The output of the algorithm is either False (there is no match found) or true and a set of assignments describing the variables. 
+The output of the algorithm is either false (there is no match found) or true. If it is true, that means that at least one match has been found. A match is a mapping from meta-variable to AST nodes of the input tree. These mappings correspond to the values the meta-variables of the pattern should take for the pattern to be equal to the input tree. 
 
-The set of assignments contains the values of the pattern variables that make the match between the tree and the pattern variables succeed. 
+Let's look at a few examples. If X and Y denote meta-variables, the pattern ==self X== matches ==self open== if the meta-variable X is equals to 'open'. ==X Y== matches ==self open== if X equals 'self' and Y equals 'foo'. As a failing example, ==X X== doesn't match ==self open==.
 
-For example:
+!! Pattern syntax
+
+To express patterns, the rewriter uses a special syntax that extends the standard Smalltalk one with meta-variables. There is several kinds of meta-variables depending on what nodes you want to match. They all start with a backquote. We will show some hands-on just after. 
+
+- ==`node== This is the most basic meta-variable. It matches any node. ==`receiver foo ==matches
 [[[
-self X matches self open if X = 'open'
+self foo
+x foo
+OrderedCollection foo
+]]]
 
-X Y matches self open if X = 'self' and Y = 'foo'
+- ==`@nodes== To match a list of zero or more nodes (like message args or temps). ==`@receiver foo== mastches
 
-X X does not match self open.
+[[[
+self foo
+self size foo
+(self at: 1) foo
 ]]]
 
 
-!!Getting Started
+
+-  ==`#literal== To match literals. ==`#literal size== matches
+
+[[[
+3 size
+'foo' size
+#(a b c) size
+]]]
+
+- ==``== supports recursive search. ==``@receiver parent== matches
+[[[
+x parent parent
+]]]
+
+-  ==`[ ... ]== To match block.
+
+- ==`.== To match statements. ==`.Sta1.== matches
+
+[[[
+x := 1.
+
+]]]
+
+- ==`@.stmts== To match a list of statements.
+
+
+
+
+
+- ==`{ :node | ... }== To match the nodes that satisfy the enclosed Smalltalk code.
+
+
+!!!Examples
+
+
+[[[
+| rbMethodNode |
+rbMethodNode := OpalCompiler new parse: 'test 
+| x |
+x := 1. 
+y := 2.
+z := (self at: #x) size.
+x + y'.
+
+(RBParseTreeSearcher new
+        matches: '`self at: #literal'
+        do: [ :aNode :answer | answer add: aNode; yourself ] )
+               executeTree: rbMethodNode initialAnswer: Set new.
+]]]
+
+
+
+
+
+
+
+[[[
+| rbMethodNode |
+rbMethodNode := OpalCompiler new parse: 'test 
+| x |
+x := 1. 
+y := 2.
+z := (self at: #x) size.
+x + y'.
+
+(RBParseTreeSearcher new
+        matches: '`{:node | node isVariable }'
+        do: [ :aNode :answer | answer add: aNode; yourself ] )
+               executeTree: rbMethodNode initialAnswer: Set new.
+
+]]]
+
+
+
+
+self matcher
+matches: '``@lotOfStuffBefore globals at: ``@lotOfStuffAfter'
+do: [:theMatch :theOwner | theMatch inspect].
+
+rule := SearchGlobalsAtUsage new.
+environment := RBClassEnvironment class: Result.
+RBSmalllintChecker runRule: rule onEnvironment: (environment)
+
+
+
+
+[[[
+| rbMethodNode |
+rbMethodNode := OpalCompiler new parse: 'test 
+| x |
+x := 1. 
+y := 2.
+x + y'.
+
+(RBParseTreeSearcher new
+        matches: '`{:node | node isVariable }'
+        do: [ :aNode :answer | answer add: aNode; yourself ] )
+               executeTree: rbMethodNode initialAnswer: Set new.
+
+]]]
+
+
+
+
+
+
+
+
+
 
 [[[
 | className realClass replacer category |
@@ -85,66 +272,37 @@ replacer := RBParseTreeRewriter new
 			ifTrue: [ realClass compile: replacer tree newSource " [1] " ] ]
 ]]]
 
-Now some questions:
-
-- In [1] "( RBClass existingNamed: className ) compileTree: replacer
-tree" would be more appropiate? I get a MNU when evaluated with latest
-AST/Refactoring.
-- The above script have some problems, if you want to get replaced
-
-=='this is a string' asString==.
-
-to
-
-=='this is a string' asText==
-
-it won't match. The same happens with: " self model asString " and
-other patterns. 
-
-==answer>>>`#literal asString==
 
 
-How to modify the rewriter to match
-oldMessage/newMessage at any point?
-
-==``@obj oldMessage==
 
 
-i.e. [ :tmp | anObject1 blabla1 blabla2 oldMessage blabla3 ]
-
-Thanks in advance,
 
 
-answer from lukas:
-RBClass is a class private to the framework, you should never need to
-instantiate it directly. And if you do, only through an instance of
-RBNamespace that provides a delta to the current system state. In your
-example you don't need to do that.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 !!Junk
-
-!!!Identification de code avec RewriteTool
-
-RewriteTool est un outil de récriture de code basé sur la définition
-de reconnaissance de formes (pattern matching), appliquée sur des
-arbres de syntaxes abstraites. Une documentation plus complète est
-disponible à  http://st-www.cs.uiuc.edu/~brant/RefactoringBrowser/
-Rewrite.html.
-
-Il semble que Squeak ne dispose pas actuellement d'interface graphique
-pour la récriture du code, mais uniquement pour identifier des
-morceaux de code.
-
-
-Cet outil de récriture de code est particulièrement utile lorsqu'on
-doit transformer d'une manière répétitive du code. On peut représenter
-dans les schémas (patterns) de reconnaissance des variables, des
-listes, des instructions récursives et des littéraux.
-
 
 - Variable. Un schéma peut contenir des variables en utilisant
   le backquote ou accent grave. Ainsi, ==`key== représente n'importe
   quelle variable, mais pas une expression.
+
 - Liste. Pour représenter une expression potentiellement
   complexe, on utilise ==@== qui caractérise une liste. Ainsi, `@key
   peut représenter aussi bien une variable simple comme temp qu'une
@@ -153,6 +311,7 @@ listes, des instructions récursives et des littéraux.
   une instruction dans une séquence de code.==`@.Statements==
   reconnaît une liste d'instructions. Par exemple, foo `@message:
   ==`@args== reconnaît n'importe quel message envoyé à  foo.
+
 - Récursion. Pour que la reconnaissance s'effectue aussi à 
   l'intérieur de l'expression, il faut doubler la quote. La seconde
   quote représente la récursion du schéma cherché. Ainsi,
@@ -160,6 +319,7 @@ listes, des instructions récursives et des littéraux.
   mais observe également pour chaque reconnaissance si une
   reconnaissance est possible dans la partie représentée par la
   variable ==``@object==.
+
 -	Littéraux. ==#== représente les littéraux. ainsi, ==`#literal==
   reconnaît n'importe quel littéral, par exemple 1, ==#()==, "unechaine"
   ou ==#unSymbol==.
