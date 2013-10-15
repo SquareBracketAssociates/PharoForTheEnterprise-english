@@ -98,11 +98,11 @@ There is some sugar for font formatting:
 
 -To make something ""bold"", write ==\""bold""==
 -To make something ''italic'', write ==\''italic''==
--To make something ==monospaced==, write ==\==monospaced=\===
+-To make something ==monospace==, write ==\==monospace=\===
 -To make something --strikethrough--, write ==\--strikethrough--==
 -To make something @@subscript@@, write ==\@@subscript@@==
 -To make something ^^superscript^^, write ==\^^superscript^^==
--To make something __underlined__, write ==\__underlined__==
+-To make something __underline__, write ==\__underline__==
 
 !!Tables
 To create a table, start off the lines with ==|== and separate the elements with ==|==s. Each new line represents a new row of the table. Add a single ==!== to let the cell become a table heading.
