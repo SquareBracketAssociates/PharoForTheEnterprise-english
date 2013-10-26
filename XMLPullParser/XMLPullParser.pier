@@ -45,6 +45,7 @@ StartDocument
 EndDocument
 ]]]
 
+
 The pull parser is like a stream in that it has a current token, a next method, and an eof state. Note that in this example the parser isn’t reporting ignorable whitespace. Usually the parser has settings so that you can control whether it returns namespace declaration attributes, handles xml:space, and other features. Sometimes the pull parser can be configured to return comments, and ignorable whitespace, and other low level events which make it suitable as the basis for driving SAX and DOM building, even to the point of allowing roundtripping.
 
 
@@ -54,14 +55,33 @@ This is very similar to SAX, but with the control inverted, and as mentioned abo
 
 The two attractive features of the pull parser approach are:
 
--- Unlike a DOM, but like SAX, it doesn’t store the document.
+-- Unlike a DOM based approach, but like SAX, a pull-based parser doesn’t store the document.
 
---Unlike SAX you don't have to build an final state machine, either explicitly or implicitly, to process the document. 
+-- Unlike SAX you don't have to build an final state machine, either explicitly or implicitly, to process the document. 
 It's trivial to build content processors using recursive descent patterns, especially if the parser returns real token objects that aren’t recycled, and using a pull parser results in code that is easy to write and understand. A simple extension allows for LL(*) parsing.
-For random access to XML, especially XML that isn’t being used to represent structured data, a DOM is probably the best bet. I’ve often found however that using a pull parser to read the XML and create data structures better suited to my domain than a DOM is well worth the effort.
+
+For random access to XML, especially XML that isn’t being used to represent structured data, a DOM is probably the best bet. We often found however that using a pull parser to read the XML and create data structures better suited to my domain than a DOM is well worth the effort.
 
 
+!!The architecture of the XMLPullParser package
+There are three main parts to this package:
 
+-- The parser, consisting of two classes: ==XMLPullParser== and ==XMLXPPStructureExceptionPullParser== is the primary class, and you can effectively use this package knowing only this class. 
+==XPPStructureException== is raised in response to certain methods you can call on PullParser.
+
+-- The events. There are five kinds of events/tokens that the parser produces: ==StartDocument==, ==EndDocument==, ==StartTag==, ==EndTag==, and ==Text==. These are reified as the following hierarchy:
+
+
+[[[
+XPPEvent
+     XPPStartDocument
+        XPPEndDocument
+        TagEvent
+           StartTag
+           EndTag
+        XPPText
+
+]]]
 
 
 
