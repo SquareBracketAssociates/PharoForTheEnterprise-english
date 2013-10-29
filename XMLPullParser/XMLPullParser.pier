@@ -1,20 +1,41 @@
 ! An XMLPullParser for Pharo
 
+Handling XML is a practical aspect of modern computing. There are several libraries in Pharo to deal with XML such as the XMLReader and XMLWriter packages. In this chapter we present another approach that is known as an XML pull parser. In essence, an XML pull parser is like SAX (the Simple API for XML) i.e., that is, it is based on a streaming API. In particular there is no need to store the complete document. Finally contrary to SAX there is no need to build final state machine to process the document and the XML pull parser controls the flow of events. 
 
-Handling XML is a practical aspect of modern computing. There are several libraries in Pharo to deal with XML such as the XMLReader and XMLWriter packages. 
-In this chapter we present another approach that like SAX is based on a streaming API. In particular there is no need to store the complete document. Finally
- contrary to SAX there is no need to build final state machine to process the document. Such approach is called a pull xml parser. 
-
-The presented project was developed by Antony Blakey for Cincom Smalltalk. Antony Blakey generously open-sources it. Hernan Morales ported it to Pharo. The original documentation is available on the following page (http://linkuistics.com/?page_id=34). We thank Antony for this work. This chapter is freely adapted from this blog and we hope it will help you in your daily tasks. 
+The presented project was developed by Antony Blakey for Cincom Smalltalk. Antony Blakey generously open-sources it. Hernan Morales and XX Travis Ken XX ported it to Pharo. The original documentation is available on the following page (http://linkuistics.com/?page_id=34). We thank Antony for this work. This chapter is freely adapted from this blog and we hope it will help you in your daily tasks. 
 
 
 !! Getting Started
 
 How to load it!
-@@ more here later.
+
+	   more here later.
+
+
+
+
+
+!! XML pull parsing vs. SAX
+
+There are two ways to parse large XML files without using a lot of memory resources: using SAX or Pull. 
+They don't let you modify or generate XML; these XML parsers or readers let you read through a large XML 
+file efficiently, using a small amount of memory.
+
+The difference between SAX and XML pull readers is simple: a SAX reader uses callbacks and a pull parser doesn't. The two models are also described as being push versus pull:
+
+- Using a SAX model: after you set up callbacks, the SAX reader pushes document events to you.
+
+- Using a pull parser model: you pull data from the document using the pull parser API.
+
+With pull parsing, you get information as you request it. It which gives you the flexibility of conveniently changing the kinds of things you're looking for as you go. With the event-driven SAX model you should configure your callbacks and then starts the parser.
+
+
+The pull parser model acts a simple service object. You send it messages and it does it. The SAX model turns that logic upside down. With SAX, you have to define methods so that it can call your methods when things happen. The pull parser model is more flexible and easier to work with. You don't need to do any setup and there is much less you need to know to use it. 
+
+SAX was developed in the early stages of XML and despite its enormous drawbacks it has been institutionalized in the XML industry.
+
 
 !! What is XML pull parsing, when and why you would use it?
-
 
 
 An XML pull parser converts XML text into a (conceptual or actual) stream of tokens. In the most common case, those tokens are very high level, and in fact there are only 5 events: StartDocument, EndDocument, StartTag, EndTag and Text. Attributes are reported within the StartTag event as a list. Thus, the following XML:
@@ -46,7 +67,7 @@ EndDocument
 ]]]
 
 
-The pull parser is like a stream in that it has a current token, a next method, and an eof state. Note that in this example the parser isn’t reporting ignorable whitespace. Usually the parser has settings so that you can control whether it returns namespace declaration attributes, handles xml:space, and other features. Sometimes the pull parser can be configured to return comments, and ignorable whitespace, and other low level events which make it suitable as the basis for driving SAX and DOM building, even to the point of allowing roundtripping.
+The pull parser is like a stream in that it has a current token, a next method, and an eof state. Note that in this example the parser isn't reporting ignorable whitespace. Usually the parser has settings so that you can control whether it returns namespace declaration attributes, handles xml:space, and other features. Sometimes the pull parser can be configured to return comments, and ignorable whitespace, and other low level events which make it suitable as the basis for driving SAX and DOM building, even to the point of allowing roundtripping.
 
 
 The parser doesn't have to use objects to represent the tokens - they may simply be represented as parser state, so the token type would be represented by a constant and the token values accessed via methods on the parser. In that case you can only access the current token.
@@ -55,21 +76,21 @@ This is very similar to SAX, but with the control inverted, and as mentioned abo
 
 The two attractive features of the pull parser approach are:
 
--- Unlike a DOM based approach, but like SAX, a pull-based parser doesn’t store the document.
+- Unlike a DOM based approach, but like SAX, a pull-based parser doesn't store the document.
+- Unlike SAX you don't have to build an final state machine, either explicitly or implicitly, to process the document. 
 
--- Unlike SAX you don't have to build an final state machine, either explicitly or implicitly, to process the document. 
-It's trivial to build content processors using recursive descent patterns, especially if the parser returns real token objects that aren’t recycled, and using a pull parser results in code that is easy to write and understand. A simple extension allows for LL(*) parsing.
+It's trivial to build content processors using recursive descent patterns, especially if the parser returns real token objects that aren't recycled, and using a pull parser results in code that is easy to write and understand. A simple extension allows for LL parsing.
 
-For random access to XML, especially XML that isn’t being used to represent structured data, a DOM is probably the best bet. We often found however that using a pull parser to read the XML and create data structures better suited to my domain than a DOM is well worth the effort.
+For random access to XML, especially XML that isn't being used to represent structured data, a DOM is probably the best bet but you should try with an XMLPull parser to assess the solution.
 
 
 !!The architecture of the XMLPullParser package
+
 There are three main parts to this package:
 
--- The parser, consisting of two classes: ==XMLPullParser== and ==XMLXPPStructureExceptionPullParser== is the primary class, and you can effectively use this package knowing only this class. 
+- The parser, consisting of two classes: ==XMLPullParser== and ==XPPStructureExceptionPullParser== is the primary class, and you can effectively use this package knowing only this class. 
 ==XPPStructureException== is raised in response to certain methods you can call on PullParser.
-
--- The events. There are five kinds of events/tokens that the parser produces: ==StartDocument==, ==EndDocument==, ==StartTag==, ==EndTag==, and ==Text==. These are reified as the following hierarchy:
+- The events. There are five kinds of events/tokens that the parser produces: ==StartDocument==, ==EndDocument==, ==StartTag==, ==EndTag==, and ==Text==. These are reified as the following hierarchy:
 
 
 [[[
@@ -80,398 +101,126 @@ XPPEvent
            StartTag
            EndTag
         XPPText
-
 ]]]
 
+XPPEvent and TagEvent are abstract and never instantiated.
+
+
+The names of tags are instances of XPPTag, which are a triple of namespace, type (local name) and qualification, and attributes.
 
 
 
+!! PullParser API and examples
+
+At its core, the API is extremely simple - one class method and two instance methods on the parser, plus accessors and test methods on the event objects. There are a lot more methods than that, but they're all convenience methods layered on top of the others.
+
+==XMLPullParser== presents a stream abstraction - although not the full stream – with two methods: ==current==, which gives you the current event, and ==next==, which advances to the next event and returns it. You know when the end of the stream is reached because the event is a ==XPPEndDocument==. There is currently no ==atEnd== method.
+
+
+The events all contain all of the obvious test methods: ==isStartDocument==, ==isEndDocument==, ==isStartTag==, ==isEndTag== and ==isText==, three additional test methods ==isStartTag:==, ==isEndTag:== and ==is:== which incorporate an event type test with a tag test, as well as the type specific accessors that you would expect. 
+
+Attributes are retrieved from XPPStartTag events using ==at:==, ==at:ifNone:== and ==at:ifFound:ifNone:== methods, text is retreived with ==text==, and the tag (name) is retrieved with ==tag==. All methods that take attribute names or tag names expect a string.
+
+XMLPullParser replicates each of the above event methods, including the type specific accessors, and delegates them to the current event. Thus you can often process XML without any reference to event objects, simply using the parser object.
 
 
 
-
-
-
-
-
-
-
-
-
-In this chapter we will develop a simple domain specific language (DSL) for rolling dice. Players of games such as Dungeon and Dragons are familiar with the DSL we will implement. An example of such DSL is ==2 D20 + 1 D6== which means that we should roll two times a 20-faces dice and one time a 6 faces dice. This chapter will show how we can (1) simply reuse traditional operator such as ==+==, (2) develop an embedded DSL and (3) show a nice usage of class extensions.
-
-
-!! Getting started
-
-Using the code browser, define a package named ==Dice== or any name your like.
-
-!!! Defining the class Dice
+Let's write a simple parser extracting all the text from a document. We create an instance of ==XMLPullParser== sending the message ==parse:== to the class. Here is an example
 
 
 [[[
-Object subclass: #Dice
-	instanceVariableNames: 'faces'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Dice'
-]]]
-
-In the ==initialize== category, define the method ==initialize== as follows. It simply set the default number of faces to 6. 
-
-[[[
-Dice>>initialize 
-	super initialize.
-	faces := 6
-]]]
-
-
-!!! Creating a test 
-
-It is always empowering to verify that the code we write is always working as we defining it. For 
-this purpose we will create a unit test. Remember unit testing was promoted by K. Beck first in Smalltalk. Nowadays this is a common practice but this is always useful to remember our roots!
-
-So we define the class ==DiceTest== as a subclass of ==TestCase==.
-
-[[[
-TestCase subclass: #DiceTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Dice'
-]]]
-
-
-[[[
-DiceTest>>testInitializeIsOk
-
-		self shouldnt: [ Dice new ] raise: Error
-]]]
-
-!! Rolling a dice
-To roll a dice we will use the method from Number ==atRandom== which draws randomly a 
-number between one and the receiver. For example ==10 at random== draws number between 1 to 10. 
-Therefore we define the method ==roll== as follows.
-
-[[[
-Dice>>roll
-
-	^ faces atRandom
-]]]
-
-Now we can create an instance ==Dice new== and send it the message  ==roll== and get a result.
-Do ==Dice new inspect== and then type in the bottom pane ==self roll==.
-You should get an inspector like the one shown in Figure *figDiceNoDetail*. With it you can interact with the dice by writing expression in the bottom pane.
-
-+Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
-
-
-
-!!! Creating another test
-We will define a test that verifies that rolling a new created dice with a default 6 faces only returns 
-value comprised between 1 and 6. This is what the following test method is actually specifying.
- 
-[[[
-DiceTest>>testRolling
+testTextExtractionFirstLevel
+	"self debug:#testTextExtractionFirstLevel"
 	
-	| d |
-	d := Dice new. 
-	10 timesRepeat: [ self assert: (d roll between: 1 and: 6) ]
-]]]
-
-Note that often it is better to define the test even before the code it tests. Why? Because you can think about the API of your objects and a scenario that illustrate their correct behavior. It helps you to program your solution.
-
-!! Instance creation interface.
-We would like to get a simpler way to create Dice. For example we want to create a 20-faces dice as follows: ==Dice faces: 20==. Let us define a test for it.
-
-[[[
-DiceTest>>testCreationIsOk
-	
-		self shouldnt: [ Dice faces: 20 ] raise: Error
-]]]
-
-
-We define the class method ==faces:== as follows. It creates an instance then send the message ==faces:== to it and returns the instance.
-
-[[[
-Dice>>faces: aNumber
-
-	| instance |
-	instance := self new.
-	instance faces: aNumber.
-	^ instance
-]]]
-
-This method is strictly equivalent to the one below. The trick is that ==yourself== is a simple method defined on ==Object== class. ==yourself== returns the receiver of a message and the use of ==;== sends the message to the receiver of the previous message (here ==faces:==), therefore ==yourself== is sent to the object resulting from the execution of the expression ==self new== (which returns a new instance of the class ==Dice==). 
-
-[[[
-Dice>>faces: aNumber
-	
-	^ self new faces: aNumber; yourself
-]]]
-
-If you execute it will not work since we did not create yet the method ==faces:== this is now the time to define it.
-[[[
-Dice>>faces: aNumber
-
-	faces := aNumber
-]]]
-
-Now your tests should run. 
-
-So even if the class ==Dice== could implement more behavior, we are ready to implement a dice handle. 
-
-!! First specification of a dice handle
-
-Let us define a new class ==DiceHandle== that represents a dice handle. 
-Here is the API that we would like to offer for now. We create a new instance of the handle then add some dice to it.
-
-[[[
-DiceHandle new 
-	addDice: (Dice faces: 6);
-	addDice: (Dice faces: 10);
-	yourself
-]]]
-
-Of course we will define a test for this new class. We define the class ==DiceHandleTest== as follow. 
-!!! Testing Handle Dice
-[[[
-TestCase subclass: #DiceHandleTest
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Dice'
-]]]
-
-We define a new test method as follows. 
-
-[[[
-DiceHandleTest>>testCreationAdding
-
-	| handle |
-	handle := DiceHandle new 
-			addDice: (Dice faces: 6);
-			addDice: (Dice faces: 10);
-			yourself.
-	self assert: handle diceNumber = 2.
-]]]
-
-In fact we can do it better and add a new test method that verifies that we can even add
-two dices having the same number of faces. 
-
-[[[
-DiceHandleTest>>testAddingTwiceTheSameDice
-
-	| handle |
-	handle := DiceHandle new 
-			addDice: (Dice faces: 6);
-			yourself.
-	self assert: handle diceNumber = 1.
-	handle addDice: (Dice faces: 6).
-	self assert: handle diceNumber = 2.
+	| xpp  output |
+	xpp := XMLPullParser parse: '<document>
+  <tagA a1=''att1'' a2=''att2''>blah</tagA>
+  <tagB>aaa<tagC>bbb</tagC>ccc</tagB>
+</document>'.
+      output := String new writeStream.
+  	[ xpp next isEndDocument ] whileFalse: [
+   	    xpp isText ifTrue: [ output nextPutAll: xpp text ]].
+  	self assert: output contents equals: 'blahaaabbbccc'. 	
 ]]]
 
 
 
-!!! Defining the DiceHandle class
+For each ==XMLPullParser>>is*== method there is an ==XMLPullParser>>mustBe*== method, that throws an ==XPPStructureException== if the test fails. For each ==XMLPullParser>>mustBe*== method, except ==mustBeEndDocument==, there is an ==XMLPullParser>>consume*== method, that throws an ==XPPStructureException== if the test fails, but also calls ==XMLPullParser>>next== on success. You can't advance past the end of the document, which is why there is no ==consumeEndDocument== method.
 
-This class defines one instance variable to hold dices it contains. 
-
-[[[
-Object subclass: #DiceHandle
-	instanceVariableNames: 'dice'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'Dice'
-]]]
-
-We simply initialize it so that its instance variable ==dice== contains an ==OrderedCollection==.
-
-[[[
-DiceHandle>>initialize
-	super initialize.
-	dice := OrderedCollection new.
-]]]
-
-Then we define a simple method to add a dice to the list of dices of the handle.
-
-[[[
-DiceHandle>>addDice: aDice 
-	dice add: aDice
-]]]
-
-Now you can execute the code snippet and inspect it. You should get an inspector as shown in Figure *diceHandleNoDetail* 
-[[[
-DiceHandle new 
-	addDice: (Dice faces: 6);
-	addDice: (Dice faces: 10);
-	yourself
-]]]
-
-+Inspecting a Dice>file://figures/DiceHandleNoDetail.pdf|width=50|label=diceHandleNoDetail+
+The combination of the delegating accessors and the ==is*==, ==mustBe*== and ==consume*== methods, form the second layer of the API - convenient but not canonical, and all implemented cleanly in terms of the core API. This is the kind of API you would expect in a recursive descent parser library.
 
 
+The third and final layer of the API is built upon the second, and follows a somewhat different pattern, more along the lines of the standard ==ifFalse:ifTrue:== and ==while:== control operators. There are six (purely conceptual) operators: ==if==, ==match==, ==skip==, ==while==, ==collect== and ==text== which are combined as orthogonally as possible with a number of other concepts. We'll go through each of the operators and corresponding ==XMLPullParser== methods.
 
-Finally we should add the method ==diceNumber== to the ==DiceHandle== class to be able to get the number of dice of the handle. We just returns the size of the dices collection.
+!!! Operator: match
 
-[[[
-DiceHandle>>diceNumber  
+Method ==match: aTag peek: aBlock== throws an exception if the current event isn't a start tag matching the given tag name. If it succeeds, then aBlock is evaluated without consuming the start tag event. The block can take zero or one argument. If it takes one argument then the current event is passed to the block.
 
-	^ dice size
-]]]
+Method ==match: tagName take: aBlock== throws an exception if the current event isn't a start tag matching the given tag name. If it succeeds, then aBlock is evaluated after consuming the start tag event. The block can take zero or one argument. If it takes one argument then the start tag event that was consumed is passed to the block, which can be useful for processing the attributes. After the block executes, the parser must be at an end tag matching the start tag. This end tag is then consumed.
 
-Now you tests should run and this is good moment to save and publish your code. 
+Method ==matchAndPeek: aBlock== throws an exception if the current event isn't a start tag. If it succeeds, then then aBlock is evaluated without consuming the start tag event. The block can take zero or one argument. If it takes one argument then the current event is passed to the block.
 
-
-
-
-!! Improving programmer experience
-
-Now when you open an inspector you cannot see well the dices that compose the dice handle. Click on the dice instance variable and you will only get a list of ==a Dice== without further information. 
-
-[[[
-DiceHandle new 
-	addDice: (Dice faces: 6);
-	addDice: (Dice faces: 10);
-	yourself
-]]]
-
-So we will enhance the ==printOn:== method of the Dice class to provide more information. Here we simply add the number of faces surrounded by parenthesis.
+Method ==matchAnyTake: aBlock== throws an exception if the current event isn't a start tag. If it succeeds, then aBlock is evaluated after consuming the start tag event. The block can take zero or one argument. If it takes one argument then the start tag event that was consumed is passed to the block, which can be useful for processing the attributes. After the block executes the parser must be at an end tag matching the start tag. This end tag is then consumed.
 
 
-[[[
-Dice>>printOn: aStream
+The orthogonal concepts in these four methods are: 
 
-	super printOn: aStream.
-	aStream nextPutAll: ' (', faces printString, ')'
-]]]
+# is the event is consumed before the block is evaluated (consumption meaning that the matching end tag will be also be consumed after the block is evaluated)?; 
 
-Now in your inspector you can see effectively the number of faces a dice handle has as shown by Figure *diceDetail* and it is now easier to check the dice contained inside a handle (See Figure *diceHandleDetail*).
+# must the start tag match a specific name, or will any start tag do? 
 
-+Dice details>file://DiceDetail.png|width=50|label=diceDetail+ 
+Furthermore, any block supplied in this API can take zero or one argument, with the same meaning as above, wherever the concept is applicable. These concepts are universally applied throughout this API, and the rest of the description will assume you understand this regularity.
 
-+Dice Handle with more information>file://DiceHandleDetail.png|width=50|label=diceHandleDetail+ 
-!! Rolling a dice handle
+!!! Operator: if
 
-Now we can define the rolling of a handle of dice by simply summing the dice rolls.
-[[[
-DiceHandle>>roll
-	
-	| res |
-	res := 0.
-	dice do: [ :each | res := res + each roll ].
-	^ res
-]]]
+Methods ==if: tagName peek: aBlock==, ==if: tagName take: aBlock==, ==ifAnyPeek: aBlock== and ==ifAnyTake: aBlck== are conditional version of the ==match*== messages. If the current event isn't a start tag, or doesn't match a supplied tag name, then the block doesn't get evaluated.
+
+Methods ==if:peek:else:==, ==if:take:else:==, ==ifAnyPeek:else:== and ==ifAnyTake:else:== add a niladic else block to the previous forms. The else block is evaluated if the first block isn't. The else block must take no arguments.
+
+		add example
+
+!!!Operator: while
+
+Methods ==while:peek:==, ==while:take:==, ==whileAnyPeek:== and ==whileAnyTake:== are repeating versions of the ==if*== methods. They may execute zero or more times.
+
+Methods ==while:peek:separatedBy:==, ==while:take:separatedBy:==, ==whileAnyPeek:separatedBy:== and ==whileAnyTake:separatedBy:== add another (niladic) block to the previous while methods, that is evaluated between every pair of elements. Thus this second block is evaluated one less time than the first block.
+
+		add an example
+
+!!!Operator: collect
+Methods ==collect:peek:==, ==collect:take:==, ==collectAnyPeek:== and ==collectAnyTake:== are collecting versions of the ==while*== methods. They return an ==OrderedCollection== containing the result of the blocks evaluated. If there are no evaluations then the collection will be empty.
+
+		add an example
+
+!!!Operator: skip
+
+Methods ==skip:== and ==skipAny== throw an exception if current event isn't a start tag, or doesn't match a supplied tag name. If it succeeds then it consumes the start tag, and all events up to and including the matching end tag, taking correct account of tag nesting. Thus it doesn't stop at the first matching end tag, but rather it keeps a count of the nesting depth.
 
 
-Now we can send the message ==roll== to a dice handle.
-[[[
-handle := DiceHandle new 
-		addDice: (Dice faces: 6);
-		addDice: (Dice faces: 10);
-		yourself.
-handle roll
-]]]
+Methods ==skipIf:== and ==skipIfAny== are conditional versions of the previous two methods. They don't throw an exception if the current event isn't a start tag or doesn't match a supplied tag name.
 
-!! Role playing syntax
 
-Now we are ready to offer a syntax following practice of role playing game, i.e., using ==2 D20== to create a handle of two 20 faces dice.  For this purpose we will define class extensions: we will define methods in the class ==Integer== but these methods will be only available when the package Dice will be loaded. 
+Methods ==skipWhile:== and ==skipWhileAny== are repeating versions of the previous two methods. They may execute zero or more times.
 
-But first let us specify  what we would like to obtain by writing a new  test in the class ==DiceHandleTest==. Remember
-to always take  any opportunity to write tests.  When we execute ==2 D20== we  should get a new handle  composed of two
-dice and can verify that. This is what the method ==testSimpleHandle== is doing.
+!!!Operator: text
 
-[[[
-DiceHandleTest>>testSimpleHandle
+Methods ==textOf:== and ==textOfAny== throw an exception if current event isn't a start tag, or doesn't match a supplied tag name. If it succeeds then it consumes the start tag, the (optional) text event within it and the following matching end tag. It returns the text content of the text event that was consumed, or an empty string ==''== if there is no text event within the tag.
 
-	self assert: 2 D20 diceNumber = 2.
-]]]
 
-Verify that the test is not working! It is much more satisfactory to get a test running when it was not working before. Now define the method ==D20== with a category name that is ==*Dice== (if you named your package Dice). This method simply creates a new dice handle, add the correct number of dice to this handle and return it.
 
-[[[
-Integer>>D20
-	
-	| handle |
-	handle := DiceHandle new.
-	self timesRepeat: [ handle addDice:  (Dice faces: 20)].
-	^ handle
-]]]
+Methods ==textIf:== and ==textIfAny== are conditional versions of the previous two methods. They don't throw an exception if the current event isn't a start tag or doesn't match a supplied tag name, rather they return an empty string.
 
-Now you test should pass and this is probably a good moment to save your work either by publishing your package to SmalltalkHub and to save your image. 
+Methods ==textIf:else:== and ==textIfAnyElse:== operate similarly to the previous two methods but they allow you to supply a block (or any ==value== responder) to provide a value if the tag doesn't match. Note that a matching tag/name that is empty will still provide an empty string as you would expect from XML.
 
-Now we could do the same for the default dice with different faces number: 4, 6, 10, and 20.
-But we should avoid duplicating logic and code. So first we will introduce a new method ==D:== and based on it we will define all the others
 
-[[[
-Integer>>D: anInteger
-	
-	| handle |
-	handle := DiceHandle new.
-	self timesRepeat: [ handle addDice:  (Dice faces: anInteger)].
-	^ handle
-]]]
 
-[[[
-Integer>>D4
-	
-	^ self D: 4
-]]]
 
-[[[
-Integer>>D6
-	
-	^ self D: 6
-]]]
 
-[[[
-Integer>>D10
-	
-	^ self D: 10
-]]]
-
-[[[
-Integer>>D20
-	
-	^ self D: 20
-]]]
-
-We have now a compact form to create dice and we are ready for the last part: the addition of handles. 
-
-!!! Handle's Addition
-
-Now we can simply support the addition of handles. But of course let's write a test first.
-
-[[[
-DiceHandleTest>>testSumming
-
-	| handle |
-	handle := 2 D20 + 3 D10.
-	self assert: handle diceNumber = 5.
-]]]
-
-We will define a method ==+== on the HandleDice class. In other languages this is often not possible or is based on operator overloading. In Pharo ==+== is just a message as any other, therefore we can define it on the classes we want.
-
-Now we should ask ourself what is the semantics of adding two handles. Should we modify the receiver of the expression or create a new one. We preferred a more functional style and choose the create a third one. 
-
-The method ==+== creates a new handle then add to it the dice of the receiver and the one of the handle passed as argument to the message. Finally we return it. 
-
-[[[
-DiceHandle>>+ aDiceHandle
-
-	| handle |
-	handle := self class new.
-	self dice do: [ :each | handle addDice: each ].
-	aDiceHandle dice do: [ :each | handle addDice: each ].
-	^ handle
-]]]
-
-Now we can execute the method ==(2 D20 + 1 D6) roll== nicely and start playing role playing games, of course.
 
 !! Conclusion
 
-This chapter illustrates how to create a small DSL based on the definition of some domain classes (here ==Dice== and  
- ==DiceHandle==) and the extension of core class such ==Integer==.
-It shows that in Pharo we can use usual operators to express natural models.
+This chapter illustrates how to navigate and manipulate large XML files using a streaming event-based parser that uses a pull approach. It means that you can simply manipulate XML documents with few preparation.
+
 
 
 
