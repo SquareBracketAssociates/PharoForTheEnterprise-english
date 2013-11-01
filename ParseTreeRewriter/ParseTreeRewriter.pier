@@ -91,27 +91,200 @@ RBProgramNode #('parent' 'comments' 'properties')
 			RBThisContextNode 
 ]]]
 
-
-
-
-
+Note that its name can be misleading but ==RBPatternMessageNode== is for a method with a signature and a body.
 
 !!Unification
 The pattern matching algorithm in the engine rewriter is accomplished by a unification algorithm. This algorithm takes as input a pattern (that describes what we look for) and a tree (that could or not match the pattern). A pattern is a tree containing special nodes called meta-variables. A meta-variable is a variable whose value will be set by the unification algorithm. For example, a meta-variable can be used to match a variable while another can be used to match messages.
 
 The output of the algorithm is either false (there is no match found) or true. If it is true, that means that at least one match has been found. A match is a mapping from meta-variable to AST nodes of the input tree. These mappings correspond to the values the meta-variables of the pattern should take for the pattern to be equal to the input tree. 
 
-Let's look at a few examples. If X and Y denote meta-variables, the pattern ==self X== matches ==self open== with the mapping: X -> 'open'. The pattern ==X Y== matches ==self open== with the mapping: Y -> 'self', Y -> 'foo'. As a failing example, ==X X== doesn't match ==self open==.
+Let's look at a few examples. If X and Y denote meta-variables, the pattern ==self X== matches ==self open== with the mapping: X -> 'open'. The pattern ==X Y== matches ==self open== with the mapping: Y -> 'self', Y -> 'open'. As a failing example, ==X X== doesn't match ==self open== because X cannot be at the same time 'self' and 'open'.
 
-!! Pattern syntax
 
-To express patterns, the rewriter uses a special syntax that extends the standard Smalltalk syntax with meta-variables. There is several kinds of meta-variables depending on what nodes you want to match. They all start with a backquote. We will show some hands-on just after. 
+
+
+
+
+!! Pattern syntax: One example of matching expression 
+To express patterns, the rewriter uses a special syntax that extends the standard Pharo syntax with meta-variables. There is several kinds of meta-variables depending on what nodes you want to match. They all start with a backquote ==`==. 
+
+!!! Loading Flamel
+
+Executing rules using the default refactoring rule engine is a bit arcane so we will load first a nice extension called Flamel developed by Gisela 
+Decuzzi. Execute the following expression to get Flamel loaded.
+
+[[[
+Gofer it
+	  smalltalkhubUser: ‘gisela’ project: ‘Flamel’;
+	  configurationOf: ‘Flamel’;
+	  loadVersion: #development.
+]]]
+
+!!! Step by Step
+
+Let's start it with an example, imagine that we want to identify all the places where we have ==anObject globals at:==.
+
+We want to identify message as the ones in the ==configurationClass== method below.
+
+[[[
+configurationClass
+	^ Smalltalk globals at: self configurationName asSymbol
+]]]
+
+First try to look for the senders of the message ==globals==. You will see that you get couple hundreds of them and plenty of them 
+are not sending ==at:== but ==at:ifAbsent:== or ==at:put:== or even nothing to do with ==at:==.
+
+!!!!Let's write our first matching pattern.
+
+First you want any object, it could be Smalltalk or another one so we use the ==`== operation to create a (meta)variable that we name ==anObject==.
+A meta variable is a variable that we will unified against the AST elements. 
+
+So we get 
+
+[[[
+`anObject
+]]]
+
+Then since we want the message ==globals== we add it and obtain.
+
+[[[
+`anObject globals
+]]]
+
+Note here that we do not annotate it with an operator because we do not want any message selector but just ==globals==.
+We redo the same for ==at:== so we obtain the following pattern.
+
+
+[[[
+`anObject globals at: 
+]]]
+But this expression is not complete and it is missing an argument to be a full Pharo expressions. So we add another meta-variable that will match anything. 
+
+[[[
+`anObject globals at: `anything
+]]]
+
+!!!!Executing the rule
+Now we have the pattern but we should execute it to get the matches. For now we will use a nice extension of the Refactoring rule engine called Flamel. 
+
+
+[[[
+FlamelRule new
+   matchingExpression: '`anObject globals at: `anything';
+   matchExpression;
+   run;
+   result
+]]]
+
+
+Execute and inspect the result. It may take some minutes because it is matching all the methods of the system. 
+You get an RBParseTreeEnvironment and the results are in classSelectors and metaSelectors.
+Let us explain the script, once the rule object is created we specify the expresssion using ==matchingExpression:==, then we specify that 
+we want to match an expression (and not a complete method as we will explain in Section *MethodMatching*, then we run the rule and ask for its resutls. 
+
+!!!! Refining the scope
+Sometimes you do not want to look in the complete system but in a restricted environment. To do so we use the message ==scope:==
+
+
+[[[
+FlamelRule new
+   matchingExpression: '`anObject globals at: `anything';
+   matchExpression;
+   scope: (RBPackageEnvironment packageName: 'Kernel');
+   run;
+   result
+]]]
+
+
+Now if we want to restrict the search to a subset of the environment.
+
+
+
+
+
+!!! Using Flamel Search Tool
+
+
+
+Blablabblababl
+
+
+
+
+!!! Dealing extras messages
+When you look at the results of the previous pattern and you compare with the system you will see that we are missing some of the cases.
+For example we are missing the following method. 
+
+What you see here is that the pattern did not 
+
+[[[
+changeClass
+	^ Smalltalk globals at: oldName asSymbol ifAbsent: [ Smalltalk globals at: newName asSymbol ]
+]]]
+
+[[[
+RBRefactoring>>poolVariableNamesFor: aClass 
+	| pools |
+	pools := Set new.
+	aClass withAllSuperclasses do: 
+			[:each | 
+			each allPoolDictionaryNames do: 
+					[:pool | 
+					pools addAll: ((Smalltalk globals at: pool asSymbol) keys 
+								collect: [:name | name asString])]].
+	^pools
+]]]
+
+
+
+
+and with a message 
+[[[
+
+]]]
+
+
+
+
+==@== it is optional and can be repeated.
+
+
+[[[
+`anObject globals at: `@anything
+]]]
+
+
+TODO: 
+[[[
+`anObject globals at: #foo
+]]]
+
+
+
+
+!! Matching Expressions
+
+
+
+
+
+
+!! Matching Methods 
+While matching expressions does not care of the whole context (such temporaries, assignment and method signatures), matching a complete method requires more advanced matching. For example if an expression is inside a block if we care about the fact that the methods
+has temporaries.
+
+
+
 
 - ==`node== This is the most basic meta-variable. It matches any node.
+
+
+
 
 Examples:  
 
 ==`receiver foo== matches the following expressions:
+
 [[[
 self foo
 x foo
@@ -119,6 +292,7 @@ OrderedCollection foo
 ]]]
 
 ==self `msg: `arg== matches any one-argument message sent to self:
+
 [[[
 self as: Array
 self instVarAt: 2
@@ -293,8 +467,86 @@ replacer := RBParseTreeRewriter new
 
 
 
+!! Expressing and Executing Rules Without Flamel 
+
+		Show the execution of the first example without Flamel
+		- 
+
+Before start you should choose if you want to:
+perform a search
+do a match
+Implement your rules because all of them are abstract, probably you will end up using the Tree rules because are more automatics and powerfull than to basics.
+When you are defining your rule:
+- give a name for it
+- define if you will use a method or an expression type pattern (use matches: or matchesMethod:)
+- write your patterns and add them to the rule
+- if you are in a search rule to the matcher
+- if you are in a transformation rule rewriteRule
+- define what to do with a result
+run your rule
+use your results
+if you want to reuse it reset your rule, again if it’s a search rule, reset the matcher, if it’s a transformation rule the rewriteRule.
 
 
+
+In our example:
+
+we want to match, so let’s create an object that extends: RBParseTreeLintRule:
+
+[[[
+RBParseTreeLintRule subclass: #SearchGlobalsAtUsage
+	instanceVariableNames: ''
+    classVariableNames: ''
+    poolDictionaries: ''
+    category: 'Blog-example'
+]]]
+
+We have to implement the abstract methods:
+
+[[[
+SearchGlobalsAtUsage>>name
+	^ 'Find all potential wrong usage in with globals'
+]]]
+
+I want to match an expression type because I do not care about the rest of the method, I want everything that contains the messages: #globals #at:, we also have to say what to do with the matching node in this example I will open an inspector:
+
+
+[[[
+SearchGlobalsAtUsage>>initialize
+		super initialize.
+		self matcher
+			 matches: '``@lotOfStuffBefore globals at: ``@lotOfStuffAfter'
+			 do: [:theMatch :theOwner | theMatch inspect].
+]]]
+
+now we should run the rule:
+WARNING: this can take a time because you will check the whole system
+
+[[[
+SearchGlobalsAtUsage new run.
+]]]
+To avoid this you can restrict the environment for your rule, an example:
+
+
+[[[
+rule := SearchGlobalsAtUsage new.
+environment := RBClassEnvironment class: Result.
+RBSmalllintChecker runRule: rule onEnvironment: (environment).
+]]]
+If you have matches then you will see the inspector.
+
+So, as we can see this is quite complex, and in the sinposis you can see that before doing anything you have to make too many decisions, the idea behind Flamel is to make it easier.
+
+
+The equivalent code (with a restricted environment) using Flamel for all this is:
+
+[[[
+FlamelRule new
+ matchingExpression: '``@lotOfStuffBefore globals at: ``@lotOfStuffAfter';
+ scope: environment;
+ run;
+ result
+]]]
 
 
 
