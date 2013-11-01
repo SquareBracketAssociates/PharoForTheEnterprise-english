@@ -8,6 +8,10 @@ Pharo refactoring browser and Critics browser are built. The ParseTreeRewriter h
 This powerful engine allows you to define abstract expressions to match and transform code. The engine is based on an abstract syntax tree unification algorithm that matches meta-variable to abstract syntax tree nodes and let you manipulate such meta-variables. 
 In this chapter, we will first present the notion of abstract syntax tree, then the syntax of the parse tree rewriter expressions with practical examples. We also present Flamel an advanced editor to help user to express matching expressions. 
 
+Authors: 
+- Gisela Decuzzi
+- Stéphane Ducasse
+- Camille Teruel
 
 %http://pharorwrules.wordpress.com/2013/08/06/just-want-to-match/
 
@@ -265,7 +269,8 @@ todo
 
 
 !!! Recursive matches
-What's happen if a variable matches a complex expression that also contains the expression 
+What's happen if a variable matches a complex expression that also contains the expression we are looking for.
+For example 
 
 
 Finally when trying to match an expression, there is another operator ==``== which supports recurvise match.
