@@ -215,50 +215,60 @@ Blablabblababl
 When you look at the results of the previous pattern and you compare with the system you will see that we are missing some of the cases.
 For example we are missing the following method. 
 
-What you see here is that the pattern did not 
+What you see here is in the ==RBRenameClassChange>>changeClass== is that the pattern did not match because `anything matches only one element and here we get ==newName asSymbol== which is not a single element.
 
 [[[
-changeClass
+RBRenameClassChange>>changeClass
 	^ Smalltalk globals at: oldName asSymbol ifAbsent: [ Smalltalk globals at: newName asSymbol ]
 ]]]
 
+Similar for ==configurationClass== we get a complex expression ==workingCopy package name asSymbol== instead of a simple element.
+
 [[[
-RBRefactoring>>poolVariableNamesFor: aClass 
-	| pools |
-	pools := Set new.
-	aClass withAllSuperclasses do: 
-			[:each | 
-			each allPoolDictionaryNames do: 
-					[:pool | 
-					pools addAll: ((Smalltalk globals at: pool asSymbol) keys 
-								collect: [:name | name asString])]].
-	^pools
+ConfigurationGenerator>>configurationClass
+	^ Smalltalk globals at: workingCopy package name asSymbol 
 ]]]
 
+Finally another variation of the problem is the following one:
 
-
-
-and with a message 
 [[[
-
+RBAddClass>>definitionClass
+	^ Smalltalk globals at: (self superclassName ifNil: [ ^ ProtoObject ])
 ]]]
 
-
-
-
-==@== it is optional and can be repeated.
+OK how do we address this problem, we use the ==@== operator in addition to ==`==. ==@== means that the element is optional and can be repeated.
+The optional is not illustrated by the example here but we will see later that you need it to express that there could be zero or more elements
+or expressing that you can at least one unary messages. Let us come back to our case we add ==@== to the pattern as follows:
 
 
 [[[
-`anObject globals at: `@anything
+`anobject globals at: `@anything
 ]]]
 
+Rexecute the query to see that you now get all the cases.
 
-TODO: 
 [[[
-`anObject globals at: #foo
+FlamelRule new
+   matchingExpression: '`anObject globals at: `@anything';
+   matchExpression;
+   run;
+   result
 ]]]
 
+
+!!! Dealing with Literals
+todo 
+
+[[[
+	`anObject globals at: #foo
+]]]
+
+
+!!! Recursive matches
+What's happen if a variable matches a complex expression that also contains the expression 
+
+
+Finally when trying to match an expression, there is another operator ==``== which supports recurvise match.
 
 
 
@@ -266,22 +276,11 @@ TODO:
 
 
 
+!!! Defining a meta-variable: Matching any node
 
+==`node== This is the most basic meta-variable. It matches any node.
 
-
-!! Matching Methods 
-While matching expressions does not care of the whole context (such temporaries, assignment and method signatures), matching a complete method requires more advanced matching. For example if an expression is inside a block if we care about the fact that the methods
-has temporaries.
-
-
-
-
-- ==`node== This is the most basic meta-variable. It matches any node.
-
-
-
-
-Examples:  
+Examples
 
 ==`receiver foo== matches the following expressions:
 
@@ -291,12 +290,15 @@ x foo
 OrderedCollection foo
 ]]]
 
+
 ==self `msg: `arg== matches any one-argument message sent to self:
 
 [[[
 self as: Array
 self instVarAt: 2
 ]]]
+
+!!! Matching a list of zero or more nodes
 
 - ==`@nodes== To match a list of zero or more nodes (like message args or temps). 
 
@@ -318,7 +320,11 @@ self at: 4
 self perform: #at: with: 4
 ]]]
 
-- ==`#literal== To match literals. 
+
+
+!!! Matching Literals
+
+==`#literal== To match literals. 
 
 ==`#literal size== matches any message sent to a literal whose selector is size 
 
@@ -328,10 +334,19 @@ self perform: #at: with: 4
 #(a b c) size
 ]]]
 
-- ==``== supports recursive search. For example, ==``@receiver parent== matches
+
+!!! Recursive Search
+
+==``== supports recursive search. For example, ==``@receiver parent== matches
 ==x parent parent== twice:
--- the first time with the mapping: receiver -> x
--- the second time eith the mapping: receiver -> x parent
+- the first time with the mapping: receiver -> x
+- the second time eith the mapping: receiver -> x parent
+
+
+
+!! Matching Methods 
+While matching expressions does not care of the whole context (such temporaries, assignment and method signatures), matching a complete method requires more advanced matching. For example if an expression is inside a block if we care about the fact that the methods
+has temporaries.
 
 
 - ==`.stmts== To match statements. The pattern ==`.Sta1.== matches
@@ -345,6 +360,12 @@ The pattern ==`@.stmts== matches any list of statements.
 
 
 - ==`{ :node | ... }== To match the nodes that satisfy the enclosed Smalltalk code. The pattern ==`{ :node | node isInstance }== matches instance variables.
+
+
+
+
+
+
 
 
 !!!Examples
