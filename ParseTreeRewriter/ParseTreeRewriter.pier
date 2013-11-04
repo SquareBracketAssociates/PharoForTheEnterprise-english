@@ -184,7 +184,7 @@ FlamelRule new
 Execute and inspect the result. It may take some minutes because it is matching all the methods of the system. 
 You get an RBParseTreeEnvironment and the results are in classSelectors and metaSelectors.
 Let us explain the script, once the rule object is created we specify the expresssion using ==matchingExpression:==, then we specify that 
-we want to match an expression (and not a complete method as we will explain in Section *MethodMatching*, then we run the rule and ask for its resutls. 
+we want to match an expression (and not a complete method as we will explain in Section *MatchingMethods*, then we run the rule and ask for its resutls. 
 
 !!!! Refining the scope
 Sometimes you do not want to look in the complete system but in a restricted environment. To do so we use the message ==scope:==
@@ -349,7 +349,10 @@ self perform: #at: with: 4
 
 
 
-!! Matching Methods 
+!! Matching Methods
+
+@MatchingMethods
+
 While matching expressions does not care of the whole context (such temporaries, assignment and method signatures), matching a complete method requires more advanced matching. For example if an expression is inside a block if we care about the fact that the methods
 has temporaries.
 
