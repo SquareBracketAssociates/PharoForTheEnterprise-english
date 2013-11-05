@@ -1,0 +1,182 @@
+!Dead simple intro to Metacello
+
+Metacello is a package management system for Monticello (a versioning system used in Smalltalk). There is a *chapter about Metacello>http://pharobooks.gforge.inria.fr/PharoByExampleTwo-Eng/latest/Metacello.pdf* in the "Deep into Pharo" book, and it gives a good in-depth knowledge about this system. On the other hand when I was starting to use Metacello, I needed something more simple and bold. Something that will tell me: do this and you'll be happy with the outcome.
+
+!!Why do I need to use Metacello?
+
+good practices are:
+
+-to have project distributed across the different packages. 
+-to use a fresh image every day
+
+also:
+
+-you usually are using some other projects
+-(I hope that you are using versioning a.k.a. Monticello)
+
+as a result:
+
+-you have to load a ton of packages each time you start from a fresh image
+-the ones who want to use your work have to bother with all your packages and the packages that you depend on
+
+!!How does it get better with Metacello?
+
+You'll be able to load all your project by just executing something like:
+
+[[[
+Gofer new
+  url: 'http://smalltalkhub.com/mc/YuriyTymchuk/HubMap/main';
+  package: 'ConfigurationOfHubMap';
+  load.
+(Smalltalk at: #ConfigurationOfHubMap) loadDevelopment
+]]]
+
+in your workspace, or this:
+
+[[[
+REPO=http://www.smalltalkhub.com/mc/YuriyTymchuk/HubMap/main
+./pharo $JOB_NAME.image config $REPO ConfigurationOfHubMap --install=development
+]]]
+
+in command line.
+
+Also if someone want's to use your work he'll just have to specify a dependency on your project.
+
+!!!Disclaimer
+
+At the moment of writing this blog I'll be creating a Metacello configuration for my project called "HubMap", with three packages: "HubMap-Model", "HubMap-Visualization" and "HubMap-Importer". Also it has dependencies on "Roassal" project and an external package: "RecPack-Layout".
+
+!!Creating the configuration
+
+Usually I make a copy of an existing configuration, preferably one of mine. But we will follow a tuff way starting from scratch and so make copy of "MetacelloConfigTemplate" class naming it "ConfigurationOfHubMap". Also it's common to put it in the category this the same name. As we are using Smalltalk all this can be done just by executing:
+
+[[[
+(MetacelloConfigTemplate duplicateClassWithNewName: #ConfigurationOfHubMap)
+  category: #ConfigurationOfHubMap
+]]]
+
+now how cool is that?
+
+!!!Defining a baseline
+
+Baseline is a place where you configure what packages and dependencies are in your project. Later you can create a version of your project based on this baseline and specify the concrete version of each package. If you want to understand more - read the book.
+
+To define a baseline create this method in the configuration:
+
+[[[
+baseline01: spec 
+  <version: '0.1-baseline'>
+
+  spec for: #common do: [  
+    spec blessing: #baseline.
+    spec repository: 'http://smalltalkhub.com/mc/YuriyTymchuk/HubMap/main'.
+    ...
+  ]
+]]]
+
+where "repository:" is a Monticello repository where your packages reside, and I just like to start my versions from 0.1.
+
+!!!Adding packages
+
+To define packages in your configuration you should just add:
+
+[[[
+...
+spec 
+  package: 'HubMap-Model';
+  package: 'HubMap-Visualization';
+  package: 'HubMap-Importer'.
+...
+]]]
+
+to your baseline method.
+
+Sometimes you need to add a package from other repository. You can define it in this way:
+
+[[[
+spec
+  package: 'RecPack-Layout'
+  with: [
+    spec repository: 'http://smalltalkhub.com/mc/YuriyTymchuk/RecPack-Layout/main' ].
+]]]
+
+Also usually one packages depend on the others, for example "HubMap-Visualization" depends on "HubMap-Model". In order to define this you should use:
+
+[[[
+spec 
+  package: 'HubMap-Visualization' with: [ spec requires: 'HubMap-Model' ]
+]]]
+
+!!!Adding project dependencies
+
+Metacello is a common tool that is used to manage projects, so there is a big chance that the project that you are dependant on has a Metacello configuration. To define a project dependency, you should use:
+
+[[[
+spec project: 'Roassal' with: [
+  spec
+    className: 'ConfigurationOfRoassal';
+    file: 'ConfigurationOfRoassal';
+    version: #development;
+    repository: 'http://smalltalkhub.com/mc/ObjectProfile/Roassal/main' ]
+]]]
+
+You can omit "file:" if it's the same as "className:" and you can omit "version:" but I have no idea what happens then. "version:" is a version of the project, usually you want to use #stable or #development, and I'll talk about this a bit later. Also note that a project name "Roassal" is a thing that we define by ourselves and then it's used in other parts of our configuration.
+
+Dependency on a project can be defined in the same way as we define dependency on a package:
+
+[[[
+spec 
+  package: 'HubMap-Visualization' with: [ spec requires: 'Roassal' ]
+]]]
+
+Also as you can recall "HubMap-Visualization" depends on "HubMap-Model" package. For this situations you can use an array of strings instead of single strings:
+
+[[[
+spec 
+  package: 'HubMap-Visualization' with: [ spec requires: #('HubMap-Model' 'Roassal') ]
+]]]
+
+Full baseline configuration
+
+[[[
+baseline01: spec
+  <version: '0.1-baseline'>
+
+  spec for: #common do: [ 
+    spec blessing: #baseline.
+    spec repository: 'http://smalltalkhub.com/mc/YuriyTymchuk/HubMap/main'.
+
+    spec
+      package: 'HubMap-Model';
+      package: 'HubMap-Visualization' with: [
+        spec requires: #('HubMap-Model' 'Roassal' 'RecPack-Layout') ];
+      package: 'HubMap-Importer' with: [ spec requires: 'HubMap-Model' ].
+
+    spec
+      package: 'RecPack-Layout' with: [
+        spec repository: 'http://smalltalkhub.com/mc/YuriyTymchuk/RecPack-Layout/main'.
+        spec requires: 'Roassal' ].
+
+    spec project: 'Roassal' with: [
+      spec 
+        className: 'ConfigurationOfRoassal';
+        repository: 'http://smalltalkhub.com/mc/ObjectProfile/Roassal/main';
+        version: #development ] ]
+]]]
+
+!!!Symbolic versions
+
+Usually you and especially other people do not care about the "number" of your version. They just want to use a stable version, or jive a try to what's new in the development. For this you create so called "symbolic version". At the beginning defining a "development" version should be good enough for you. In order to do that, add this method to your configuration:
+
+[[[
+development: spec
+  <symbolicVersion: #'development'>
+
+  spec for: #'common' version: '0.1-baseline'
+]]]
+
+!!You're done
+
+Yes, that's it. Just don't forget to put a package with configuration into your project's repository. Now you can load all your project with a scripts I've mentioned at the beginning of the blogpost. Feel free to ask me for mo explanations and quires. Have fun with Smalltalk and Metacello. And let the force be with you!
+
+""P.S."" If you want to release a version of your project I suggest you taking a look at *Snapshotcello>http://www.tudorgirba.com/blog/snappier-snapshotcello*.
