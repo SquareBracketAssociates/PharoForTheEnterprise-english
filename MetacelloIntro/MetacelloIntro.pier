@@ -1,7 +1,7 @@
 !Introduction to Metacello
 
 Metacello is a package management system for Monticello (a versioning system used in Smalltalk).
-There is a chapter about Metacello in the "*Deep into Pharo>*http://deepintopharo.com" book, and it gives a good in-depth knowledge about this system.
+There is a chapter about Metacello in the "*Deep into Pharo>http://deepintopharo.com/*" book, and it gives a good in-depth knowledge about this system.
 Main goal of this chapter is to guide through the steps required for creating a first Metacello configuration of a project.
 
 !!Why Metacello is important?
@@ -66,7 +66,7 @@ now how cool is that?
 
 Baseline is a place where you configure what packages and dependencies are in your project.
 Later you can create a version of your project based on this baseline and specify the concrete version of each package.
-For more information on versions and baseline read "Managing Projects with Metacello" chapter in "*Deep into Pharo>*http://deepintopharo.com" book.
+For more information on versions and baseline read "Managing Projects with Metacello" chapter in "*Deep into Pharo>http://deepintopharo.com*" book.
 
 To define a baseline create this method in the configuration:
 
