@@ -1,27 +1,29 @@
-!Dead simple intro to Metacello
+!Introduction to Metacello
 
-Metacello is a package management system for Monticello (a versioning system used in Smalltalk). There is a *chapter about Metacello>http://pharobooks.gforge.inria.fr/PharoByExampleTwo-Eng/latest/Metacello.pdf* in the "Deep into Pharo" book, and it gives a good in-depth knowledge about this system. On the other hand when I was starting to use Metacello, I needed something more simple and bold. Something that will tell me: do this and you'll be happy with the outcome.
+Metacello is a package management system for Monticello (a versioning system used in Smalltalk).
+There is a chapter about Metacello in the "*Deep into Pharo>*http://deepintopharo.com" book, and it gives a good in-depth knowledge about this system.
+Main goal of this chapter is to guide through the steps required for creating a first Metacello configuration of a project.
 
-!!Why do I need to use Metacello?
+!!Why Metacello is important?
 
-good practices are:
+When developing in Pharo, the good practices are:
 
--to have project distributed across the different packages. 
--to use a fresh image every day
+-to have project distributed across the different packages;
+-to use a fresh image every day;
 
 also:
 
--you usually are using some other projects
--(I hope that you are using versioning a.k.a. Monticello)
+-a project usually depends on some foreign packages or projects;
+-a common versioning system for Pharo is Monticello;
 
 as a result:
 
--you have to load a ton of packages each time you start from a fresh image
--the ones who want to use your work have to bother with all your packages and the packages that you depend on
+-a lot of packages have to be loaded each time you start from a fresh image;
+-the ones who want to use your work have to bother with all your packages and the packages that you depend on.
 
 !!How does it get better with Metacello?
 
-You'll be able to load all your project by just executing something like:
+You'll be able to load all your project by just executing a short Gofer script like:
 
 [[[
 Gofer new
@@ -42,13 +44,16 @@ in command line.
 
 Also if someone want's to use your work he'll just have to specify a dependency on your project.
 
-!!!Disclaimer
-
-At the moment of writing this blog I'll be creating a Metacello configuration for my project called "HubMap", with three packages: "HubMap-Model", "HubMap-Visualization" and "HubMap-Importer". Also it has dependencies on "Roassal" project and an external package: "RecPack-Layout".
-
 !!Creating the configuration
 
-Usually I make a copy of an existing configuration, preferably one of mine. But we will follow a tuff way starting from scratch and so make copy of "MetacelloConfigTemplate" class naming it "ConfigurationOfHubMap". Also it's common to put it in the category this the same name. As we are using Smalltalk all this can be done just by executing:
+!!!Acknowledgment
+
+In this chapter examples will be referring a "HubMap" project, with three packages: "HubMap-Model", "HubMap-Visualization" and "HubMap-Importer".
+"HubMap" depends on "Roassal" project and an external package called "RecPack-Layout".
+
+It is common to create a new configuration by copying an existing one.
+However we will follow a tuff way starting from scratch and so make copy of "MetacelloConfigTemplate" class naming it "ConfigurationOfHubMap".
+Usually you put it in the category this the same name. As we are using Smalltalk all this can be done just by executing:
 
 [[[
 (MetacelloConfigTemplate duplicateClassWithNewName: #ConfigurationOfHubMap)
@@ -59,7 +64,9 @@ now how cool is that?
 
 !!!Defining a baseline
 
-Baseline is a place where you configure what packages and dependencies are in your project. Later you can create a version of your project based on this baseline and specify the concrete version of each package. If you want to understand more - read the book.
+Baseline is a place where you configure what packages and dependencies are in your project.
+Later you can create a version of your project based on this baseline and specify the concrete version of each package.
+For more information on versions and baseline read "Managing Projects with Metacello" chapter in "*Deep into Pharo>*http://deepintopharo.com" book.
 
 To define a baseline create this method in the configuration:
 
@@ -74,7 +81,7 @@ baseline01: spec
   ]
 ]]]
 
-where "repository:" is a Monticello repository where your packages reside, and I just like to start my versions from 0.1.
+here "repository:" is a Monticello repository where your packages reside, and I just like to start my versions from 0.1.
 
 !!!Adding packages
 
@@ -109,7 +116,9 @@ spec
 
 !!!Adding project dependencies
 
-Metacello is a common tool that is used to manage projects, so there is a big chance that the project that you are dependant on has a Metacello configuration. To define a project dependency, you should use:
+Metacello is a common tool that is used to manage projects,
+so there is a big chance that the project that you are dependant on has a Metacello configuration.
+To define a project dependency, you should use:
 
 [[[
 spec project: 'Roassal' with: [
@@ -120,7 +129,9 @@ spec project: 'Roassal' with: [
     repository: 'http://smalltalkhub.com/mc/ObjectProfile/Roassal/main' ]
 ]]]
 
-You can omit "file:" if it's the same as "className:" and you can omit "version:" but I have no idea what happens then. "version:" is a version of the project, usually you want to use #stable or #development, and I'll talk about this a bit later. Also note that a project name "Roassal" is a thing that we define by ourselves and then it's used in other parts of our configuration.
+You can omit "file:" if it's the same as "className:" and you can omit "version:" but I have no idea what happens then.
+"version:" is a version of the project, usually you want to use #stable or #development, and I'll talk about this a bit later.
+Also note that a project name "Roassal" is a thing that we define by ourselves and then it's used in other parts of our configuration.
 
 Dependency on a project can be defined in the same way as we define dependency on a package:
 
@@ -129,7 +140,8 @@ spec
   package: 'HubMap-Visualization' with: [ spec requires: 'Roassal' ]
 ]]]
 
-Also as you can recall "HubMap-Visualization" depends on "HubMap-Model" package. For this situations you can use an array of strings instead of single strings:
+Also as you can recall "HubMap-Visualization" depends on "HubMap-Model" package.
+For this situations you can use an array of strings instead of single strings:
 
 [[[
 spec 
@@ -166,7 +178,10 @@ baseline01: spec
 
 !!!Symbolic versions
 
-Usually you and especially other people do not care about the "number" of your version. They just want to use a stable version, or jive a try to what's new in the development. For this you create so called "symbolic version". At the beginning defining a "development" version should be good enough for you. In order to do that, add this method to your configuration:
+Usually you and especially other people do not care about the "number" of your version.
+They just want to use a stable version, or jive a try to what's new in the development.
+For this you create so called "symbolic version". At the beginning defining a "development" version should be good enough for you.
+In order to do that, add this method to your configuration:
 
 [[[
 development: spec
@@ -175,8 +190,7 @@ development: spec
   spec for: #'common' version: '0.1-baseline'
 ]]]
 
-!!You're done
-
-Yes, that's it. Just don't forget to put a package with configuration into your project's repository. Now you can load all your project with a scripts I've mentioned at the beginning of the blogpost. Feel free to ask me for mo explanations and quires. Have fun with Smalltalk and Metacello. And let the force be with you!
+This is everything that you need to make your configuration work.
+Now save the package with configuration to your repository and put it to use.
 
 ""P.S."" If you want to release a version of your project I suggest you taking a look at *Snapshotcello>http://www.tudorgirba.com/blog/snappier-snapshotcello*.
