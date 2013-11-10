@@ -1,15 +1,16 @@
 !Building a Simple Calculator with Spec
 
 
-In this chapter we will develop a simple Calculator to get started with Spec.
+In this chapter we will develop a simple Calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but goodlooking calculator.
+After designing the GUI we will move on to making this hollow interface operational.
 
 
 
-!!! Defining the class XXXX
+!!! Defining the class Specalc
 
 
 [[[
-Object subclass: #Dice
+ComposableModel subclass: #Specalc
 	instanceVariableNames: 'faces'
 	classVariableNames: ''
 	poolDictionaries: ''
