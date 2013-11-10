@@ -1,0 +1,42 @@
+!Building a Simple Calculator with Spec
+
+
+In this chapter we will develop a simple Calculator to get started with Spec.
+
+
+
+!!! Defining the class XXXX
+
+
+[[[
+Object subclass: #Dice
+	instanceVariableNames: 'faces'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'Dice'
+]]]
+
+In the ==initialize== category, define the method ==initialize== as follows. It simply set the default number of faces to 6. 
+
+[[[
+Dice>>initialize 
+	super initialize.
+	faces := 6
+]]]
+
+
+When you execute xxxx you should  see the Figure *figDiceNoDetail*. 
+
++Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
+
+
+
+!! Conclusion
+
+This chapter illustrates how to use Spec to build applications. A deeper explanation of Spec will be available in a companion chapter.
+
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:
