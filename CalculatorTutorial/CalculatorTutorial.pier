@@ -2,9 +2,22 @@
 
 
 In this chapter we will develop a simple Calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but goodlooking calculator.
-After designing the GUI we will move on to making this hollow interface operational.
+After designing the GUI we will move on to making this hollow interface operational. 
+In order to construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certaing selectors and method that have to be present either at instance side or class side.
+Basically, in the instance side of the class we will define the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the behavior these widgets will have.
+On the other hand, at cass side we will set up the basic desing of our GUI and it''s tittle.
+So: 
+instance side: widget instantiaton and format, along with actions performed by these.
+class side: the composed layout. How all our widgets will be layout on a window.
+So let''s start by analyzing the widgets we will be using.
 
+In Spec, if you want to create a widget you simple use:
 
+[[[
+Specalc>>initializeWidgets 
+	someButton := self newButton.
+	
+]]]
 
 !!! Defining the class Specalc
 
