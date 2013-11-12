@@ -1,41 +1,62 @@
 !Building a Simple Calculator with Spec
 
 
-In this chapter we will develop a simple Calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but goodlooking calculator.
-After designing the GUI we will move on to making this hollow interface operational. 
-In order to construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certaing selectors and method that have to be present either at instance side or class side.
-Basically, in the instance side of the class we will define the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the behavior these widgets will have.
-On the other hand, at cass side we will set up the basic desing of our GUI and it''s tittle.
-So: 
-instance side: widget instantiaton and format, along with actions performed by these.
-class side: the composed layout. How all our widgets will be layout on a window.
-So let''s start by analyzing the widgets we will be using.
+In this chapter we will develop a simple calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but good-looking calculator.
+After designing the GUI we will move on to render this nice but hollow interface operational. 
+In order to construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certain selectors and method that have to be present at instance and class side and that will be used by Spec when we do Specalc new openWithSpec.
+Basically, at the instance side of the class we will define the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the behaviour these widgets will have. On the other hand, at class side we will set up the basic design of our GUI -how the widgets are laid out- and it''s tittle.
+Summarising: 
+	instance side: widget instantiation and format, along with actions performed by these.
+	class side: the composed layout. How all our widgets will be laid out in a window.
 
-In Spec, if you want to create a widget you simple use:
+So let''s start by analysing the widgets we will be using.
+In this simple calculator we will need buttons to represent the 0 to 9 digits, and some operations -like basic arithmetic operations: + - x /, the dot to use floating numbers, a clear screen button, the = button to get the result, and some others like changing the sign, square rooting, etc. Also, we will need a display to see the numbers entered and get the result. 
 
-[[[
-Specalc>>initializeWidgets 
-	someButton := self newButton.
-	
-]]]
-
+But first things first. We have to create the class from which our calculator will be instantiated; as we are going to use a composed layout our class will have to be a subclass of #ComposableModel.
+So open the browser and create a new package called Specalc, enter the following class definition and accept it.
 !!! Defining the class Specalc
-
 
 [[[
 ComposableModel subclass: #Specalc
-	instanceVariableNames: 'faces'
+	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: ''
-	category: 'Dice'
+	category: 'Specalc'
 ]]]
 
-In the ==initialize== category, define the method ==initialize== as follows. It simply set the default number of faces to 6. 
+Remember that we mentioned that when an instance of our calculator is openWithSpec, Spec will send a message to some selectors that expect to find in our class -both at class and instance side-.
+Our starting point will be implementing the method that will respond to the initializeWidgets selector. We want to have 10 buttons for the digits (0 to 9), a + button, a - button, a x button, a / button, a +/- button, a C -clear- button, a . -dot button, an = button, and a Sqr button, and a log -logarithm- button. That is a total of 20 buttons. In addition, we will need the display. 
 
 [[[
-Dice>>initialize 
-	super initialize.
-	faces := 6
+Specalc>>initializeWidgets 
+	"instantiating the digit buttons"
+	button0 := self newButton.
+	button1 := self newButton.
+	button2 := self newButton.
+	button3 := self newButton.
+	button4 := self newButton.
+	button5 := self newButton.
+	button6 := self newButton.
+	button7 := self newButton.
+	button8 := self newButton.
+	button9 := self newButton.
+	
+	"instantiating the basic arithmetic buttons"
+	
+	buttonPlus	:= self newButton.
+	buttonMinus := self	newButton.
+	buttonMult	:= self newButton.
+	buttonDiv	:= self newButton.
+	buttonEq	:= self newButton.
+	
+	"instantiating the remaining buttons"
+	
+	buttonDot	 := self newButton.
+	buttonSqr	 := self newButton.
+	buttonLog	 := self newButton.
+	buttonChange := self newButton.
+	buttonClear	 := self newButton.
+	
 ]]]
 
 
