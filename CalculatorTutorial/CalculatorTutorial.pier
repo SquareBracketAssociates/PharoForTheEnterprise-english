@@ -4,16 +4,16 @@
 In this chapter we will develop a simple calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but good-looking calculator.
 After designing the GUI we will move on to render this nice but hollow interface operational. 
 In order to construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certain selectors and method that have to be present at instance and class side and that will be used by Spec when we do Specalc new openWithSpec.
-Basically, at the instance side of the class we will define the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the behaviour these widgets will have. On the other hand, at class side we will set up the basic design of our GUI -how the widgets are laid out- and it''s tittle.
-Summarising: 
-	instance side: widget instantiation and format, along with actions performed by these.
-	class side: the composed layout. How all our widgets will be laid out in a window.
+Basically, at the instance side of the class we will define the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the behaviour these widgets will have. On the other hand, at class side we will set up the basic design of our GUI -how the widgets are laid out- and its tittle.
+Summarising 
+	instance side -> widget instantiation and format, along with actions performed by these.
+	class side -> the composed layout. How all our widgets will be laid out in a window.
 
-So let''s start by analysing the widgets we will be using.
-In this simple calculator we will need buttons to represent the 0 to 9 digits, and some operations -like basic arithmetic operations: + - x /, the dot to use floating numbers, a clear screen button, the = button to get the result, and some others like changing the sign, square rooting, etc. Also, we will need a display to see the numbers entered and get the result. 
+So let us start by analysing the widgets we will be using.
+In this simple calculator we will need buttons to represent the 0 to 9 digits, some basic arithmetic operations, the dot to use floating numbers, a clear screen button, the = button to get the result, and some others like changing the sign, square rooting, etc. Also, we will need a display to see the numbers entered and get the result. 
 
 But first things first. We have to create the class from which our calculator will be instantiated; as we are going to use a composed layout our class will have to be a subclass of #ComposableModel.
-So open the browser and create a new package called Specalc, enter the following class definition and accept it. Don''t worry, for now, about the instanceVariableNames we will get to that part soon.
+So open the browser and create a new package called Specalc, enter the following class definition and accept it. Don't worry, for now, about the instanceVariableNames we will get to that part soon.
 !!! Defining the class Specalc
 
 [[[
@@ -25,8 +25,8 @@ ComposableModel subclass: #Specalc
 ]]]
 
 Remember that we mentioned that when an instance of our calculator is openWithSpec, Spec will send a message to some selectors that expect to find in our class -both at class and instance side-.
-Our starting point will be implementing the method that will respond to the initializeWidgets selector. We want to have 10 buttons for the digits (0 to 9), a + button, a - button, a x button, a / button, a +/- button, a C -clear- button, a . -dot button, an = button, and a Sqr button, and a log -logarithm- button. That is a total of 20 buttons. In addition, we will need the display. 
-This method can grow considerably depending on the number of widgets you might need. Therefore, it''s sometimes convenient to break it down into simpler methods. 
+Our starting point will be implementing the method that will respond to the initializeWidgets selector. We want to have 10 buttons for the digits (0 to 9), a plus button, a minus button, a multiplication button, a division button, a change sign button, a clear display button, a dot button for entering float-numbers, an equal button, and a square root button, and a log button. That is a total of 20 buttons. In addition, we will need the display. 
+This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods. 
 Here is our first draft of the initializeWidgets method:
 [[[
 Specalc>>initializeWidgets 
@@ -69,7 +69,7 @@ Specalc>>initializeWidgets
 
 If the GUI you are building has only a limited number of widgets, you might even want to send some messages to the newly instantiated objects to set some of their attributes. In our case, as we said before, we are going to leave that to another method to avoid excessive cluttering.
 
-So let''s break down this method into more convenient and uncluttered ones.
+So let us break down this method into more convenient and uncluttered ones.
 [[[
 Specalc>>initializeWidgets 
 	"instantiate the digit buttons"
@@ -81,7 +81,7 @@ Specalc>>initializeWidgets
 	"instantiate the display"
 	display	:=	self newLabel
 ]]]
-Upon accepting, you will be prompted whether initializeDigitButtons and, initializeOtherButtons are typos or are methods to be coded later. Of course, it''s not a typo these methods have not been defined yet. The same will happen to the instance variable display, so select declare as new instance variable. 
+Upon accepting, you will be prompted whether initializeDigitButtons and, initializeOtherButtons are typos or are methods to be coded later. Of course, it is not a typo these methods have not been defined yet. The same will happen to the instance variable display, so select declare as new instance variable. 
 
 Then we define the other methods:
 
@@ -135,7 +135,7 @@ You should see the Figure *figClass01*.
 +Initialization methods of our calculator>file://figures/figClass01.png|width=50|label=figClass01+
 
 
-When you execute xxxx you should  see the Figure *figDiceNoDetail*. 
+
 
 
 
