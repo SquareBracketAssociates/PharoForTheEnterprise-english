@@ -13,7 +13,7 @@ So let''s start by analysing the widgets we will be using.
 In this simple calculator we will need buttons to represent the 0 to 9 digits, and some operations -like basic arithmetic operations: + - x /, the dot to use floating numbers, a clear screen button, the = button to get the result, and some others like changing the sign, square rooting, etc. Also, we will need a display to see the numbers entered and get the result. 
 
 But first things first. We have to create the class from which our calculator will be instantiated; as we are going to use a composed layout our class will have to be a subclass of #ComposableModel.
-So open the browser and create a new package called Specalc, enter the following class definition and accept it.
+So open the browser and create a new package called Specalc, enter the following class definition and accept it. Don''t worry, for now, about the instanceVariableNames we will get to that part soon.
 !!! Defining the class Specalc
 
 [[[
@@ -26,10 +26,11 @@ ComposableModel subclass: #Specalc
 
 Remember that we mentioned that when an instance of our calculator is openWithSpec, Spec will send a message to some selectors that expect to find in our class -both at class and instance side-.
 Our starting point will be implementing the method that will respond to the initializeWidgets selector. We want to have 10 buttons for the digits (0 to 9), a + button, a - button, a x button, a / button, a +/- button, a C -clear- button, a . -dot button, an = button, and a Sqr button, and a log -logarithm- button. That is a total of 20 buttons. In addition, we will need the display. 
-
+This method can grow considerably depending on the number of widgets you might need. Therefore, it''s sometimes convenient to break it down into simpler methods. 
+Here is our first draft of the initializeWidgets method:
 [[[
 Specalc>>initializeWidgets 
-	"instantiating the digit buttons"
+	"instantiate the digit buttons"
 	button0 := self newButton.
 	button1 := self newButton.
 	button2 := self newButton.
@@ -41,7 +42,7 @@ Specalc>>initializeWidgets
 	button8 := self newButton.
 	button9 := self newButton.
 	
-	"instantiating the basic arithmetic buttons"
+	"instantiate the basic arithmetic buttons"
 	
 	buttonPlus	:= self newButton.
 	buttonMinus := self	newButton.
@@ -49,7 +50,7 @@ Specalc>>initializeWidgets
 	buttonDiv	:= self newButton.
 	buttonEq	:= self newButton.
 	
-	"instantiating the remaining buttons"
+	"instantiate the remaining buttons"
 	
 	buttonDot	 := self newButton.
 	buttonSqr	 := self newButton.
@@ -57,12 +58,86 @@ Specalc>>initializeWidgets
 	buttonChange := self newButton.
 	buttonClear	 := self newButton.
 	
+	"instantiate the display"
+	display		:=	self newLabel.
+
+
+	"send a message to format some aspects of the buttons"
+	self formatDigitButtons.
+	self formatOtherButtons
 ]]]
+
+If the GUI you are building has only a limited number of widgets, you might even want to send some messages to the newly instantiated objects to set some of their attributes. In our case, as we said before, we are going to leave that to another method to avoid excessive cluttering.
+
+So let''s break down this method into more convenient and uncluttered ones.
+[[[
+Specalc>>initializeWidgets 
+	"instantiate the digit buttons"
+	self initializeDigitButtons.
+	
+	"instantiate the basic arithmetic buttonsand the remaining buttons"
+	self initializeOtherButtons.
+	
+	"instantiate the display"
+	display	:=	self newLabel
+]]]
+Upon accepting, you will be prompted whether initializeDigitButtons and, initializeOtherButtons are typos or are methods to be coded later. Of course, it''s not a typo these methods have not been defined yet. The same will happen to the instance variable display, so select declare as new instance variable. 
+
+Then we define the other methods:
+
+[[[
+Specalc>>initializeDigitButtons
+"instantiate the digit buttons"
+button0 := self newButton.
+button1 := self newButton.
+button2 := self newButton.
+button3 := self newButton.
+button4 := self newButton.
+button5 := self newButton.
+button6 := self newButton.
+button7 := self newButton.
+button8 := self newButton.
+button9 := self newButton.
+
+self formatDigitButtons
+]]]
+The same happens here, accept all buttonX as instance variables and formatDigitButtons as a method.
+and:
+
+[[[
+Specalc>>initializeOtherButtons
+	"instantiate the basic arithmetic buttons"
+	buttonPlus	:= self newButton.
+	buttonMinus := self	newButton.
+	buttonMult	:= self newButton.
+	buttonDiv	:= self newButton.
+	buttonEq	:= self newButton.
+	
+	"instantiate the remaining buttons"
+	buttonDot	 := self newButton.
+	buttonSqr	 := self newButton.
+	buttonLog	 := self newButton.
+	buttonChange := self newButton.
+	buttonClear	 := self newButton.
+	
+	self formatOtherButtons
+]]]
+
+Finally, we add one last initialisation method and categorise all these methods in the initialize protocol.
+
+[[[
+Specalc>>initialize
+
+	super initialize
+]]]
+You should see the Figure *figClass01*.
+
++Initialization methods of our calculator>file://figures/figClass01.png|width=50|label=figClass01+
 
 
 When you execute xxxx you should  see the Figure *figDiceNoDetail*. 
 
-+Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
+
 
 
 
