@@ -127,9 +127,72 @@ You should see all our initializers like in the Figure *figClass01*.
 +Initialization methods of our calculator>file://figures/figClass01.png|width=90|label=figClass01+
 
 !! Formating the widgets
-Next, we will have to define the methods that we previously accepted Specalc>>formatDigitButtons and Specalc>>formatOtherButtons. These methods will send messages to the instance of buttons and label we have just instantiated telling them what to show, what to perform, etc.
+Next, we will have to define the methods that we previously accepted Specalc>>formatDigitButtons and Specalc>>formatOtherButtons. These methods will send messages to the instances of buttons and label we have just instantiated telling them what to show, what to perform, etc.
+!!! Formating the Digit buttons
+[[[
+Specalc>>formatDigitButtons
 
+	button0
+		label: '0';
+		action: [ display label: ((display label,'0') asNumber) asString];
+		state: true.
+		
+	button1
+		label: '1';
+		action:  [ display label: ((display label,'1') asNumber) asString ];
+		state: true.
+		
+	button2
+		label: '2';
+		action: [ display label: ((display label,'2') asNumber) asString ];
+		state: true.
+		
+	button3
+		label: '3';
+		action: [ display label: ((display label,'3') asNumber) asString ];
+		state: true.
+		
+	button4
+		label: '4';
+		action: [ display label: ((display label,'4') asNumber) asString ];
+		state: true.
+		
+	button5
+		label: '5';
+		action: [ display label: ((display label,'5') asNumber) asString ];
+		state: true.
 
+	button6
+		label: '6';
+		action: [ display label: ((display label,'6') asNumber) asString ];
+		state: true.
+		
+	button7
+		label: '7';
+		action:[ display label: ((display label,'7') asNumber) asString ];
+		state: true.
+
+	button8
+		label: '8';
+		action: [ display label: ((display label,'8') asNumber) asString ];
+		state: true.
+		
+	button9
+		label: '9';
+		action: [ display label: ((display label,'9') asNumber) asString ];
+		state: true
+]]]
+
+This is a long method, but it's very simple to dissect because once we have grasped the first button, the rest is similar.
+So here is what each of these lines do. First we have the object instantiated in the previous methods, that's buttonX, if you follow the syntax of one of this it's a cascade of messages sent to the object.
+First we tell buttonX to display some label, using the label: selector with a string as argument. In the case of button1 label:'1' will obviously make the button show the digit 1 as label. Next is another selector; action: followed by a block.
+
+Let's analyse what this block does. Recall that we instantiated a display object from Spec's LabelModel class which is actually the screen of our calculator.
+Following the precedence of messages the first evaluated expression is:
+(display label,'9')
+We are sending a message to our display to retrieve the contents of it and concatenate the string '9'. Why? Basically because our display object might content some string of numbers previously entered and we want to put the newly pressed number behind of what's already on the screen. Then you noticed that we send the message asNumber, the purpose of doing this is to avoid entering zeros that are not significant. When we convert our string to a number the non-relevant zeros are discarded otherwise we will have a calculator that will show awkward numbers like 000234, when only 234 should be displayed. Finally we convert that back to a string and pass this as an argument to the label: selector of our display. The result is that the display now contains what was previously there plus the content of our recently push button.
+The last message we send is state: which accepts as an argument a boolean value. We set it to 'true' to avoid having to double click on each button to have a value entered on the display. You will notice when buttons are active because they show a pale blue shadowing. Try setting the state to 'false' and you will see what annoying is to have to press two times each button.
+A comment on style is appropriate here. The exposed method could have been written in a much more elegant and simple way, making the digit button object pass it's label instead of hard-coding the string '1' or '2', etc. However, I choose not to do it that way to keep it more easy to understand and follow.
 
 
 
