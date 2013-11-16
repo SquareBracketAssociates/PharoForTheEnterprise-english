@@ -8,8 +8,10 @@ In order to construct our GUI we need to know what Spec expects to find in the c
 Basically, at the instance side of the class we will define the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the behaviour these widgets will have. On the other hand, at class side we will set up the basic design of our GUI -how the widgets are laid out- and its tittle.
 
 Summarising:
-instance side -> widget instantiation and format, along with actions performed by these.
-class side -> the composed layout. How all our widgets will be laid out in a window.
+
+-instance side -> widget instantiation and format, along with actions performed by these.
+-class side -> the composed layout. How all our widgets will be laid out in a window.
+
 So let us start by analysing the widgets we will be using.
 
 !! The widgets
@@ -27,8 +29,15 @@ ComposableModel subclass: #Specalc
 ]]]
 
 Remember that we mentioned that when an instance of our calculator is openWithSpec, Spec will send a message to some selectors that expect to find in our class -both at class and instance side-.
-Our starting point will be implementing the method that will respond to the initializeWidgets selector. We want to have 10 buttons for the digits (0 to 9), a plus button, a minus button, a multiplication button, a division button, a change sign button, a clear display button, a dot button for entering float-numbers, an equal button, and a square root button, and a log button. That is a total of 20 buttons. In addition, we will need the display. 
-This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods. 
+
+Our starting point will be implementing the method that will respond to the initializeWidgets selector. 
+We want to have:
+-10 buttons for the digits (0 to 9)
+- a plus button, minus button, multiplication button, division button, and change sign button 
+- clear display button, a dot button for entering float-numbers, an equals button, a square root button, and a log button. 
+
+That is a total of 20 buttons. In addition, we will need the display.
+This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods.
 Here is our first draft of the initializeWidgets method:
 !!! A draft of our initializeWidgets method
 [[[
@@ -75,7 +84,8 @@ Specalc>>initializeWidgets
 	"instantiate the display"
 	display	:=	self newLabel
 ]]]
-Upon accepting, you will be prompted whether initializeDigitButtons and, initializeOtherButtons are typos or are methods to be coded later. Of course, it is not a typo these methods have not been defined yet. The same will happen to the instance variable display, so select declare as new instance variable. 
+Upon accepting, you will be prompted whether initializeDigitButtons and, initializeOtherButtons are typos or are selectors who's code will be added later. Of course, it is not a typo these methods have not been defined yet. 
+The same will happen with the instance variable display, so select declare as new instance variable. 
 
 Then we define the other methods:
 !!! The initializeDigitButtons method
@@ -95,7 +105,7 @@ button9 := self newButton.
 
 self formatDigitButtons
 ]]]
-The same happens here, accept all buttonX as instance variables and formatDigitButtons as a method.
+The same happens here, accept all buttonX as instance variables and formatDigitButtons as a new selector.
 !!! The initializeDigitButtons method
 [[[
 Specalc>>initializeOtherButtons
@@ -115,7 +125,7 @@ Specalc>>initializeOtherButtons
 	self formatOtherButtons
 ]]]
 
-Finally, we add one last initialisation method and categorise all these methods in the initialize protocol.
+Finally, we add one last initialisation method and categorise all these methods into the initialize protocol.
 !!! The usual initialize method
 [[[
 Specalc>>initialize
@@ -124,7 +134,7 @@ Specalc>>initialize
 ]]]
 You should see all our initializers like in the Figure *figClass01*.
 
-+Initialization methods of our calculator>file://figures/figClass01.png|width=90|label=figClass01+
++Initialization methods of our calculator>file://figures/figClass01.png|width=95|label=figClass01+
 
 !! Formating the widgets
 Next, we will have to define the methods that we previously accepted Specalc>>formatDigitButtons and Specalc>>formatOtherButtons. These methods will send messages to the instances of buttons and label we have just instantiated telling them what to show, what to perform, etc.
@@ -184,17 +194,29 @@ Specalc>>formatDigitButtons
 ]]]
 
 This is a long method, but it's very simple to dissect because once we have grasped the first button, the rest is similar.
-So here is what each of these lines do. First we had the object instantiated in the previous methods, that's buttonX, if you follow the syntax of one of this it's a cascade of messages sent to the object.
-First we tell buttonX to display some label, using the label: selector with a string as argument. In the case of button1 label:'1' will obviously make the button show the digit 1 as label. Next is another selector; action: followed by a block.
+So here is what each of these lines do. First we had the object instantiated in the previous methods: that's button0. 
+If you follow the sequence of messages it's a cascade sent to the button0 object.
+
+First we tell button0 to display some label on it, using the label: selector with a string as argument -in this case '0'. 
+In the case of button1 label:'1' will obviously make the button show the digit 1 as label. 
+Next is another selector; action: followed by a block.
 
 Let's analyse what this block does. Recall that we instantiated a display object from Spec's LabelModel class which is actually the screen of our calculator.
-Following the precedence of messages the first evaluated expression is:
-(display label,'9')
-We are sending a message to our display to retrieve the contents of it and concatenate the string '9'. Why? Basically because our display object might content some string of numbers previously entered and we want to put the newly pressed number behind of what's already on the screen. Then you noticed that we send the message asNumber, the purpose of doing this is to avoid entering zeros that are not significant. When we convert our string to a number the non-relevant zeros are discarded otherwise we will have a calculator that will show awkward numbers like 000234, when only 234 should be displayed. Finally we convert that back to a string and pass this as an argument to the label: selector of our display. The result is that the display now contains what was previously there plus the content of our recently push button.
-The last message we send is state: which accepts as an argument a boolean value. We set it to 'true' to avoid having to double click on each button to have a value entered on the display. You will notice when buttons are active because they show a pale blue shadowing. Try setting the state to 'false' and you will see what annoying is to have to press two times each button.
+Following the precedence of messages, the first evaluated expression is:
+-(display label,'9')
+We are sending a message to our display to retrieve the contents of it and concatenate the string '9'. Why? Basically because our display object might content some string of numbers previously entered and we want to put the newly pressed number behind of what's already on the screen. 
+Then you noticed that we send the message asNumber, the purpose of this, is to avoid entering zeros that are not significant. 
+When we convert our string to a number the non-relevant zeros are discarded otherwise we will have a calculator that will show awkward numbers like 000234, when only 234 should be displayed. 
+Finally we convert that back to a string and pass this as an argument to the label: selector of our display. 
+The result is that the display now contains what was previously there plus the content of our recently pushed button.
+
+The last message we send is state: which accepts as an argument a boolean pseudo-variable. 
+We set it to 'true' to avoid having to double click on each button to have a value entered on the display. 
+You will notice when buttons are active because they show a pale blue shadow. Try setting the state to 'false' and you will see what annoying is to have to press two times each button.
+
 A comment on style is appropriate here. The exposed method could have been written in a much more elegant and simple way, making the digit button object pass it's label instead of hard-coding the string '1' or '2', etc. However, I choose not to do it that way to keep it more easy to understand and follow.
 
-Now is turn to format the other buttons. This is a little more tricky but nothing like rocket science. Let's start by taking a look at the method, and then analyse it.
+Now is turn to format the other buttons. This is a little more tricky but no rocket science at all. Let's start by taking a look at the method, and then analyse it.
 !!! Formating the other buttons
 [[[
 Specalc>>formatOtherButtons
@@ -250,13 +272,18 @@ Specalc>>formatOtherButtons
 		state: true
 ]]]
 
-In these method there are some button's operations that are performed directly here, while others send a message to self. We are going to being with those buttons that perform the operations within this method.
-The first one we see is: buttonClear. It's pretty obvious what it does, instead of concatenating the contents of the display with another digit, this directly puts a zero in the display, hence reseting it.
+In these method there are some button's operations that are performed directly here, while others send a message to self. We are going to begin with those buttons that perform the operations within this method.
+The first one we see is: buttonClear. It's pretty obvious what it does, instead of concatenating the contents of the display with another string-digit, this directly puts a zero in the display, hence reseting it.
 
-The other one is buttonChange, which simply changes the sign of the digit displayed on the screen. The message precedence is important here but easy to follow. First we get the contents of the display by sending label to our display object, then we convert this string into a number, then negated it, and finally convert it again to a string that is sent back to our display object using the label: selector.
+The other one is buttonChange, which simply changes the sign of the digit displayed on the screen. The message precedence is important here but easy to follow. First we get the contents of the display by sending the label selector to our display object, then we convert this string into a number, then negated it, and finally convert it again to a string that is sent back to our display object using the label: selector.
 
 Then we have the basic operations buttons: buttonPlus, buttonMinus, buttonDiv, buttonMult. What is important in this case is to focus on the block we will use as argument of our button object's action: selector.
-This block is [self setFlag: $_], where _ is one of the operations to be performed. So clearly setFlag: is a selector of a method we haven't defined yet, but which sets a character literal flag that will allow our calculator's model to know what type of arithmetic operation we want to perform.
+
+This block is:
+-[self setFlag: $_] 
+-where _ is one of the operations to be performed. 
+
+So clearly setFlag: is a selector of a method we haven't defined yet, but which sets a character literal flag that will allow our calculator's model know what type of arithmetic operation we want to perform.
 
 So before continuing the dissection of this method we will take a little excursus to see what setFlag: does.
 
@@ -273,12 +300,12 @@ Specalc>>setFlag: aFlag
 	display label: ''
 ]]]
 
-The first line stores the current content of our display object into an instance variable we named previousLabel as a number, ready to be used by the basic binary arithmetic selectors.
-Then we store the flag passed as argument to the setFlag: selector and store it into another instance variable called currentFlag. And finally we reset the display making it ready to receive another number. Up to here, we have an instance variable that holds our previously entered number and an instance variable that holds a flag for the operation we will be performed once the second number is entered. 
+The first line stores the current content of our display object into an instance variable we named previousLabel, as a number so it's ready to be used by the basic binary arithmetic selectors.
+Then we store the flag passed as argument to the setFlag: selector and store it into another instance variable called currentFlag. And finally we reset the display making it ready to receive another string -remember that the display of our calculator show strings. Up to here, we have an instance variable that holds our previously entered number and an instance variable that holds a flag for the operation we will be performed once the second number is entered. 
 
 So let's go back to our formatOtherButtons method.
-The other buttons we need to deal with now are those who's action: selector has a block argument sending a message to perform some kind of check.
-We will define those methods later, but just to give you an idea those methods perform certain checks such as that we are not trying to calculate the square root of a negative number, or that we don't pretend to enter two dots -remember that our display deals with strings so we could easily make a mistake an enter something like 1.234.54 and thou will be a valid string, it's obvious that won't be a valid number-. The last one logCheck deals with the fact that an error will occur if we try to perform the logarithm of 0, which is infinite.
+The other buttons we need to deal with now are those who's action: selector have a block argument sending a message to perform some kind of check.
+We will define those methods later, but just to give you an idea, those methods perform certain checks such as check we are not attempting to calculate the square root of a negative number, or that we don't pretend to enter two dots -remember that our display deals with strings so we could easily make a mistake an enter something like 1.234.54 which thou will be a valid string, it's obvious that won't be a valid number-. The last one logCheck deals with the fact that an error will occur if we try to perform the logarithm of 0, which is infinite.
 
 
 Finally, the buttonEq is the core of our calculator and will be discussed once we have finished building the GUI. So go ahead and enter the formatOtherButtons method accepting those selectors that are not yet defined. 
@@ -286,7 +313,7 @@ Categorise these two methods under the initialization protocol. If you want to e
 
 Once these two methods are entered and accepted you should have something similar to the Figure *figClass02*.
 
-+Initialization methods of our calculator>file://figures/figClass02.png|width=90|label=figClass02+
++Initialization methods of our calculator>file://figures/figClass02.png|width=95|label=figClass02+
 
 
 
