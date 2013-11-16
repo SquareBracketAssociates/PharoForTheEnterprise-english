@@ -184,7 +184,7 @@ Specalc>>formatDigitButtons
 ]]]
 
 This is a long method, but it's very simple to dissect because once we have grasped the first button, the rest is similar.
-So here is what each of these lines do. First we have the object instantiated in the previous methods, that's buttonX, if you follow the syntax of one of this it's a cascade of messages sent to the object.
+So here is what each of these lines do. First we had the object instantiated in the previous methods, that's buttonX, if you follow the syntax of one of this it's a cascade of messages sent to the object.
 First we tell buttonX to display some label, using the label: selector with a string as argument. In the case of button1 label:'1' will obviously make the button show the digit 1 as label. Next is another selector; action: followed by a block.
 
 Let's analyse what this block does. Recall that we instantiated a display object from Spec's LabelModel class which is actually the screen of our calculator.
@@ -194,7 +194,99 @@ We are sending a message to our display to retrieve the contents of it and conca
 The last message we send is state: which accepts as an argument a boolean value. We set it to 'true' to avoid having to double click on each button to have a value entered on the display. You will notice when buttons are active because they show a pale blue shadowing. Try setting the state to 'false' and you will see what annoying is to have to press two times each button.
 A comment on style is appropriate here. The exposed method could have been written in a much more elegant and simple way, making the digit button object pass it's label instead of hard-coding the string '1' or '2', etc. However, I choose not to do it that way to keep it more easy to understand and follow.
 
+Now is turn to format the other buttons. This is a little more tricky but nothing like rocket science. Let's start by taking a look at the method, and then analyse it.
+!!! Formating the other buttons
+[[[
+Specalc>>formatOtherButtons
 
+	buttonPlus
+		label: '+';
+		action: [ self setFlag: $+ ];
+		state: true.
+	
+	buttonMinus
+		label: '-';
+		action: [ self setFlag: $- ];
+		state: true.
+	
+	buttonMult
+		label: 'x';
+		action: [ self setFlag: $x ];
+		state: true.
+	
+	buttonDiv
+		label: '/';
+		action:  [ self setFlag: $/ ];
+		state: true.
+	
+	buttonSqr
+		label: 'Sqr';
+		action: [self sqrCheck];
+		state: true.
+	
+	buttonClear
+		label: 'C';
+		action: [ display label: '0' ];
+		state: true.
+
+	buttonDot
+		label: '.';
+		action: [ self dotCheck ];
+		state: true.
+	
+	buttonChange
+		label: '+/-';
+		action: [ display label: (display label asNumber negated asString) ];
+		state: true.
+
+	buttonLog
+		label: 'Log';
+		action: [ self logCheck];
+		state: true.
+	
+	buttonEq
+		label: '=';
+		action: [ self equals ];
+		state: true
+]]]
+
+In these method there are some button's operations that are performed directly here, while others send a message to self. We are going to being with those buttons that perform the operations within this method.
+The first one we see is: buttonClear. It's pretty obvious what it does, instead of concatenating the contents of the display with another digit, this directly puts a zero in the display, hence reseting it.
+
+The other one is buttonChange, which simply changes the sign of the digit displayed on the screen. The message precedence is important here but easy to follow. First we get the contents of the display by sending label to our display object, then we convert this string into a number, then negated it, and finally convert it again to a string that is sent back to our display object using the label: selector.
+
+Then we have the basic operations buttons: buttonPlus, buttonMinus, buttonDiv, buttonMult. What is important in this case is to focus on the block we will use as argument of our button object's action: selector.
+This block is [self setFlag: $_], where _ is one of the operations to be performed. So clearly setFlag: is a selector of a method we haven't defined yet, but which sets a character literal flag that will allow our calculator's model to know what type of arithmetic operation we want to perform.
+
+So before continuing the dissection of this method we will take a little excursus to see what setFlag: does.
+
+!!! The setFlag: method
+[[[
+Specalc>>setFlag: aFlag
+	"stores the first value entered"
+	previousLabel := (display label) asNumber.
+
+	"sets the flag of the operation to be performed"
+	currentFlag := aFlag.
+
+	"clears the display"
+	display label: ''
+]]]
+
+The first line stores the current content of our display object into an instance variable we named previousLabel as a number, ready to be used by the basic binary arithmetic selectors.
+Then we store the flag passed as argument to the setFlag: selector and store it into another instance variable called currentFlag. And finally we reset the display making it ready to receive another number. Up to here, we have an instance variable that holds our previously entered number and an instance variable that holds a flag for the operation we will be performed once the second number is entered. 
+
+So let's go back to our formatOtherButtons method.
+The other buttons we need to deal with now are those who's action: selector has a block argument sending a message to perform some kind of check.
+We will define those methods later, but just to give you an idea those methods perform certain checks such as that we are not trying to calculate the square root of a negative number, or that we don't pretend to enter two dots -remember that our display deals with strings so we could easily make a mistake an enter something like 1.234.54 and thou will be a valid string, it's obvious that won't be a valid number-. The last one logCheck deals with the fact that an error will occur if we try to perform the logarithm of 0, which is infinite.
+
+
+Finally, the buttonEq is the core of our calculator and will be discussed once we have finished building the GUI. So go ahead and enter the formatOtherButtons method accepting those selectors that are not yet defined. 
+Categorise these two methods under the initialization protocol. If you want to enter the setFlag: method, go ahead. However, it will be better to wait to finish the basic GUI and then concentrate ourselves in the core model of our calculator. If you decide to enter this method don't forget to accept our newly defined instance variables: currentFlag and previousLabel.
+
+Once these two methods are entered and accepted you should have something similar to the Figure *figClass02*.
+
++Initialization methods of our calculator>file://figures/figClass02.png|width=90|label=figClass02+
 
 
 
