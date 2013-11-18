@@ -200,7 +200,7 @@ baseline01: spec
         version: #development ] ]
 ]]]
 
-!!!Symbolic versions
+!!Symbolic versions
 
 Usually you and especially other people do not care about the exact "number" of your version.
 They just want to use a stable version, or give a try to what is new in the development.
@@ -218,15 +218,27 @@ This is everything that you need to make your configuration work.
 By using a baseline as a version, you indicate that all the latest versions of the packages will be loaded. 
 Now save the package with configuration to your repository and put it to use.
 
+!!Releasing a version
 
-Yuri I would not mention the rest
+Once you are ready to release next version of your project, you should take care that nothing will exigently break because of further development.
+For this purpose Metacello gives you an option to define a version based on a baseline and specify exact version of packages and dependencies.
+This can be done in a very simple way:
 
-""P.S."" If you want to release a version of your project I suggest you taking a look at *Snapshotcello>http://www.tudorgirba.com/blog/snappier-snapshotcello*.
+[[[
+version01: spec
+  <version: '0.1' imports: #('0.1-baseline')>
 
-!! Specifying Versions
+  spec for: #common do: [
+    spec 
+      package: 'HubMap-Model' with: 'HubMap-Model-YuriyTymchuk.12';
+      package: 'HubMap-Visualization' with: 'HubMap-Visualization-YuriyTymchuk.1';
+      package: 'HubMap-Importer' with: 'HubMap-Importer-YuriyTymchuk.4';
+      package: 'RecPack-Layout' with: 'RecPack-Layout-YuriyTymchuk.16'.
+    spec 
+      project: 'Roassal' with: '1.6-snapshot' ]
+]]]
 
-Now if you want to make sure that the exact same versions of your packages are reloaded you should define a version.
-
-Yuri? can you add that?
-
-Stef
+Semantics of this method are quite simple, we go over every package and project from baseline and describe a certain version for each of them.
+But sometimes when you have dozens of packages and project dependencies this can be a hard job.
+In order to simplify it you can use *Snapshotcello>http://www.tudorgirba.com/blog/snappier-snapshotcello*,
+a tool which generates a snapshot storing every version present at that time.
