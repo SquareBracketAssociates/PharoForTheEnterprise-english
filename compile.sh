@@ -8,16 +8,16 @@ VM_EXECUTABLE=./pharo
 function generate_html() {
     pier_source="$1"
     $VM_EXECUTABLE Pharo.image eval <<EOF
-GutembergConsole generateStandaloneHTMLFromPier: '${pier_source}'.
-WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: true andQuit: true ].
+PRExporter generateStandaloneHTMLFromPier: '${pier_source}'.
+WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: false andQuit: true ].
 EOF
 }
 
 function generate_latex() {
     pier_source="$1"
     $VM_EXECUTABLE Pharo.image eval <<EOF
-GutembergConsole generateSBALaTeXChapterFromPier: '${pier_source}'.
-WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: true andQuit: true ].
+PRExporter generateSBALaTeXChapterFromPier: '${pier_source}'.
+WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: false andQuit: true ].
 EOF
 }
 
@@ -46,7 +46,7 @@ function produce_pdf() {
 function compile() {
     dir="$1"
     pier_file="$2"
-    pier_source="${dir}/${pier_file}"
+    pier_source="$PWD/${dir}/${pier_file}"
     generate_html "$pier_source"
     generate_latex "$pier_source"
 
