@@ -13,6 +13,14 @@ WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: false andQui
 EOF
 }
 
+function generate_md() {
+    pier_source="$1"
+    $VM_EXECUTABLE Pharo.image eval <<EOF
+PRExporter generateGitHubMarkdownFromPier: '${pier_source}'.
+WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: false andQuit: true ].
+EOF
+}
+
 function generate_latex() {
     pier_source="$1"
     $VM_EXECUTABLE Pharo.image eval <<EOF
@@ -48,9 +56,11 @@ function compile() {
     pier_file="$2"
     pier_source="$PWD/${dir}/${pier_file}"
     generate_html "$pier_source"
-    generate_latex "$pier_source"
 
+    generate_latex "$pier_source"
     produce_pdf "${dir}" "${pier_file}"
+
+    generate_md "$pier_source"
 }
 
 function compile_chapters() {
