@@ -413,7 +413,7 @@ Rectangle selectMany: [ :each | (each at: 'origin.x') = 42 ]
 Sometimes you need to perform queries which are outside the capabilities of MongoQueries or even the JSON MongoDB Query Language. To overcome this problem, MongoDB provides a way to write your queries directly in JavaScript, by using the ==$where== operand. 
 With MongoQueries, we can use the same by sending the ==where:== message:
 
-In the following example, we use the JavaScript expression =='this.origin.x == 42'==.
+In the following example, we use the JavaScript expression =='this.origin.x \== 42'==.
 [[[
 Rectangle selectMany: [ :each | each where: 'this.origin.x == 42' ].
 ]]]
