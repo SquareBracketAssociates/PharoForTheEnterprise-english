@@ -316,6 +316,7 @@ Categorise these two methods under the initialization protocol. If you want to e
 
 Once these two methods are entered and accepted you should have something similar to the Figure *figClass02*.
 
+!! Class-side methods
 ""The --Dark-- Class side of Spec""
 
 Now that we have defined, instantiated and formatted all the necessary widgets to build our calculator it's time to instruct Spec how to layout all this elements.
@@ -323,8 +324,9 @@ To do that, we'll have to create some class side methods.
 We are going to begin with ==defaultSpec== which is what Spec will use to compose our model.
 
 So here is the method, remember that has to be entered at class-side:
+!!! The class-side defaultSpec method
 [[[
-Specalc>>defaultSpec
+Specalc class>>defaultSpec
 
 	<spec>
 
@@ -361,9 +363,42 @@ Specalc>>defaultSpec
 
 ]]]
 
-The following Figure *layout*, will help us clarify how a Speclayout composed works.
+The following Figure *layout*, will help us clarify how a Speclayout composed works. Basically 
 
 +Composed Layout>file://figures/layoutDiagram.png|width=110|label=layout+
+
+Basically we are setting up our widgets using a kind of matrix approach. Note, however that there's only one column and the rows are nested inside of it. So what this method actually does is to return SpecLayout composed [...], now if you inspect SpecLayout class you will notice that at class-side there's a method called composed which actually instantiates a SpecLayout object with #ContainerModel as its type. And what's a #ContainerModel? If you browse that class you will find the answer, but here is its comment: "I am a model for a container. My purpose is to hold multiple subwidgets to glue them together. I should not be used directly"
+
+Therefore our [...] in the previous paragraph are exactly subwidgets glued together to form this container!. We are not going to go into details of how Spec works as there's a chapter devoted entirely to Spec.
+
+Nevertheless, newColumn: and newRow: heigh: are two of many of the selectors SpecLayout has and you should really browse that class to know the subtle differences among some of them.
+
+!!!One of the rows of our #ContainerModel
+[[[
+newRow: [ :row1 | row1	add: #buttonClear;
+						add: #buttonLog;
+						add: #buttonChange;
+						add: buttonSqr ]
+			height: 26.
+]]] 
+
+We are sending a keyword message here, newRow: a block that, when evaluated adds each of the widgets we have created to a new row; and height: 26 which sets the height our buttons will have. Notice that in this snippet I've put a dot at the end. Take into account that if more row are to be added, then should be a semicolon (as you can see in the whole method).
+
+On a separate note, know that you can call this class-side method whatever you want as long as the <spec> pragma is there. 
+
+The final class-side method we have to define is the one that will let Spec know how to title our window. It's very easy an self explanatory.
+
+!!!Putting a title in our window
+[[[
+Specalc class>>title
+
+	^ 'Calculator'
+]]]
+
+Pretty simple, isn't it?.
+
+!! Almost ready to calculate
+
 
 
 !! Conclusion
