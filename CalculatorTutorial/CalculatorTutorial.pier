@@ -1,25 +1,37 @@
 !Building a Simple Calculator with Spec
 
-!!Introduction
-In this chapter we will develop a simple calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but good-looking calculator.
-After designing the GUI we will move on to render this nice, but hollow interface operational (let's say we will focus first on the VC part of MVC, and later on the M).
+Written by Ignacio Sniechowsk
 
-In order to construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certain selectors and method that have to be present at instance and class side and that will be used by Spec when we do Specalc new openWithSpec.
-Basically, at the instance side of the class we will define the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the behaviour these widgets will have. On the other hand, at class side we will set up the basic design of our GUI -how the widgets are laid out- and its tittle.
+In this chapter we will develop a simple calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but good-looking calculator.
+After designing the GUI we will move on to render this nice, but hollow interface operational (let's say we will focus first on the VC part of MVC, and later on the M). This chapter uses the version 2 of Spec that is available in Pharo 3.0.
+
+!!Introduction
+
+
+To construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certain selectors and method that have to be present at instance and class side and that will be used by Spec when we do ==Specalc new openWithSpec==.
+
+Basically, at the instance side of the class we will declare the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the logic of the application and the glue between these widgets will have. On the other hand, at class side we will set up the basic design of our GUI -how the widgets are laid out- and its tittle.
 
 Summarising:
-
--instance side -> widget instantiation and format, along with actions performed by these.
--class side -> the composed layout. How all our widgets will be laid out in a window.
+- instance side: widget instantiation along with actions performed by these and application logic.
+- class side: the composed layout i.e., how all our widgets will be laid out in a window.
 
 So let us start by analysing the widgets we will be using.
 
+
+SD: we should add a picture of what we want to build here.
+
+
 !! The widgets
+
 In this simple calculator we will need buttons to represent the 0 to 9 digits, some basic arithmetic operations, the dot to use floating numbers, a clear screen button, the = button to get the result, and some others like changing the sign, square rooting, etc. Also, we will need a display to see the numbers entered and get the result. 
 
-But first things first. We have to create the class from which our calculator will be instantiated; we are going to use a composed layout model for our class, therefore our class will be a subclass of #ComposableModel.
-So open the browser and create a new package called Specalc, enter the following class definition and accept it. Don't worry, for now, about the instanceVariableNames we will get to that part soon.
+But first things first. We have to create the class from which our calculator will be instantiated; we are going to use a composed layout model for our class, therefore our class will be a subclass of ==ComposableModel==.
+
+So open the browser and create a new package called ==Specalc==, enter the following class definition and accept it. Don't worry, for now, about the instance variables we will get to that part soon.
+
 !!! Defining the class Specalc
+
 [[[
 ComposableModel subclass: #Specalc
 	instanceVariableNames: ''
@@ -28,7 +40,7 @@ ComposableModel subclass: #Specalc
 	category: 'Specalc'
 ]]]
 
-Remember that we mentioned that when an instance of our calculator is openWithSpec, Spec will send a message to some selectors that expect to find in our class -both at class and instance side-.
+Remember that we mentioned that when an instance of our calculator is ==openWithSpec==, Spec will send a message to some selectors that expect to find in our class -both at class and instance side-.
 
 Our starting point will be implementing the method that will respond to the initializeWidgets selector. 
 We want to have:
@@ -39,6 +51,10 @@ We want to have:
 That is a total of 20 buttons. In addition, we will need the display.
 This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods.
 Here is our first draft of the initializeWidgets method:
+Our starting point will be implementing the method that responds to the ==initializeWidgets== message. We want to have 10 buttons for the digits (0 to 9), a plus button, a minus button, a multiplication button, a division button, a change sign button, a clear display button, a dot button for entering float-numbers, an equal button, and a square root button, and a log button. That is a total of 20 buttons. In addition, we will need the display. 
+This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods. 
+
+Here is our first draft of the ==initializeWidgets== method:
 !!! A draft of our initializeWidgets method
 [[[
 Specalc>>initializeWidgets 
@@ -73,37 +89,40 @@ Specalc>>initializeWidgets
 ]]]
 
 If the GUI you are building has only a limited number of widgets, you might even want to send some messages to the newly instantiated objects to set some of their attributes. In our case, as we said before, we are going to leave that to another method to avoid excessive cluttering.
+
 So let us break down this method into more convenient and uncluttered ones.
 !!! A cleaner version of the method
 [[[
 Specalc>>initializeWidgets 
 	"instantiate the digit buttons"
 	self initializeDigitButtons.
-	"instantiate the basic arithmetic buttonsand the remaining buttons"
+	"instantiate the basic arithmetic buttons and the remaining buttons"
 	self initializeOtherButtons.
 	"instantiate the display"
 	display	:=	self newLabel
 ]]]
 Upon accepting, you will be prompted whether initializeDigitButtons and, initializeOtherButtons are typos or are selectors who's code will be added later. Of course, it is not a typo these methods have not been defined yet. 
 The same will happen with the instance variable display, so select declare as new instance variable. 
+Upon accepting, you will be prompted whether ==initializeDigitButtons== and, ==initializeOtherButtons== are typos or are methods to be coded later. Of course, it is not a typo, these methods have not been defined yet. The same will happen to the instance variable ==display==, so select 'declare as new instance variable' when prompted. 
 
 Then we define the other methods:
 !!! The initializeDigitButtons method
+
 [[[
 Specalc>>initializeDigitButtons
-"instantiate the digit buttons"
-button0 := self newButton.
-button1 := self newButton.
-button2 := self newButton.
-button3 := self newButton.
-button4 := self newButton.
-button5 := self newButton.
-button6 := self newButton.
-button7 := self newButton.
-button8 := self newButton.
-button9 := self newButton.
+   "instantiate the digit buttons"
+   button0 := self newButton.
+   button1 := self newButton.
+   button2 := self newButton.
+   button3 := self newButton.
+   button4 := self newButton.
+   button5 := self newButton.
+   button6 := self newButton.
+   button7 := self newButton.
+   button8 := self newButton.
+   button9 := self newButton.
 
-self formatDigitButtons
+   self formatDigitButtons
 ]]]
 The same happens here, accept all buttonX as instance variables and formatDigitButtons as a new selector.
 !!! The initializeDigitButtons method
@@ -125,22 +144,23 @@ Specalc>>initializeOtherButtons
 	self formatOtherButtons
 ]]]
 
-Finally, we add one last initialisation method and categorise all these methods into the initialize protocol.
+Finally, we add one last initialisation method and categorise all these methods in the ==initialize== protocol. 
+
 !!! The usual initialize method
 [[[
 Specalc>>initialize
 
 	super initialize
 ]]]
+
+SD: why do we need it if it is empty?
+
 You should see all our initializers like in the Figure *figClass01*.
 
 +Initialization methods of our calculator>file://figures/figClass01.png|width=95|label=figClass01+
 
 !! Formating the widgets
-Next, we will have to define the methods that we previously accepted Specalc>>formatDigitButtons and Specalc>>formatOtherButtons. These methods will send messages to the instances of buttons and label we have just instantiated telling them what to show, what to perform, etc.
-!!! Formating the Digit buttons
-[[[
-Specalc>>formatDigitButtons
+Next, we will have to define the methods that we previously accepted Specalc>>formatDigitButtons and Specalc>>formatOtherButtons. These methods will send messages to the instance of buttons and label we have just instantiated telling them what to show, what to perform, etc.
 
 	button0
 		label: '0';
