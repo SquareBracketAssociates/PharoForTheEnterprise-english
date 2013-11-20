@@ -1,9 +1,10 @@
 !Building a Simple Calculator with Spec
 
-Written by Ignacio Sniechowsk
+Written by Ignacio Sniechowski
 
 In this chapter we will develop a simple calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but good-looking calculator.
 After designing the GUI we will move on to render this nice, but hollow interface operational (let's say we will focus first on the VC part of MVC, and later on the M). This chapter uses the version 2 of Spec that is available in Pharo 3.0.
+Once it's finished our calculator will look like *specalc*.
 
 !!Introduction
 
@@ -17,9 +18,8 @@ Summarising:
 - class side: the composed layout i.e., how all our widgets will be laid out in a window.
 
 So let us start by analysing the widgets we will be using.
++The Spec Calculator>file://figures/Specalc.png|width=40|label=specalc+
 
-
-SD: we should add a picture of what we want to build here.
 
 
 !! The widgets
@@ -144,24 +144,17 @@ Specalc>>initializeOtherButtons
 	self formatOtherButtons
 ]]]
 
-Finally, we add one last initialisation method and categorise all these methods in the ==initialize== protocol. 
+Finally, we categorise all these methods in the ==initialize== protocol. 
 
-!!! The usual initialize method
-[[[
-Specalc>>initialize
-
-	super initialize
-]]]
-
-SD: why do we need it if it is empty?
 
 You should see all our initializers like in the Figure *figClass01*.
 
 +Initialization methods of our calculator>file://figures/figClass01.png|width=95|label=figClass01+
 
 !! Formating the widgets
-Next, we will have to define the methods that we previously accepted Specalc>>formatDigitButtons and Specalc>>formatOtherButtons. These methods will send messages to the instance of buttons and label we have just instantiated telling them what to show, what to perform, etc.
-
+Next, we will have to define the methods that we previously accepted ==Specalc>>formatDigitButtons== and ==Specalc>>formatOtherButtons==. These methods will send messages to the instance of buttons and label we have just instantiated telling them what to show, what to perform, etc.
+!!! The formatDigitButtons method
+[[[
 	button0
 		label: '0';
 		action: [ display label: ((display label,'0') asNumber) asString];
@@ -375,7 +368,7 @@ Specalc class>>defaultSpec
 			
 			newRow: [  :row5 | row5 	add: #buttonDot;
 								  		add: #button0;
-								  		add: #buttonEqual;
+								  		add: #buttonEq;
 								  		add: #buttonPlus ] height: 26.
 									];
 		yourself.
@@ -418,6 +411,15 @@ Specalc class>>title
 Pretty simple, isn't it?.
 
 !! Almost ready to calculate
+So let's go ahead and execute our calculator. Open a Workspace, type and do:
+
+Specalc new openWithSpec
+
+The debugger will complain with a:
+==MessageNotUnderstood: Specalc>>display==
+
+What is happening is that we didn't add yet the accessing methods to our widgets. Therefore, ==#SpecInterpreter== has no access to them.
+
 
 
 
