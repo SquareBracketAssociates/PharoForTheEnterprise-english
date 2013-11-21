@@ -31,7 +31,7 @@ Let us start with a simple example. We will explain all the details in subsequen
 
 Figure *TwoInterleavingProcesses* shows the output produced by the execution of the snippet.
 
-+Two interleaving processes.>file://TwoInterleavedProcesses.pdf|width=50|label=TwoInterleavingProcesses+ 
++Two interleaving processes.>file://figures/TwoInterleavedProcesses.pdf|width=50|label=TwoInterleavingProcesses+ 
 
 !! Processes
 A process can be in different states depending on its life-time (created, scheduled, executing, terminated,...). We will look at such states now.
