@@ -1,12 +1,13 @@
 !Building a Simple Calculator with Spec
 
-Written by Ignacio Sniechowsk
+Written by Ignacio Sniechowski
 
 In this chapter we will develop a simple calculator to get started with Spec. Our focus will be on building the GUI to come up with a simple but good-looking calculator.
 After designing the GUI we will move on to render this nice, but hollow interface operational (let's say we will focus first on the VC part of MVC, and later on the M). This chapter uses the version 2 of Spec that is available in Pharo 3.0.
+Once it's finished our calculator will look like *specalc*.
++The Spec Calculator>file://figures/Specalc.png|width=40|label=specalc+
 
 !!Introduction
-
 
 To construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certain selectors and method that have to be present at instance and class side and that will be used by Spec when we do ==Specalc new openWithSpec==.
 
@@ -19,7 +20,6 @@ Summarising:
 So let us start by analysing the widgets we will be using.
 
 
-SD: we should add a picture of what we want to build here.
 
 
 !! The widgets
@@ -42,17 +42,14 @@ ComposableModel subclass: #Specalc
 
 Remember that we mentioned that when an instance of our calculator is ==openWithSpec==, Spec will send a message to some selectors that expect to find in our class -both at class and instance side-.
 
-Our starting point will be implementing the method that will respond to the initializeWidgets selector. 
+Our starting point will be implementing the method that will respond to the ==initializeWidgets== selector. 
 We want to have:
--10 buttons for the digits (0 to 9)
-- a plus button, minus button, multiplication button, division button, and change sign button 
-- clear display button, a dot button for entering float-numbers, an equals button, a square root button, and a log button. 
+- 10 buttons for the digits (0 to 9)
+- A plus button, minus button, multiplication button, division button, and change sign button 
+- A clear display button, a dot button for entering float-numbers, an equals button, a square root button, and a log button. 
 
-That is a total of 20 buttons. In addition, we will need the display.
+That is a total of 20 buttons. In addition, we will need the display. 
 This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods.
-Here is our first draft of the initializeWidgets method:
-Our starting point will be implementing the method that responds to the ==initializeWidgets== message. We want to have 10 buttons for the digits (0 to 9), a plus button, a minus button, a multiplication button, a division button, a change sign button, a clear display button, a dot button for entering float-numbers, an equal button, and a square root button, and a log button. That is a total of 20 buttons. In addition, we will need the display. 
-This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods. 
 
 Here is our first draft of the ==initializeWidgets== method:
 !!! A draft of our initializeWidgets method
@@ -101,8 +98,7 @@ Specalc>>initializeWidgets
 	"instantiate the display"
 	display	:=	self newLabel
 ]]]
-Upon accepting, you will be prompted whether initializeDigitButtons and, initializeOtherButtons are typos or are selectors who's code will be added later. Of course, it is not a typo these methods have not been defined yet. 
-The same will happen with the instance variable display, so select declare as new instance variable. 
+
 Upon accepting, you will be prompted whether ==initializeDigitButtons== and, ==initializeOtherButtons== are typos or are methods to be coded later. Of course, it is not a typo, these methods have not been defined yet. The same will happen to the instance variable ==display==, so select 'declare as new instance variable' when prompted. 
 
 Then we define the other methods:
@@ -124,7 +120,7 @@ Specalc>>initializeDigitButtons
 
    self formatDigitButtons
 ]]]
-The same happens here, accept all buttonX as instance variables and formatDigitButtons as a new selector.
+The same happens here, accept all buttonX as instance variables and ==formatDigitButtons== as a new selector.
 !!! The initializeDigitButtons method
 [[[
 Specalc>>initializeOtherButtons
@@ -144,24 +140,13 @@ Specalc>>initializeOtherButtons
 	self formatOtherButtons
 ]]]
 
-Finally, we add one last initialisation method and categorise all these methods in the ==initialize== protocol. 
+Finally, we categorise all these methods in the ==initialize== protocol. 
 
-!!! The usual initialize method
-[[[
-Specalc>>initialize
-
-	super initialize
-]]]
-
-SD: why do we need it if it is empty?
-
-You should see all our initializers like in the Figure *figClass01*.
-
-+Initialization methods of our calculator>file://figures/figClass01.png|width=95|label=figClass01+
 
 !! Formating the widgets
-Next, we will have to define the methods that we previously accepted Specalc>>formatDigitButtons and Specalc>>formatOtherButtons. These methods will send messages to the instance of buttons and label we have just instantiated telling them what to show, what to perform, etc.
-
+Next, we will have to define the methods that we previously accepted ==formatDigitButtons== and ==formatOtherButtons==. These methods will send messages to the instance of buttons and label we have just instantiated telling them what to show, what to perform, etc.
+!!! The formatDigitButtons method
+[[[
 	button0
 		label: '0';
 		action: [ display label: ((display label,'0') asNumber) asString];
@@ -217,18 +202,18 @@ This is a long method, but it's very simple to dissect because once we have gras
 So here is what each of these lines do. First we had the object instantiated in the previous methods: that's button0. 
 If you follow the sequence of messages it's a cascade sent to the button0 object.
 
-First we tell button0 to display some label on it, using the label: selector with a string as argument -in this case '0'. 
-In the case of button1 label:'1' will obviously make the button show the digit 1 as label. 
+First we tell button0 to display some label on it, using the ==label:== selector with a string as argument -in this case '0'. 
+In the case of ==button1 label:'1'== will obviously make the button show the digit 1 as label. 
 Next is another selector; action: followed by a block.
 
-Let's analyse what this block does. Recall that we instantiated a display object from Spec's LabelModel class which is actually the screen of our calculator.
+Let's analyse what this block does. Recall that we instantiated a display object from Spec's ==LabelModel== class which is actually the screen of our calculator.
 Following the precedence of messages, the first evaluated expression is:
--(display label,'9')
+- ==(display label,'9')==
 We are sending a message to our display to retrieve the contents of it and concatenate the string '9'. 
 Why? Basically because our display object might content some string of numbers previously entered and we want to put the newly pressed number behind of what's already on the screen. 
-Then you noticed that we send the message asNumber, the purpose of this, is to avoid entering zeros that are not significant. 
+Then you noticed that we send the message ==asNumber==, the purpose of this, is to avoid entering zeros that are not significant. 
 When we convert our string to a number the non-relevant zeros are discarded otherwise we will have a calculator that will show awkward numbers like 000234, when only 234 should be displayed. 
-Finally we convert that back to a string and pass this as an argument to the label: selector of our display. 
+Finally we convert that back to a string and pass this as an argument to the ==label:== selector of our display. 
 The result is that the display now contains what was previously there plus the content of our recently pushed button.
 
 The last message we send is state: which accepts as an argument a boolean pseudo-variable. 
@@ -293,23 +278,24 @@ Specalc>>formatOtherButtons
 		state: true
 ]]]
 
-In these method there are some button's operations that are performed directly here, while others send a message to self. 
+In these method there are some button's operations that are performed directly here, while others send a message to ==self==. 
 We are going to begin with those buttons that perform the operations within this method.
-The first one we see is: buttonClear. It's pretty obvious what it does, instead of concatenating the contents of the display with another string-digit, this directly puts a zero in the display, hence reseting it.
+The first one we see is: ==buttonClear==. It's pretty obvious what it does, instead of concatenating the contents of the display with another string-digit, this directly puts a zero in the display, hence reseting it.
 
-The other one is buttonChange, which simply changes the sign of the digit displayed on the screen. The message precedence is important here but easy to follow. 
+The other one is ==buttonChange==, which simply changes the sign of the digit displayed on the screen. The message precedence is important here but easy to follow. 
 
-First we get the contents of the display by sending the label selector to our display object, then we convert this string into a number, then negated it, and finally convert it again to a string that is sent back to our display object using the label: selector.
+First we get the contents of the display by sending the label selector to our display object, then we convert this string into a number, then negated it, and finally convert it again to a string that is sent back to our display object using the ==label:== selector.
 
-Then we have the basic operations buttons: buttonPlus, buttonMinus, buttonDiv, buttonMult. What is important in this case is to focus on the block we will use as argument of our button object's action: selector.
+Then we have the basic operations buttons: ==buttonPlus==, ==buttonMinus==, ==buttonDiv==, ==buttonMult==. What is important in this case is to focus on the block we will use as argument of our button object's action: selector.
 
 This block is:
--[self setFlag: $_] 
--where _ is one of the operations to be performed. 
+- ==[self setFlag: $_]==
 
-So clearly setFlag: is a selector of a method we haven't defined yet, but which sets a character literal flag that will allow our calculator's model know what type of arithmetic operation we want to perform.
+Where  _  is one of the operations to be performed. 
 
-So before continuing the dissection of this method we will take a little excursus to see what setFlag: does.
+So clearly ==setFlag:== is a selector of a method we haven't defined yet, but which sets a character literal flag that will allow our calculator's model know what type of arithmetic operation we want to perform.
+
+So before continuing the dissection of this method we will take a little excursus to see what ==setFlag:== does.
 
 !!! The setFlag: method
 [[[
@@ -324,15 +310,15 @@ Specalc>>setFlag: aFlag
 	display label: ''
 ]]]
 
-The first line stores the current content of our display object into an instance variable we named previousLabel, as a number so it's ready to be used by the basic binary arithmetic selectors.
-Then we store the flag passed as argument to the setFlag: selector and store it into another instance variable called currentFlag. And finally we reset the display making it ready to receive another string -remember that the display of our calculator show strings. Up to here, we have an instance variable that holds our previously entered number and an instance variable that holds a flag for the operation we will be performed once the second number is entered. 
+The first line stores the current content of our display object into an instance variable we named ==previousLabel==, as a number so it's ready to be used by the basic binary arithmetic selectors.
+Then we store the flag passed as argument to the ==setFlag:== selector and store it into another instance variable called ==currentFlag==. And finally we reset the display making it ready to receive another string -remember that the display of our calculator show strings. Up to here, we have an instance variable that holds our previously entered number and an instance variable that holds a flag for the operation we will be performed once the second number is entered. 
 +Initialization methods of our calculator>file://figures/figClass02.png|width=95|label=figClass02+
-So let's go back to our formatOtherButtons method.
-The other buttons we need to deal with now are those who's action: selector have a block argument sending a message to perform some kind of check.
-We will define those methods later, but just to give you an idea, those methods perform certain checks such as check we are not attempting to calculate the square root of a negative number, or that we don't pretend to enter two dots -remember that our display deals with strings so we could easily make a mistake an enter something like 1.234.54 which thou will be a valid string, it's obvious that won't be a valid number-. The last one logCheck deals with the fact that an error will occur if we try to perform the logarithm of 0, which is infinite.
+So let's go back to our ==formatOtherButtons== method.
+The other buttons we need to deal with now are those who's ==action:== selector have a block argument sending a message to perform some kind of check.
+We will define those methods later, but just to give you an idea, those methods perform certain checks such as check we are not attempting to calculate the square root of a negative number, or that we don't pretend to enter two dots -remember that our display deals with strings so we could easily make a mistake an enter something like 1.234.54 which thou will be a valid string, it's obvious that won't be a valid number-. The last one ==logCheck== deals with the fact that an error will occur if we try to perform the logarithm of 0, which is infinite.
 
-Finally, the buttonEq is the core of our calculator and will be discussed once we have finished building the GUI. So go ahead and enter the formatOtherButtons method accepting those selectors that are not yet defined. 
-Categorise these two methods under the initialization protocol. If you want to enter the setFlag: method, go ahead. However, it will be better to wait to finish the basic GUI and then concentrate ourselves in the core model of our calculator. If you decide to enter this method don't forget to accept our newly defined instance variables: currentFlag and previousLabel.
+Finally, the ==buttonEq== is the core of our calculator and will be discussed once we have finished building the GUI. So go ahead and enter the ==formatOtherButtons== method accepting those selectors that are not yet defined. 
+Categorise these two methods under the ==initialization== protocol. If you want to enter the ==setFlag:== method, go ahead. However, it will be better to wait to finish the basic GUI and then concentrate ourselves in the core model of our calculator. If you decide to enter this method don't forget to accept our newly defined instance variables: ==currentFlag== and ==previousLabel==.
 
 Once these two methods are entered and accepted you should have something similar to the Figure *figClass02*.
 
@@ -375,7 +361,7 @@ Specalc class>>defaultSpec
 			
 			newRow: [  :row5 | row5 	add: #buttonDot;
 								  		add: #button0;
-								  		add: #buttonEqual;
+								  		add: #buttonEq;
 								  		add: #buttonPlus ] height: 26.
 									];
 		yourself.
@@ -383,15 +369,15 @@ Specalc class>>defaultSpec
 
 ]]]
 
-The following Figure *layout*, will help us clarify how a Speclayout composed works. Basically 
+The following Figure *layout*, will help us clarify how a ==Speclayout== composed works. Basically 
 
 +Composed Layout>file://figures/layoutDiagram.png|width=110|label=layout+
 
-Basically we are setting up our widgets using a kind of matrix approach. Note, however that there's only one column and the rows are nested inside of it. So what this method actually does is to return SpecLayout composed [...], now if you inspect SpecLayout class you will notice that at class-side there's a method called composed which actually instantiates a SpecLayout object with #ContainerModel as its type. And what's a #ContainerModel? If you browse that class you will find the answer, but here is its comment: "I am a model for a container. My purpose is to hold multiple subwidgets to glue them together. I should not be used directly"
+Basically we are setting up our widgets using a kind of matrix approach. Note, however that there's only one column and the rows are nested inside of it. So what this method actually does is to return ==SpecLayout composed [...]==, now if you inspect ==SpecLayout== class you will notice that at class-side there's a method called composed which actually instantiates a ==SpecLayout== object with ==#ContainerModel== as its type. And what's a ==#ContainerModel==? If you browse that class you will find the answer, but here is its comment: "I am a model for a container. My purpose is to hold multiple subwidgets to glue them together. I should not be used directly"
 
-Therefore our [...] in the previous paragraph are exactly subwidgets glued together to form this container!. We are not going to go into details of how Spec works as there's a chapter devoted entirely to Spec.
+Therefore our ==[...]== block in the previous paragraph, are exactly subwidgets glued together to form this container!. We are not going to go into details of how Spec works as there's a chapter devoted entirely to it.
 
-Nevertheless, newColumn: and newRow: heigh: are two of many of the selectors SpecLayout has and you should really browse that class to know the subtle differences among some of them.
+Nevertheless, ==newColumn:== and ==newRow: heigh:== are two of many of the selectors SpecLayout has and you should really browse that class to know the subtle differences among some of them.
 
 !!!One of the rows of our #ContainerModel
 [[[
@@ -402,11 +388,11 @@ newRow: [ :row1 | row1	add: #buttonClear;
 			height: 26.
 ]]] 
 
-We are sending a keyword message here, newRow: a block that, when evaluated adds each of the widgets we have created to a new row; and height: 26 which sets the height our buttons will have. Notice that in this snippet I've put a dot at the end. Take into account that if more row are to be added, then should be a semicolon (as you can see in the whole method).
+We are sending a keyword message here, ==newRow:== a block that, when evaluated adds each of the widgets we have created to a new row; and ==height: 26== which sets the height our buttons will have. Notice that in this snippet I've put a dot at the end. Take into account that if more rows are to be added then, that should be a semicolon (as you can see in the whole listed method).
 
-On a separate note, know that you can call this class-side method whatever you want as long as the <spec> pragma is there. 
+On a separate note, know that you can call this class-side method whatever you want as long as the ==<spec>== pragma is there. 
 
-The final class-side method we have to define is the one that will let Spec know how to title our window. It's very easy an self explanatory.
+The final class-side method we have to define is the one that will let ==Spec== know how to title our window. It's very easy an self explanatory.
 
 !!!Putting a title in our window
 [[[
@@ -418,7 +404,31 @@ Specalc class>>title
 Pretty simple, isn't it?.
 
 !! Almost ready to calculate
+So let's go ahead and execute our calculator. Open a Workspace, type and do:
+=Specalc new openWithSpec
+The debugger will complain with a:
+=MessageNotUnderstood :Specalc>>display
+IS: How do I format those nasty >> in monospaced? they appear like $>$$>
 
+The following Figure *messagewrong* shows the Workspace with ==Specalc new openWithSpec== and the outcome of the debugger after execution. 
++The debugger>file://figures/messagewrong.png|width=95|label=messagewrong+
+
+
+
+What is happening is that we didn't add yet the accessing methods to our widgets. Therefore, ==#SpecInterpreter== has no access to them.The easiest way to solve this is to select the 'Create' option which will automatically create that method for us. Go ahead and select 'Create' and when prompted choose to define ==#display== in Specalc class. For the moment do not waste time categorising the method and just select 'OK'.
+
+The debugger will now present you the automatically created method as shown in figure *addingmethod*.
++Creating a method in the debugger>file://figures/addingmethod.png|width=95|label=addingmethod+
+
+Select the code, accept it and then check 'Proceed' the same will happen again but with another of our widgets; therefore you must proceed exactly as previously explained until all our widgets have a proper accessor method.
+Once you're finished with these sequence, the GUI of our calculator should appear!
+
+Finally, the GUI of our calculator *firstrun*.
++Specalc's first run>file://figures/firstrun.png|width=50|label=firstrun+
+
+But something looks awkward and not quiet well. Especially if we compare what we are seeing with the figure at the beginning of this chapter. We are almost there thou, categorise the methods so they appear under the 'accessing' protocol and let's fix this.
+
+!! Overriding the ==initialExtent== method
 
 
 !! Conclusion

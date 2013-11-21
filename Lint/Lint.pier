@@ -59,13 +59,12 @@ You can invoke the Code Critic Browser via the Tools menu . In this Chapter, we 
 !!!Selecting the packages
 Using the Code Critic Browser, select the packages on which you want to run the rules. Click on a package in the list displayed on the left and press the Add button. The package should be displayed in the right pane as shown by Figure *selectingPackage*. We selected the Kozen packages. Once you are done press the Next button. 
 
-+Selecting Packages>file://selectingPackage.png|width=50|label=selectingPackage+ 
++Selecting Packages>file://figures/selectingPackage.png|width=50|label=selectingPackage+ 
 
 !!!Selecting Rules
 Once you have selected the packages on which you want to run the rules, you can select the rules that you want to run as shown in Figure *ruleselection*. Rules are sorted in different categories such as potential bugs, design flaws or optimizations as explained in Section *existingRules*. By default running all the rules is a good idea.
 
-+Selecting rules. Running all the rules is a good 
-idea>file://selectingRules.png|width=50|label=ruleselection+ 
++Selecting rules. Running all the rules is a good idea>file://figures/selectingRules.png|width=50|label=ruleselection+ 
 
 
 !!!First look at Results
@@ -73,21 +72,21 @@ Once the rules are run you get a browser showing you the results as shown in Fig
 
 The Critics Browser shows the results are grouped by rule kinds.  The top level label labelled ''Selected Rules (To sort: 135, ToDo: 0, Wrong: 0)'' means the following: since we just started to check a new project, we did not mark any critic as wrong. This is why we have ''Wrong: 0'', and since we did not flag critics as point to address in the future we have ''ToDo: 0''. So we have 135 critics to sort. We must check these critics to fix them or classify them as ToDo or wrong.
 
-+Browsing rule results. A variable is undeclared in ==CiteSeer\>\>getCiteseerPage== >file://UndeclaredVariable.png|width=50|label=undeclared+
++Browsing rule results. A variable is undeclared in ==CiteSeer\>\>getCiteseerPage==>file://figures/UndeclaredVariable.png|width=50|label=undeclared+
 
 
 Figure *undeclared* shows that for the rule that looks for undeclared variables, the Kozen packages got one critic. The class ==ZnHttpClient== is not available anymore. By fixing the ==getCiteseerPage== method, the critic automatically disappear from the browser.
 
 The Critics Browser shows the rules on the left pane. When one rule is selected, the critics appear in the right pane. You can search by typing in the top right input field. The pane at the bottom shows either the rule description or the entity exhibiting the critic. Experiment with it.
 
-+Banning one single critic.>file://BanningOneCritic.png|width=50|label=BanningOneCritic+
++Banning one single critic.>file://figures/BanningOneCritic.png|width=50|label=BanningOneCritic+
 
 
 
 !!!Banning a single critic
 Figure *BanningOneCritic* shows a wrong critic for the rule ''Assignment inside unwind blocks should be outside'' in the method ==KZVisitor>>visitPage==. Indeed, this critic does not need to be fixed and its exploration was a loss of time. So, we classified this critic as wrong. This is done by clicking on the ''Mark as wrong'' button or from the rule menu. Time to time, do not forget to look at the critics marked as wrong or as ToDos in manifests.
 
-+Banning a rule for the complete selected packages.>file://BanningInconsistentClassificationRule.png|width=50|label=BanningInconsistentClassification+
++Banning a rule for the complete selected packages.>file://figures/BanningInconsistentClassificationRule.png|width=50|label=BanningInconsistentClassification+
 
 
 !!!Banning a complete rule
