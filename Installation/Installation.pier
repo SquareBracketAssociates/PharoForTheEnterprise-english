@@ -78,7 +78,7 @@ The idea behind the Pharo Launcher is that you should be able to access it very 
 Figure *pharoLauncher* shows the Launcher UI.
 
 
-+Pharo Launcher>file://launcher_screenshot.png|width=105|label=pharoLauncher+ 
++Pharo Launcher>file://figures/launcher_screenshot.png|width=105|label=pharoLauncher+ 
 
 !!! Links
 - Download the launcher at  *https://ci.inria.fr/pharo-contribution/job/PharoLauncher/PHARO=30,VERSION=bleedingEdge,VM=vm/lastSuccessfulBuild/artifact/PharoLauncher.zip*

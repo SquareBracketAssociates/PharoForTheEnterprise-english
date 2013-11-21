@@ -211,9 +211,9 @@ Your code here
 
 Now in your inspector you can see the number of faces a dice has as shown by Figure *diceDetail* and it is now easier to check the dice contained inside a handle (see Figure *diceHandleDetail*).
 
-+Dice details>file://DiceDetail.png|width=50|label=diceDetail+
++Dice details>file://figures/DiceDetail.png|width=50|label=diceDetail+
 
-+Dice Handle with more information>file://DiceHandleDetail.png|width=50|label=diceHandleDetail+
++Dice Handle with more information>file://figures/DiceHandleDetail.png|width=50|label=diceHandleDetail+
 
 !! Rolling a dice handle
 

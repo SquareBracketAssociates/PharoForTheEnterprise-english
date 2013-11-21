@@ -250,9 +250,9 @@ Dice>>printOn: aStream
 
 Now in your inspector you can see effectively the number of faces a dice handle has as shown by Figure *diceDetail* and it is now easier to check the dice contained inside a handle (See Figure *diceHandleDetail*).
 
-+Dice details>file://DiceDetail.png|width=50|label=diceDetail+ 
++Dice details>file://figures/DiceDetail.png|width=50|label=diceDetail+ 
 
-+Dice Handle with more information>file://DiceHandleDetail.png|width=50|label=diceHandleDetail+ 
++Dice Handle with more information>file://figures/DiceHandleDetail.png|width=50|label=diceHandleDetail+ 
 !! Rolling a dice handle
 
 Now we can define the rolling of a handle of dice by simply summing the dice rolls.
