@@ -17,7 +17,7 @@ Summarizing:
 - instance side: widget instantiation along with actions performed by these and application logic.
 - class side: widget layout i.e., how all our widgets will be laid out in a window.
 
-So let us start by analyzing the widgets we will be using.
+So let us start by analyzing the widgets we will be using, how to glue them together and adjust them to get a usable GUI.
 
 
 
@@ -146,7 +146,7 @@ Specalc>>initializeOtherButtons
 Finally, categorise these three methods including them in the ==initialization== protocol. 
 
 
-!! Definening the widgets
+!!! Defining the widgets
 Next, we define the methods  ==defineDigitButtons== and ==defineOtherButtons== that are needed. These methods send messages to the instance of buttons and label we have just instantiated defining what to show, what to perform, etc.
 
 !!! The ==defineDigitButtons== method
@@ -219,8 +219,9 @@ The result is that the display now contains what was previously there plus the c
 The last message we send is state: which accepts as an argument a boolean. 
 We set it to ==true== to avoid having to double click on each button to have a value entered on the display. You will notice when buttons are active because they show a pale blue shadow. Try setting the state to ==false== and you will see what annoying is to have to press two times each button.
 
-SD: we should check with ben because this look strange to me. The name is strange
-IS: To what name are your referring?
+SD: we should check with ben because this look strange to me. The name is strange.
+
+IS: To what name are your referring?.
 
 A comment on style is appropriate here. The exposed method could have been written in a much more elegant and simple way, making the digit button object pass its label instead of hard-coding the string '1' or '2', etc. However, we choose not to do it that way to keep it easier to understand and follow.
 
@@ -286,13 +287,13 @@ Then we store the character literal passed as argument to the ==operation:== sel
 
 So let's go back to the rest of the arithmetic operations.
 
-IS: So here will be the subtraction method, and so on....is this what you mean?
+IS: So here will be the subtraction method, and so on....is this what you mean?.
 
 The other buttons we need to deal with now are those whose ==action:== message have a block argument sending a message to perform some kind of check.
 
 We will define these methods later, but just to give you an idea, these methods perform certain checks such as check the user is not attempting to calculate the square root of a negative number, or that the user don't enter two dots -remember that our display deals with strings so we could easily make a mistake an enter something like 1.234.54 which while being a valid string, is not a valid number-. The last one ==logCheck== deals with the fact that an error will occur if we try to perform the logarithm of 0, which is infinite.
 
-SD: split and deal one by one
+SD: split and deal one by one.
 
 Finally, the ==buttonEq== is the core of our calculator and will be discussed once we have finished building the GUI. So go ahead and define the ==formatOtherButtons== method accepting those selectors that are not yet defined. 
 
@@ -402,8 +403,17 @@ Finally, the GUI of our calculator *firstrun*.
 
 But something looks awkward and not quiet well. Especially if we compare what we are seeing with the figure at the beginning of this chapter. We are almost there thou, categorize the methods so they appear under the 'accessing' protocol and let's fix this.
 
-!! Overriding the ==initialExtent== method
+!!! Overriding the ==initialExtent== method
+What we have to do, is to override ==DisplayObject>>initialExtent== to resize our window to suit our needs. 
+!!!Overriding ==#initialExtent==
+[[[
+Specalc class>>initialExtent
+	"(4@4) is the size of the border"
+	^ (207@187) + (4@4)
+]]]
+Now, execute again ==Specalc new openWithSpec== and you should see the calculator as shown in Figure 1.1.
 
+!! Building the core model of our calculator.
 
 !! Conclusion
 
