@@ -1,14 +1,14 @@
 !Persisting Objects with Voyage
 
 
-Voyage is a small persistence framework developed by Esteban Lorenzano. It is purely object-oriented and has as a goal to present a common API to most common development usages.  It is a small layer between your objects and the persistent mechanism (such as a Mongo database).  This layer provides some useful vocabulary for your objects.
+Voyage is a small persistence framework developed by Esteban Lorenzano. It is purely object-oriented and has as a goal to present a minimal API to most common development usages.  It is a small layer between your objects and the persistent mechanism (such as a Mongo database).  This layer provides some useful vocabulary for your objects.
 
 
 !! Getting Started
 
 !!! Load 
 
-To install Voyage you can go to the Configurations Browser (in the World Menu/Tools) and load ConfigurationOfVoyageMongo. Or alternatively you can execute in a workspace:
+To install Voyage go to the Configurations Browser (in the World Menu/Tools) and load ConfigurationOfVoyageMongo. Or alternatively execute in a workspace:
 
 [[[
 Gofer it
@@ -18,15 +18,26 @@ Gofer it
 (Smalltalk at: #ConfigurationOfVoyageMongo) load.
 ]]]
 
-This will load all that you need to persist your object model into a Mongo database.
+This will load all that is needed to persist your object models into a Mongo database.
 
-!!! Install Mongo
+!!! Install MongoDB 
 
-TODO
+Next is to install the MongoDB database. How to do this depends on your operating system, and is outside of the scope of this text. We refer to the MongoDB website *mongodb.org>http://www.mongodb.org/downloads* for more information.
+
+!! Voyage
+
+Voyage is a common layer for different backends but currently it supports just two: an ''in memory'' layer (to fast prototype applications and for first stage developments), and a MongoDB database backend.
+
+MongoDB is a document-oriented database. In MongoDB each stored entity is a JSON-style document. Its document-centric nature allows for persisting complex object models in a fairly straightforward fashion. MongoDB is not an object database, like Gemstone, Magma or Omnibase, so there still is a small gap to be bridged between objects and documents. To achieve this, Voyage contains an Object-Document mapper, i.e. the document database equivalent to an Object-Relational Mapper or ORM. While this mapper does not solve all the known impedance mismatch issues when going from objects to a database, we find that using a document database fits better with the object world than a combination of a ORM and a relational database. This is because document databases tend to provide better support for the dynamic nature of the object world.
+
+Voyage can work in two different modes:
+
+- Singleton mode: There is an unique repository in your image, which works as a singleton keeping all the data. When you use this mode, you can program using a "behavioral complete" approach where your instances respond to a certain vocabulary (see below for more details about vocabulary and usage).
+- Instance mode: You can have an undetermined number of repositories living in your image. Of course, this mode requires you to make explicit which repositories you are going to use.
 
 !!! Create a repository
 
-To start a new repository or connect to an existing one is simple. For example, to connect to the database ==databaseName== on the host ==mongo.db.url== execute the following code:
+To start a new repository or connect to an existing repository an instance of ==VOMongoRepository== needs to be created. For example, to connect to the database ==databaseName== on the host ==mongo.db.url== execute the following code:
 
 [[[
 repository := VOMongoRepository 
@@ -34,30 +45,25 @@ repository := VOMongoRepository
 	database: 'databaseName'.
 ]]]
 
-Alternatively you can specify the port to connect by using the message ==VOMongoRepository class>>host:port:database:==. You can keep the returned instance for storage or retrieval. A convenient alternative is to use Singleton mode. This allows to have your repository accessible from all around the image. To use Singleton mode, execute:
+Alternatively, the port to connect to is specified by using the message ==VOMongoRepository class>>host:port:database:==.
+
+By default, Voyage works in instance mode: the returned instance has to be passed as an argument to all database API operations. Instead of having to keep this instance around, a convenient alternative is to use Singleton mode. Singleton mode removes the need to pass the repository as an argument to all database operations. To use Singleton mode, execute:
 
 [[[
 repository enableSingleton.
 ]]]
 
-@@note Pay attention: executing this line will remove older repositories from Singleton mode!
+@@note Pay attention: Only one repository can be the singleton, hence executing this line will remove any other existing repositories from Singleton mode!
 
-@@note In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode should be straightforward (see the VORepository persistence protocol for more information).
-
-
-
-!! Voyage
-
-Voyage can work in two different modes:
-
-- Singleton mode: There is an unique repository in your image, which works as a singleton keeping all the data. When you use this style, you can program using a "behavioral complete" approach where your instances respond to a certain vocabulary (see below for more details about vocabulary and usage).
-- Instance mode: You can have an undetermined number of repositories living in your image. Of course, this mode requires you to make explicit which repositories you are going to use.
-
-
+@@note In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode is straightforward as well. See the VORepository persistence protocol for more information.
 
 !!! Voyage API 
 
-The following two tables show the complete API of Voyage. First we show Singleton mode:
+@@todo TODO Update the API with the newly revealed methods. See VOMongoRepository persistence protocol
+
+The following two tables show the complete API of Voyage. These methods are defined on ==Object==, but will only truly do work if the receiver of the message is a Voyage root.
+
+First we show Singleton mode:
 
 ||save || stores an object into repository (insert or update)	
 ||remove || removes an object from repository	
@@ -68,20 +74,28 @@ The following two tables show the complete API of Voyage. First we show Singleto
 
 Second is Instance mode. In Instance mode, the first argument is always the repository on which to perform the operation.
 
-|| save:|| stores an object into repository (insert or update)	
+||save:|| stores an object into repository (insert or update)	
 ||remove: ||removes an object from repository	
 ||removeAll: ||removes all objects of class from repository	
-|| selectAll: ||retrieves all objects of some kind
+||selectAll: ||retrieves all objects of some kind
 ||selectOne:where: ||retrieves first object that matches the where clause	
 ||selectMany:where: || retrieves all objects that matches the where clause
 
+!!! Resetting or dropping the database connection
 
-!!! Voyage Mongo Back-End
+In general, there should be no need to close or reset the connection to the database. Also, Voyage re-establishes the connection when the image is closed and later reopened.
 
-Voyage is a common layer for different backends but currently it supports just two: an ''in memory'' layer (to fast prototype applications and to first stage developments), and a Mongo database backend.
+When developing, especially when changing storage options (see the *enhancing* Enhancing Storage section), resetting the connection to the database may however be needed to reflect configuration changes to the database. Performing a reset is achieved as follows:
 
-Mongo is a document-oriented database that allows for persisting complex object models, even if it is not an object database (like Gemstone, Magma or Omnibase). Because it is not an object database but a document database, we need an Object-Document mapper (the document equivalent to an ORM). While this does not solve all the impedance mismatch issues, it fits a lot better with an object world, being able to preserve its dynamic nature.
+[[[
+VORepository current reset.
+]]]
 
+In case the connection to the database needs to be dropped, this is performed as follows:
+
+[[[
+VORepository setRepository: nil.
+]]]
 
 !!Storing objects
 
@@ -113,33 +127,37 @@ This will generate a collection in the database with a document of the following
 }
 ]]]
 
-The collection in the database will be named ==association==, for the name of the root class.
-
+The collection in the database will be named ''association'', for the name of the root class. By default, Voyage creates a MongoDB collection for each root class. This setting can be overriden, which will be discussed in the *enhancing* Enhancing Storage section.
 
 The stored data keeps some "extra information" to allow the object to be correctly reconstructed when loading:
 
-- ==instanceOf== records the Class of the stored instance. This is useful for reconstructing class hierarchies: the collection can also contain subclasses of the class that was declared as a Voyage root.
+- ==instanceOf== records the Class of the stored instance. The collection can also contain subclasses of the class that was declared as a Voyage root, so to properly reconstuct instances the reference to the class is needed.
 - ==version== keeps a marker of the version committed. This property is used for refreshing cached data in the application. If there is no ==version== field the application will always refresh the object with the data from the database (and you will lose a lot of performance).
 
+Note that the documents generated by Voyage are not directly visible using Voyage itself, as the goal of Voyage is to abstract away from the document structure. To see the actual documents you need to access the database directly. This can be done through the mongo command line interface, or a GUI tool such as RoboMongo (Multi-Platform) MongoHub (for Mac), or RockMongo (in php).
 
 !!!Embedding objects
-Now, most objects you use are not so simple as associations, but more complex graphs with other complex object instances inside. Let's say that we want to store rectangles. Each rectangle contains two points. 
+In general, objects are not so simple as associations of literals, but more complex, containing other complex object instances inside, leading to a graph of objects. These can be stored with Voyage as well, ands this is done transparently, i.e. there is no need for a special treatment to store such complex graphs.
 
-To store this, we specify that the ==Rectangle== class can be a document root:
+@@todo TODO (but you can enhance and/or modify the way you persist objects, see Section *enhancing* below).
+
+@@todo TODO say that there is a cycle problem, see http://forum.world.st/Voyage-Circular-references-td4691940.html almost at the bottom of the page
+
+For example, let's say that we want to store rectangles and that each rectangle contains two points. To achieve this, we specify that the ==Rectangle== class is a document root:
 
 [[[
 Rectangle class>>isVoyageRoot
 	^true
 ]]]
 
-Now we can save rectangles as shown by this snippet:
+This allows rectangles to be saved to the database, for example as shown by this snippet:
 
 [[[
 aRectangle := 42@1 corner: 10@20.
 aRectangle save.
 ]]]
 
-This will generate a document like this:
+This will add a document to the database with this structure:
 
 [[[
 { 
@@ -159,21 +177,15 @@ This will generate a document like this:
 }
 ]]]
 
-As you can see, for many cases, you do not need to do anything special to store complex graphs (but you can enhance and/or modify the way you persist objects, see Section *enhancing* below).
+
 
 !!!Referencing other roots
-Sometimes your objects are graphs that contain other root objects. For instance, you could want to keep users and roles in different collections, and of course, an user has a collection of roles. To do this, you just need to declare the embedded objects as roots.
+Sometimes the objects are graphs that contain other root objects. For instance, you could want to keep users and roles as roots, i.e. in different collections, and a user has a collection of roles. If the embedded objects (the roles) are root objects, Voyage will store references to these objects instead of including them in the document.
 
-In our rectangle example, let's suppose we want to keep the points into a separate collection. In other words, now the points will be referenced instead of embedded.
+Returning to our rectangle example, let's suppose we want to keep the points into a separate collection. In other words, now the points will be referenced instead of embedded.
 
-After we add ==isVoyageRoot== to ==Point class==, we can save our rectangle.
+After we add ==isVoyageRoot== to ==Point class==, and save the rectangle, in the collection ''rectangle'', we get the following document:
 
-[[[
-Point class>>isVoyageRoot
-	^ true
-]]]
-
-In the collection ''rectangle'', we get the following entity:
 [[[
 { 
 	"_id" : ObjectId("7c5e772b0000000000000000"), 
@@ -212,20 +224,20 @@ In addition to this, in the collection ''point'' we also get the two following e
 }
 ]]]
 
-!!! Enhancing storage
+!! Enhancing storage
 @enhancing
+
 You can change the way your objects are stored by adding Magritte descriptions to their classes.
 
-For instance, continuing with our rectangle example but with embedded points (not referenced points), let's imagine the following requirements:
+For instance, continuing with the rectangle example but going back to embedded points, we add the following requirements:
 
-- We want to use a different collection named ''rectanglesForTest'' instead of ''rectangle''.
-- We know that we will only store instances of the ==Rectangle== class in this collection, and therefore the ==instanceOf== information is redundant.
-- We know that the ''origin'' and ''corner'' attributes are always going to be points, so the ==instanceOf== information is redundant there too.
+- We need to use a different collection named ''rectanglesForTest'' instead of ''rectangle''.
+- We only store instances of the ==Rectangle== class in this collection, and therefore the ==instanceOf== information is redundant.
+- The ==origin== and ==corner== attributes are always going to be points, so the ==instanceOf== information there is redundant as well.
 
-We can use specific pragmas to declare the above properties. To use them we define three class side methods: ==mongoContainer==, ==mongoOrigin== and ==mongoCorner==.
+We use Magritte descriptions with specific pragmas to declare properties of the container of the Mongo descriptions of that class (all Magritte descriptions are kept in containers) and to describe both the ==origin== and ==corner== attributes. 
 
-The method ==mongoContainer== is defined as follows: First it uses the ==<mongoContainer>== pragma. Second it sets the the name of the collection and the kind of entity (here Rectangle) by returning a specific ==VOMongoContainer== instance.
-
+The method ==mongoContainer== is defined as follows: First it uses the ==<mongoContainer>== pragma to state that it describes the container to be used for this class. Second it returns a specific ==VOMongoContainer== instance. This instance is configured such that it uses the ''retanglesForTest'' collection in the database, and that it will only store ==Rectangle== instances. Note that it is not required to specify both configuration lines. It is equally valid to only declare that the collection to be used is ''retanglesForTest'', or only specify that the collection contains just ==Rectangle== instances.
 
 [[[
 Rectangle class>>mongoContainer 
@@ -237,7 +249,7 @@ Rectangle class>>mongoContainer
 		yourself
 ]]]
 
-The two other methods use the pragma ==<mongoDescription>== and set their respective attribute name and kind, as follows: 
+The two other methods use the pragma ==<mongoDescription>== and return a Mongo description that is configured with their respective attribute name and kind, as follows: 
 
 [[[
 Rectangle class>>mongoOrigin
@@ -259,7 +271,7 @@ Rectangle class>>mongoCorner
 		yourself
 ]]]
 
-Then, you can save your rectangle and you will see that the document generated (now in the ''rectanglesForTest'' collection) will look more or less as follows:
+A saved rectangle, now in the ''rectanglesForTest'' collection, will look more or less as follows:
 
 [[[
 { 
@@ -276,12 +288,20 @@ Then, you can save your rectangle and you will see that the document generated (
 }
 ]]]
 
-Other configurations are:
+Other configuration options for attribute descriptions are:
 
-- Using the message ==beEager== to declare that the referenced instance is to be loaded eagerly (default is lazy).
-- Using the message ==beLazy== to declare referenced instances to be loaded lazily.
-- Using the message ==kindCollection:== of ==VOMongoToManyDescription== allows to change the resulting collection kind.
-- Using the message ==convertNullTo:==, when retrieving an object (or a collection of objects) whose value is Null (nil), you can instead evaluate the valuable you are passing as an argument.
+- ==beEager== declares that the referenced instance is to be loaded eagerly (the default is lazy).
+- ==beLazy== declares that referenced instances are loaded lazily.
+- ==convertNullTo:== when retrieving an object whose value is Null (nil), instead return the result of evaluating the block passed as an argument.
+
+For attributes which are collections, the ==VOMongoToManyDescription== needs to be returned instead of the ==VOMongoToOneDescription==. All the above configuration options remain valid, and the ==kind:== configuration option is used to specify the kind of values the collection contains. ==VOMongoToManyDescription== provides a number of extra configuration options:
+
+- ==kindCollection:== specifies the class of the collection that is contained in the attribute.
+- ==convertNullToEmpty== when retrieving a collection whose value is Null (nil), it returns an empty collection.
+
+Lastly, attributes can be excluded from storage (and hence retrieval) by returning a ==VOMongoTransientDescription== instance as the attribute descriptor. This allows you to place cut-off points in the graph of objects that is being saved, i.e. when an object contains a reference to data that should not be persisted in the database.
+
+@@todo TODO overriding attributes for read and write
 
 !! Advanced querying
 Voyage relies in MongoDB query language to perform its search requests, and therefore for Pharo they have the form of dictionaries (they are in fact JSON structures, but that does not change anything for us).
