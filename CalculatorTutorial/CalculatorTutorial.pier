@@ -50,46 +50,11 @@ We want to have:
 
 That is a total of 20 buttons. In addition, we will need the display. 
 This method can grow considerably depending on the number of widgets you might need. Therefore, it is sometimes convenient to break it down into simpler methods.
-
-Here is our first draft of the ==initializeWidgets== method:
-!!! A draft of our initializeWidgets method
-[[[
-Specalc>>initializeWidgets 
-	"instantiate the digit buttons"
-	button0 := self newButton.
-	button1 := self newButton.
-	button2 := self newButton.
-	button3 := self newButton.
-	button4 := self newButton.
-	button5 := self newButton.
-	button6 := self newButton.
-	button7 := self newButton.
-	button8 := self newButton.
-	button9 := self newButton.
-	"instantiate the basic arithmetic buttons"
-	buttonPlus := self newButton.
-	buttonMinus := self	newButton.
-	buttonMult := self newButton.
-	buttonDiv := self newButton.
-	buttonEq := self newButton.
-	"instantiate the remaining buttons"
-	buttonDot  := self newButton.
-	buttonSqr := self newButton.
-	buttonLog := self newButton.
-	buttonChange := self newButton.
-	buttonClear := self newButton.
-	"instantiate the display"
-	display := self newLabel.
-	"send a message to define the buttons"
-	self defineDigitButtons.
-	self defineOtherButtons
-]]]
+That's what we are going to do:
 
 If the GUI you are building has only a limited number of widgets, you might even want to send some messages to the newly instantiated objects to set some of their attributes. In our case, as we said before, we are going to leave that to another method to avoid excessive cluttering.
 
-So let us break down this method into more convenient and uncluttered ones.
-
-!!! A cleaner version
+!!! Our initializeWidgets method
 [[[
 Specalc>>initializeWidgets 
 	"instantiate the digit buttons"
@@ -249,7 +214,7 @@ This method all it does is send a message to ==self== for each of the remaning b
 
 
 We will begin with the basic arithmetic operations: addition, subtraction, multiplication, and division; which will be performed by our ==buttonPlus==, ==butonMinus==, ==buttonMult==, ==buttonDiv== respectively.
-!!! Preparing our calculator to add
+!!! Setting up our calculator
 [[[
 Specalc>>addition
 	buttonPlus
@@ -285,15 +250,40 @@ Then we store the character literal passed as argument to the ==operation:== sel
 
 
 
-So let's go back to the rest of the arithmetic operations.
+So let's go back to the rest of the arithmetic operations which methods are similar to ==addition==.
 
-IS: So here will be the subtraction method, and so on....is this what you mean?.
+[[[
+Specalc>>subtraction
+	buttonPlus
+		label: '-';
+		action: [ self operation: $- ];
+		state: true
+]]]
 
-The other buttons we need to deal with now are those whose ==action:== message have a block argument sending a message to perform some kind of check.
+[[[
+Specalc>>multiplication
+	buttonMult
+		label: 'x';
+		action: [ self operation: $x ];
+		state: true.
+]]]
 
-We will define these methods later, but just to give you an idea, these methods perform certain checks such as check the user is not attempting to calculate the square root of a negative number, or that the user don't enter two dots -remember that our display deals with strings so we could easily make a mistake an enter something like 1.234.54 which while being a valid string, is not a valid number-. The last one ==logCheck== deals with the fact that an error will occur if we try to perform the logarithm of 0, which is infinite.
+[[[
+Specalc>>division
+	buttonDiv
+		label: '/';
+		action:  [ self operation: $/ ];
+		state: true.
+]]]
 
-SD: split and deal one by one.
+So enter the four basic arithmetic methods, the ==operation:== method, and categorise them under the operations protocol
+
+Now let's focus on those operations that do not require more than a number and a button press such as obtaining the square root, changing the sign, and getting the logarithm of an entered number.
+
+
+@@ TODO
+
+
 
 Finally, the ==buttonEq== is the core of our calculator and will be discussed once we have finished building the GUI. So go ahead and define the ==formatOtherButtons== method accepting those selectors that are not yet defined. 
 
@@ -414,6 +404,11 @@ Specalc class>>initialExtent
 Now, execute again ==Specalc new openWithSpec== and you should see the calculator as shown in Figure 1.1.
 
 !! Building the core model of our calculator.
+Our's calculator core model is really simple and works in three steps:
+#Enter the first number and store it in an instance variable called ==previousNumber==.
+#Enter an operation. This could trigger an immediate result -like in sqrt, log or sign change- or store the operation in another instance variable called ==currentOperation==.
+#Enter another number and press the equals (=) button to obtain the result.
+
 
 !! Conclusion
 
