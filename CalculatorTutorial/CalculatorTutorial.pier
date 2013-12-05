@@ -2,9 +2,9 @@
 
 Written by Ignacio Sniechowski
 
-Spec is a new way to build user interface with Pharo.With Spec you define application model that glue together widgets and your model. In this chapter we will develop a simple calculator to get started with Spec.Our focus will be on building the GUI to come up with a simple but good-looking calculator.
+Spec is a new way to build user interfaces with Pharo.With Spec you define an application model that glue together widgets and your model. In this chapter we will develop a simple calculator to get started with Spec.Our focus will be on building the GUI to come up with a simple but good-looking calculator.
 After designing the GUI we will move on to render this nice, but hollow interface operational (let's say we will focus first on the VC part of MVC, and later on the M). This chapter uses the version 2 of Spec that is available in Pharo 3.0.
-Once it's finished our calculator will look like Figure *specalc*.
+Once it's finished, our calculator will look like Figure *specalc*.
 +The Spec Calculator>file://figures/Specalc.png|width=40|label=specalc+
 
 !!Introduction
