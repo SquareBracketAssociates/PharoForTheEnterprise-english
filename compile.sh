@@ -46,13 +46,6 @@ function produce_pdf() {
     cd ..
 }
 
-function compile() {
-    dir="$1"
-    pier_file="$2"
-
-    produce_pdf "${dir}" "${pier_file}"
-}
-
 function compile_chapters() {
     chapters=$(cat PFTE.tex  | grep '^\\input' | grep -v common.tex | sed -e 's/^\\input{\([^}]*\)}.*$/\1/')
 
@@ -66,16 +59,25 @@ function compile_chapters() {
         pier_file=$(basename $chapter .tex) # e.g., Zinc.pier
         dir=$(dirname $chapter) # e.g., Zinc
 
-        compile "${dir}" "${pier_file}"
+        produce_pdf "${dir}" "${pier_file}"
     done
+}
+
+function compile_latex_book() {
+       echo =========================================================
+       echo COMPILING Book
+       echo =========================================================
+
+       produce_pdf . EnterprisePharo.tex
 }
 
 if [[ $# -eq 1 ]]; then
     dir=$(dirname "$1") # e.g., Zinc
     pier_file=$(basename "$1") # e.g., Zinc.pier
     pillar_one "${pier_file}"
-    compile "${dir}" "${pier_file}"
+    produce_pdf "${dir}" "${pier_file}"
 else
     pillar_all
     compile_chapters
+    compile_latex_book
 fi
