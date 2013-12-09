@@ -2,9 +2,9 @@
 
 Written by Ignacio Sniechowski
 
-Spec is a new way to build user interface with Pharo.With Spec you define application model that glue together widgets and your model. In this chapter we will develop a simple calculator to get started with Spec.Our focus will be on building the GUI to come up with a simple but good-looking calculator.
+Spec is a new way to build user interfaces with Pharo.With Spec you define an application model that glue together widgets and your model. In this chapter we will develop a simple calculator to get started with Spec.Our focus will be on building the GUI to come up with a simple but good-looking calculator.
 After designing the GUI we will move on to render this nice, but hollow interface operational (let's say we will focus first on the VC part of MVC, and later on the M). This chapter uses the version 2 of Spec that is available in Pharo 3.0.
-Once it's finished our calculator will look like Figure *specalc*.
+Once it's finished, our calculator will look like Figure *specalc*.
 +The Spec Calculator>file://figures/Specalc.png|width=40|label=specalc+
 
 !!Introduction
@@ -254,7 +254,7 @@ So let's go back to the rest of the arithmetic operations which methods are simi
 
 [[[
 Specalc>>subtraction
-	buttonPlus
+	buttonMinus
 		label: '-';
 		action: [ self operation: $- ];
 		state: true
@@ -279,6 +279,41 @@ Specalc>>division
 So enter the four basic arithmetic methods, the ==operation:== method, and categorise them under the operations protocol
 
 Now let's focus on those operations that do not require more than a number and a button press such as obtaining the square root, changing the sign, and getting the logarithm of an entered number.
+
+[[[
+Specalc>>changeSign
+	buttonChange
+		label: '+/-';
+		action: [ display label: (display label asNumber negated asString) ];
+		state: true
+]]]
+This method simply changes the sign of the digit displayed on the screen. The message precedence is crucial here so it's important to follow it. 
+
+Parenthesis are evaluated first, therefore ==(display label asNumber negated asString)== gets the precedence. As all the message following our ==display== object are unary, the contents are evaluated as usual from left to right.
+The sequence is: First we get the contents of the display by sending the ==label== selector to our ==display== object, second we convert this string into a number, and third negated it, finally convert it again to a string.
+After the parenthesis is evaluated the resulting object is sent back to our display object using the ==label:== selector.
+
+[[[
+Specalc>>squareRoot
+	buttonSqr
+		label: 'Sqr';
+		action: [ self sqrCheck ];
+		state: true
+]]]
+
+Obviously to fully grasp the intention of this method we have to take a look a ==sqrCheck==. What this method does is simple check that we are not attempting to square root a negative number.
+
+[[[
+Specalc>>sqrCheck
+	"checks whether we are attempting to calculate the square root of a negative number"
+	(display label asNumber < 0)
+		ifTrue:  [ display label:'Error' ]
+		ifFalse: [ display label: (display label asNumber sqrt asString) ]
+]]]
+
+This method shows Smalltalk's beauty and clarity, almost like pidgin English being, perhaps, ==(display label asNumber sqrt asString)== the only part that requires an explanation. As in the previous method, between parenthesis we have an object followed by unary messages that are evaluated form left to right and then sent back to out display calculator.
+
+Let's go ahead and enter this methods, categorising the first two into the operations protocol and the last one into the private protocol.
 
 
 @@ TODO
