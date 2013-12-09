@@ -1,0 +1,52 @@
+{
+    "title" : "Enterprise Pharo",
+    "newLine" : #unix,
+    "configurations" : {
+        "LaTeX by chapter" : {
+            "outputType" : #latex,
+            "template" : "chapter.latex.template",
+            "separateOutputFiles" : true
+        },
+        "LaTeX whole book" : {
+            "outputType" : #latex,
+            "headingLevelOffset" : 1,
+            "template" : "book.latex.template",
+            "outputFile" : "EnterprisePharo.tex"
+        },
+        "HTML by chapter" : {
+            "outputType" : #html,
+            "headingLevelOffset" : 1,
+            "template" : "chapter.html.template",
+            "separateOutputFiles" : true
+        },
+        "Markdown by chapter" : {
+            "outputType" : #githubmarkdown,
+            "headingLevelOffset" : 1,
+            "separateOutputFiles" : true
+        }
+    },
+    "inputFiles" : [
+        "Artefact/artefact-fr.pier",
+        "BabyMock/BabyMock.pier",
+        "BioPharo/BioPharo.pier",
+        "MetacelloIntro/MetacelloIntro.pier",
+        "CalculatorTutorial/CalculatorTutorial.pier",
+        "ConcurrencyBasics/ConcurrencyBasics.pier",
+        "Conventions/Conventions.pier",
+        "Deltawerken/Deltawerken.pier",
+        "DSL/DSL.pier",
+        "DSL/DSLExercises.pier",
+        "Fuel/Fuel.pier",
+        "Installation/Installation.pier",
+        "KeyMapping/KeyMapping.pier",
+        "Lint/Lint.pier",
+        "ParseTreeRewriter/ParseTreeRewriter.pier",
+        "NativeBoost/NativeBoost.pier",
+        "NeoCSV/NeoCSV.pier",
+        "Spec/Spec.pier",
+        "Zinc/Zinc.pier",
+        "STON/STON.pier",
+        "StartupPreferences/StartupPreferences.pier",
+        "Voyage/Voyage.pier"
+    ]
+}

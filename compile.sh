@@ -5,28 +5,23 @@ set -e
 
 VM_EXECUTABLE=./pharo
 
-function generate_html() {
-    pier_source="$1"
+function pillar_all() {
+    echo 'pillar'
     $VM_EXECUTABLE Pharo.image eval <<EOF
-PRExporter generateStandaloneHTMLFromPier: '${pier_source}'.
-WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: false andQuit: true ].
+| conf |
+conf := PRSTONExportConfiguration fromFile: '${PWD}/pillar-conf.ston' asFileReference.
+conf export: 'LaTeX whole book'.
+conf export: 'LaTeX by chapter'.
+conf export: 'HTML by chapter'.
+conf export: 'Markdown by chapter'.
+Exit signalSuccess.
 EOF
+
 }
 
-function generate_markdown() {
-    pier_source="$1"
-    $VM_EXECUTABLE Pharo.image eval <<EOF
-PRExporter generateMarkdownFromPier: '${pier_source}'.
-WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: false andQuit: true ].
-EOF
-}
-
-function generate_latex() {
-    pier_source="$1"
-    $VM_EXECUTABLE Pharo.image eval <<EOF
-PRExporter generateSBALaTeXChapterFromPier: '${pier_source}'.
-WorldState addDeferredUIMessage: [ SmalltalkImage current snapshot: false andQuit: true ].
-EOF
+function pillar_one() {
+    echo "No yet implemented" >&2
+    exit 1
 }
 
 function mypdflatex() {
@@ -54,10 +49,6 @@ function produce_pdf() {
 function compile() {
     dir="$1"
     pier_file="$2"
-    pier_source="$PWD/${dir}/${pier_file}"
-    generate_html "$pier_source"
-    generate_markdown "$pier_source"
-    generate_latex "$pier_source"
 
     produce_pdf "${dir}" "${pier_file}"
 }
@@ -82,7 +73,9 @@ function compile_chapters() {
 if [[ $# -eq 1 ]]; then
     dir=$(dirname "$1") # e.g., Zinc
     pier_file=$(basename "$1") # e.g., Zinc.pier
+    pillar_one "${pier_file}"
     compile "${dir}" "${pier_file}"
 else
+    pillar_all
     compile_chapters
 fi

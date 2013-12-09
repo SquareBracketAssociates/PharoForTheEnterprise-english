@@ -24,3 +24,5 @@ files/
 /crash.dmp
 .DS_Store
 /package-cache
+/EnterprisePharo.pdf
+/EnterprisePharo.tex
