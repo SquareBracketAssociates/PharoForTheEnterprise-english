@@ -14,7 +14,7 @@ conf export: 'LaTeX whole book'.
 conf export: 'LaTeX by chapter'.
 conf export: 'HTML by chapter'.
 conf export: 'Markdown by chapter'.
-Exit signalSuccess.
+Smalltalk snapshot: false andQuit: true.
 EOF
 
 }
