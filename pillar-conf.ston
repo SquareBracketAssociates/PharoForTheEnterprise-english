@@ -5,6 +5,7 @@
         "LaTeX by chapter" : {
             "outputType" : #latex,
             "template" : "chapter.latex.template",
+            "headingLevelOffset" : 1,
             "separateOutputFiles" : true
         },
         "LaTeX whole book" : {
