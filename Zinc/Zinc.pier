@@ -554,7 +554,7 @@ HTTP meta data, both for requests and for responses, is specified using headers.
 
 Although headers are key/value pairs, they are more than a regular dictionary. There can be more values for the same key and keys are often written using a canonical capitalization, like ==Content-Type==.
 
-==ZnClient== allows you to easily specify custom headers for which there is not yet a predefined accessor, which is most of them. At the framework level, ==ZnResponse== and ==ZnRequest== offer some more predefined accessors, as well as a way to set and query any custom header by accessing their headers sub object. The following are all equivalent:
+ ==ZnClient== allows you to easily specify custom headers for which there is not yet a predefined accessor, which is most of them. At the framework level, ==ZnResponse== and ==ZnRequest== offer some more predefined accessors, as well as a way to set and query any custom header by accessing their headers sub object. The following are all equivalent:
 
 [[[
 ZnClient new accept: 'text/*'.
