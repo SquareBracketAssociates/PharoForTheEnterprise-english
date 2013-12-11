@@ -11,7 +11,7 @@ Once it's finished, our calculator will look like Figure *specalc*.
 
 To construct our GUI we need to know what Spec expects to find in the class we will be creating. There are certain selectors and methods that have to be present at instance and class side and that will be used by Spec when we do ==Specalc new openWithSpec==.
 
-Basically, at the instance side of the class we will declare the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the logic of the application and the glue between these widgets. On the other hand, at class side, we will set up the basic design of our GUI -how the widgets are laid out- and its tittle.
+Basically, at the instance side of the class we will declare the widgets that we will be using, some aspects of these widgets like labels, actions, states, and the logic of the application and the glue between these widgets. On the other hand, at class side, we will set up the basic design of our GUI -how the widgets are laid out- and its title.
 
 Summarizing:
 - instance side: widget instantiation along with actions performed by these and application logic.
@@ -213,7 +213,7 @@ Specalc>>defineOtherButtons
 This method all it does is send a message to ==self== for each of the remaning buttons that are not digit buttons. Categorize these two methods under the ==button-defintion== protocol.
 
 
-We will begin with the basic arithmetic operations: addition, subtraction, multiplication, and division; which will be performed by our ==buttonPlus==, ==butonMinus==, ==buttonMult==, ==buttonDiv== respectively.
+We will begin with the basic arithmetic operations: addition, subtraction, multiplication, and division; which will be performed by our ==buttonPlus==, ==buttonMinus==, ==buttonMult==, ==buttonDiv== respectively.
 !!! Setting up our calculator
 [[[
 Specalc>>addition
