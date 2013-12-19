@@ -61,44 +61,46 @@ Fuel 1.9 is already loaded in Pharo 2.0. The ""default packages"" work out of th
 
 For most users should be enough to install just the default packages:
 
-=Gofer it
-=    squeaksource: 'MetacelloRepository';
-=    package: 'ConfigurationOfFuel';
-=    load.
-=((Smalltalk at: #ConfigurationOfFuel) project version: '1.9') 
-=    load.
-
+[[[language=Smalltalk
+Gofer it
+    squeaksource: 'MetacelloRepository';
+    package: 'ConfigurationOfFuel';
+    load.
+((Smalltalk at: #ConfigurationOfFuel) project version: '1.9') 
+    load.
+]]]
 
 !!!Basic demo
 
 Open the ==Transcript== and evaluate code below in a ==Workspace==.
 
-=| serializedArray materializedArray |
-=serializedArray := 
-=    Array 
-=        with: (Set with: 42)
-=        with: Transcript
-=        with: [:aString | Transcript show: aString; cr ].
-=
-="Store (serialize)"
-=FLSerializer serialize: serializedArray toFileNamed: 'demo.fl'. 
-=
-="Load (materialize)"
-=materializedArray := FLMaterializer materializeFromFileNamed: 'demo.fl'. 
-=
-=Transcript
-=	show: 'The sets are equal: ';
-=	show: serializedArray first = materializedArray first;
-=	cr;
-=	show: 'But not the same: ';
-=	show: serializedArray first ~~ materializedArray first;
-=	cr;
-=	show: 'The global value Transcript is the same: ';
-=	show: serializedArray second == materializedArray second;
-=	cr.
-=materializedArray third 
-=	value: 'The materialized block closure can be properly evaluated.'.
+[[[language=Smalltalk
+| serializedArray materializedArray |
+serializedArray := 
+    Array 
+        with: (Set with: 42)
+        with: Transcript
+        with: [:aString | Transcript show: aString; cr ].
 
+"Store (serialize)"
+FLSerializer serialize: serializedArray toFileNamed: 'demo.fl'. 
+
+"Load (materialize)"
+materializedArray := FLMaterializer materializeFromFileNamed: 'demo.fl'. 
+
+Transcript
+	show: 'The sets are equal: ';
+	show: serializedArray first = materializedArray first;
+	cr;
+	show: 'But not the same: ';
+	show: serializedArray first ~~ materializedArray first;
+	cr;
+	show: 'The global value Transcript is the same: ';
+	show: serializedArray second == materializedArray second;
+	cr.
+materializedArray third 
+	value: 'The materialized block closure can be properly evaluated.'.
+]]]
 
 
 %=========================================================================% 
@@ -111,27 +113,32 @@ Open the ==Transcript== and evaluate code below in a ==Workspace==.
 
 We give some class-side messages to facilitate the more common uses of serialization and materialization. The next example writes and reads from file:
 
-=FLSerializer serialize: 'stringToSerialize' toFileNamed: 'demo.fuel'. 
-=materializedString := FLMaterializer materializeFromFileNamed: 'demo.fuel'.
+[[[language=Smalltalk
+FLSerializer serialize: 'stringToSerialize' toFileNamed: 'demo.fuel'. 
+materializedString := FLMaterializer materializeFromFileNamed: 'demo.fuel'.
+]]]
 
 We also provide messages for storing into a ==ByteArray==. This can be fine for users of a NoSQL database:
 
-=anArray := FLSerializer serializeToByteArray: 'stringToSerialize'. 
-=materializedString := FLMaterializer materializeFromByteArray: anArray.
-
+[[[language=Smalltalk
+anArray := FLSerializer serializeToByteArray: 'stringToSerialize'. 
+materializedString := FLMaterializer materializeFromByteArray: anArray.
+]]]
 
 !!!FileStream
 
 In this example we work with files. Note that we set the file in binary mode:
 
-=FileStream forceNewFileNamed: 'demo.fuel' do: [:aStream |
-=	FLSerializer newDefault 
-=		serialize: 'stringToSerialize' 
-= 		on: aStream binary].
-=
-=FileStream oldFileNamed: 'demo.fuel' do: [:aStream |
-=	materializedString := (FLMaterializer newDefault 
-=		materializeFrom: aStream binary) root].
+[[[language=Smalltalk
+FileStream forceNewFileNamed: 'demo.fuel' do: [:aStream |
+	FLSerializer newDefault 
+		serialize: 'stringToSerialize' 
+ 		on: aStream binary].
+
+FileStream oldFileNamed: 'demo.fuel' do: [:aStream |
+	materializedString := (FLMaterializer newDefault 
+		materializeFrom: aStream binary) root].
+]]]
 
 Note also that we are no longer using the class-side messages of previous examples. Now, for both ==FLSerializer== and ==FLMaterializer==, we first create instances with ==#newDefault== to then perform the desired operations. As we will see in next example, creating the instances brings more possibilities.
 
@@ -139,41 +146,46 @@ Note also that we are no longer using the class-side messages of previous exampl
 
 Of course, you could use stream compressors provided by the system. However, we have detected some errors serializing ==WideString==s. An example of use:
 
-=FileStream forceNewFileNamed: 'number.fuel.zip' do: [:aFileStream | 
-=	|gzip|
-=	aFileStream binary.
-=	gzip := GZipWriteStream on: aFileStream.
-=	FLSerializer newDefault serialize: 123 on: gzip.
-=	gzip close. ].
-	
-=FileStream oldFileNamed: 'number.fuel.zip' do: [:aFileStream | 
-=	|gzip|
-=	aFileStream binary.
-=	gzip := GZipReadStream on: aFileStream.		
-=	materialization := FLMaterializer newDefault 
-=		materializeFrom: gzip.
-=	gzip close. ].
+[[[language=Smalltalk
+FileStream forceNewFileNamed: 'number.fuel.zip' do: [:aFileStream | 
+	|gzip|
+	aFileStream binary.
+	gzip := GZipWriteStream on: aFileStream.
+	FLSerializer newDefault serialize: 123 on: gzip.
+	gzip close. ].
+   
+FileStream oldFileNamed: 'number.fuel.zip' do: [:aFileStream | 
+	|gzip|
+	aFileStream binary.
+	gzip := GZipReadStream on: aFileStream.		
+	materialization := FLMaterializer newDefault 
+		materializeFrom: gzip.
+	gzip close. ].
+]]]
 
 !!!Showing a progress bar
 
 Sometimes it is nice to see progress updates on screen. Use ==#showProgress== in this cases.
 
-=FileStream forceNewFileNamed: 'numbers.fuel' do: [:aStream |
-=	FLSerializer newDefault 
-=		showProgress;
-=		serialize: (1 to: 200000) asArray 
-=		on: aStream binary ].
-=	
-=FileStream oldFileNamed: 'numbers.fuel' do: [:aStream | 
-=	FLMaterializer newDefault 
-=		showProgress;
-=		materializeFrom: aStream binary ].
+[[[language=Smalltalk
+FileStream forceNewFileNamed: 'numbers.fuel' do: [:aStream |
+	FLSerializer newDefault 
+		showProgress;
+		serialize: (1 to: 200000) asArray 
+		on: aStream binary ].
+	
+FileStream oldFileNamed: 'numbers.fuel' do: [:aStream | 
+	FLMaterializer newDefault 
+		showProgress;
+		materializeFrom: aStream binary ].
+]]]
 
 Package ==FuelProgressUpdate== must be installed. You can use:
 
-=(ConfigurationOfFuel project version: '1.9') 
-=	load: 'FuelProgressUpdate'.
-
+[[[language=Smalltalk
+(ConfigurationOfFuel project version: '1.9') 
+	load: 'FuelProgressUpdate'.
+]]]
 
 %=========================================================================% 
 
@@ -197,16 +209,18 @@ By default, Fuel considers following objects as globals, i.e. will store just it
 
 In this following code snippet we show that by default the global value is not serialized as a global, and so it is duplicated on materialization.
 
-= "Define a global variable named #SomeGlobal."
-= SomeGlobal := Set new.
-= 
-= "Serialize and materialize the value of #SomeGlobal."
-= FLSerializer 
-= 	serialize: SomeGlobal 
-= 	toFileNamed: 'g.fuel'.
-= 
-= "The materialized object *is not* the same as the global instance."
-= [ (FLMaterializer materializeFromFileNamed: 'g.fuel') ~~ SomeGlobal ] assert.
+[[[language=Smalltalk
+ "Define a global variable named #SomeGlobal."
+ SomeGlobal := Set new.
+ 
+ "Serialize and materialize the value of #SomeGlobal."
+ FLSerializer 
+ 	serialize: SomeGlobal 
+ 	toFileNamed: 'g.fuel'.
+ 
+ "The materialized object *is not* the same as the global instance."
+ [ (FLMaterializer materializeFromFileNamed: 'g.fuel') ~~ SomeGlobal ] assert.
+]]]
 
 But...
 
@@ -214,22 +228,24 @@ But...
 
 Instead, in the code below ==#considerGlobal:== is used to specify that it should be stored as global.
 
-= | aSerializer |
-= 
-= "Define a global variable named #SomeGlobal."
-= SomeGlobal := Set new.
-= 
-= aSerializer := FLSerializer newDefault.
-= 
-= "Tell the serializer to consider #SomeGlobal as global."
-= aSerializer analyzer considerGlobal: #SomeGlobal.
-= 
-= aSerializer 
-= 	serialize: SomeGlobal 
-= 	toFileNamed: 'g.fuel'.
-= 	
-= "In this case, the materialized object *is* the same as the global instance."
-= [ (FLMaterializer materializeFromFileNamed: 'g.fuel') == SomeGlobal ] assert.
+[[[language=Smalltalk
+ | aSerializer |
+ 
+ "Define a global variable named #SomeGlobal."
+ SomeGlobal := Set new.
+ 
+ aSerializer := FLSerializer newDefault.
+ 
+ "Tell the serializer to consider #SomeGlobal as global."
+ aSerializer analyzer considerGlobal: #SomeGlobal.
+ 
+ aSerializer 
+ 	serialize: SomeGlobal 
+ 	toFileNamed: 'g.fuel'.
+ 	
+ "In this case, the materialized object *is* the same as the global instance."
+ [ (FLMaterializer materializeFromFileNamed: 'g.fuel') == SomeGlobal ] assert.
+]]]
 
 This feature is tested in ==tests-globals== protocol of ==FLBasicSerializationTest== as well in ==FLGlobalEnvironmentTest==.
 
@@ -237,31 +253,33 @@ This feature is tested in ==tests-globals== protocol of ==FLBasicSerializationTe
 
 It is possible to specify where the global will be looked-up during materialization. The method ==#globalEnvironment:== exists for that purpose, as the following example shows. 
 
-= | aSerializer aMaterializer anEnvironment |
-= 
-= "Define a global variable named #SomeGlobal."
-= SomeGlobal := Set new.
-= 
-= "Tell the serializer to consider #SomeGlobal as global."
-= aSerializer := FLSerializer newDefault.
-= aSerializer analyzer considerGlobal: #SomeGlobal.
-= aSerializer 
-= 	serialize: SomeGlobal 
-= 	toFileNamed: 'g.fuel'.
-= 
-= "Override value for #SomeGlobal."
-= anEnvironment := Dictionary newFrom: Smalltalk globals.
-= anEnvironment at: #SomeGlobal put: {42}.
-= 
-= "In this case, the materialized object *is the same* as the global instance."
-= FileStream oldFileNamed: 'g.fuel' do: [ :aStream |
-= 	aStream binary.
-= 	aMaterializer := FLMaterializer newDefault.
-= 	
-= 	"Set the environment"
-= 	aMaterializer globalEnvironment: anEnvironment.
-= 
-= 	[ (aMaterializer materializeFrom: aStream) root = {42} ] assert ]
+[[[language=Smalltalk
+ | aSerializer aMaterializer anEnvironment |
+ 
+ "Define a global variable named #SomeGlobal."
+ SomeGlobal := Set new.
+ 
+ "Tell the serializer to consider #SomeGlobal as global."
+ aSerializer := FLSerializer newDefault.
+ aSerializer analyzer considerGlobal: #SomeGlobal.
+ aSerializer 
+ 	serialize: SomeGlobal 
+ 	toFileNamed: 'g.fuel'.
+ 
+ "Override value for #SomeGlobal."
+ anEnvironment := Dictionary newFrom: Smalltalk globals.
+ anEnvironment at: #SomeGlobal put: {42}.
+ 
+ "In this case, the materialized object *is the same* as the global instance."
+ FileStream oldFileNamed: 'g.fuel' do: [ :aStream |
+ 	aStream binary.
+ 	aMaterializer := FLMaterializer newDefault.
+ 	
+ 	"Set the environment"
+ 	aMaterializer globalEnvironment: anEnvironment.
+ 
+ 	[ (aMaterializer materializeFrom: aStream) root = {42} ] assert ]
+]]]
 
 This feature is tested in the class ==FLGlobalEnvironmentTest==. The global environment can be setted also for serialization (not only materialization), but we don't include an example for that case.
 
@@ -276,8 +294,10 @@ It can happen that instance variables should never be serialized. A practical wa
 
 Let's say we have the class ==User== and we do not want to serialize the instance variables =='acumulatedLogins'== and =='applications'==. So we implement:
 
-=User class >> fuelIgnoredInstanceVariableNames
-=    ^#('acumulatedLogins' 'applications')
+[[[language=Smalltalk
+User class >> fuelIgnoredInstanceVariableNames
+    ^#('acumulatedLogins' 'applications')
+]]]
 
 When materialized, such instance variables will be nil. If you want to re-initialize and set values to those instance variables, you can use ==#fuelAfterMaterialization== for that.
 
@@ -291,8 +311,10 @@ In ==StOMP== serializer this same hook is called ==#stompTransientInstVarNames==
 
 The method ==#fuelAfterMaterialization== let us execute something once an object has been materialized. For example, let's say we would like to set back the instance variable =='acumulatedLogins'== during materialization. Hence, we can implement:
 
-=User >> fuelAfterMaterialization
-= acumulatedLogins := 0. 
+[[[language=Smalltalk
+User >> fuelAfterMaterialization
+ acumulatedLogins := 0. 
+]]]
 
 !!!Substitution on Serialization
 
@@ -304,16 +326,18 @@ You can establish a pluggable substitution to a particular serialization.
 
 Let's illustrate with an example, where your graph includes a ==Stream== and you want to serialize ==nil== instead. 
 
-=objectToSerialize := Array with: 'hello' with: '' writeStream.
-=
-=FileStream forceNewFileNamed: 'demo.fuel' do: [ :aStream |
-=    aSerializer := FLSerializer newDefault.
-=    aSerializer analyzer 
-=        when: [ :o | o isStream ] 
-=        substituteBy: [ :o | nil ].
-=    aSerializer         
-=        serialize: objectToSerialize
-=        on: aStream binary ].
+[[[language=Smalltalk
+objectToSerialize := Array with: 'hello' with: '' writeStream.
+
+FileStream forceNewFileNamed: 'demo.fuel' do: [ :aStream |
+    aSerializer := FLSerializer newDefault.
+    aSerializer analyzer 
+        when: [ :o | o isStream ] 
+        substituteBy: [ :o | nil ].
+    aSerializer         
+        serialize: objectToSerialize
+        on: aStream binary ].
+]]]
 
 So, when loading you will get ==#('hello' nil)==, without any instance of a stream.
 
@@ -325,31 +349,39 @@ You have to override ==#fuelAccept:== in the class of the object to be substitut
 
 As an example, imagine we want to replace an object directly with nil. In other words, we want to make a whole object transient, say ==CachedResult==. For that, we should implement:
 
-=CachedResult >> fuelAccept: aGeneralMapper
-=    ^ aGeneralMapper visitSubstitution: self by: nil
+[[[language=Smalltalk
+CachedResult >> fuelAccept: aGeneralMapper
+    ^ aGeneralMapper visitSubstitution: self by: nil
+]]]
 
 As another example, we have a ==Proxy== class and when serializing we want to serialize its ==target== instead of the proxy. So we implement:
 
-=Proxy >> fuelAccept: aGeneralMapper
-=    ^ aGeneralMapper visitSubstitution: self by: target
+[[[language=Smalltalk
+Proxy >> fuelAccept: aGeneralMapper
+    ^ aGeneralMapper visitSubstitution: self by: target
+]]]
 
 Notice that ==#fuelAccept:== is the same as the previous example. The last example is when an object needs to change the value of its instance variables. Say we have again the class ==User== and we want to ==nil== the instance variable =='history'== when its size is greater than 100. 
 
-=User >> fuelAccept: aGeneralMapper
-=    ^self history size > 100 
-=        ifTrue: [ 
-=            aGeneralMapper 
-=                visitSubstitution: self 
-=                by: (self copy history: Array new) ].
-=        ifFalse: [ super fuelAccept: aGeneralMapper ]
+[[[language=Smalltalk
+User >> fuelAccept: aGeneralMapper
+    ^self history size > 100 
+        ifTrue: [ 
+            aGeneralMapper 
+                visitSubstitution: self 
+                by: (self copy history: Array new) ].
+        ifFalse: [ super fuelAccept: aGeneralMapper ]
+]]]
 
 ""Note"" we are substituting the original user by another instance of ==User==, which Fuel will visit with the same ==#fuelAccept:== method. We could easily fall in an infinite sequence of substitutions if we don't take care. To avoid this problem, it is useful ==#visitSubstitution:by:onRecursionDo:==, where you define an alternative mapping for the case of mapping an object which is already a substitute of another one:
 
-=User >> fuelAccept: aGeneralMapper
-=    aGeneralMapper 
-=        visitSubstitution: self 
-=        by: (self copy history: #())
-=        onRecursionDo: [ super fuelAccept: aGeneralMapper ]
+[[[language=Smalltalk
+User >> fuelAccept: aGeneralMapper
+    aGeneralMapper 
+        visitSubstitution: self 
+        by: (self copy history: #())
+        onRecursionDo: [ super fuelAccept: aGeneralMapper ]
+]]]
 
 In the case, the substitute user (i.e. the one with the empty history) is will be visited via its super implementation.
 
@@ -361,14 +393,16 @@ You can see tests for this functionality at ==FLHookedSubstitutionTest==.
 
 Suppose we have a special instance of ==User== that represents the admin user, and it is an unique instance in the image. In case the admin user is referenced in our graph, we want to treat that object as a global. We can do that in this way:
 
-=User >> fuelAccept: aGeneralMapper
-=    ^self == User admin
-=        ifTrue: [ 
-=            aGeneralMapper 
-=                visitGlobalSend: self 
-=                name: #User 
-=                selector: #admin ]
-=        ifFalse: [ super fuelAccept: aGeneralMapper ]
+[[[language=Smalltalk
+User >> fuelAccept: aGeneralMapper
+    ^self == User admin
+        ifTrue: [ 
+            aGeneralMapper 
+                visitGlobalSend: self 
+                name: #User 
+                selector: #admin ]
+        ifFalse: [ super fuelAccept: aGeneralMapper ]
+]]]
 
 So what will happen is that during serialization, the admin user won't be completly serialized (with all its intance variables) but instead its global name and selector are stored. Then, at materialization time, Fuel will send ==#admin== to the class ==User==, and use what that answers as the admin user of the materialized graph. 
 
@@ -380,13 +414,17 @@ Fuel provides two hook methods to customise how instances are created: ==#fuelNe
 
 For (regular) fixed objects, the method ==#fuelNew== is defined in ==Behavior== as:
 
-=fuelNew
-=	^ self basicNew
+[[[language=Smalltalk
+fuelNew
+	^ self basicNew
+]]]
 
 But we can override it to our needs, for example:
 
-=fuelNew
-=	^ self uniqueInstance
+[[[language=Smalltalk
+fuelNew
+	^ self uniqueInstance
+]]]
 
 This similarly applies to variable objects through the method ==#fuelNew:==, which by default answers ==#basicNew:==.
 
@@ -396,8 +434,10 @@ We test this feature in ==FLSingletonTest==.
 
 You may want to be sure that some objects are not serialized. For this case we provide ==#visitNotSerializable:==, which in next example forbids serialization of any instance of ==MyNotSerializableObject==.
 
-=MyNotSerializableObject >> fuelAccept: aGeneralMapper
-=    aGeneralMapper visitNotSerializable: self
+[[[language=Smalltalk
+MyNotSerializableObject >> fuelAccept: aGeneralMapper
+    aGeneralMapper visitNotSerializable: self
+]]]
 
 We test this feature in ==FLBasicSerializationTest>>testNotSerializableObject==.
 
@@ -473,17 +513,21 @@ Let's start with the easier cases. If a variable was ""inserted"", its value wil
 
 A more interesting case is when a variable was ""renamed"", where the user can map old names to new ones. In our example:
 
-=FLMaterializer newDefault
-=	migrateClassNamed: #Point
-=	variables: {'x' -> 'posX'. 'y' -> 'posY'}.
+[[[language=Smalltalk
+FLMaterializer newDefault
+	migrateClassNamed: #Point
+	variables: {'x' -> 'posX'. 'y' -> 'posY'}.
+]]]
 
 Not surprisingly, if nothing specified the change will be understood by Fuel as two independent operations, an insertion and a removal.
 
 The last change in the figure is a ""class rename"". This should be specified this way:
 
-=FLMaterializer newDefault
-=	migrateClassNamed: #Point
-=	toClass: Coordinate.
+[[[language=Smalltalk
+FLMaterializer newDefault
+	migrateClassNamed: #Point
+	toClass: Coordinate.
+]]]
 
 It is also available ==#migrateClassNamed:toClass:variables:== to combine both ""class and variable rename"".
 
@@ -502,31 +546,33 @@ Until now, each Fuel version has its own stream format. Furthermore, each versio
 
 We include below an example of migration. Let's say we have some files serialized with Fuel 1.7 in a Pharo 1.4 image and we want to migrate them to Fuel 1.9.
 
-= | oldVersion newVersion fileNames objectsByFileName 
-=   materializerClass serializerClass |
-= oldVersion := '1.7'.
-= newVersion := '1.9'.
-= fileNames := #('a.fuel' 'b.fuel' 'c.fuel' 'd.fuel' 'e.fuel').
-= objectsByFileName := Dictionary new.
-= 
-=
-= (ConfigurationOfFuel project version: oldVersion) load.
-= materializerClass := Smalltalk at: #FLMaterializer.
-= 
-= fileNames do: [ :fileName | 
-= 	objectsByFileName 
-= 		at: fileName 
-= 		put: (materializerClass materializeFromFileNamed: fileName) ].
-= 
-= 
-= (ConfigurationOfFuel project version: newVersion) load.
-= serializerClass := Smalltalk at: #FLSerializer.
-= 
-= objectsByFileName keysAndValuesDo: [ :fileName :objects |
-= 	serializerClass 
-= 		serialize: objects  
-= 		toFileNamed: 'migrated-', fileName
-= 	 ].
+[[[language=Smalltalk
+ | oldVersion newVersion fileNames objectsByFileName 
+   materializerClass serializerClass |
+ oldVersion := '1.7'.
+ newVersion := '1.9'.
+ fileNames := #('a.fuel' 'b.fuel' 'c.fuel' 'd.fuel' 'e.fuel').
+ objectsByFileName := Dictionary new.
+ 
+
+ (ConfigurationOfFuel project version: oldVersion) load.
+ materializerClass := Smalltalk at: #FLMaterializer.
+ 
+ fileNames do: [ :fileName | 
+ 	objectsByFileName 
+ 		at: fileName 
+ 		put: (materializerClass materializeFromFileNamed: fileName) ].
+ 
+ 
+ (ConfigurationOfFuel project version: newVersion) load.
+ serializerClass := Smalltalk at: #FLSerializer.
+ 
+ objectsByFileName keysAndValuesDo: [ :fileName :objects |
+ 	serializerClass 
+ 		serialize: objects  
+ 		toFileNamed: 'migrated-', fileName
+ 	 ].
+]]]
 
 @@note Note 1: We assume in this example that the number of objects to migrate can be materialized all together at the same time. This can be false. In such case, we could fix the script to split the list of files and do it in parts.
 
@@ -569,8 +615,10 @@ This is done by linearly reading from the stream. So, steps are obviously analog
 !!!Debug Tools
 Ensure you have them with:
 
-=(ConfigurationOfFuel project version: '1.8.1') 
-=    load: #(FuelDebug FuelPreview).
+[[[language=Smalltalk
+(ConfigurationOfFuel project version: '1.8.1') 
+    load: #(FuelDebug FuelPreview).
+]]]
 
 Next, a transcript of some useful class comments. 
 
@@ -579,20 +627,24 @@ I add draw capabilities to analysis in ==FuelDebug== package.
 
 Right-click a node for inspect it. Some examples:
 
-=(FLAnalyzer newDefault
-=    setDebug;
-=    analysisFor: #((1) (2) (3) (4)))
-=    open.
+[[[language=Smalltalk
+(FLAnalyzer newDefault
+    setDebug;
+    analysisFor: #((1) (2) (3) (4)))
+    open.
+]]]
 
-=(FLAnalyzer newDefault
-=    setDebug;
-=    analysisFor: #((1) (2) (3) (4)))
-=    openPathsTo: 3.
-    
-=(FLAnalyzer newDefault
-=    setDebug;
-=    analysisFor: #((1) (2) (3) (4)))
-=    openPathsToEvery: [:o | o isNumber and: [o > 2] ].
+[[[language=Smalltalk
+(FLAnalyzer newDefault
+    setDebug;
+    analysisFor: #((1) (2) (3) (4)))
+    openPathsTo: 3.
+   
+(FLAnalyzer newDefault
+    setDebug;
+    analysisFor: #((1) (2) (3) (4)))
+    openPathsToEvery: [:o | o isNumber and: [o > 2] ].
+]]]
 
 Figure *figFuelPreview* shows how they look like.
 
@@ -604,28 +656,36 @@ I am a serialization which facilitates debugging, by logging the stream position
 
 To use, send ==#setDebug== to your serializer and run as usually. For example:
 
-=FileStream forceNewFileNamed: 'debug.fuel' do: [:aFile |
-=    FLSerializer newDefault
-=        setDebug;
-=        serialize: ''hello'' on: aFile binary ]
+[[[language=Smalltalk
+FileStream forceNewFileNamed: 'debug.fuel' do: [:aFile |
+    FLSerializer newDefault
+        setDebug;
+        serialize: ''hello'' on: aFile binary ]
+]]]
 
 Then, inspect the output log:
 
-=FLDebugSerialization last log
+[[[language=Smalltalk
+FLDebugSerialization last log
+]]]
 
 !!!!FLDebugMaterialization
 I am a materialization which facilitates debugging, by logging the stream position before and after main steps of ==FLMaterialization==, including cluster information. Obviously, you should be familiar with such class and the algorithm to understand the output log.
 
 To use, send ==#setDebug== to your serializer and run as usually. For example:
 
-=FileStream oldFileNamed: 'debug.fuel' do: [:aFile |
-=    FLMaterializer newDefault
-=        setDebug;
-=        materializeFrom: aFile binary ]
+[[[language=Smalltalk
+FileStream oldFileNamed: 'debug.fuel' do: [:aFile |
+    FLMaterializer newDefault
+        setDebug;
+        materializeFrom: aFile binary ]
+]]]
 
 Then, inspect the output log:
 
-=FLDebugMaterialization last log
+[[[language=Smalltalk
+FLDebugMaterialization last log
+]]]
 
 
 %=========================================================================% 
@@ -634,53 +694,65 @@ Then, inspect the output log:
 
 Since the graph of objects serialized in a file can be large, and it can be useful to query some small extra info, Fuel supports the possibility to easily add such information in a header. The following examples show this set of features:
  
-=| serializer |
-=serializer := FLSerializer newDefault.
-=
-=serializer header 
-=	at: #timestamp
-=	putAdditionalObject: TimeStamp now.
-=
-=serializer header
-=	addPreMaterializationAction: [ 
-=		Transcript show: 'Before serializing'; cr ].
-=
-=serializer header
-=	addPostMaterializationAction: [ :materialization | 
-=		Transcript 
-=			show: 'Serialized at ';
-=			show: (materialization additionalObjectAt: #timestamp); 
-=			cr;
-=			show: 'Materialized at ';
-=			show: TimeStamp now; 
-=			cr ].
-=	
-=serializer 
-=	serialize: 'a big amount of data' 
-=	toFileNamed: 'demo.fl'
+[[[language=Smalltalk
+| serializer |
+serializer := FLSerializer newDefault.
+
+serializer header 
+	at: #timestamp
+	putAdditionalObject: TimeStamp now.
+
+serializer header
+	addPreMaterializationAction: [ 
+		Transcript show: 'Before serializing'; cr ].
+
+serializer header
+	addPostMaterializationAction: [ :materialization | 
+		Transcript 
+			show: 'Serialized at ';
+			show: (materialization additionalObjectAt: #timestamp); 
+			cr;
+			show: 'Materialized at ';
+			show: TimeStamp now; 
+			cr ].
+	
+serializer 
+	serialize: 'a big amount of data' 
+	toFileNamed: 'demo.fl'
+]]]
 
 Then, you can just materialize the header info:
 
-=| aHeader |
-=aHeader := FLMaterializer materializeHeaderFromFileNamed: 'demo.fl'.
-=aHeader additionalObjectAt: #timestamp.
+[[[language=Smalltalk
+| aHeader |
+aHeader := FLMaterializer materializeHeaderFromFileNamed: 'demo.fl'.
+aHeader additionalObjectAt: #timestamp.
+]]]
 
 Printing it, the result is:
 
-='28 March 2013 12:44:54 pm'
+[[[language=Smalltalk
+'28 March 2013 12:44:54 pm'
+]]]
 
 If we normally materialize the whole file with:
 
-=FLMaterializer materializeFromFileNamed: 'demo.fl' 
+[[[language=Smalltalk
+FLMaterializer materializeFromFileNamed: 'demo.fl' 
+]]]
 
 Then, the print of the results is:
 
-='a big amount of data'
+[[[language=Smalltalk
+'a big amount of data'
+]]]
 
 And this is shown in ==Transcript==:
 
-=Before serializing
-=Serialized at 28 March 2013 12:50:50 pm
-=Materialized at 28 March 2013 1:01:21 pm
+[[[language=Smalltalk
+Before serializing
+Serialized at 28 March 2013 12:50:50 pm
+Materialized at 28 March 2013 1:01:21 pm
+]]]
  
 For additional examples, you can see tests in ==FLHeaderSerializationTest==.
