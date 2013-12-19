@@ -1,28 +1,25 @@
 {
     "title" : "Enterprise Pharo",
     "newLine" : #unix,
+    "headingLevelOffset" : 1,
     "configurations" : {
         "LaTeX by chapter" : {
             "outputType" : #latex,
             "template" : "chapter.latex.template",
-            "headingLevelOffset" : 1,
             "separateOutputFiles" : true
         },
         "LaTeX whole book" : {
             "outputType" : #latex,
-            "headingLevelOffset" : 1,
             "template" : "book.latex.template",
             "outputFile" : "EnterprisePharo.tex"
         },
         "HTML by chapter" : {
             "outputType" : #html,
-            "headingLevelOffset" : 1,
             "template" : "chapter.html.template",
             "separateOutputFiles" : true
         },
         "Markdown by chapter" : {
             "outputType" : #githubmarkdown,
-            "headingLevelOffset" : 1,
             "separateOutputFiles" : true
         }
     },
