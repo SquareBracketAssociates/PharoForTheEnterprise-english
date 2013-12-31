@@ -312,7 +312,7 @@ RedditDatabaseTest>>testCreate
 
 
 !!RedditSession
-We are almost ready to start writing the GUI of our actual web application. Seaside web applications often have a session object that keeps the application's state during the user's interaction with it. We need to extend that session with a database session. We define a new class  ==RedditSession== as a subclass of ==WASession==. In addition, it has an instance variable called ==glorpSession= to hold a Glorp session to the database.
+We are almost ready to start writing the GUI of our actual web application. Seaside web applications often have a session object that keeps the application's state during the user's interaction with it. We need to extend that session with a database session. We define a new class  ==RedditSession== as a subclass of ==WASession==. In addition, it has an instance variable called ==glorpSession== to hold a Glorp session to the database.
 
 [[[
 WASession subclass: #RedditSession
@@ -322,7 +322,8 @@ WASession subclass: #RedditSession
    category: 'Reddit-DB'
 ]]]
 
-Note how we are using lazy initialization in the ==glorpSession== accessor. In ==newGlorpSession== we're making use of our ==RedditDatabaseResource==. 
+Note how we are using lazy initialization in the ==glorpSession== accessor.
+In ==newGlorpSession== we're making use of our ==RedditDatabaseResource==. 
 
 [[[
 RedditSession>>glorpSession
@@ -650,7 +651,7 @@ WARedditCaptcha>>isSolved
 
 Each time the CAPTCHA is rendered, ==x== and ==y== get a new random value between 1 and 10. Next, the addition is presented in words. The ==isSolved== method checks if the user answered correctly.
 
-\!! Conclusion
+!! Conclusion
 
 The source code discussed in this chapter is available the SqueakSource project called ADayAtTheBeach. Look for the package called Reddit.
 
