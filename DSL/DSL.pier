@@ -67,7 +67,7 @@ You should get an inspector like the one shown in Figure *figDiceNoDetail*. With
 
 +Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
 
-
+ 
 
 !!! Creating another test
 We will define a test that verifies that rolling a new created dice with a default 6 faces only returns 

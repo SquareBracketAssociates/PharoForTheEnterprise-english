@@ -28,7 +28,7 @@ This will load all that is needed to persist your object models into a Mongo dat
 
 !!! Install MongoDB 
 
-Next is to install the MongoDB database. How to do this depends on your operating system, and is outside of the scope of this text. We refer to the MongoDB website *mongodb.org>http://www.mongodb.org/downloads* for more information.
+Next is to install the MongoDB database. How to do this depends on your operating system, and is outside of the scope of this text. We refer to the *MongoDB website>http://www.mongodb.org/downloads* for more information.
 
 !!! Create a repository
 
@@ -75,6 +75,7 @@ repository enableSingleton.
 The following two tables show the complete API of Voyage. These methods are defined on ==Object==, but will only truly do work if the receiver of the message is a Voyage root. In the remainder of this document we will discuss the majority of these methods.
 
 First we show Singleton mode:
+- Table export issue
 
 ||save || stores an object into repository (insert or update)	
 ||remove || removes an object from repository	
@@ -84,6 +85,8 @@ First we show Singleton mode:
 ||selectMany: || retrieves all objects that matches the argument
 
 Second is Instance mode. In Instance mode, the first argument is always the repository on which to perform the operation.
+
+- Table export issue
 
 ||save:|| stores an object into repository (insert or update)	
 ||remove: ||removes an object from repository	
@@ -96,7 +99,7 @@ Second is Instance mode. In Instance mode, the first argument is always the repo
 
 In a deployed application, there should be no need to close or reset the connection to the database. Also, Voyage re-establishes the connection when the image is closed and later reopened.
 
-However, when developing, resetting the connection to the database may be needed to reflect changes. This is foremost required when changing storage options of the database (see the *enhancing* Enhancing Storage section). Performing a reset is achieved as follows:
+However, when developing, resetting the connection to the database may be needed to reflect changes. This is foremost required when changing storage options of the database (see section *enhancing*). Performing a reset is achieved as follows:
 
 [[[
 VORepository current reset.
@@ -110,7 +113,7 @@ VORepository setRepository: nil.
 
 !!Storing objects
 
-To store objects, the class of the object needs to be declared as being a ''root of the repository''. All repository roots are points of entry to the database. Voyage stores more than just objects that contain literals. Complete trees of objects can be stored with Voyage as well, and this is done transparently. In other words, there is no need for a special treatment to store trees of objects. However, when a graph of objects is stored, care must be taken to break loops. In this section we discuss such basic storage of objects, and in the next section on Enhancing Storage *enhancing* we show how to enhance and/or modify the way objects are persisted.
+To store objects, the class of the object needs to be declared as being a ''root of the repository''. All repository roots are points of entry to the database. Voyage stores more than just objects that contain literals. Complete trees of objects can be stored with Voyage as well, and this is done transparently. In other words, there is no need for a special treatment to store trees of objects. However, when a graph of objects is stored, care must be taken to break loops. In this section we discuss such basic storage of objects, and in section *enhancing* on Enhancing Storage we show how to enhance and/or modify the way objects are persisted.
 
 !!!Basic storage
 
@@ -341,9 +344,16 @@ Also, a post-load action can be defined for an attribute or for the containing o
 Lastly, attributes can be excluded from storage (and hence retrieval) by returning a ==VOMongoTransientDescription== instance as the attribute descriptor. This allows to place cut-off points in the graph of objects that is being saved, i.e. when an object contains a reference to data that should not be persisted in the database. This may also be used to break cycles in the stored object graph. It however entails that when retrieving the graph from the database, attributes that contain these objects will be set to ==nil==. To address this, a post-load action can be specified for the attribute descriptor or the container descriptor, to set these attributes to the correct values.
 
 
-!! Advanced querying
-Voyage relies in MongoDB query language to perform its search requests, and therefore for Pharo they have the form of dictionaries (they are in fact JSON structures, but that does not change anything for us).
- 
+!! Querying in Voyage
+
+Except for when using the in-memory layer, Voyage allows to retrieve object instances though queries on the database. The implementation relies on the MongoDB query language to perform the searches. This language however uses JSON structures to specify queries and to address this, Voyage provides a transparent translation from Pharo to these structures. Consequently, MongoDB queries in Voyage can be written either as blocks or as dictionaries, depending on their complexity.
+
+!!! Basic object retrieval using MongoQueries
+
+The most straightforward way to query the database is by using MongoQueries,
+
+@@todo TODO everything below here ...
+
 Most of the cases, we can simplify the query expressions by using MongoQueries, a package for transformation Pharo syntax into those sometimes annoying dictionaries. 
 
 In the following, we cover some of the main problems that we have seen while performing complex queries.
