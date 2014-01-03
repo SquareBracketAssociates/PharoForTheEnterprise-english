@@ -27,6 +27,8 @@
         {NativeBoost/}
         {NeoCSV/}
         {ParseTreeRewriter/}
+        {Reddit/}
+        {SciSmalltalk/}
         {STON/}
         {Spec/}
         {Voyage/}
