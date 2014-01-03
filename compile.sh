@@ -14,6 +14,9 @@ conf export: 'LaTeX whole book'.
 conf export: 'LaTeX by chapter'.
 conf export: 'HTML by chapter'.
 conf export: 'Markdown by chapter'.
+'chapters.list' asFileReference
+  ensureDeleted;
+  writeStreamDo: [:out | conf inputFiles do: [:file | out nextPutAll: file pathString; lf ] ].
 Smalltalk snapshot: false andQuit: true.
 EOF
 
@@ -47,16 +50,16 @@ function produce_pdf() {
 }
 
 function compile_chapters() {
-    chapters=$(cat PFTE.tex  | grep '^\\input' | grep -v common.tex | sed -e 's/^\\input{\([^}]*\)}.*$/\1/')
+    chapters=$(cat chapters.list)
 
     for chapter in $chapters; do
         echo =========================================================
         echo COMPILING $chapter
         echo =========================================================
 
-        # e.g., chapter = Zinc/Zinc.pier.tex
+        # e.g., chapter = Zinc/Zinc.pier
 
-        pier_file=$(basename $chapter .tex) # e.g., Zinc.pier
+        pier_file=$(basename $chapter) # e.g., Zinc.pier
         dir=$(dirname $chapter) # e.g., Zinc
 
         produce_pdf "${dir}" "${pier_file}"
