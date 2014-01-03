@@ -1,1 +1,1 @@
-@default_files = ( 'PFTE' );
+@default_files = ( 'EnterprisePharo.tex' );
