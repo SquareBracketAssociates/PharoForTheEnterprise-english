@@ -1,4 +1,7 @@
-!Code functionality assessment
+! Code functionality assessment
+
+@@comment it would be good to show some example of ODE
+
 I'm a proud participant of the Google Summer of Code (*GSoC>https://developers.google.com/open-source/soc/*). My project was "SciSmalltalk - Solving Ordinary Differential Equations" (ODE) in Smalltalk.
 
 So, my main task was to write the methods for solving *ODE>http://en.wikipedia.org/wiki/Ordinary_differential_equation*. It took me really a lot of time, but now there are 15 methods from which 4 are fourth-order, 3 are third-order, 6 are second-order and the rest 2 are first-order; seven methods are *explicit>http://en.wikipedia.org/wiki/Explicit_and_implicit_methods* and eight are implicit; nine are *multistep>http://en.wikipedia.org/wiki/Linear_multistep_method* methods.
@@ -50,7 +53,7 @@ If you want to know the relation between the benchmark's result, you should use 
 The proportion almost does not change, so it's easier to look at the bar diagram than at the line diagram. Here you can see which method execution takes the most time, and which the least.
 Some data you may want to see as statistics on server, but often you want to have live visual feedback on your computer to do what you need in the best way. In that case you can use *Graph-ET>http://www.youtube.com/watch?v=PkKNALQHa88*. It is a GSoC project written by Daniel Aviv Notario. You can use that framework to draw the graphs, to experiment with size, position, - everything that you have on your image and what you would like to add.
 
-+Benchmarks in Graph-ET>file://pictures/4Benchmarks in Graph-ET.png|width=10+
++Benchmarks in Graph-ET>file://pictures/4BenchmarksinGraph-ET.png|width=10+
  
 In the case that your benchmark results are close to zero, it is necessary to increase the problemSize, which multiplies the results. Make the smallest your results greater or equal to 10.
 
