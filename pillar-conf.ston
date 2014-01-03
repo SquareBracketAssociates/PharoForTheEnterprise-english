@@ -45,6 +45,7 @@
         "Zinc/Zinc.pier",
         "STON/STON.pier",
         "StartupPreferences/StartupPreferences.pier",
-        "Voyage/Voyage.pier"
+        "Voyage/Voyage.pier",
+        "SciSmalltalk/SciSmalltalk.pier"
     ]
 }
