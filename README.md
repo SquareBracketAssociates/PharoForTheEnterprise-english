@@ -35,18 +35,8 @@ Finally, to build the book
 ```
 
 The `compile.sh` script will only compile the files that are included
-from the `PFTE.tex` file. If you write a new chapter, don't forget to
-reference it in the `PFTE.tex` file to have it compiled:
-
-```latex
-\input{MyChapter/MyChapter.pier.tex}
-```
-
-You can also compile just one chapter by doing:
-
-```bash
-./compile.sh DSL/DSL.pier
-```
+from the `pillar-conf.ston` file. If you write a new chapter, don't
+forget to reference it in this file to have it compiled.
 
 Sample
 ======
