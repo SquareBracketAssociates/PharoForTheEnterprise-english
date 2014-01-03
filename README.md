@@ -38,6 +38,15 @@ The `compile.sh` script will only compile the files that are included
 from the `pillar-conf.ston` file. If you write a new chapter, don't
 forget to reference it in this file to have it compiled.
 
+Figures
+=======
+
+If you include figures in your chapter, please pay attention to the following:
+
+- you must neither use spaces nor underscores (`_`) in the file names ;
+- you must put the figures in a sub directory called `figures` in the chapter's directory ;
+- you must add your chapter to the list of chapters in the `book.latex.template` file (below the `\graphicspath` line).
+
 Sample
 ======
 
