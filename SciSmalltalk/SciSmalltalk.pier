@@ -26,7 +26,7 @@ When you got the tools to calculate stats of your criteria, you can start to ass
 
 !!!Benchmarks trend
 
-+Picture 1>file://getPlot.png|width=40+
++Picture 1>file://pictures/getPlot.png|width=10+
 
 
 We can draw the trend of execution time with a simple line diagram. This gives us a possibility to see how it changes with the evolution of our application.
@@ -36,7 +36,7 @@ The image on left is from a CI server. It is very convenient to see how benchmar
 
 ""Pay attention"": the benchmark result (time) is changing not only when you change the function, but even when you rerun it. It depends on the computer (CPU clock speed), other running processes. That's why there may be a problem. For example, there is significant increasing of the values, shown on the next image.
 
-+Picture 2>file://2.png|width=40+
++Picture 2>file://pictures/2.png|width=10+
 
  These results were produced by running tests in a virtual environment, which is capable of running several builds at the same time. So if you run such things on a virtual machine, it might be not accurate.
 
@@ -45,18 +45,18 @@ The image on left is from a CI server. It is very convenient to see how benchmar
 Also benchmark results can be visualized depending on each other, not only on the time.
 If you want to know the relation between the benchmark's result, you should use the bar graph:
 
-+Picture 3>file://3.png|width=40+
++Picture 3>file://pictures/3.png|width=10+
 
 The proportion almost does not change, so it's easier to look at the bar diagram than at the line diagram. Here you can see which method execution takes the most time, and which the least.
 Some data you may want to see as statistics on server, but often you want to have live visual feedback on your computer to do what you need in the best way. In that case you can use *Graph-ET>http://www.youtube.com/watch?v=PkKNALQHa88*. It is a GSoC project written by Daniel Aviv Notario. You can use that framework to draw the graphs, to experiment with size, position, - everything that you have on your image and what you would like to add.
 
-+Benchmarks in Graph-ET>file://4Benchmarks in Graph-ET.png|width=40+
++Benchmarks in Graph-ET>file://pictures/4Benchmarks in Graph-ET.png|width=10+
  
 In the case that your benchmark results are close to zero, it is necessary to increase the problemSize, which multiplies the results. Make the smallest your results greater or equal to 10.
 
-+ProblemSize equal 100.>file://5ProblemSize equal 100.png|width=40+ 
++ProblemSize equal 100.>file://pictures/5ProblemSize equal 100.png|width=10+ 
 
-+ProblemSize equal 1>file://6ProblemSize equal 1.png|width=40+
++ProblemSize equal 1>file://pictures/6ProblemSize equal 1.png|width=10+
    
 As you can see the results are similar, but not identical.
 
@@ -66,12 +66,12 @@ The deviation can be plotted on CI server like the benchmarks. But the result is
 
 With a bar graph it could be a more interesting situation, because at first I got an image similar to this one:
  
-+Picture 7>file://7.png|width=40+
++Picture 7>file://pictures/7.png|width=10+
 
  The problem was that step size, that I used, was so small, that every method returned almost the same result.
   The graph of accuracies with the larger step looks different :
 
-+Accuracies in Graph-ET>file://8Accuracies in Graph-ET .png|width=40+
++Accuracies in Graph-ET>file://pictures/8Accuracies in Graph-ET .png|width=10+
 Accuracies in Graph-ET  
 
 
@@ -85,23 +85,23 @@ And it is one of the most interesting things.
 
 On the image the darker colors  correspond to the smaller steps. We can see that the colors are distributed differently. It depends on how each method's result is close to the actual point. For example, the Euler and BackwardEuler methods are approaching to the point from one side, so the colors change smoothly.
 
-+Picture 9>file://9.png|width=40+
++Picture 9>file://pictures/9.png|width=10+
 
 An even more impressive thing is the dependence of accuracy on the initial state.
 
-+Picture 10>file://10.png|width=40+
++Picture 10>file://pictures/10.png|width=10+
 
 On the y-axis we have deviation between given and actual results. The intensity of the color displays the shift of initial value both positive or negative.
 The shades of a blue color indicate the negative deviation, and the shades of red - the positive deviation.
 The best methods are those, that at zero point have black colour. Because, the closer we are to the initial point (it is indicated with a black colour close to x-axis ), the closer we are to the actual value.
 
-+Picture 11>file://11.jpg|width=40+
++Picture 11>file://pictures/11.jpg|width=10+
 
  As with previous images, the graphics of Euler and BackwardEuler methods are the simplest, with the colors that are changing gradually. However, exactly these methods draw the most attention, and from their graphs we can understand that they are not the best methods. This happens because, if we take the point (A0 - 1) as the initial one, than we will get a value less than A4 and closer to the function which is drawn with blue colour. 
 
-+Picture 12:Euler method>file://12.png|width=40+
++Picture 12:Euler method>file://pictures/12.png|width=10+
 
-For the BackwardEuler method it's the same situation with initial point (A0 + 1). 
+For the BackwardEuler method it's the same situation with initial point (A0 {{{+}}} 1). 
 
 Those last two bar graphs are very exciting, because we can see live how the numerical methods work. As for me it's amazing.
 
@@ -112,7 +112,7 @@ In Graph-ET you even can merge the graphs of the benchmarks and the accuracies.
 
 Benchmarks are measured in milliseconds, and the accuracies are just the numbers. Therefore, to merge it correctly, we converted all values ​​to percentages.
 
-+Picture 13>file://13.png|width=40+
++Picture 13>file://pictures/13.png|width=10+
 
 In this image accuracy is red and benchmark's time is blue.
 
