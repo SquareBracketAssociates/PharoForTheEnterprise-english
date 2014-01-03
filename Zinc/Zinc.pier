@@ -1,4 +1,4 @@
-! Zinc
+! Zinc: a Robust, Fast and Elegant HTTP client/server
 
 HTTP is arguably the most important application level network protocol for what we consider to be the internet. It is the protocol that allows web browsers and web servers to communicate. It is also becoming the most popular protocol for implementing web services.
 
