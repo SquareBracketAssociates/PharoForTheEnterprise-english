@@ -18,8 +18,11 @@ function pillar_all() {
 }
 
 function pillar_one() {
-    echo "No yet implemented" >&2
-    exit 1
+    input=$1
+    pillar export --to='LaTeX whole book' "$input"
+    pillar export --to='LaTeX by chapter' "$input"
+    pillar export --to='HTML by chapter' "$input"
+    pillar export --to='Markdown by chapter' "$input"
 }
 
 function mypdflatex() {
