@@ -5,21 +5,16 @@ set -e
 
 VM_EXECUTABLE=./pharo
 
-function pillar_all() {
-    echo 'pillar'
-    $VM_EXECUTABLE Pharo.image eval <<EOF
-| conf |
-conf := PRSTONExportConfiguration fromFile: '${PWD}/pillar-conf.ston' asFileReference.
-conf export: 'LaTeX whole book'.
-conf export: 'LaTeX by chapter'.
-conf export: 'HTML by chapter'.
-conf export: 'Markdown by chapter'.
-'chapters.list' asFileReference
-  ensureDeleted;
-  writeStreamDo: [:out | conf inputFiles do: [:file | out nextPutAll: file pathString; lf ] ].
-Smalltalk snapshot: false andQuit: true.
-EOF
+function pillar() {
+    $VM_EXECUTABLE Pharo.image pillar "$@" --baseDirectory="$(pwd)"
+}
 
+function pillar_all() {
+    pillar export --to='LaTeX whole book'
+    pillar export --to='LaTeX by chapter'
+    pillar export --to='HTML by chapter'
+    pillar export --to='Markdown by chapter'
+    pillar show inputFiles > chapters.list
 }
 
 function pillar_one() {
