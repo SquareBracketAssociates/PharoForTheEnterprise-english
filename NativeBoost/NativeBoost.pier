@@ -225,7 +225,7 @@ First, in C you have these primitive types: ==int==, ==unsigned int==, ==char *=
 - char: Character
 - oop: Object
 
-Note that C strings ==(char *)== must be null terminated strings. NativeBoost automatically does the arguments conversion if we specify ==String== instead of ==char *== in the signature. So we can change ==NBXLibDisplay class>>open== to:
+Note that C strings ==(char \*)== must be null terminated strings. NativeBoost automatically does the arguments conversion if we specify ==String== instead of ==char \*== in the signature. So we can change ==NBXLibDisplay class>>open== to:
 
 [[[
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (String displayName))
