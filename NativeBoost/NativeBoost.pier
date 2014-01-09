@@ -74,7 +74,7 @@ $ ldd libyaz.so
 
 To add a custom directory globally to ==LD_LIBRARY_PATH==, just add it in ==/etc/ld.so.conf==.
 
-At last, remember that we can write bindings for C libraries easily, other languages such as ==C++== are beyond the scope of this chapter.
+At last, remember that we can write bindings for C libraries easily, other languages such as ==C\+\+== are beyond the scope of this chapter.
 
 To install X11 on Mac (not sure yet that this will be working)
 
