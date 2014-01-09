@@ -35,18 +35,17 @@ Finally, to build the book
 ```
 
 The `compile.sh` script will only compile the files that are included
-from the `PFTE.tex` file. If you write a new chapter, don't forget to
-reference it in the `PFTE.tex` file to have it compiled:
+from the `pillar-conf.ston` file. If you write a new chapter, don't
+forget to reference it in this file to have it compiled.
 
-```latex
-\input{MyChapter/MyChapter.pier.tex}
-```
+Figures
+=======
 
-You can also compile just one chapter by doing:
+If you include figures in your chapter, please pay attention to the following:
 
-```bash
-./compile.sh DSL/DSL.pier
-```
+- you must neither use spaces nor underscores (`_`) in the file names ;
+- you must put the figures in a sub directory called `figures` in the chapter's directory ;
+- you must add your chapter to the list of chapters in the `book.latex.template` file (below the `\graphicspath` line).
 
 Sample
 ======

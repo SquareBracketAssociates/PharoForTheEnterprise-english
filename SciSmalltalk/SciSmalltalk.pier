@@ -58,9 +58,9 @@ Some data you may want to see as statistics on server, but often you want to hav
  
 In the case that your benchmark results are close to zero, it is necessary to increase the problemSize, which multiplies the results. Make the smallest your results greater or equal to 10.
 
-+ProblemSize equal 100.>file://pictures/5ProblemSize equal 100.png|width=50+ 
++ProblemSize equal 100.>file://pictures/5ProblemSize-equal-100.png|width=50+ 
 
-+ProblemSize equal 1>file://pictures/6ProblemSize equal 1.png|width=50+
++ProblemSize equal 1>file://pictures/6ProblemSize-equal-1.png|width=50+
    
 As you can see the results are similar, but not identical.
 
@@ -75,7 +75,7 @@ With a bar graph it could be a more interesting situation, because at first I go
  The problem was that step size, that I used, was so small, that every method returned almost the same result.
   The graph of accuracies with the larger step looks different :
 
-+Accuracies in Graph-ET>file://pictures/8Accuracies in Graph-ET .png|width=50+
++Accuracies in Graph-ET>file://pictures/8Accuracies-in-Graph-ET.png|width=50+
 Accuracies in Graph-ET  
 
 
