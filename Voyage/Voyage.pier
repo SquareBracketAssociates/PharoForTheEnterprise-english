@@ -9,6 +9,7 @@ The MongoDB database backend stores the objects into MongoDB: a document-oriente
 
 Voyage provides a default way in which objects are stored in the database. Fine-grained configuration of this can be performed using Magritte descriptions. Voyage also includes a query API, which allows specific objects to be retrieved from a MongoDB database. We will discuss each of these features in this text. 
 
+(This text started as a number of blog posts by Esteban Lorenzano, which have been extensively reworked by Johan Fabry, and including additional information shared by Sabine Knöfel and Norbert Hartl.)
 
 !! Setup
 
@@ -75,8 +76,6 @@ repository enableSingleton.
 The following two tables show the complete API of Voyage. These methods are defined on ==Object==, but will only truly do work if the receiver of the message is a Voyage root. In the remainder of this document we will discuss the majority of these methods.
 
 First we show Singleton mode:
-- Table export issue
-
 ||save || stores an object into repository (insert or update)	
 ||remove || removes an object from repository	
 ||removeAll ||removes all objects of class from repository	
@@ -84,10 +83,9 @@ First we show Singleton mode:
 ||selectOne: ||retrieves first object that matches the argument
 ||selectMany: || retrieves all objects that matches the argument
 
+
+
 Second is Instance mode. In Instance mode, the first argument is always the repository on which to perform the operation.
-
-- Table export issue
-
 ||save:|| stores an object into repository (insert or update)	
 ||remove: ||removes an object from repository	
 ||removeAll: ||removes all objects of class from repository	
@@ -346,13 +344,133 @@ Lastly, attributes can be excluded from storage (and hence retrieval) by returni
 
 !! Querying in Voyage
 
-Except for when using the in-memory layer, Voyage allows to retrieve object instances though queries on the database. The implementation relies on the MongoDB query language to perform the searches. This language however uses JSON structures to specify queries and to address this, Voyage provides a transparent translation from Pharo to these structures. Consequently, MongoDB queries in Voyage can be written either as blocks or as dictionaries, depending on their complexity.
+When using the MongoDB back-end, Voyage allows to selectively retrieve object instances though queries on the database, using the MongoDB query language to perform the searches. To specify these queries, MongoDB uses JSON structures, and there are two ways in which these can be constructed. MongoDB queries can be written either as blocks or as dictionaries, depending on their complexity. In this section, we first discuss how queries can be created, and then talk about how to execute them.
 
 !!! Basic object retrieval using MongoQueries
 
-The most straightforward way to query the database is by using MongoQueries,
+The most straightforward way to query the database is by using MongoQueries. MongoQueries is not part of Voyage itself but part of the MongoTalk layer that Voyage uses to talk to MongoDB. MongoTalk provides all the low-level operations for accessing MongoDB. MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries that comply to the form that is expected by the database. 
 
-@@todo TODO everything below here ...
+In essence, MongoQueries is an embedded Domain Specific Language to create MongoDB queries. Using MongoQueries, a query looks like a normal Pharo expression (but the language is much more restricted than plain Smalltalk).
+
+Using MongoQueries, the following operators may be used in a query:
+
+|Operand|Usage|
+|==< <= > >= = ~= ==|Regular comparison operators|
+|==&==|AND operator|
+| ==|== |OR operator|
+|==not==|NOT operator|
+|==at:==|Access an embedded document|
+|==where:==|Execute a Javascript query|
+
+For example, a query that selects all elements in the database whose name is ==John Doe== is the following:
+
+[[[
+[ :each | each name = 'John Doe']
+]]]
+
+A slightly more complicated query is to find all elements in the database whose name is ==John Doe== and the value in ==orders== is greater than 10.
+
+[[[
+[ :each | (each name = 'John Doe') & (each orders > 10 ) ]
+]]]
+
+
+!!!!Using the ==at:== message to access embedded documents
+
+Since MongoDB stores documents of any complexity, it is common that one document is composed of several embedded documents, for example: 
+
+[[[
+{ 
+	"origin" : { 
+		"x" : 42, 
+		"y" : 1 
+	}, 
+	"corner" : { 
+		"x" : 10, 
+		"y" : 20 
+	}
+}
+]]]
+
+In this case, to search for objects by one of the embedded document elements, the message ""==at:=="", and the field separator """.""" needs to be used. For example, to select all the rectangles whose origin x value is equal to 42, the query is as as follows. 
+
+[[[
+[ :each | (each at: 'origin.x') = 42 ]
+]]]
+
+!!!!Using ==where:== message to perform Javascript comparisons
+
+To perform queries which are outside the capabilities of MongoQueries or even the MongoDB query language, MongoDB provides a way to write queries directly in Javascript using the ==$where== operand. This is also possible in MongoQueries by sending the ==where:== message:
+
+In the following example we repeat the previous query but a Javascript expression instead. The expression is  =='this.origin.x \== 42'== and to use it, the query is as follows:
+
+[[[
+[ :each | each where: 'this.origin.x == 42' ].
+]]]
+
+More complete documentation about the use of ==$where== is in the	 *MongoDB where documentation>http://docs.mongodb.org/manual/reference/operator/where/#op._S_where*.
+
+
+!!!Using JSON queries
+
+If MongoQueries does not allow a query to be expressed, a JSON query can be created directly. JSON queries are the MongDB query internal representation, and can be created straightforwardly in Voyage. In a nutshell: a JSON structure is mapped to a dictionary with pairs. In these pairs the key is a string and the value can be a primitive value, a collection or another JSON structure (i.e. another dictionary). To create a query, we simply need to create a dictionary that satisfies these requirements.
+
+For example, the first example of the use of MongoQueries is written as a dictionary as follows:
+
+[[[
+{ 'name' -> 'John Doe' } asDictionary
+]]]
+
+Dictionary pairs are composed with AND semantics. The following example repeats the second example of the use of MongoQueries; selecting the elements having ==John Doe== as name AND whose ==orders== value is greater than 10. 
+
+[[[
+{ 
+	'name' -> 'John Doe'.
+	'orders' -> { '$gt' : 10 } asDictionary 
+} asDictionary
+]]]
+
+@@todo TODO explain ==$gt== et al
+
+
+To construct the "greater than" statement, a new dictionary needs to be created with the required evaluation rule. Note that the more complex the query, more dictionaries we will need to be added.
+
+
+@@todo TODO first a example of nested documents, and then this and cleanup
+
+
+To express an OR condition, a dictionary whose key is =='$or'== and whose values are the expression of the condition is needed. The following example shows how to select all objects whose last name is Doe and more than ten orders OR objects with last name is not Doe and has ten or less orders:
+
+[[[
+{ '$or' : 
+	{
+		{ 
+			'name.lastName' -> 'Doe'.
+			'orders' -> { '$gt': 10 } asDictionary 
+		} asDictionary.
+		{ 
+			'name.lastName' -> { '$ne': 'Doe'} asDictionary.
+			'orders' -> { '$lte': 10 } asDictionary 
+		} asDictionary.
+	}.
+} asDictionary.
+]]]
+
+The previous example shows the kind of complexity that can be achieved easily. But we can do more. 
+Imagine that you want to take all entries with last name starting with a letter "D". You then need a regexp to match your name attributes. For this you can use the Mongo expressions ==$regexp== and ==$options$== as follows: 
+ 
+[[[
+{
+	'name.lastName' -> { 
+		'$regexp': '^D.*'.
+		'$options': 'i'.
+	} asDictionary.
+} asDictionary.
+]]]
+
+This illustrates clearly the power of JSON queries.  There is a lot of different queries you can construct. You can see a complete list of operators and usages in the *MongoDB operator documentation>http://docs.mongodb.org/manual/reference/operator*
+
+! TO PROCESS: everything below here
 
 Most of the cases, we can simplify the query expressions by using MongoQueries, a package for transformation Pharo syntax into those sometimes annoying dictionaries. 
 
@@ -456,107 +574,6 @@ Here is a list of the operators that are available in MongoQueries:
 |at:|Direct access to a field.|
 |where:|Allows the execution of a $where mongo statement|
  
-!!!!Using ==at:== message to access embedded documents
-Since MongoDB stores documents of any complexity, it is very common that one document is composed by several embedded documents, something like this: 
-
-[[[
-{ 
-	"origin" : { 
-		"x" : 42, 
-		"y" : 1 
-	}, 
-	"corner" : { 
-		"x" : 10, 
-		"y" : 20 
-	}
-}
-]]]
-
-In this case, if you want to select objects filtered by one of the embedded document elements, you need to use the message ""==at:=="", and the field separator """.""". 
-If you want to select all the rectangles whose origin x value is equal to 42, you should write your query as follow. 
-
-[[[
-Rectangle selectMany: [ :each | (each at: 'origin.x') = 42 ]
-]]]
-
-!!!!Using ==where:== message to perform complex (in javascript) comparisons
-Sometimes you need to perform queries which are outside the capabilities of MongoQueries or even the JSON MongoDB Query Language. To overcome this problem, MongoDB provides a way to write your queries directly in JavaScript, by using the ==$where== operand. 
-With MongoQueries, we can use the same by sending the ==where:== message:
-
-In the following example, we use the JavaScript expression =='this.origin.x \== 42'==.
-[[[
-Rectangle selectMany: [ :each | each where: 'this.origin.x == 42' ].
-]]]
-
-You can see a more accurate documentation about the use of ==$where== in *MongoDB where documentation>http://docs.mongodb.org/manual/reference/operator/where/#op._S_where*.
-
-
-!!!Using JSON queries
-
-MongoQueries is very powerful and most of the time you will not need to use anything else. Nevertheless, there are some situations that require a deeper control of what you request. 
-
-For that, we can always create a JSON query. JSON queries are the MongDB query internal representation, and we have a really easy way of taking advantage of it. In a nutshell, a JSON structure is a dictionary with pairs formed by a string and a value who can be a primitive value, a collection or another JSON structure (another dictionary). We can create a dictionary that acts as a query for MongoDB. 
-
-Let's see two examples expressing the same query, first using a block as offered by MongoQueries and second a JSON dictionary.
-
-""MongoQueries version:""
-
-[[[
-[ :each | each name = 'John Doe']
-]]]
-
-""Dictionary query version:""
-
-[[[
-{ 'name' -> 'John Doe' } asDictionary
-]]]
-
-This is obviously the easiest query possible, but we can easily increase the complexity.
-A dictionary pairs are composed following an AND semantics. The following example selects the elements having 'John Doe' has name and whose orders value is greater than 10. 
-
-[[[
-{ 
-	'name' -> 'John Doe'.
-	'orders' -> { '$gt' : 10 } asDictionary 
-} asDictionary
-]]]
-
-
-As you can see, to construct the "greater than" statement, we added a new dictionary with the evaluation we want. As you also can see, the more complex our query, more dictionaries we will need to add.
-
-Now to express an OR condition, we should create a dictionary whose key is =='$or'== and whose values
-are the conditioned expressions. 
-The following example show how to select all objects with last name is Doe and more than ten orders OR objects with last name is not Doe and has ten or less orders:
-
-[[[
-{ '$or' : 
-	{
-		{ 
-			'name.lastName' -> 'Doe'.
-			'orders' -> { '$gt': 10 } asDictionary 
-		} asDictionary.
-		{ 
-			'name.lastName' -> { '$ne': 'Doe'} asDictionary.
-			'orders' -> { '$lte': 10 } asDictionary 
-		} asDictionary.
-	}.
-} asDictionary.
-]]]
-
-The previous example shows you the kind of complexity you can easily achieve. But we can do more. 
-Imagine that you want to take all entries with last name starting with a letter "D". You then need a regexp to match your name attributes. For this you can use the Mongo expressions ==$regexp== and ==$options$== as follows: 
- 
-[[[
-{
-	'name.lastName' -> { 
-		'$regexp': '^D.*'.
-		'$options': 'i'.
-	} asDictionary.
-} asDictionary.
-]]]
-
-This illustrates clearly the power of JSON queries.  There is a lot of different queries you can construct. You can see a complete list of operators and usages in the *MongoDB operator documentation>http://docs.mongodb.org/manual/reference/operator*
-
 
 !! Conclusion 
 
