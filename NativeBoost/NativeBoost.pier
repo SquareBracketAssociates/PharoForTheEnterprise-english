@@ -183,7 +183,7 @@ NBXLibDisplay open
 
 When you inspect the result of the last expression you should obtain Figure
 
-+Inspecing NBXLibDisplay open>file://displayInstance.pdf|width=40|label=displayInstance+
++Inspecing NBXLibDisplay open>file://figures/displayInstance.pdf|width=40|label=displayInstance+
 
 
 !! About NativeBoostPlugin primitives
