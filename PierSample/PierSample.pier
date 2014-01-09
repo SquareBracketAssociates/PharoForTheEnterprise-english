@@ -157,14 +157,12 @@ generates Figure *pierLogo* (Note that this reference has been generated using =
 
 !!Scripts
 This is important to be able to add code to illustrate functionality. 
-For this surround the code with three opening and closing square brackets: ==[[[== and ==]]]==. 
-STEF: Damien this looks strange
+For this surround the code with three opening and closing square brackets: ==[[[== and ==]]]==.
 
-[[[
-[[[
-foo bar 
-]]]
-]]]
+= [[[
+= foo bar
+= ]]]
+
 
 generates
 
@@ -174,11 +172,10 @@ foo bar
 
 If you want either a label (to reference the script later) or a caption (to give a nice title to the script), write the following:
 
-[[[
-[[[label=script1|caption=My script that works
-foo bar
-]]]
-]]]
+= [[[label=script1|caption=My script that works
+= foo bar
+= ]]]
+
 
 which produces
 
@@ -186,7 +183,6 @@ which produces
 foo bar
 ]]]
 
-STEF: Damien the reference does not wrok anymore
 This script can then be referenced with ==\*script1\*== (produces *script1*).
 
 This is another script (referenced as *script2*), with no caption this time:
@@ -195,7 +191,31 @@ This is another script (referenced as *script2*), with no caption this time:
 foo bar
 ]]]
 
-!!Verbatim
+!!! Syntax Highlighting
+
+You may want to specify the language of a particular script to get syntax highlighting:
+
+[[[
+[[[language=SQL
+CREATE TABLE "topic" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "forum_id" integer NOT NULL,
+    "subject" varchar(255) NOT NULL
+);
+]]]
+]]]
+
+will generate
+
+[[[language=SQL
+CREATE TABLE "topic" (
+    "id" serial NOT NULL PRIMARY KEY,
+    "forum_id" integer NOT NULL,
+    "subject" varchar(255) NOT NULL
+);
+]]]
+
+!!Raw
 
 If you want to include verbatim text into a page you must enclose it in =={{{== and ==}}}==, otherwise Pier ensures that all text appears as you type it.
 
