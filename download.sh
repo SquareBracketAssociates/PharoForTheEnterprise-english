@@ -48,7 +48,7 @@ should_prepare_image=0
 if [ $# -eq 0 ]; then
     get_image
     get_vm
-    exit 0
+    should_prepare_image=1
 else
     while [ $# -gt 0 ]; do
         case "$1" in
@@ -64,9 +64,9 @@ else
         esac
         shift
     done
+fi
 
-    if [[ $should_prepare_image -eq 1 ]]; then
-        echo Preparing Pillar image
-        prepare_image
-    fi
+if [[ $should_prepare_image -eq 1 ]]; then
+    echo Preparing Pillar image
+    prepare_image
 fi
