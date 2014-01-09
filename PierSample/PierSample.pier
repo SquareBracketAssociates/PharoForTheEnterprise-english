@@ -191,19 +191,17 @@ This is another script (referenced as *script2*), with no caption this time:
 foo bar
 ]]]
 
-!!! Syntax Highlighting
+!!!Syntax Highlighting
 
 You may want to specify the language of a particular script to get syntax highlighting:
 
-[[[
-[[[language=SQL
-CREATE TABLE "topic" (
-    "id" serial NOT NULL PRIMARY KEY,
-    "forum_id" integer NOT NULL,
-    "subject" varchar(255) NOT NULL
-);
-]]]
-]]]
+= [[[language=SQL
+= CREATE TABLE "topic" (
+=     "id" serial NOT NULL PRIMARY KEY,
+=     "forum_id" integer NOT NULL,
+=     "subject" varchar(255) NOT NULL
+= );
+= ]]]
 
 will generate
 
