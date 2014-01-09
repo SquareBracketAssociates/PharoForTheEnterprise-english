@@ -709,7 +709,7 @@ Once all the system is setup for Pharo and NativeBoost to load the library - and
 !! Question to Igor
 
 
-Note that C strings (char *) must be null terminated strings. NativeBoost automatically does the arguments conversion if we specify String instead of char * in the signature.
+Note that C strings (char \*) must be null terminated strings. NativeBoost automatically does the arguments conversion if we specify String instead of char \* in the signature.
 
 How do we put a zero if we do specify a string? 
 I imagine that if we pass a string it will be turned into a Cstring (null terminated) even if the function does not mention String but (* char)
