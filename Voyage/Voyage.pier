@@ -362,16 +362,16 @@ Using MongoQueries, the following operators may be used in a query:
 |==at:==|Access an embedded document|
 |==where:==|Execute a Javascript query|
 
-For example, a query that selects all elements in the database whose name is ==John Doe== is the following:
+For example, a query that selects all elements in the database whose name is ==John== is the following:
 
 [[[
-[ :each | each name = 'John Doe']
+[ :each | each name = 'John']
 ]]]
 
-A slightly more complicated query is to find all elements in the database whose name is ==John Doe== and the value in ==orders== is greater than 10.
+A slightly more complicated query is to find all elements in the database whose name is ==John== and the value in ==orders== is greater than 10.
 
 [[[
-[ :each | (each name = 'John Doe') & (each orders > 10 ) ]
+[ :each | (each name = 'John') & (each orders > 10 ) ]
 ]]]
 
 
@@ -418,57 +418,67 @@ If MongoQueries does not allow a query to be expressed, a JSON query can be crea
 For example, the first example of the use of MongoQueries is written as a dictionary as follows:
 
 [[[
-{ 'name' -> 'John Doe' } asDictionary
+{ 'name' -> 'John' } asDictionary
 ]]]
 
-Dictionary pairs are composed with AND semantics. The following example repeats the second example of the use of MongoQueries; selecting the elements having ==John Doe== as name AND whose ==orders== value is greater than 10. 
+Dictionary pairs are composed with AND semantics. The following example repeats the second example of the use of MongoQueries; selecting the elements having ==John== as name AND whose ==orders== value is greater than 10. 
 
 [[[
 { 
-	'name' -> 'John Doe'.
+	'name' -> 'John'.
 	'orders' -> { '$gt' : 10 } asDictionary 
 } asDictionary
 ]]]
 
-@@todo TODO explain ==$gt== et al
+To construct the "greater than" statement, a new dictionary needs to be created that uses the MongoDB ==$gt== query selector to express the greater than relation. For the list of available query selectors we refer to the *MongoDB Query Selectors documentation>http://docs.mongodb.org/manual/reference/operator/query/#query-selectors*. 
 
 
-To construct the "greater than" statement, a new dictionary needs to be created with the required evaluation rule. Note that the more complex the query, more dictionaries we will need to be added.
+!!!!Using dot notation to access embedded documents
+
+To access values embedded documents with JSON queries, the dot notation is used. For example, a reformulation of the MongoQueries embedded documents example is the following:
+
+[[[
+{
+	'origin.x' -> {'$eq' : 42} asDictionary
+} asDictionary
+]]]
 
 
-@@todo TODO first a example of nested documents, and then this and cleanup
+!!!!Expressing OR conditions in the query
 
 
-To express an OR condition, a dictionary whose key is =='$or'== and whose values are the expression of the condition is needed. The following example shows how to select all objects whose last name is Doe and more than ten orders OR objects with last name is not Doe and has ten or less orders:
+To express an OR condition, a dictionary whose key is =='$or'== and whose values are the expression of the condition is needed. The following example shows how to select all objects whose name is ==John== that have more than ten orders OR objects whose name is not ==John== and has ten or less orders:
 
 [[[
 { '$or' : 
 	{
 		{ 
-			'name.lastName' -> 'Doe'.
+			'name -> 'John'.
 			'orders' -> { '$gt': 10 } asDictionary 
 		} asDictionary.
 		{ 
-			'name.lastName' -> { '$ne': 'Doe'} asDictionary.
+			'name -> { '$ne': 'John'} asDictionary.
 			'orders' -> { '$lte': 10 } asDictionary 
 		} asDictionary.
 	}.
 } asDictionary.
 ]]]
 
-The previous example shows the kind of complexity that can be achieved easily. But we can do more. 
-Imagine that you want to take all entries with last name starting with a letter "D". You then need a regexp to match your name attributes. For this you can use the Mongo expressions ==$regexp== and ==$options$== as follows: 
+
+!!!!Going beyond MongoQueries features
+
+Using JSON queries allows to use features that are not present in MongoQueries, for example the use of regular expression. Below is a query that specifies all documents with a ==fullname.lastName== that starts with a letter "D" and then matches all the attributes of the ==fullname== embedded document, by using the Mongo expressions ==$regexp== and ==$options$== as follows: 
  
 [[[
 {
-	'name.lastName' -> { 
+	'fullname.lastName' -> { 
 		'$regexp': '^D.*'.
 		'$options': 'i'.
 	} asDictionary.
 } asDictionary.
 ]]]
 
-This illustrates clearly the power of JSON queries.  There is a lot of different queries you can construct. You can see a complete list of operators and usages in the *MongoDB operator documentation>http://docs.mongodb.org/manual/reference/operator*
+This example only briefly illustrates the power of JSON queries. Many more different queries can be constructed, and the complete list of operators and usages is in the *MongoDB operator documentation>http://docs.mongodb.org/manual/reference/operator*
 
 ! TO PROCESS: everything below here
 
