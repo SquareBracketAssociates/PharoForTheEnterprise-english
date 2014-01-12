@@ -9,7 +9,7 @@ The MongoDB database backend stores the objects into MongoDB: a document-oriente
 
 Voyage provides a default way in which objects are stored in the database. Fine-grained configuration of this can be performed using Magritte descriptions. Voyage also includes a query API, which allows specific objects to be retrieved from a MongoDB database. We will discuss each of these features in this text. 
 
-(This text started as a number of blog posts by Esteban Lorenzano, which have been extensively reworked by Johan Fabry, and including additional information shared by Sabine Knöfel and Norbert Hartl.)
+(This text started as a number of blog posts by Esteban Lorenzano, which have been extensively reworked by Johan Fabry, and including additional information shared by Sabine Knoefel and Norbert Hartl. For corrections, comments and questions about this text please send a mail to Johan Fabry. His e-mail address is dcc.uchile.cl@jfabry, but the other way around. )
 
 !! Setup
 
@@ -25,11 +25,11 @@ Gofer it
 (Smalltalk at: #ConfigurationOfVoyageMongo) load.
 ]]]
 
-This will load all that is needed to persist your object models into a Mongo database.
+This will load all that is needed to persist objects into a Mongo database.
 
 !!! Install MongoDB 
 
-Next is to install the MongoDB database. How to do this depends on your operating system, and is outside of the scope of this text. We refer to the *MongoDB website>http://www.mongodb.org/downloads* for more information.
+Next is to install the MongoDB database. How to do this depends on the operating system, and is outside of the scope of this text. We refer to the *MongoDB website>http://www.mongodb.org/downloads* for more information.
 
 !!! Create a repository
 
@@ -55,8 +55,8 @@ Alternatively, the port to connect to is specified by using the message ==host:p
 
 Voyage can work in two different modes:
 
-- Singleton mode: There is an unique repository in your image, which works as a singleton keeping all the data. When you use this mode, you can program using a "behavioral complete" approach where your instances respond to a certain vocabulary (see below for more details about vocabulary and usage).
-- Instance mode: You can have an undetermined number of repositories living in your image. Of course, this mode requires you to make explicit which repositories you are going to use.
+- Singleton mode: There is an unique repository in the image, which works as a singleton keeping all the data. When you use this mode, you can program using a "behavioral complete" approach where instances respond to a certain vocabulary (see below for more details about vocabulary and usage).
+- Instance mode: You can have an undetermined number of repositories living in the image. Of course, this mode requires you to make explicit which repositories you are going to use.
 
 
 By default, Voyage works in instance mode: the returned instance has to be passed as an argument to all database API operations. Instead of having to keep this instance around, a convenient alternative is to use Singleton mode. Singleton mode removes the need to pass the repository as an argument to all database operations. To use Singleton mode, execute:
@@ -67,13 +67,11 @@ repository enableSingleton.
 
 @@note Pay attention: Only one repository can be the singleton, hence executing this line will remove any other existing repositories from Singleton mode!
 
-@@note In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode is straightforward as well. See the ==VORepository== persistence protocol for more information.
+@@note In this document, we are going to cover Voyage in Singleton mode, but using it in Instance mode is straightforward as well. See the ==persistence== protocol of ==VORepository== for more information.
 
 !!! Voyage API 
 
-@@todo TODO Update the API with the newly revealed methods. See VOMongoRepository persistence protocol
-
-The following two tables show the complete API of Voyage. These methods are defined on ==Object==, but will only truly do work if the receiver of the message is a Voyage root. In the remainder of this document we will discuss the majority of these methods.
+The following two tables show a representative subset of the API of Voyage. These methods are defined on ==Object== and ==Class==, but will only truly perform work if (instances of) the receiver of the message is a Voyage root. See the ==voyage-model-core-extensions== persistence protocol on both classes for the full API of Voyage.
 
 First we show Singleton mode:
 ||save || stores an object into repository (insert or update)	
@@ -82,7 +80,6 @@ First we show Singleton mode:
 ||selectAll ||retrieves all objects of some kind
 ||selectOne: ||retrieves first object that matches the argument
 ||selectMany: || retrieves all objects that matches the argument
-
 
 
 Second is Instance mode. In Instance mode, the first argument is always the repository on which to perform the operation.
@@ -190,6 +187,8 @@ This will add a document to the database with this structure:
 
 
 !!!Referencing other roots
+@referencing
+
 Sometimes the objects are trees that contain other root objects. For instance, you could want to keep users and roles as roots, i.e. in different collections, and a user has a collection of roles. If the embedded objects (the roles) are root objects, Voyage will store references to these objects instead of including them in the document.
 
 Returning to our rectangle example, let's suppose we want to keep the points in a separate collection. In other words, now the points will be referenced instead of embedded.
@@ -245,7 +244,7 @@ An alternative solution to break cycles, avoiding the declaration of new voyage 
 !! Enhancing Storage
 @enhancing
 
-You can change the way your objects are stored by adding Magritte descriptions to their classes. In this section, first we will talk about configuration options for the storage format of the objects, and then we will treat more advanced loading and saving of attributes, which can be used, e.g. to break cycles in embedded objects.
+How objects are stored can be changed by adding Magritte descriptions to their classes. In this section, first we will talk about configuration options for the storage format of the objects, and then we will treat more advanced loading and saving of attributes, which can be used, e.g. to break cycles in embedded objects.
 
 !!!Configuring Storage
 
@@ -344,7 +343,7 @@ Lastly, attributes can be excluded from storage (and hence retrieval) by returni
 
 !! Querying in Voyage
 
-When using the MongoDB back-end, Voyage allows to selectively retrieve object instances though queries on the database, using the MongoDB query language to perform the searches. To specify these queries, MongoDB uses JSON structures, and there are two ways in which these can be constructed. MongoDB queries can be written either as blocks or as dictionaries, depending on their complexity. In this section, we first discuss how queries can be created, and then talk about how to execute them.
+When using the MongoDB back-end, Voyage allows to selectively retrieve object instances though queries on the database, using the MongoDB query language to perform the searches. To specify these queries, MongoDB uses JSON structures, and when using Voyage there are two ways in which these can be constructed. MongoDB queries can be written either as blocks or as dictionaries, depending on their complexity. In this section, we first discuss both ways in which queries can be created, and we end the section by talking about how to execute these queries.
 
 !!! Basic object retrieval using MongoQueries
 
@@ -480,114 +479,39 @@ Using JSON queries allows to use features that are not present in MongoQueries, 
 
 This example only briefly illustrates the power of JSON queries. Many more different queries can be constructed, and the complete list of operators and usages is in the *MongoDB operator documentation>http://docs.mongodb.org/manual/reference/operator*
 
-! TO PROCESS: everything below here
 
-Most of the cases, we can simplify the query expressions by using MongoQueries, a package for transformation Pharo syntax into those sometimes annoying dictionaries. 
+!!!Executing a query
 
-In the following, we cover some of the main problems that we have seen while performing complex queries.
+Voyage has a group of methods to perform search that can be more or less mapped to regular collection methods. For the examples, we will use stored Point instances we have seen before (in the section *referencing* other roots) to illustrate the use of these methods. Note that all queries in this section can be either MongoQueries or JSON queries, unless otherwise specified.
 
-!!!Sorting and limiting object retrieval
+!!!!Basic object retrieval
 
-Voyage has a group of protocols to perform search that can be more or less mapped to regular collection protocols: 
+The following methods provide basic object retrieval.
 
-- ""==selectAll=="" Retrieves all documents in the database.
+- ""==selectAll=="" Retrieves all documents in the corresponding database collection. For example, ==Point selectAll== will return all Points.
+- ""==selectOne:=="" Retrieves one document that matches the query. This maps to a ==detect:== method and takes as argument a query specification (either a MongoQuery or a JSON Query). For example, ==Point selectOne: [:each | each x = 42] == or ==Point selectOne: { 'x' -> 42 } asDictionary==
+- ""==selectMany:=="" Retrieves all the documents that match the query. This maps to a ==select:== method and takes as argument a query specification, like above.
 
-- ""==selectOne:=="" Retrieves one document. This maps to a ==detect:== method.
-@@note what is the argument? show an example
+!!!!Limiting object retrieval and sorting
 
-- ""==selectMany:=="" Retrieves many documents. This maps to a ==select:== method.
-@@note what is the argument? show an example
+The methods that query the database look similar to their equivalent in the Collection hierarchy. However unlike regular collections which can operate fully on memory, often Voyage collection queries need to be customized in order to optimize memory consumption and/or access speed. This is because there can be literally millions of documents in each collection, surpassing the memory limit of Smalltalk, and also the database searches have a much higher performance than the equivalent code in Smalltalk. 
 
-
-@@note may be put an example here for the three queries
+The first refinement to the queries consist in limiting the amount of results that are returned. Of the collection of all the documents that match, a subset is returned that starts at the index that is given as argument. This can be used to only retrieve the first N matches to a query, or go over the query results in smaller blocks to avoid out of memory issues in the Smalltalk image.
 
 
-As it is said, you can understand these methods just like their equivalents in Collection protocols. But, unlike regular collections which can operate fully on memory, often Voyage collection queries need to be customized in order to optimize memory consumption and/or accessing speed (since there can be literally millions of documents in each collection). 
-To perform this task better, we provide some protocols that extend the common operations:
+- ""==selectMany:limit:=="" Retrieves a collection of objects from the database that match the query, up to the given limit. For example, ==Point selectMany: [:each | each x = 42] limit: 10 ==
+- ""==selectMany:limit:offset:=="" Retrieves a collection of objects from the database that match the query. The first object retrieved will be at the offset position plus one of the results of the query, and up to limit objects will be returned. For example, if the above example matched 25 points, the last 15 points will be returned by the query ==Point selectMany: [:each | each x = 42] limit: 20 offset: 10== (any limit argument greater than 15 will do for this example).
 
-- ""==selectAllSortBy:=="" It retrieves all documents from a collection, sorted by the information that you provide as a dictionary. 
+The second customization that can be performed is to sort the results. To use this, the class ==VOOrder== provides constants to specify ==ascending== or ==descending== sort order. 
 
-[[[
-Customer selectAllSortBy: { #name -> VOOrder ascending } asDictionary.
-]]]
+- ""==selectAllSortBy:=="" Retrieves all documents, sorted by the specification in the argument, which needs to be a JSON query. For example, == Point selectAllSortBy: { #x -> VOOrder ascending} asDictionary == returns the points in ascending x order.
+- ""==selectMany:sortBy:=="" Retrieves all the documents that match the query and sorts them. For example, == Point selectMany: { 'x' -> 42 } SortBy: { #y -> VOOrder descending} asDictionary == returns the points where x is 42, in descending y order.
+- ""==selectMany:sortBy:limit:offset:=="" Provides for specifying a limit and offset to the above query.
 
-@@note esteban why this is not sortedBy?
-
-
-This will answer all objects in ?? which collection?? collection in ascending order by its attribute 'name'.
-
-@@note The class ==VOOrder== provides constants to pick ==ascending== or ==descending== sort order. 
-
-- ""==selectMany: aBlock sortBy: aDictionary=="" Retrieves a collection of objects from mongo database filtered by an expression (a block) and sorted according to a dictionary mapping. 
-
-[[[
-Customer 
-	selectMany: [ :each | each orders > 10 ] 
-	sortBy: { #name -> VOOrder ascending } asDictionary.
-]]]
-
-@@note Esteban you should explain when we should pass a block and when a dictionary. This is unclear. And in addition 
-
-
-- ""==selectMany: aBlock limit: anInteger=="" Retrieves a collection of objects from mongo database filtered by an expression. 
-
-The collection size is restricted to the limit provided.
- 
-[[[
-Customer 
-	selectMany: [ :each | each orders > 10 ] 
-	limit: 100
-]]]
-
-This is useful when you know that you are not going to use more than a certain amount of objects, or when you know that there is a large number of persistent objects and you do not want to push the environment to its limit.
-
-- ""==selectMany: aBlock limit: anInteger offset: anInteger=="" Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided.
-
-The first object retrieved will be at the offset position plus one.
-
-[[[
-Customer 
-	selectMany: [ :each | each orders > 10 ] 
-	limit: 100
-	offset: 100
-]]]
-
-This is especially useful when paginating objects. 
-
-- ""==selectMany:sortBy:limit:offset:=="" Retrieves a collection of objects from mongo database filtered by an expression. The collection size is restricted to the limit provided. The first object retrieved will be at the offset position plus one.
-
-The resulting collection will be sorted by the expression provided. In the example below the expression states that the result is sorted in increasing value of the name field.
-
-[[[
-Customer 
-	selectMany: [ :each | each orders > 10 ]
-	sortBy: { #name -> VOOrder ascending } asDictionary
-	limit: 100
-	offset: 100
-]]]
-
-
-
-!!! Using MongoQueries 
-The easiest (and recommended when possible) way to query MongoDB database is by using the package MongoQueries. MongoQueries is not part of Voyage but an optional part of the  MongoTalk layer. 
-MongoTalk provides all the low-level operations for accessing MongoDB. MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries in the form expected by the database. 
-
-In essence, MongoQueries is a Domain Specific Language to create MongoDB queries. A mongo query looks like a regular Pharo expression, but is much more restricted than what you can actually do with plain Smalltalk.
-
-Here is a list of the operators that are available in MongoQueries:
-
-|Operand|Usage|
-|<, <=, >, >=, =, ~=|Regular comparison operators, they work as usual|
-|&|AND operator|
-|{{{|}}}|OR operator|
-|not|NOT operator|
-|at:|Direct access to a field.|
-|where:|Allows the execution of a $where mongo statement|
- 
 
 !! Conclusion 
 
-In this chapter we presented Voyage a simple but powerful layer to store documents. We focused on the Mongo back-end and show that the package MongoQueries supports many possibilities.
+In this chapter we presented Voyage, a persistence framework whose strength is the presence of a basic object-document mapper and a back-end to the MongoDB database. We have shown how to store objects in, and remove object from the database, and how to optimise the storage format. This was followed by a discussion of querying the database; showing the two ways in which queries can be constructed and detailing how queries are ran. 
 
 
 % Local Variables:
