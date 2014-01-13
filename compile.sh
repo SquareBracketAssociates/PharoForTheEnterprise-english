@@ -3,26 +3,20 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-VM_EXECUTABLE=./pharo
-
-function pillar() {
-    $VM_EXECUTABLE Pharo.image pillar "$@" --baseDirectory="$(pwd)"
-}
-
 function pillar_all() {
-    pillar export --to='LaTeX whole book'
-    pillar export --to='LaTeX by chapter'
-    pillar export --to='HTML by chapter'
-    pillar export --to='Markdown by chapter'
-    pillar show inputFiles > chapters.list
+    ./pillar export --to='LaTeX whole book'
+    ./pillar export --to='LaTeX by chapter'
+    ./pillar export --to='HTML by chapter'
+    ./pillar export --to='Markdown by chapter'
+    ./pillar show inputFiles > chapters.list
 }
 
 function pillar_one() {
     input=$1
-    pillar export --to='LaTeX whole book' "$input"
-    pillar export --to='LaTeX by chapter' "$input"
-    pillar export --to='HTML by chapter' "$input"
-    pillar export --to='Markdown by chapter' "$input"
+    ./pillar export --to='LaTeX whole book' "$input"
+    ./pillar export --to='LaTeX by chapter' "$input"
+    ./pillar export --to='HTML by chapter' "$input"
+    ./pillar export --to='Markdown by chapter' "$input"
 }
 
 function mypdflatex() {
