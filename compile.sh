@@ -12,7 +12,7 @@ function pillar_all() {
 }
 
 function pillar_one() {
-    input=$1
+    input="$1"
     ./pillar export --to='LaTeX whole book' "$input"
     ./pillar export --to='LaTeX by chapter' "$input"
     ./pillar export --to='HTML by chapter' "$input"
@@ -69,7 +69,7 @@ function compile_latex_book() {
 if [[ $# -eq 1 ]]; then
     dir=$(dirname "$1") # e.g., Zinc
     pier_file=$(basename "$1") # e.g., Zinc.pier
-    pillar_one "${pier_file}"
+    pillar_one "$1"
     produce_pdf "${dir}" "${pier_file}"
 else
     pillar_all
