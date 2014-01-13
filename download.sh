@@ -32,6 +32,7 @@ get_image() {
         elif [ $(basename $f) == "pillar" ]; then
             echo pillar
             unzip -qp  "$tempzip" "$f" > "pillar"
+            chmod +x pillar
         fi
     done
 }
