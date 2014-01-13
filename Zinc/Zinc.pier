@@ -77,7 +77,7 @@ Transcript flush.
 
 If you have the Transcript open, you should see something like the following:
 
-[[[language=html
+[[[language=http
 HTTP/1.1 200 OK
 Date: Tue, 08 May 2012 19:00:25 GMT
 Modification-Date: Thu, 10 Feb 2011 08:32:30 GMT
@@ -108,7 +108,7 @@ Transcript flush.
 
 In an opened Transcript you will now see:
 
-[[[language=
+[[[language=http
 GET /zn/small.html HTTP/1.1
 Accept: */*
 User-Agent: Zinc HTTP Components 1.0
@@ -293,16 +293,12 @@ ZnUrl new
 The printable representation of the URL is the following. Now you can inspect the following expressions.
 % @@todo add a screen shot@@
 
-[[[language=
-http://www.google.com/search?q=Pharo%20Smalltalk==
-]]]
+= http://www.google.com/search?q=Pharo%20Smalltalk
 
 This can easily be parsed again into a ==ZnUrl== object
 
-[[[
-'http://www.google.com/search?q=Pharo%20Smalltalk' asZnUrl.
-'http://www.google.com:80/search?q=Pharo Smalltalk' asZnUrl.
-]]]
+= 'http://www.google.com/search?q=Pharo%20Smalltalk' asZnUrl.
+= 'http://www.google.com:80/search?q=Pharo Smalltalk' asZnUrl.
 
 Note how the ==ZnUrl== parser is forgiving with respect to the space, like most browser would do. When producing an external representation, proper encoding will take place. Please consult the class comment of ==ZnUrl== for a more detailed look at the capabilities of ==ZnUrl== as a standalone object.
 
