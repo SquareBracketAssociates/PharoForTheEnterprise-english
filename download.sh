@@ -25,9 +25,13 @@ get_image() {
     wget ${CERTCHECK} --progress=bar:force --output-document="$tempzip" "$IMAGE_URL"
     for f in $(zipinfo -1 "$tempzip"); do
         ext="${f##*.}"
+        file=$(basename $f)
         if [ "$ext" == image -o "$ext" == changes ]; then
             echo "Pharo.$ext"
             unzip -qp  "$tempzip" "$f" > "Pharo.$ext"
+        elif [ $(basename $f) == "pillar" ]; then
+            echo pillar
+            unzip -qp  "$tempzip" "$f" > "pillar"
         fi
     done
 }
