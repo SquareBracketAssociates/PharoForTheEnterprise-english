@@ -3,7 +3,7 @@
 
 Voyage is a small persistence framework developed by Esteban Lorenzano, constructed as a small layer between the objects and a persistency mechanism. It is purely object-oriented and has as a goal to present a minimal API to most common development usages. Voyage is a common layer for different backends but currently it supports just two: an ''in-memory'' layer and a backend for the MongoDB database (*http://mongodb.org>http://mongodb.org/*).
 
-The in-memory layer is useful to prototype applications quickly and for initial development without a database back-end, for example using the Smalltalk image as the persistency mechanism. It is fully functional except for the ability to use database queries to retrieve a specific selection of objects.  
+The in-memory layer is useful to prototype applications quickly and for initial development without a database back-end, for example using the Smalltalk image as the persistency mechanism. 
 
 The MongoDB database backend stores the objects into MongoDB: a document-oriented database. In MongoDB each stored entity is a JSON-style document. This document-centric nature allows for persisting complex object models in a fairly straightforward fashion. MongoDB is not an object database, like Gemstone, Magma or Omnibase, so there still is a small gap to be bridged between objects and documents. To achieve this, Voyage contains an Object-Document mapper, i.e. the document database equivalent to an Object-Relational Mapper or ORM. While this mapper does not solve all the known impedance mismatch issues when going from objects to a database, we find that using a document database fits better with the object world than a combination of a ORM and a relational database. This is because document databases tend to provide better support for the dynamic nature of the object world.
 
@@ -20,9 +20,8 @@ To install Voyage, including support for the MongoDB database, go to the Configu
 [[[
 Gofer it
 	url: 'http://smalltalkhub.com/mc/estebanlm/Voyage/main';
-	package: 'ConfigurationOfVoyageMongo';
-	load.
-(Smalltalk at: #ConfigurationOfVoyageMongo) load.
+	configurationOf: 'VoyageMongo';
+	loadStable.
 ]]]
 
 This will load all that is needed to persist objects into a Mongo database.
@@ -343,20 +342,20 @@ Lastly, attributes can be excluded from storage (and hence retrieval) by returni
 
 !! Querying in Voyage
 
-When using the MongoDB back-end, Voyage allows to selectively retrieve object instances though queries on the database, using the MongoDB query language to perform the searches. To specify these queries, MongoDB uses JSON structures, and when using Voyage there are two ways in which these can be constructed. MongoDB queries can be written either as blocks or as dictionaries, depending on their complexity. In this section, we first discuss both ways in which queries can be created, and we end the section by talking about how to execute these queries.
+Voyage allows to selectively retrieve object instances though queries on the database. When using the in-memory layer, queries are standard Smalltalk blocks. When using the MongoDB back-end, the MongoDB query language is used to perform the searches. To specify these queries, MongoDB uses JSON structures, and when using Voyage there are two ways in which these can be constructed. MongoDB queries can be written either as blocks or as dictionaries, depending on their complexity. In this section, we first discuss both ways in which queries can be created, and we end the section by talking about how to execute these queries.
 
-!!! Basic object retrieval using MongoQueries
+!!! Basic object retrieval using blocks or MongoQueries
 
-The most straightforward way to query the database is by using MongoQueries. MongoQueries is not part of Voyage itself but part of the MongoTalk layer that Voyage uses to talk to MongoDB. MongoTalk provides all the low-level operations for accessing MongoDB. MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries that comply to the form that is expected by the database. 
+The most straightforward way to query the database is by using blocks when using the in-memory layer or MongoQueries when using the MongoDB back-end. In this discussion we will focus on the use of MongoQueries, as the use of blocks is standard Smalltalk.
 
-In essence, MongoQueries is an embedded Domain Specific Language to create MongoDB queries. Using MongoQueries, a query looks like a normal Pharo expression (but the language is much more restricted than plain Smalltalk).
+MongoQueries is not part of Voyage itself but part of the MongoTalk layer that Voyage uses to talk to MongoDB. MongoTalk was made by Nicolas Petton and provides all the low-level operations for accessing MongoDB. MongoQueries transforms, within certain restrictions, regular Pharo blocks into JSON queries that comply to the form that is expected by the database. In essence, MongoQueries is an embedded Domain Specific Language to create MongoDB queries. Using MongoQueries, a query looks like a normal Pharo expression (but the language is much more restricted than plain Smalltalk).
 
 Using MongoQueries, the following operators may be used in a query:
 
 |Operand|Usage|
 |==< <= > >= = ~= ==|Regular comparison operators|
 |==&==|AND operator|
-| ==|== |OR operator|
+| ==\|== |OR operator|
 |==not==|NOT operator|
 |==at:==|Access an embedded document|
 |==where:==|Execute a Javascript query|
@@ -412,7 +411,7 @@ More complete documentation about the use of ==$where== is in the	 *MongoDB wher
 
 !!!Using JSON queries
 
-If MongoQueries does not allow a query to be expressed, a JSON query can be created directly. JSON queries are the MongDB query internal representation, and can be created straightforwardly in Voyage. In a nutshell: a JSON structure is mapped to a dictionary with pairs. In these pairs the key is a string and the value can be a primitive value, a collection or another JSON structure (i.e. another dictionary). To create a query, we simply need to create a dictionary that satisfies these requirements.
+If MongoQueries does not allow a query to be expressed, a JSON query can be created directly. JSON queries are the MongDB query internal representation, and can be created straightforwardly in Voyage. In a nutshell: a JSON structure is mapped to a dictionary with pairs. In these pairs the key is a string and the value can be a primitive value, a collection or another JSON structure (i.e. another dictionary). To create a query, we simply need to create a dictionary that satisfies these requirements. Note that the use of JSON queries is strictly for when using the MongoDB back-end. Other back-ends, \eg~the in-memory layer, do not provide support for the use of JSON queries.
 
 For example, the first example of the use of MongoQueries is written as a dictionary as follows:
 
