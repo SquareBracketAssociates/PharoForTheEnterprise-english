@@ -415,7 +415,10 @@ NBXLibDisplay open atomNamed: '_NET_CLIENT_LIST_STACKING'
 
 which answers ==460== on our machine (this changes for each display).
 
-Then we need to get the root window of the display before querying any property on it, using the Xlib function:
+
+!!! Getting the root window
+
+We need to get the root window of the display before querying any property on it, using the Xlib function:
 [[[
 Window XDefaultRootWindow(Display *display);
 ]]]
@@ -431,7 +434,6 @@ NBExternalObject subclass: #NBXLibWindow
 	category: 'NBXLib'
 ]]]
 
-
 and update the shared pool (do not forget to run ==NBXLibTypes initialize==):
 [[[
 NBXLibTypes class>>initialize 
@@ -441,14 +443,14 @@ NBXLibTypes class>>initialize
 	Window := #NBXLibWindow.
 ]]]
 
+We can implement a method defined on the ==NBXLibDisplay== class to get the defaultRootWindow by calling the ==XDefaultRootWindow== function.
+Now you should be able to define it by yourself without reading the following definition. We define it as follows:
 
-We can implement the primitive for ==XDefaultRootWindow==:
 [[[
 NBXLibDisplay>>defaultRootWindow
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	^self nbCall: #(Window XDefaultRootWindow(self))
 ]]]
-
 
 This code should answer a ==NBXLibWindow== instance:
 [[[
@@ -456,20 +458,40 @@ NBXLibDisplay open defaultRootWindow
 ]]]
 
 
-As Xlib functions often need the display and the window for windows manipulations, we should update the code so a ==NBXLibWindow== instance could reference its display:
+As Xlib functions often need to access the display and the window for window manipulations, we should update the code so that a ==NBXLibWindow== instance could reference its display. We add an instance variable ==display== to the NBXLibWindow class and defined accessor methods.
+
+[[[
+NBExternalObject subclass: #NBXLibWindow
+	uses: TNBXLibLibrary
+	instanceVariableNames: 'display'
+	classVariableNames: ''
+	poolDictionaries: 'NBXLibTypes'
+	category: 'NBXLib'
+
+NBXLibWindow>>display: aNBXLibDisplay
+	display := aNBXLibDisplay
+
+NBXLibWindow>>display
+	^ display
+
+]]]
+
+Then we rename the previous ==defaultRootWindow== to ==primitiveDefaultRootWindow== and move it to the private protocol. Finally we define
+a new method ==defautlRootWindow== as follows:
+
 
 [[[
 NBXLibDisplay>>defaultRootWindow
-	^ self primDefaultRootWindow display: self
+	^ self primDefaultRootWindow display: self ; yourself
 
 NBXLibDisplay>>primDefaultRootWindow
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	^self nbCall: #(Window XDefaultRootWindow(self))
 
-NBXLibWindow>>display: aNBXLibDisplay
-	display := aNBXLibDisplay
+
 ]]]
 
+!!! Getting Properties 
 
 Now the hard part. Xlib has a generic functions to get properties, ==XGetWindowProperty==. The signature is:
 [[[
