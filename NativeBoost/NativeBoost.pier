@@ -667,6 +667,7 @@ typedef struct {
 So far we did not define C structures in NativeBoost but we used NBExternalObject (wrapper to an handle to an external opaque objects). 
 Now we will tell to NativeBoost that we want to define a structure. Here is the way to proceed. First we create a subclass of ==NBExternalStructure== and we will add on the class side a description of all the structure field using NativeBoost types and alias we define.
 
+@@note what is the advantages over a ExternalObject? Access to information? accessors?
 
 !!!! Defining a subclass.
 
