@@ -1,7 +1,7 @@
 ! NativeBoost Recipes
 
-There is nothing better than real examples to learn. 
-In this chapter, we will create some bindings to X11 Xlib. 
+There is nothing better than real examples to learn. In this chapter, we will create some bindings to X11 Xlib. This chapter was written by L. Laffont during a visit in the RMOD team and largely revisited by S. Ducasse. 
+
 
 !! Some documentation
 
@@ -160,17 +160,17 @@ NBXLibDisplay class>>open: displayName
 Note that we specify in the signature that the function returns an ==NBXLibDisplay== (i.e., an instance of the class itself) while the C function mentioned a ==Display== type. NativeBoost is handling that for us. 
 
 
-
 Then we can try to open the default X display (number 0):
 
 [[[
 NBXLibDisplay  open: ':0'
 ]]]
 
-that should answer a new instance on ==NBXLibDisplay==. If ==displayName== argument is ==NULL==, XOpenDisplay defaults to the value of the ==DISPLAY== environment variable. As it's often what we want, we can add a new method named ==open== defined as follows:
+that should answer a new instance on ==NBXLibDisplay==. If ==displayName== argument is ==NULL==, XOpenDisplay defaults to the value of the ==DISPLAY== environment variable. As it's often what we want, we can add a new class method named ==open== defined as follows:
 
 [[[
-open
+NBXLibDisplay class>>open
+
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 	^self nbCall: #(NBXLibDisplay XOpenDisplay (nil))
 ]]]
@@ -195,9 +195,9 @@ This line:
 <primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 ]]]
 
-is called a ==pragma==. It indicates that the ==#primitiveNativeCall== of the ==#NativeBoostPlugin== should be called when this method is executed. If it fails, an ==errorCode== is returned and the Smalltalk code below is executed.
+is called a ==pragma==. It indicates that the ==#primitiveNativeCall== of the ==#NativeBoostPlugin== should be called when this method is executed. If it fails, an ==errorCode== is returned and the  code below is executed. The pragma indicates to the system to execute the assembly code that was generated to perform a foreign call. If it fails the code ==nbCall:== is executed. 
 
-@@note to me the explanation is wrong. This pragma indicates that the Smalltalk should be rewritten on the fly as a foreign call. 
+
 
 [[[
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (char * displayName))
@@ -225,7 +225,9 @@ First, in C you have these primitive types: ==int==, ==unsigned int==, ==char *=
 - char: Character
 - oop: Object
 
-Note that C strings ==(char \*)== must be null terminated strings. NativeBoost automatically does the arguments conversion if we specify ==String== instead of ==char \*== in the signature. So we can change ==NBXLibDisplay class>>open== to:
+Note that C strings ==(char \*)== must be null terminated strings. NativeBoost automatically does the arguments conversion if we specify ==String== instead of ==char \*== in the signature. Therefore it is safer to use ==String== than ==* char== because ==* char== is managed as a simple pointer to the beginning of string but does not make sure that the string is null-terminated.
+
+So we can change ==NBXLibDisplay class>>open== to:
 
 [[[
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (String displayName))
@@ -262,15 +264,15 @@ Do not forget to evaluate ==NBXLibDisplay initialize== once you define the metho
 
 [[[
 NBXLibDisplay class>>initialize
-	super initialize. 
+
 	Display := #NBXLibDisplay
 ]]]
 
-@@note the super looks suspicious to me. Then the following code does not work for me. Then nothing worked anymore. How do I reset the cache? stopped here too bad may be reloading the code may do something.
 
 When we run again ==NBXLibDisplay open==, NativeBoost will map ==Display== return type to ==NBXLibDisplay== class.
 
-As we often need to have these mapping across several classes in our package, it is best to use shared pools. We then define the shared pool NBXLibTypes and define a class variable named ==Display== that we initialize correctly. Then all our code is:
+As we often need to have these mapping across several classes in our package, it is best to use shared pools. We then define the shared pool ==NBXLibTypes== 
+and define a class variable named ==Display== that we initialize correctly. Then all our code is:
 
 [[[
 Trait named: #TNBXLibLibrary
@@ -290,7 +292,7 @@ SharedPool subclass: #NBXLibTypes
 	category: 'NBXLib'
 
 NBXLibTypes class>>initialize 
-	super initialize.
+
 	Display := #NBXLibDisplay.
 	
 NBExternalObject subclass: #NBXLibDisplay
@@ -312,7 +314,7 @@ NBXLibDisplay class>>open: displayName
 
 !!! A word about NBExternalObject
 
-  == NBExternalObject== represents an external object of one kind, provided by some external library/function. An instance holds a handle, which is used to identify the external object when this instance is passed as an argument, or when it is used as a return type in function signature.
+Instances of ==NBExternalObject== represent an external object of one kind, provided by some external library/function. An instance holds a handle, which is used to identify the external object when this instance is passed as an argument, or when it is used as a return type in function signature.
 
 A typical usage of ==NBExternalObject== is to create a subclass, and then use that subclass name directly in function signatures. This is what we did previously.
 
@@ -326,7 +328,7 @@ MyExternalObject class>>newObject
 	^self nbCall: #(Display XOpenDisplay (nil))
 ]]]
 
-Here, we assume that ==XOpenDisplay()== returns some handle (or pointer) to some opaque external structure. By putting NBExternalObject subclass (MyExternalObject) as a return type into the function signature, we are telling the code generator to automatically convert the return value into an instance of a given class and initialize its handle to the value returned by the function.
+Here, we assume that ==XOpenDisplay()== returns some handle (or pointer) to some opaque external structure. Using a NBExternalObject' subclass (e.g., MyExternalObject) as a return type into the function signature, we are telling the code generator to automatically convert the return value into an instance of a given class and initialize its handle to the value returned by the function.
 
 When used as argument type, the value, which is used to pass to the external function is a value held in the ==handle== instance variable.
 
@@ -336,14 +338,14 @@ is an instance of your class, and nothing else. If not, the primitive will fail 
 
 !! Self magic
 
-In order to close the connection to a Xlib Display, we should use the C function:
+To close the connection to a Xlib Display, we should use the C function:
 
 [[[
 int XCloseDisplay(Display *);
 ]]]
 
 
-Since we are in Pharo, we would like to have an oriented-object API instead of defining all C functions on class side for example. So we would like to close the connection like this: ==myDisplay close==. Let's define the function in ==NBXLibDisplay==:
+Since we are in Pharo, we would like to have an oriented-object API instead of defining all C functions on class side for example. So we would like to close the connection like this: ==myDisplay close==. Let's define an instance level method in the class ==NBXLibDisplay==:
 
 [[[
 NBXLibDisplay>>close
@@ -359,7 +361,6 @@ NBXLibDisplay>>close
 	^self nbCall: #(int XCloseDisplay(self))
 ]]]
 
-
 Now we can open and close the display:
 
 [[[
@@ -371,7 +372,7 @@ display close.
 
 !! Let's start the real fun stuff!
 
-The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window have properties attached, called ==Atom==. Each ==Atom== type has a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
+The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window has properties attached, called Atoms. Each Atom type has a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
 
 
 First we need to find the identifier of the Atom ==_NET_CLIENT_LIST_STACKING== using the Xlib function ==XInternAtom==:
@@ -405,20 +406,21 @@ NBXLibDisplay>>atomNamed: aString
 	^self nbCall: #(Atom XInternAtom(self, String aString, true))
 ]]]
 
+Note that we define the method as an instance method since we will invoke it on an existing object representing the display. 
 Here we give ==true== to the last argument so the Atom will be created if it does not exist. Note that for booleans we don't need to specify the type. You can check that this is working:
 
 [[[
 NBXLibDisplay open atomNamed: '_NET_CLIENT_LIST_STACKING' 
 ]]]
 
-which answers ==460== on my machine (this changes for each display).
+which answers ==460== on our machine (this changes for each display).
 
 Then we need to get the root window of the display before querying any property on it, using the Xlib function:
 [[[
 Window XDefaultRootWindow(Display *display);
 ]]]
 
-  ==Window== will be an external object we want to attach functions to, so let's define it as:
+Since  ==Window== will be an external object we want to attach functions to, so let's define it as:
 
 [[[
 NBExternalObject subclass: #NBXLibWindow
