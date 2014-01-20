@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This script is meant for the EnterprisePharo book. You can use it for other projects
+
 # Exit immediately if a command exits with a non-zero status
 set -e
 
