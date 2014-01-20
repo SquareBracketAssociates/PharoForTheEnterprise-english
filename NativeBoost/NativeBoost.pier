@@ -571,7 +571,9 @@ Here we see that we use ==NBExternalAddress * data== which means that data is a 
 
 
 The class ==NBExternalArray== should be subclassed and the class side ==initialize== method has to initialize the element type:
-@@note missing explanation why. Especially since after we have NBExternalAddress * data 
+
+% @@note missing explanation why. Especially since after we have NBExternalAddress * data 
+
 For example imagine that we would need an array of windows. We would define it as follows. 
 
 [[[
@@ -616,7 +618,7 @@ NBXLibWindow>>managedWindows
 	       do: [ :aWindow| aWindow display: display ]
 ]]]
 
-@@note I do not get why we need (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems) nor from where it comes from
+% @@note I do not get why we need (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems) nor from where it comes from
 
 
 You should get all the windows managed by your window manager (including docks and task bars):
