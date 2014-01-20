@@ -531,10 +531,43 @@ For ==int *== and ==unsigned long *==, we can use a ==ByteArray== buffer.
 
 @@note why ask igor.
 
+!!! Dealing with char **
 
- For ==prop_return== that is defined as ==unsigned char \*\*==, NativeBoost provides:
-- ==NBExternalAddress== to hold an address / pointer.
-- ==NBExternalArray== to work with arrays whose elements are values of some external (C) type.
+The ==prop_return==  is defined as ==unsigned char \*\*==, literally a pointer on a pointer on a character or a pointer on string. 
+The idea is that this is a pointer that a library will use to give back a string: a pointer to the resulting string. To deal with such 
+C idioms NativeBoost offers the notion of external address. Using and instance of the class ==NBExternalAddress== will hodl an address.
+
+
+Let's add the primitive that will retrieve the properties using the ==XgetWindowProperty== function.
+
+[[[
+NBXLibWindow>>primGetWindowProperty: anAtom 
+				offset: offset 
+				length: length 
+				delete: delete 
+				requiredType: requiredType 
+				intoActualType: actualType 
+				actualFormat: actualFormat 
+				numberOfItems: nbItems 
+				bytesAfterReturn: bytesAfterReturn 
+				data: data
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	
+	^self nbCall: #(int XGetWindowProperty(Display display, self, Atom  anAtom, long offset, long length, bool delete, Atom requiredType, Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn, NBExternalAddress * data ))
+]]]
+
+Here we see that we use ==NBExternalAddress * data== which means that data is a pointer to an external address. - why not ==NBExternalAddress data==??)
+
+
+
+
+
+
+
+
+!!! Dealing with Arrays of C types
+
+	 ==NBExternalArray== to work with arrays whose elements are values of some external (C) type.
 
 
 The class ==NBExternalArray== should be subclassed and the class side ==initialize== method has to initialize the element type:
@@ -555,14 +588,6 @@ NBXLibArrayOfWindows class>>initialize
 Run ==NBXLibArrayOfWindows initialize==. 
 
 
-Let's add the primitive that will retrieve the properties using the ==XgetWindowProperty== function.
-
-[[[
-NBXLibWindow>>primGetWindowProperty: anAtom offset: offset length: length delete: delete requiredType: requiredType intoActualType: actualType actualFormat: actualFormat numberOfItems: nbItems bytesAfterReturn: bytesAfterReturn data: data
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	
-	^self nbCall: #(int XGetWindowProperty(Display display, self, Atom  anAtom, long offset, long length, bool delete, Atom requiredType, Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn, NBExternalAddress * data ))
-]]]
 
 and the method that uses it:
 
