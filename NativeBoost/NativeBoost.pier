@@ -704,7 +704,7 @@ Note we also define ==Bool== and ==Status== as aliases of ==int==, ==XWindowAttr
 Now describe the fields in the ==NBXLibXWindowAttributes== class as follows.
 
 [[[
-NBXLibXWindowAttributes>>fieldsDesc
+NBXLibXWindowAttributes class>>fieldsDesc
     ^ #(int x;
         int y;                  " location of window "
         int width;
