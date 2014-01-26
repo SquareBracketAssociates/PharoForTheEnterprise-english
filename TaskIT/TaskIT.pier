@@ -1,6 +1,8 @@
 ! TaskIT
 
-TaskIT is a library to enable the usage of processes in Pharo. TaskIt is in charge of helping with the schedulling and/or parallelization of the execution of pieces of code inside Pharo.
+Expressing and managing concurrent computations is indeed a concern of importance to develop applications that scale. A web application may want to use different processes for each of its incoming requests. Or maybe it wants to use a "thread pool" in some cases. In other case, our desktop application may want to send computations to a worker to not block the UI thread.
+
+TaskIT is a library that eases the usage of processes in Pharo. It provides abstractions to schedule and/or parallelize of the execution of pieces of code. In this chapter we will explore these abstractions, guided by examples and code snippets.
 
 !! Downloading
 
@@ -15,24 +17,25 @@ Gofer it
 
 !!Creation of a TKTTask
 
-A ==TKTTask== can be created for mainly blocks in the following way:
+A task is a first class representation of a piece of code to be executed. Reifying the idea of task allows us to manage it: paralellize it, start it and/or stop it whenever we want. A task, instance of ==TKTTask==, can be created from a block in the following way:
+
 [[[
-TKTTask for: [ ].
-TKTTask for: [ ] at: aPriority.
+TKTTask for: [ someObject someMessage ].
+TKTTask for: [ someObject someMessage ] at: aPriority.
 ]]]
 When a priority is not explicitly provided, it uses the ==userBackgroundPriority== defined in the ==ProcessorScheduler==.
 
 Alternatively, blocks are extended to provided a nice syntax sugar to create tasks:
 
 [[[
-[ ] asTask.
-[ ] asTaskAt: aPriority.
+[ someObject someMessage ] asTask.
+[ someObject someMessage ] asTaskAt: aPriority.
 ]]]
 
 
 !!Executing a TKTTask
 
-To execute a task we need to send the message ==doIt== to the task.
+To execute a task we need to send the message ==doIt== to the task. The message ==doIt== will fork the execution of the task in a new Pharo process. Tipically, a Pharo process is removed from the system once finished, forbidding us to obtain the result of it's execution. TaskIT provides us with a way to obtain the result of our processes in many different ways by using futures.
 
 [[[
 [ 2 +  2 ] asTask doIt.
@@ -44,24 +47,48 @@ or as well,
 [ 2 + 2 ] doIt.
 ]]]
 
-The message ==doIt== will execute the task as a new pharo process. As this execution can last some time, the immediate result of the ==doIt== message is a ==TKTFuture== object. To obtain the final value of the execution of the future we can ask it if its value is available with ==isValueAvailable==, or we can ask for its value directly. Notice that sending the ==value== message to a future object we will block the execution of the caller process until the execution of the task is finished, either by an error or an expected result.
+
+!!Obtaining a Task's Result with Futures.
+
+As this execution can last some time, the immediate result of the ==doIt== message is a future object, instance of ==TKTFuture==. A TKTFuture object is the promise of an execution's result. A TKTFuture can hold an error produced by the task execution, the value of the finished execution, or none if the task has not yet finished.
 
 [[[
-[ 2 + 2 ] doIt isValueAvailable.
-[ 2 + 2 ] doIt value.
+aFuture := [ 2 + 2 ] doIt.
 ]]]
 
-!!Synchronous and Asynchronous execution via futures
-
-A TKTFuture object is the promise of an execution's result. A TKTFuture can hold an error produced by the task execution, the value of the finished execution, or none if the task has not yet finished.
-
-The value promised by the future can be obtained both synchronous and asynchronously. 
+Once we have a future in our hands, we can retrieve its value both synchronously and asynchronously, and interact with it in many forms.
 
 !!!Synchronous execution
-To obtain the TKTFuture value synchronously we send it the #value message. Synchronous access to the value will block the caller's process until the result is available.
+
+The simplest way to interact with our future is synchronously. That is, when asking for a future's value, it will block the actual process until the value is available. We can do that by sending our future the message ==value==.
 
 [[[
-[ 20 benchFib ] doIt value.
+future := [ 2 + 2 ] doIt.
+self assert: future value equals: 4.
+]]]
+
+However, it could have been possible for our task to be finished in an erroneous state, with an exception. In such case, the exception that was thrown inside the task's execution is forwarded to the sender of ==value==.
+
+[[[
+future := [ SomeError signal ] doIt.
+[ future value ] on: SomeError do: [ :error | "We handle the error" ].
+]]]
+
+A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, opposed to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
+
+[[[
+future := [ 2 + 2 ] doIt.
+future isValueAvailable.
+]]]
+
+However, waiting synchronously for the task to be finished can be a waste of CPU time or a bad usage of resources. TaskIT provides for those cases when completely synchronous execution does not fit the alternative of retrieving a value with a timeout option, using the ==valueTimeoutMilliseconds:== message. When we specify a timeout, we can also provide a block to handle the timeout case using the ==valueTimeoutMilliseconds:ifTimeout:==. If we choose not to provide such a block, a ==TKTTimeoutError== exception will be raised by the future.
+
+[[[
+future := [ (Delay forMilliseconds: 100) wait ] doIt.
+
+future valueTimeoutMilliseconds: 2 ifTimeout: [ "if it times out we execute this block"].
+
+future valueTimeoutMilliseconds: 2.
 ]]]
 
 !!!Aynchronous execution with callbacks
@@ -83,15 +110,30 @@ Think about an example where this is useful.
 [ 20 benchFib ] doIt asResult.
 ]]]
 
+!!Creating Custom Tasks
+
+!!Special Task Runners
+
 !!Organizing Tasks with Workers
+
+!!ActIT: A Simple Actor Library on top of TaskIT
+
+!!Conclusion
 
 !!TODOs
 
+- interruptCurrentTask
+
+	currentTask ifNotNil: [ 
+		currentTask value isProcessFinished ifFalse: [
+			currentTask  priority: 10.
+			workQueue do: currentTask.
+		].
+	].
 - cleanup wtF?
-- no perder stack del error en TKTFuture value
-- TKTFuture>>isProcessFinished wtf
-- Think that maybe we need timeouts for synchronous future evaluation.
-- refactor Worker -> Worker OneShotworker y StreamWorker (volar sticky future en el camino)
+- por que hay que ejecutar esto en un task?
+self scheduleTask: [ keepRunning set: false ] asTask.
+
 
 % Local Variables:
 % eval: (flyspell-mode -1)
