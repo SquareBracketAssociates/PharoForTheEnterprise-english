@@ -4,7 +4,7 @@ Expressing and managing concurrent computations is indeed a concern of importanc
 
 TaskIT is a library that eases the usage of processes in Pharo. It provides abstractions to schedule and/or parallelize of the execution of pieces of code. In this chapter we will explore these abstractions, guided by examples and code snippets.
 
-!! Downloading
+!! Downloading it
 
 A metacello configuration of TaskIT is available in smalltalkhub using the following code.
 
@@ -15,15 +15,18 @@ Gofer it
 	loadVersion: #bleedingEdge
 ]]]
 
-!!Creation of a TKTTask
+!!Working with tasks
 
-A task is a first class representation of a piece of code to be executed. Reifying the idea of task allows us to manage it: paralellize it, start it and/or stop it whenever we want. A task, instance of ==TKTTask==, can be created from a block in the following way:
+A task is a first class representation of a piece of code to be executed, the main abstraction inside TaskIT. By reifying a task, TaskIT can paralellize it, start it and/or stop it whenever we want. A task, instance of ==TKTTask==, is created in the following way:
 
 [[[
 TKTTask for: [ someObject someMessage ].
 TKTTask for: [ someObject someMessage ] at: aPriority.
 ]]]
-When a priority is not explicitly provided, it uses the ==userBackgroundPriority== defined in the ==ProcessorScheduler==.
+
+A normal task contains a block with a piece of code to be run. The result of the task's execution will be the result of its block. 
+
+Additionally, a task contains a priority that will be used to decide the order of execution between other tasks. If we do not specify a priority explicitly, the default ==userBackgroundPriority== defined in Pharo's ==ProcessorScheduler== is used. We will discuss about the importance of a task's priority in the task runners' section.
 
 Alternatively, blocks are extended to provided a nice syntax sugar to create tasks:
 
@@ -32,71 +35,71 @@ Alternatively, blocks are extended to provided a nice syntax sugar to create tas
 [ someObject someMessage ] asTaskAt: aPriority.
 ]]]
 
+!!!Executing a Task
 
-!!Executing a TKTTask
-
-To execute a task we need to send the message ==doIt== to the task. The message ==doIt== will fork the execution of the task in a new Pharo process. Tipically, a Pharo process is removed from the system once finished, forbidding us to obtain the result of it's execution. TaskIT provides us with a way to obtain the result of our processes in many different ways by using futures.
+The most basic way to execute a task is to run it as a one shoot task. A one shoot task is a task that is run in a new Pharo process. The Pharo process is discarded after the task is executed. To shoot a task we need to send it the message ==shootIt==.
 
 [[[
-[ 2 +  2 ] asTask doIt.
+[ 2 +  2 ] asTask shootIt.
 ]]]
 
-or as well,
+or as well with the shortcut,
 
 [[[
-[ 2 + 2 ] doIt.
+[ 2 + 2 ] shootIt.
 ]]]
 
+Tipically, the Pharo processes do not let us handle it's return value. The process is removed from the system once finished, forbidding us to obtain the result of it's execution. TaskIT provides us with a way to obtain the result of our processes in many different ways by using futures.
 
-!!Obtaining a Task's Result with Futures.
+!!Obtaining a task's result with futures.
 
-As this execution can last some time, the immediate result of the ==doIt== message is a future object, instance of ==TKTFuture==. A TKTFuture object is the promise of an execution's result. A TKTFuture can hold an error produced by the task execution, the value of the finished execution, or none if the task has not yet finished.
+As the execution of a task can last some time, the immediate result of the ==shootIt== message is a future object. A future object, instance of ==TKTFuture==, is the promise of an execution's result. A future can hold the value of the finished execution, an error produced by the task execution, or neither if the task has not yet finished.
 
 [[[
-aFuture := [ 2 + 2 ] doIt.
+aFuture := [ 2 + 2 ] shootIt.
 ]]]
 
 Once we have a future in our hands, we can retrieve its value both synchronously and asynchronously, and interact with it in many forms.
 
-!!!Synchronous execution
+!!!Synchronous result retrieval
 
-The simplest way to interact with our future is synchronously. That is, when asking for a future's value, it will block the actual process until the value is available. We can do that by sending our future the message ==value==.
+The simplest way to interact with a future is synchronously. That is, when asking for a future's value, it will block the actual process until the value is available. We can do that by sending our future the message ==value==.
 
 [[[
-future := [ 2 + 2 ] doIt.
+future := [ 2 + 2 ] shootIt.
 self assert: future value equals: 4.
 ]]]
 
-However, it could have been possible for our task to be finished in an erroneous state, with an exception. In such case, the exception that was thrown inside the task's execution is forwarded to the sender of ==value==.
+However, it could have happened that the finished in an erroneous state, with an exception. In such case, the exception that was thrown inside the task's execution is forwarded to the sender of ==value==.
 
 [[[
-future := [ SomeError signal ] doIt.
+future := [ SomeError signal ] shootIt.
 [ future value ] on: SomeError do: [ :error | "We handle the error" ].
 ]]]
 
 A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, opposed to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
 
 [[[
-future := [ 2 + 2 ] doIt.
+future := [ 2 + 2 ] shootIt.
 future isValueAvailable.
 ]]]
 
-However, waiting synchronously for the task to be finished can be a waste of CPU time or a bad usage of resources. TaskIT provides for those cases when completely synchronous execution does not fit the alternative of retrieving a value with a timeout option, using the ==valueTimeoutMilliseconds:== message. When we specify a timeout, we can also provide a block to handle the timeout case using the ==valueTimeoutMilliseconds:ifTimeout:==. If we choose not to provide such a block, a ==TKTTimeoutError== exception will be raised by the future.
+However, waiting synchronously for the task to be finished can be a waste of CPU time sometimes. For those cases when completely synchronous execution does not fit TaskIT provides the alternative of retrieving a value with a timeout option, using the ==valueTimeoutMilliseconds:== message. When we specify a timeout, we can also provide a block to handle the timeout case using the ==valueTimeoutMilliseconds:ifTimeout:==. If we choose not to provide such a block, the default behavior in case of timeout is to throw a ==TKTTimeoutError== exception.
 
 [[[
-future := [ (Delay forMilliseconds: 100) wait ] doIt.
+future := [ (Delay forMilliseconds: 100) wait ] shootIt.
 
 future valueTimeoutMilliseconds: 2 ifTimeout: [ "if it times out we execute this block"].
 
 future valueTimeoutMilliseconds: 2.
 ]]]
 
-!!!Aynchronous execution with callbacks
+!!!Aynchronous result retrieval and callbacks
 
-Support for asynchronous execution is provided via callbacks. A callback is a block with zero or one argument that will hold the value resultant from the task execution. A callback can be added to a future with the #whenFinished: message. A TKTFuture supports the addition of many different callbacks.
+Support for asynchronous execution is provided via callbacks. A callback is a block with zero or one argument that will be executed when the task execution is finished and the value is available hold the value resultant from the task execution. A callback can be added to a future with the #whenFinished: message. A TKTFuture supports the addition of many different callbacks.
 
 [[[
-[ 40 benchFib ] doIt whenFinished: [ :result | result logCr ].
+[ 40 benchFib ] shootIt whenFinished: [ :result | result logCr ].
 ]]]
 
 Note: On the one hand, the callbacks registered while the task is not yet finished will be executed on the process of the task when it finishes. On the other hand, callbacks registered while the task is already finished will be executing in the caller thread with the already available result.
