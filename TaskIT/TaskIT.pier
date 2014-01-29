@@ -49,9 +49,9 @@ or as well with the shortcut,
 [ 2 + 2 ] shootIt.
 ]]]
 
-Tipically, the Pharo processes do not let us handle it's return value. The process is removed from the system once finished, forbidding us to obtain the result of it's execution. TaskIT provides us with a way to obtain the result of our processes in many different ways by using futures.
+Typically, the Pharo processes do not let us handle it's return value. The process is removed from the system once finished, forbidding us to obtain the result of it's execution. TaskIT provides us with a way to obtain the result of our processes in many different ways by using futures.
 
-!!Obtaining a task's result with futures.
+!!Obtaining a task's result with futures
 
 As the execution of a task can last some time, the immediate result of the ==shootIt== message is a future object. A future object, instance of ==TKTFuture==, is the promise of an execution's result. A future can hold the value of the finished execution, an error produced by the task execution, or neither if the task has not yet finished.
 
@@ -70,21 +70,21 @@ future := [ 2 + 2 ] shootIt.
 self assert: future value equals: 4.
 ]]]
 
-However, it could have happened that the finished in an erroneous state, with an exception. In such case, the exception that was thrown inside the task's execution is forwarded to the sender of ==value==.
+However, it could have happened that the finished task in an erroneous state, with an exception. In such case, the exception that was thrown inside the task's execution is forwarded to the sender of ==value==.
 
 [[[
 future := [ SomeError signal ] shootIt.
 [ future value ] on: SomeError do: [ :error | "We handle the error" ].
 ]]]
 
-A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, opposed to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
+A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, contrary to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
 
 [[[
 future := [ 2 + 2 ] shootIt.
 future isValueAvailable.
 ]]]
 
-However, waiting synchronously for the task to be finished can be a waste of CPU time sometimes. For those cases when completely synchronous execution does not fit TaskIT provides the alternative of retrieving a value with a timeout option, using the ==valueTimeoutMilliseconds:== message. When we specify a timeout, we can also provide a block to handle the timeout case using the ==valueTimeoutMilliseconds:ifTimeout:==. If we choose not to provide such a block, the default behavior in case of timeout is to throw a ==TKTTimeoutError== exception.
+However, waiting synchronously or polling for the task to be finished can be a waste of CPU time sometimes. For those cases when completely synchronous execution does not fit, TaskIT provides the alternative of retrieving a value with a timeout option, using the ==valueTimeoutMilliseconds:== message. When we specify a timeout, we can also provide a block to handle the timeout case using the ==valueTimeoutMilliseconds:ifTimeout:==. If we choose not to provide such a block, the default behavior in case of timeout is to throw a ==TKTTimeoutError== exception.
 
 [[[
 future := [ (Delay forMilliseconds: 100) wait ] shootIt.
