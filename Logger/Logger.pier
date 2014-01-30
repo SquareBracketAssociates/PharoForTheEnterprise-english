@@ -1,0 +1,62 @@
+! An Extensible Object Logger
+
+There are several logging frameworks in Pharo: SimplerLogger, PaulThePoulpe and ToothPick. Toothpick is developed by Joseph Pelrine from MetaProg \url{http://www.metaprog.com/Toothpick/}. It is the most advanced and provides a nice documentation. SimpleLogger developed by German Arduino is available at \ct{http://ss3.gemstone.com/ss/SimpleLogger.html}. SimpleLogger is a really simple text only logger and Paul le Poulp is another interesting framework \url{http://concretetypeinference.blogspot.fr/2012/06/pharo-logger-aka-paul-octopus-or-le.html}.
+
+So you can wonder why there is a need for yet another one. Often logging is associated with outputting strings into a file and using grep to make a sense out of them. SystemLogger is an easy to use, very lightweight, and highly configurable object logger framework. SystemLogger manipulates objects and this opens a complete new realms of scenario and in addition it is compatible with the idea of a string logger.
+
+SystemLogger core is composed about 3 classes: LogObject, SystemLogger and LogDispatcher. The two first ones are public while the last one is a private class that the end user does not have to know.
+
+
+
+! Starting with an example
+
+
+! Core
+
+
+I’m getting slowly along. I have a next approach for the filters. The filter hierarchy by now is
+
+Logger
+    SystemLogger
+    FormattingLogger
+        StringStreamLogger
+            StdoutStreamLogger
+
+Logger is the abstract base class with instVars "name isLogging filter“
+
+SystemLogger is the in-memory logger of Log objects
+
+FormattingLogger holds a formatter to treat Log objects in a special way. I separated it from StringStreamLogger because a lot of use cases of mine need a logger that converts Log object but to JSON or the like and not to string. The #addLog: in FormattingLogger is
+
+   self storeObject: (self convertLog: aLog)
+
+You can see I separated the act of converting a log and storing it in an external place. This opens new use cases but not the best suited for streams. So there is two methods in formatter. One returns the formatted object. In the second case the formatter can put it immediately on the stream. I’m not sure if this turns out to be troublesome later on but will see.
+
+LogLevels have changed to have an instvar severity instead of priority. The numbers are reversed also. So a log level that has a larger number for severity is more severe. With an added convenience method LogLevel>>#orMoreSevere (returns a filter block) we can do 
+
+   aLogger filter: LogLevel warning orMoreSevere
+
+More convenience methods are
+
+   Logger default 
+
+returns LogDispatcher current defaultLogger. And
+
+   Log toTranscript
+
+that adds a StringStreamLogger that logs to transcript. 
+
+And I’m not really happy with the Log class. For my taste it is too big. To me the log level is like logging strings. It does not really make sense to me. So level and extensions would be two things I would to keep off my own logging software. But there is a bigger protocol on the class side of Log that should be kept. So the only thing I can see could change is to separate in BasicLog (instVars timestamp, tag, message) and Log (level and extensions). But then I’m not sure if it is worth it.
+
+Anyway I’ll start using the logger now in my project and see the shortcomings myself. 
+
+Norbert
+
+
+! Conclusion
+
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:
