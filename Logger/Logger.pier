@@ -52,8 +52,17 @@ A log can also accept any optional information using key/value
 
 [[[
 	Log error: 'Damn this is broken' withExtra: [ :log | log extensionAt: #thisContext put:   thisContext]
-	Log error: 'Damn this is broken' withExtra: [ :log | log extensions: {#thisContext -> thisContext} ]
+	Log message: 'Not totally broken' withExtra: [ :log | log addExtensions: {#thisContext -> thisContext} ]
 ]]]
+
+
+Since we do not know the exact scenario the Log class proposes the following messages to handle extra information.
+
+- ==addExtensions: aPair== adds an  extension and its value specified as a pair
+- ==extensionAt: aSymbol== and ==extensionAt: aSymbol ifAbsent: aBlock== queries the value of an extension and execute the absent block if necessary.
+- ==extensionAt: aSymbol put: aValue== set the value of a key.
+- ==extensionKeys== returns the list of extensions.
+
 
 !! Three Core classes
 
@@ -61,69 +70,46 @@ SystemLogger core is composed about 3 classes: ==Log==, ==SystemLogger== and ==L
 
 In addition, ==LogLevel== encapsulates the logic of defining a level. A logLevel represents a level of severity in log messages. There are default log levels which can be used via class methods such as ==critical==, ==error==, ==warning==, ==information==, ==debug== and ==trace==.
 
-
-
 !! Core Element One: Log objects
 
-Log objects are represented by the classes ==BasicLog== and ==Log==. ==Log== is named like that because we wanted to have it as short as possible to write concise code. 
+Log objects are represented by the classes ==Log== and its superclass ==BasicLog==. ==Log== is named like that because we wanted to have it as short as possible to write concise code.  ==Log== represents a simple log entity: be it a compilation overrides, an image snapshot or a simple string output. It collaborates with the current log dispatcher to emit log objects to loggers.
 
+Note that ==Log== is named ==Log== and not ==SLLogObject== or whatever because it is the main entry point for a client point of view.
 
- ==Log== represents a simple log entity: be it a compilation overrides, an image snapshot or a simple string output.
-
-!!! I hold the following state 
-- timeStamp records the moment the log is created
-- level is a kind of emergency level
-- message is a message 
-- tag indicates a domain to help sorting logs 
-- extensions is to offer a dictionary-based API when client to not want to create specific subclasses. 
-
-!! Design notes.
-I'm named Log and not SLLogObject or whatever because I'm the main entry point for a client point of view. Several convenient methods exist to create Log objects:
-
-[[[ 
-	Log error: 'Damn this is broken'
-	Log critical: 'Damn this is really broken'
-	Log message: 'Hello it looks we got a trouble'
-	Log trace: 'We passed here '
-	Log warm: 'the system is still running but you should have look at it'
-]]]
-If you need to pass more information, use the class side following methods: 
 	
-Now the default creation messages are:
-	=message: =
-	=message: tag:= where tag: is a domain to sort logs
-	=message: tag: level:= where level indicates an importance level (so far we have critical error warning information trace)
-	=message: aMessage tag: aTag level: aLevel timeStamp: aTimeStamp= (normally you should not have to specify the time stamps of the log.)
-	
-!! Important point.
-The key protocol is ==emit==. It is in charge to emit the log instance to the current dispatcher.  You do not have to do it by yourself. This is not the responsibility of the client to emit a log, it is the Log itself. 
-
-All the class creation methods use emit. 
-	
-My subclasses may introduce extra information such as policy to display, filtering, extra logging information. They should offer a nice API and invoke the emit message. 
-
-A log can also accept any optional information using key/value  
-
-	Log error: 'Damn this is broken' withExtra: [ :log | log extensionAt: #thisContext put:   thisContext]
-	Log error: 'Damn this is broken' withExtra: [ :log | log extensions: {#thisContext -> thisContext} ]
+!!!! Important point. One of the key responsibility of a log object is to emit the logger to the log dispatcher. However, in general you do it by yourself. The emit message is invoked for you by the creation messages. All the class creation methods use emit. The subclasses may introduce extra information such as policy to display, filtering, extra logging information. They should offer a nice API and invoke the emit message. 
 
 
-Usually as a normal user you will not use directly ==BasicLog== but ==Log== because it proposes a better API.
+ ==BasicLog==, the superclass of ==Log== represents a simpler log object consisting only of a timeStamp and a message.   More specialized log classes may be derived from this class like the default ==Log== class does. Usually as a normal user you will not use directly ==BasicLog== but ==Log== because it proposes a better API.
+
 [[[
 (BasicLog message: 'Test message string') emit
 ]]]
-
- ==BasicLog== represents a basic log consisting only of a timeStamp and a message.  All more specialized log classes should be derived from 
-this class like the default ==Log== class does.
 	
-!!! Important point.
-The key protocol implemented by ==BasicLog== is ==emit==. It is an important design decision: it hides the log dispatcher from the user and at the same time it is extensible.  ==emit== is in charge to emit the log instance to the current dispatcher.  You do not have to do it by yourself. This is not the responsibility of the client to emit a log, it is the log object itself. 
 
-!! usage
+!! Core Element Two: LogDispatcher
+When a log object is created, it is passed to the system log dispatcher. There is only one logDispatcher in the system, it is an instance of ==LogDispatcher== and can be accessed ==LogDispatcher current==. His role is to dispatch the emitted log objects to the system loggers that registered to the dispatcher. 
+
+There is one favorite system logger associated to the current dispatcher. It is the main default logger. It can be accessed by the following expression: ==self current defaultLogger==. 
+
+In addition, we can add loggers to the current dispatcher using ==addLogger:==. A dispatcher will dispatch log to any available loggers. 
+
+[[[
+	LogDispatcher current addLogger: (SystemLogger name: 'test1').
+]]]
+
+or 
+
+[[[
+	LogDispatcher addLogger: (SystemLogger name: 'test1').
+]]]
+
+Similarly you can remove a system logger using the ==removeLogger:== or ==removeLoggerNamed:== messages.
+	
 
 
 
-
+!! Notes from Norbert
 
 
 I’m getting slowly along. I have a next approach for the filters. The filter hierarchy by now is
