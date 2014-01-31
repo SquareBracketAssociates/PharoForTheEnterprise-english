@@ -1,17 +1,129 @@
 ! An Extensible Object Logger
 
-There are several logging frameworks in Pharo: SimplerLogger, PaulThePoulpe and ToothPick. Toothpick is developed by Joseph Pelrine from MetaProg \url{http://www.metaprog.com/Toothpick/}. It is the most advanced and provides a nice documentation. SimpleLogger developed by German Arduino is available at \ct{http://ss3.gemstone.com/ss/SimpleLogger.html}. SimpleLogger is a really simple text only logger and Paul le Poulp is another interesting framework \url{http://concretetypeinference.blogspot.fr/2012/06/pharo-logger-aka-paul-octopus-or-le.html}.
+There are several logging frameworks available for Pharo: SimplerLogger, PaulThePoulpe and ToothPick. Toothpick is developed by Joseph Pelrine from MetaProg ==http://www.metaprog.com/Toothpick/==. It is the most advanced and has a nice documentation. SimpleLogger developed by German Arduino is available at ==http://ss3.gemstone.com/ss/SimpleLogger.html==. SimpleLogger is a really simple text only logger and Paul le Poulp is another interesting framework ==http://concretetypeinference.blogspot.fr/2012/06/pharo-logger-aka-paul-octopus-or-le.html==.
 
-So you can wonder why there is a need for yet another one. Often logging is associated with outputting strings into a file and using grep to make a sense out of them. SystemLogger is an easy to use, very lightweight, and highly configurable object logger framework. SystemLogger manipulates objects and this opens a complete new realms of scenario and in addition it is compatible with the idea of a string logger.
-
-SystemLogger core is composed about 3 classes: LogObject, SystemLogger and LogDispatcher. The two first ones are public while the last one is a private class that the end user does not have to know.
+So you can wonder why there is a need for yet another one. Well let us think a bit about the domain. Often logging is associated with outputting strings into a file and using grep to make sense out of them. Why only focusing on strings. We have objects and they can be converted into strings so we have only to win. SystemLogger is an easy to use, very lightweight, and highly configurable object logging framework. SystemLogger manipulates objects and this opens a complete new set of scenario and in addition it is compatible with the idea of a string logger.
 
 
+!! Starting with an example
+With SystemLogger logging a message is as simple as sending the message ==message:== to the class ==Log==.
 
-! Starting with an example
+[[[
+	Log message: 'Hello it looks we got a trouble'
+]]]
+
+Let us step back one minute. ==message:== is equivalent to the old ==Transcript show:==. Note however that what is cool with SystemLogger and dealing with objects is that you should not be concerned about the handling of carriage return. Why? Simply because log objects do not have this notion and when we want to transform them into strings, then the formatter will do it for you. We are sure that you start understanding that dealing with objects is the way to go and will make our live easier.
 
 
-! Core
+When you are debugging and want to identify more specific paths in your code, issuing a message is a bit broad and it will be mixed with all the other messages. To help you finding your ways among the collected logs, you can also use the message ==trace:==.
+It looks simple and so far it is. What you see is that as a normal user of the log objects you just have to express what you want.
+Then the system takes care about collecting the logs into a logger as we will see later. 
+
+Now you may want to raise log of different importance. ==Log== provides some predefined ways to tag your log: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warm:==. 
+
+[[[ 
+	Log error: 'Damn this is broken'.
+	Log critical: 'Damn this is really broken'.
+	Log message: 'Hello it looks we got a trouble'.
+	Log trace: 'We passed here '.
+	Log warm: 'the system is still running but you should have look at it'.
+]]]
+
+!!! Log creation messages
+In addition to simple creation messages, ==Log== proposes other creation messages to improve the filtering of logs.
+
+The default creation messages are in addition to the simple ==message:==.
+
+- ==message: tag:== where tag: is a domain to sort logs. It will help you 
+- ==message: tag: level:== where level indicates an importance level. So far we have the following levels: critical error warning information trace that you can obtain doing ==LogLevel all==.
+- ==message: aMessage tag: aTag level: aLevel timeStamp: aTimeStamp==. Note that normally you should not have to specify the time stamps of the log since this is done automatically. 
+
+Here is an example
+[[[
+(Log 
+		message: 'From My Framework' 
+		tag: 'Compiler' 
+		level: LogLevel error)
+]]]
+
+
+!!! Extra information.
+A log can also accept any optional information using key/value  
+
+[[[
+	Log error: 'Damn this is broken' withExtra: [ :log | log extensionAt: #thisContext put:   thisContext]
+	Log error: 'Damn this is broken' withExtra: [ :log | log extensions: {#thisContext -> thisContext} ]
+]]]
+
+!! Three Core classes
+
+SystemLogger core is composed about 3 classes: ==Log==, ==SystemLogger== and ==LogDispatcher==. The two first ones are public while the last one is a private class that the end user does not have to know. It raises also announcements: ==LogAdded== and ==LogRemoved==.
+
+In addition, ==LogLevel== encapsulates the logic of defining a level. A logLevel represents a level of severity in log messages. There are default log levels which can be used via class methods such as ==critical==, ==error==, ==warning==, ==information==, ==debug== and ==trace==.
+
+
+
+!! Core Element One: Log objects
+
+Log objects are represented by the classes ==BasicLog== and ==Log==. ==Log== is named like that because we wanted to have it as short as possible to write concise code. 
+
+
+ ==Log== represents a simple log entity: be it a compilation overrides, an image snapshot or a simple string output.
+
+!!! I hold the following state 
+- timeStamp records the moment the log is created
+- level is a kind of emergency level
+- message is a message 
+- tag indicates a domain to help sorting logs 
+- extensions is to offer a dictionary-based API when client to not want to create specific subclasses. 
+
+!! Design notes.
+I'm named Log and not SLLogObject or whatever because I'm the main entry point for a client point of view. Several convenient methods exist to create Log objects:
+
+[[[ 
+	Log error: 'Damn this is broken'
+	Log critical: 'Damn this is really broken'
+	Log message: 'Hello it looks we got a trouble'
+	Log trace: 'We passed here '
+	Log warm: 'the system is still running but you should have look at it'
+]]]
+If you need to pass more information, use the class side following methods: 
+	
+Now the default creation messages are:
+	=message: =
+	=message: tag:= where tag: is a domain to sort logs
+	=message: tag: level:= where level indicates an importance level (so far we have critical error warning information trace)
+	=message: aMessage tag: aTag level: aLevel timeStamp: aTimeStamp= (normally you should not have to specify the time stamps of the log.)
+	
+!! Important point.
+The key protocol is ==emit==. It is in charge to emit the log instance to the current dispatcher.  You do not have to do it by yourself. This is not the responsibility of the client to emit a log, it is the Log itself. 
+
+All the class creation methods use emit. 
+	
+My subclasses may introduce extra information such as policy to display, filtering, extra logging information. They should offer a nice API and invoke the emit message. 
+
+A log can also accept any optional information using key/value  
+
+	Log error: 'Damn this is broken' withExtra: [ :log | log extensionAt: #thisContext put:   thisContext]
+	Log error: 'Damn this is broken' withExtra: [ :log | log extensions: {#thisContext -> thisContext} ]
+
+
+Usually as a normal user you will not use directly ==BasicLog== but ==Log== because it proposes a better API.
+[[[
+(BasicLog message: 'Test message string') emit
+]]]
+
+ ==BasicLog== represents a basic log consisting only of a timeStamp and a message.  All more specialized log classes should be derived from 
+this class like the default ==Log== class does.
+	
+!!! Important point.
+The key protocol implemented by ==BasicLog== is ==emit==. It is an important design decision: it hides the log dispatcher from the user and at the same time it is extensible.  ==emit== is in charge to emit the log instance to the current dispatcher.  You do not have to do it by yourself. This is not the responsibility of the client to emit a log, it is the log object itself. 
+
+!! usage
+
+
+
+
 
 
 I’m getting slowly along. I have a next approach for the filters. The filter hierarchy by now is
