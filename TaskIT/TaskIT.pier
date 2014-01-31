@@ -49,9 +49,9 @@ or as well with the shortcut,
 [ 2 + 2 ] shootIt.
 ]]]
 
-Typically, the Pharo processes do not let us handle it's return value. The process is removed from the system once finished, forbidding us to obtain the result of it's execution. TaskIT provides us with a way to obtain the result of our processes in many different ways by using futures.
+Tipically, the Pharo processes do not let us handle it's return value. The process is removed from the system once finished, forbidding us to obtain the result of it's execution. TaskIT provides us with a way to obtain the result of our processes in many different ways by using futures.
 
-!!Obtaining a task's result with futures
+!!Obtaining a task's result with futures.
 
 As the execution of a task can last some time, the immediate result of the ==shootIt== message is a future object. A future object, instance of ==TKTFuture==, is the promise of an execution's result. A future can hold the value of the finished execution, an error produced by the task execution, or neither if the task has not yet finished.
 
@@ -70,21 +70,21 @@ future := [ 2 + 2 ] shootIt.
 self assert: future value equals: 4.
 ]]]
 
-However, it could have happened that the finished task in an erroneous state, with an exception. In such case, the exception that was thrown inside the task's execution is forwarded to the sender of ==value==.
+However, it could have happened that the finished in an erroneous state, with an exception. In such case, the exception that was thrown inside the task's execution is forwarded to the sender of ==value==.
 
 [[[
 future := [ SomeError signal ] shootIt.
 [ future value ] on: SomeError do: [ :error | "We handle the error" ].
 ]]]
 
-A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, contrary to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
+A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, opposed to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
 
 [[[
 future := [ 2 + 2 ] shootIt.
 future isValueAvailable.
 ]]]
 
-However, waiting synchronously or polling for the task to be finished can be a waste of CPU time sometimes. For those cases when completely synchronous execution does not fit, TaskIT provides the alternative of retrieving a value with a timeout option, using the ==valueTimeoutMilliseconds:== message. When we specify a timeout, we can also provide a block to handle the timeout case using the ==valueTimeoutMilliseconds:ifTimeout:==. If we choose not to provide such a block, the default behavior in case of timeout is to throw a ==TKTTimeoutError== exception.
+However, waiting synchronously for the task to be finished can be a waste of CPU time sometimes. For those cases when completely synchronous execution does not fit TaskIT provides the alternative of retrieving a value with a timeout option, using the ==valueTimeoutMilliseconds:== message. When we specify a timeout, we can also provide a block to handle the timeout case using the ==valueTimeoutMilliseconds:ifTimeout:==. If we choose not to provide such a block, the default behavior in case of timeout is to throw a ==TKTTimeoutError== exception.
 
 [[[
 future := [ (Delay forMilliseconds: 100) wait ] shootIt.
@@ -96,28 +96,105 @@ future valueTimeoutMilliseconds: 2.
 
 !!!Aynchronous result retrieval and callbacks
 
-Support for asynchronous execution is provided via callbacks. A callback is a block with zero or one argument that will be executed when the task execution is finished and the value is available hold the value resultant from the task execution. A callback can be added to a future with the #whenFinished: message. A TKTFuture supports the addition of many different callbacks.
+Support for asynchronous execution is provided via callbacks. A callback is a block with zero or one argument that will be executed when the task execution is finished. Futures accept callbacks for success and error of execution. On success, TaskIT will provide the callback with the result of the execution as argument. On the other side, when an error ocurrs during the execution of the task, TaskIT will execute the error callback with the exception object. A callback is represented by a ==Block== object and configured for a future object via the ==onSuccess:== and ==onError:== messages. Note that callback arguments are optional, and many callbacks can be configured at the same time for the same future object.
 
 [[[
-[ 40 benchFib ] shootIt whenFinished: [ :result | result logCr ].
+future := [ 40000000 factorial ] shootIt.
+future onSuccess: [ 'Finished factorial and I dont care about the result' logCr ].
+future onSuccess: [ :result | result logCr ].
+
+future := [ self error ] shootIt.
+future onError: [ 'An error ocurred!!' logCr ].
+future onError: [ :exception | exception asString logCr ].
 ]]]
 
-Note: On the one hand, the callbacks registered while the task is not yet finished will be executed on the process of the task when it finishes. On the other hand, callbacks registered while the task is already finished will be executing in the caller thread with the already available result.
+Callbacks handle transparently the finalization of a task. On the one hand, the callbacks registered while the task is running (and so, not yet finished) will be saved and executed when the task finishes on the process that executes the task. On the other hand, callbacks that are registered when the task has already finished will run synchronously in the caller process with the already available result.
 
 !!!Lazy result resolution
 
-A third way to work with futures is to ask it for a lazy result. A lazy result is an object that will transform itself. Show how to synchronize two tasks.
+A third way to work with futures is to ask it for a lazy result. A lazy result is an object that represents, almost transparently, the value of the task execution. This lazy result will become into the value of the result once it is available, or under demand (for example, when a message is sent to it). Lazy results support a style of programming that ressembles the synchronous style, while performing asynchronous if the result is not used. 
 
-Think about an example where this is useful.
 [[[
-[ 20 benchFib ] doIt asResult.
+future := [ employee computeBaseSallary ] shootIt.
+result := future asResult.
+
+subTotal := employee sumSallaryComponents
+
+result + subTotal
 ]]]
 
-!!Creating Custom Tasks
+Note: Lazy results are to be used with care. They use Pharo's ==become:== facility, and so, it will freeze the system to update object references.
 
-!!Special Task Runners
+Lazy results can be used to easily synchronize tasks. One task running in paralell with another one and waiting for it to finish can use a lazy result object to perform transparently as much work as it can in paralell. Only when the result object is sent a message the 
 
-!!Organizing Tasks with Workers
+[[[
+future := [ employee computeBaseSallary ] shootIt.
+baseSallary := future asResult.
+
+[ employee sumSallaryComponents + baseSallary ] shootIt value.
+]]]
+
+!!Into Task Runners
+
+Task runners are in charge of the execution of tasks. They decide if a task executes in a separate process, in the same process, or in a process that is shared by many tasks. A task runner may schedule and prioritize tasks.
+
+Task runners contract is based on the following messages:
+
+- ""run:"" It is the main message a task runner implements. It receives as argument a task to run and provides a future as result.
+- ""cancel"" This message tells the runner to stop executing the task. It will, if possible, cancel the execution and notify all provided futures of this.
+- ""isRunning"" This is a testing message that indicates if a task runner is currently running.
+- ""isTerminated"" This is a testing message that indicates if a task runner has finished its execution.
+
+TaskIT provides already several task runners for simple and common tasks. In the following subsections we will provide an overview on each of them for normal usage.
+
+!!! The one shot runner
+
+A one shot runner, instance of TKTOneShotRunner, is a task runner that is meant to run a single task in a separate Pharo process. The one shot runner will start a new process when the task is run, and so, handle the process' life cycle. A one shot runner, as it name says, is meant to be used once and be discarded. It should not be reused with several tasks.
+
+The usage of a one shot runner is simple. We should create a new instance of it and send it the message ==run:== with the task to run as a parameter. The result of that message will be a future object.
+
+[[[
+runner := TKTOneShotRunner new.
+future := runner run: [ (Delay forMilliseconds: 30000) wait ] asTask.
+]]]
+
+Since the usage of one shot runners is pretty common and straight forward, the ==shootIt== method of a task is a shortcut to it.
+
+[[[
+TKTTask >> shootIt
+	
+	^ TKTOneShotRunner new run: self
+]]]
+
+!!! The same process runner
+
+The same process runner is a simple runner that executes a task in the caller process. This runner may come in handy to perform change the way a task runs in a transparent way to the task, since it is polymorphic with the other task runners. A same process runner is reusable, since it holds no state.
+
+[[[
+runner := TKTSameProcessRunner new.
+future := runner run: [ (Delay forMilliseconds: 30000) wait ] asTask.
+]]]
+
+Additionally, sending the ==value== message to a task is a shortcut to execute it with a same process runner.
+
+[[[
+TKTTask >> value
+	" The future is dispendable in this case, cause is executing in the same thread "
+	^ TKTSameProcessRunner new run: self
+]]]
+
+!!! The looping runner: a first persistent runner
+
+
+!!! Worker task runner
+
+!! Worker pools
+
+!!Customizing TaskIT
+
+!!!Customizing Tasks
+
+!!!Customizing Task runners	
 
 !!ActIT: A Simple Actor Library on top of TaskIT
 
@@ -125,6 +202,12 @@ Think about an example where this is useful.
 
 !!TODOs
 
+- Discuss with Santi: What should be a good behavior if an error occurrs during a callback?
+- Does it make sense to put callbacks on a task (besides or instead putting it on the future)?
+- What about implementing lazy results with proxies (and do just forwarding?)?
+- Lazy result finalize is necesary?
+- ExclusiveVariable finalize is necesary?
+- Lazy result can be cancelled?
 - interruptCurrentTask
 
 	currentTask ifNotNil: [ 
