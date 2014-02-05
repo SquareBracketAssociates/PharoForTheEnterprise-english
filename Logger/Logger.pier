@@ -106,6 +106,26 @@ or
 
 Similarly you can remove a system logger using the ==removeLogger:== or ==removeLoggerNamed:== messages.
 	
+Finally all loggers can be stopped to receive log objects from the log dispatcher and started using the messages 
+==startAllLoggers== and ==stopAllLoggers==. 
+
+
+!! Core Element Three: SystemLogger
+
+The third player in the framework is a logger. A logger is responsible to decide if it is interested to handle log objects and if this is case to handle them according to its function. ==Logger== is the abstract superclass of system loggers. It has a name. 
+
+It defined the following messages:
+
+- ==startLogging== and ==stopLogging== enable and respectively disable the handling of log objects.
+- ==filter: aBlock== to specify the condition that the log objects should satisfy to be handled by the system logger. 
+- ==addLog: aLog== sent by the log dispatcher.
+- ==addLogHook: aLog== is a hook message that specifies the effective action performed when handling a log object.
+- ==reset== flushes the log objects if any that could have been hold by the receiver.
+
+!! First Useful Extensions
+
+The first extension is to provide a system logger that can emit strings to our lovely Transcript. 
+
 
 
 
