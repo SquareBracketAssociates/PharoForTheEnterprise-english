@@ -1,4 +1,4 @@
-! NativeBoost Recipes
+! NativeBoost Recipes: The X11 Journey
 
 There is nothing better than real examples to learn. In this chapter, we will create some bindings to X11 Xlib. This chapter was written by L. Laffont during a visit in the RMOD team and largely revisited by S. Ducasse and I. Stasenko. 
 
@@ -187,7 +187,7 @@ NBXLibDisplay open
 
 When you inspect the result of the last expression you should obtain Figure
 
-+Inspecing NBXLibDisplay open>file://figures/displayInstance.pdf|width=40|label=displayInstance+
++Inspecting NBXLibDisplay open>file://figures/displayInstance.pdf|width=40|label=displayInstance+
 
 
 !! About NativeBoostPlugin primitives
@@ -219,7 +219,7 @@ Now remember that the actual C signature is:
 Display *XOpenDisplay(char *display_name);
 ]]]
 
-Let us have a look at how NativeBoost maps C to Smalltalk and the inverse. The message ==nbCall:== parses the signature of the function to call as a literal array. NativeBoost automatically does the marshalling between C and Pharo, given a few rules.
+Let us have a look at how NativeBoost maps C to Pharo and the inverse. The message ==nbCall:== parses the signature of the function to call as a literal array. NativeBoost automatically does the marshalling between C and Pharo, given a few rules.
 
 First, in C you have these primitive types: ==int==, ==unsigned int==, == void *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Here are some primitive types and their mapping to Pharo types. 
 - uint or int: Integer
@@ -237,7 +237,7 @@ We should pay attention because  char ==*== data type is not a string. It means 
 but in reality does not expect a string but simply a pointer. Therefore and read the documentation of the library to make sure
 that function argument in the question is expecting a string and not just a pointer to char value.
 
-For null terminated strings, NativeBoost provides special type named ==String==. Using this type, the value is automatically converted between a Smalltalk byteString and a C null-terminated string. 
+For null terminated strings, NativeBoost provides special type named ==String==. Using this type, the value is automatically converted between a Pharo byteString and a C null-terminated string. 
 
 When you know that your library is really expecting a C null terminated string, it is safer to use ==String== in a NativeBoost type declaration than ==char *== because char ==*== is just managed as a simple pointer to the beginning of string but does not make sure that the string is null-terminated.
 
@@ -625,9 +625,9 @@ The last argument requires a bit more attention.
 !!! Dealing with pointer output arguments
 
 The ==prop_return==  is defined as ==unsigned char **==, literally a pointer on a pointer.
-What the C idiom want to convey is that the function is expecting a pointer where it will store the pointer to the returned data. From that perspective, the signature ==char **== could have been expressed as ==void **==.
+What this C idiom wants to convey is that the function is expecting a pointer where it will store the pointer to the returned data. From that perspective, the signature ==char **== could have been expressed as ==void **==.
 
-To deal with such idioms, NativeBoost offers the notion of external addresses. Using an instance of the class ==NBExternalAddress==  holds an address.
+To deal with such an idiom, NativeBoost offers the notion of external addresses. Using an instance of the class ==NBExternalAddress==  holds an address.
 
 
 Now let's define in Pharo the primitive that will retrieve the properties calling the ==XgetWindowProperty()== function.
@@ -667,10 +667,10 @@ We use ==NBExternalAddress *== and not ==void *== because: using ==void *== we c
 
 
 !!! Dealing with Arrays of C type values
-So far we defined a method (primitive) to call the C function but we did not define how to perform the actual call.
+So far we defined a method (primitive) to call the C function but we did not define how to perform the actual call. Now we explain the next steps to arrive to this point.
 
 Communicating with a C library often requires dealing with arrays of certain data type (ints, floats etc).
-There is no direct correspondence between Smalltalk arrays (array of objects) and arrays in C (array of certain data type values), and NativeBoost provides no implicit conversions between them because there is no magic.  While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex data types, like array of structures it is impossible.
+There is no direct correspondence between Pharo arrays (array of objects) and arrays in C (array of certain data type values), and NativeBoost provides no implicit conversions between them because there is no magic.  While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex data types, like array of structures it is impossible.
 Moreover, an automatic conversion between C arrays and instances of ==Array== would require copying/converting data to represent each array element as an object (which is expensive if done systematically). Such automatic conversion requires knowledge about the array size beforehand, which also is not always the case. 
 
 In case, if we don't need accessing array's elements and just need a space to store an array as a whole, we can just use instances of ==ByteArray== big enough
@@ -841,11 +841,14 @@ NBXLibWindow>>managedWindows
 ]]]
 
 Note that we will improve this method because it has some shortcomings. But first have fun and try the following expression. 
-You should get all the windows managed by your window manager (including docks and task bars):
+You should get all the windows managed by your window manager (including docks and task bars) and get an inspector as shown in the following Figure *Inspecting*.
 
 [[[
 NBXLibDisplay open defaultRootWindow managedWindows inspect
 ]]]
+
++Inspecting the open X11 windows>file://figures/fourWindows.pdf|width=40|label=Inspecting+
+
 
 Now let us explain ==(NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems value)==. This message returns an array of the given size located on an address in memory. The type of this array elements are C Window opaque type. It means that the  array contains only handles to some windows. Those handles on the Pharo side are represented as NBXLibWindow instances. When we read a particular element like when using at: or do: each time NativeBoost will convert the handle in a fresh ==NBXLibWindow== object. 
 
@@ -889,8 +892,7 @@ NBXLibDisplay>>free: aPointer
 	^self nbCall: #(void XFree (void* aPointer))
 ]]]
 
-We define ==free:== in NBXLibDisplay because display plays a central role in the window management with X11. But we could have implement it in ==NBXLibWindow==.
-Now we change the definition of managedWindows method into its final form.
+We define ==free:== in ==NBXLibDisplay== because display plays a central role in the window management with X11. But we could have implement it in ==NBXLibWindow==. Now we redefine the ==managedWindows== method into its final form.
 
 [[[
 NBXLibWindow>>managedWindows
@@ -920,7 +922,6 @@ NBXLibWindow>>managedWindows
 
 
 
-Here
 
 
 !! I like to move it, move it
@@ -931,7 +932,7 @@ Now the last move. To move and resize windows, Xlib defines the function:
 int XMoveResizeWindow(Display * display, Window w, int x, int y, unsigned int width, unsigned height)
 ]]]
 
-That should be straight forward to define it on our window class:
+That should be straightforward to define it on our window class:
 
 [[[
 NBXLibWindow>>x: x y: y width: width height: height
@@ -949,20 +950,16 @@ aDisplay close.
 ]]]
 
 
+!! Reading Window Attributes
 
-
-
-
-
-!! Reading window attributes
-
-In order to get actual position and size of a Window, we can use the function ==XGetWindowAttributes== defined as follow:
+To get actual position and size of a Window, we can use the function ==XGetWindowAttributes()== defined as follow:
 
 [[[
 Status XGetWindowAttributes(Display* display, Window w, XWindowAttributes* window_attributes_return)
 ]]]
 
 Like the previous example, ==XGetWindowAttributes== has an output argument ==window_attributes_return==. In this case, ==XWindowAttributes== is a structure defined like this:
+
 [[[
 typedef struct {
     int x, y;			    /* location of window */
@@ -989,25 +986,27 @@ typedef struct {
 } XWindowAttributes;
 ]]]
 
-!!! Defining a Structure
+We need a way to define structure and manipulated their fields in the Pharo side and this is what we will see now.
 
-So far we did not define C structures in NativeBoost but we used NBExternalObject (wrapper to an handle to an external opaque objects). 
-Now we will tell to NativeBoost that we want to define a structure. Here is the way to proceed. First we create a subclass of ==NBExternalStructure== and we will add on the class side a description of all the structure field using NativeBoost types and alias we define.
+!!! Handling C-Structure
 
-@@note what is the advantages over a ExternalObject? Access to information? accessors?
+So far we did not define mappings to C structures in NativeBoost but we used ==NBExternalObject== (wrapper to an handle to external opaque objects). 
+Now we will use NativeBoost to define a structure. Here is the way to proceed: First we create a subclass of ==NBExternalStructure== and we will add on the class side a description of all the structure field using NativeBoost types and aliases we define. 
 
-!!!! Defining a subclass.
+!!!! Defining a subclass of ==NBExternalStructure==.
 
 First we have to create a subclass of ==NBExternalStructure== that will hold this data:
 [[[
-NBExternalStructure variableByteSubclass: #NBXLibXWindowAttributes
+NBExternalStructure subclass: #NBXLibXWindowAttributes
 	instanceVariableNames: ''
 	classVariableNames: ''
 	poolDictionaries: 'NBXLibTypes'
-	category: 'NBXLib'
+	category: 'X11'
 ]]]
 
-Note that the structure uses the shared pool ==NBXLibTypes== in order to use the type aliases. Before adding the description of all the fields to ==NBXLibXWindowAttributes==, we should define some types that are needed: ==Visual==, ==Screen==, ==Colormap==. We can either use subclasses of ==NBExernalObject==, but as we don't need them we can just add them to the shared pool as ==ulong== (pointers - Xlib uses the name ==XID==).
+Note that the structure uses the shared pool ==NBXLibTypes== to access to the type aliases we already defined. Before adding the description of all the fields to ==NBXLibXWindowAttributes==, we should define some types that are needed: ==Visual==, ==Screen==, ==Colormap==. 
+
+We can either use subclasses of ==NBExternalObject==, but as we don't need them we can just add them to the shared pool as ==ulong== (pointers - XLib uses the name ==XID==).
 
 [[[
 NBXLibTypes class>>initialize 
@@ -1025,10 +1024,10 @@ NBXLibTypes class>>initialize
 	XWindowAttributes := #NBXLibXWindowAttributes.
 ]]]
 
-Note we also define ==Bool== and ==Status== as aliases of ==int==, ==XWindowAttributes== as an alias of ==#NBXLibXWindowAttributes==. Execute ==NBXLibTypes initialize==.
+Note we also define ==Bool== and ==Status== as aliases of ==int==, ==XWindowAttributes== as an alias of ==#NBXLibXWindowAttributes==. Do not forget to execute ==NBXLibTypes initialize==.
 
 !!!! Describing the fields.
-Now describe the fields in the ==NBXLibXWindowAttributes== class as follows.
+Now we describe the fields in the ==NBXLibXWindowAttributes== class as follows.
 
 [[[
 NBXLibXWindowAttributes class>>fieldsDesc
@@ -1059,13 +1058,12 @@ NBXLibXWindowAttributes class>>fieldsDesc
 ]]]
 
 !!!! Initialize accessors.
-NativeBoost provides
-and initialize all accessors with ==NBXLibXWindowAttributes initializeAccessors==. 
+NativeBoost can also generate all accessors for us with ==NBXLibXWindowAttributes initializeAccessors==. 
 
 
-!!!!Defining the primitive
+!!!!Defining the new primitive
 
-Now we are ready to define the primitive for ==XGetWindowAttributes== in the class ==NBXLibWindow== as follows:
+Now we are ready to define the primitive for ==XGetWindowAttributes()== in the class ==NBXLibWindow== as follows:
 [[[
 NBXLibWindow>>primGetAttributesInto: attributes
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
@@ -1091,7 +1089,9 @@ NBXLibDisplay open defaultRootWindow attributes width
 
 
 !! Conclusion
+In this Chapter we covered a large part of the way we can interact with C libraries using NativeBoost. What you saw is that 
+we can incrementally and without having to code in C build a bridge. In addition to automatic marshalling, NativeBoost supports opaque objects via ==NBExternalReference==, output parameters using ==NBExternalTypeValue== and ==NBExternalArray== and structure using ==NBExternalStructure==.
 
-Once all the system is setup for Pharo and NativeBoost to load the library - and a lot of things can go wrong with this part - defining your bindings should be straight forward. A major challenge is to define a nice object-oriented API around a C library so you can cut the number of parameters to pass to your primitives.
+Once all the system is setup for Pharo and NativeBoost to load the library - and a lot of things can go wrong with this part - defining your bindings should be straightforward. A major challenge is to define a nice object-oriented API around a C library so you can cut the number of parameters to pass to your primitives.
 
 
