@@ -14,6 +14,9 @@ First, you may need some documentation:
 
 !! Must read before start!
 
+Before doing anything we should check first that we can link with the library that we want to use, here X11. 
+
+
 First, as the Pharo VM runs in 32-bit, the libraries you want to bind to (and their dependencies) must be compiled for 32-bit. Major Linux distributions provide 32-bit versions of their packages. For example, on ArchLinux 64-bit, when you search for ==libx11== package:
 
 [[[
@@ -44,12 +47,13 @@ $ make
 $ sudo make install
 ]]]
 
-We can check that the library is 32-bit with ==file==
+We can check that the library is 32-bit with the ==file== command. Here the output mention that the library is 32-bit which is compatible with the current implementation of NativeBoost and Pharo VM \footnote{There are plans to have a 64 bits version of the Pharo VM and as soon as this happens there will be a 64 bit version of NativeBoost.}.
 
 [[[
 $ file /usr/local/lib/libyaz.so.4.0.0 
 /usr/local/lib/libyaz.so.4.0.0: ELF 32-bit LSB  shared object, Intel 80386, version 1 (SYSV), dynamically linked, BuildID[sha1]=479fbc7e495cb53600f145cf575dc1f176703c20, not stripped
 ]]]
+
 
 
 We also have to be sure that all dependent libraries are found:
@@ -217,21 +221,100 @@ Display *XOpenDisplay(char *display_name);
 
 Let us have a look at how NativeBoost maps C to Smalltalk and the inverse. The message ==nbCall:== parses the signature of the function to call as a literal array. NativeBoost automatically does the marshalling between C and Pharo, given a few rules.
 
-First, in C you have these primitive types: ==int==, ==unsigned int==, ==char *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Primitive types are mapped to Pharo types:
+First, in C you have these primitive types: ==int==, ==unsigned int==, == void *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Here are some primitive types are mapped to Pharo types. See below for a longer list.
 - uint or int: Integer
-- char ==*==: String
 - bool: Boolean
 - float: Float
 - char: Character
-- oop: Object
 
-Note that C strings ==(char \*)== must be null terminated strings. NativeBoost automatically does the arguments conversion if we specify ==String== instead of ==char \*== in the signature. Therefore it is safer to use ==String== than ==* char== because ==* char== is managed as a simple pointer to the beginning of string but does not make sure that the string is null-terminated.
+!!! About C strings
 
-So we can change ==NBXLibDisplay class>>open== to:
+Usually the C idioms to represent a string datatype is to declare a pointer on a character and that the array containing characters is null terminated -- In C there is no such formal type definition of what string is. Now when we want to call functions expecting ==char *== care must be taken. Let us see why.
+
+We should pay attention because  ==char *== data type is not a string. It means that a library could specify such type 
+but in reality does not expect a string but simply a pointer. Therefore and read the documentation of the library to make sure
+that function argument in the question is expecting a string and not just a pointer to char value.
+
+For null terminated strings, NativeBoost provides special type named ==String==. Using this type, the value is automatically converted between a Smalltalk byteString and a C null-terminated string. 
+
+When you know that your library is really expecting a C null terminated string, it is safer to use ==String== in a NativeBoost type declaration than ==char *== because ==char *== is just managed as a simple pointer to the beginning of string but does not make sure that the string is null-terminated.
+
+So we can change ==NBXLibDisplay class>>open== to use ==String==:
 
 [[[
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (String displayName))
 ]]]
+
+
+!!! Supported Types
+
+Here is the list of types NativeBoost supports by default. 
+
+!!!! Booleans
+- bool NBBool
+
+!!!! Fixed size integer types. Here the byte order is platform dependent. 
+- int8 NBInt8
+- uint8 NBUInt8
+- int16 NBInt16
+- uint16 NBUInt16
+- int32 NBInt32
+- uint32 NBUInt32
+- int64 NBInt64
+- uint64 NBUInt64
+
+!!!! Aliases to common C compiler types.. some of them are platform dependent, some is not... because the C standard does not fully specify it
+
+-		signedByte int8
+-		unsignedByte int8
+-		signedShort int16
+-		unsignedShort uint16
+-		signedChar int8  
+-		unsignedChar uint8
+-		schar int8
+-		uchar uint8
+-		signedLong int32
+-		unsignedLong uint32
+-		sbyte int8
+-		byte uint8
+-		short int16
+-		ushort uint16
+-		long int32
+-		ulong uint32
+-		longlong int64
+-		ulonglong uint64
+-		uint uint32
+-		int int32
+
+!!!! Unsigned for sizes.
+Usually same size as platform's word size. It is unsigned integer types having the same length as a pointer. 
+- size_t NBSizeT
+		
+!!!! Character type. 
+-		Character NBCharacterType
+-		char NBCharacterType
+Note that Character and char are special. NativeBoost converts between C character and Pharo Character instances. 
+If you just want to use unsigned integer value use ==uint8== or ==int8== instead (The 8 indicates that this is one byte). 
+		
+
+!!!! Floats fixed-size. 
+Here again such type are platform-dependent byte order.
+
+-		float16 NBFloat16
+-		float32 NBFloat32
+-		float64 NBFloat64
+-		float128 NBFloat128
+
+!!!! Floats common type names.
+NativeBoost provides some aliases to C type names. 				
+-		float float32
+-		double float64
+-		shortFloat float16
+
+
+
+
+
 
 
 !!! Customizing Type Resolution
@@ -391,7 +474,6 @@ So we should add the definition of the Atom mapping to our shared pool:
 
 [[[
 NBXLibTypes class>>initialize 
-	super initialize.
 	Display := #NBXLibDisplay.
 	Atom := #ulong
 ]]]
@@ -437,7 +519,6 @@ NBExternalObject subclass: #NBXLibWindow
 and update the shared pool (do not forget to run ==NBXLibTypes initialize==):
 [[[
 NBXLibTypes class>>initialize 
-	super initialize.
 	Display := #NBXLibDisplay.
 	Atom := #ulong.
 	Window := #NBXLibWindow.
@@ -519,7 +600,6 @@ The Atom ==AnyPropertyType== is a special Atom defined to 0. We can add it to th
 
 [[[
 NBXLibTypes class>>initialize 
-	super initialize.
 	Display := #NBXLibDisplay.
 	Atom := #ulong.
 	AnyPropertyType := 0.
@@ -710,8 +790,8 @@ NBExternalStructure variableByteSubclass: #NBXLibXWindowAttributes
 Note that the structure uses the shared pool ==NBXLibTypes== in order to use the type aliases. Before adding the description of all the fields to ==NBXLibXWindowAttributes==, we should define some types that are needed: ==Visual==, ==Screen==, ==Colormap==. We can either use subclasses of ==NBExernalObject==, but as we don't need them we can just add them to the shared pool as ==ulong== (pointers - Xlib uses the name ==XID==).
 
 [[[
-NBXLibTypes>>initialize 
-	super initialize.
+NBXLibTypes class>>initialize 
+
 	Display := #NBXLibDisplay.
 	Atom := #ulong.
 	Window := #NBXLibWindow.
