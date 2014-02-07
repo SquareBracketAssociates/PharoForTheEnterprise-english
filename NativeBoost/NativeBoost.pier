@@ -221,23 +221,25 @@ Display *XOpenDisplay(char *display_name);
 
 Let us have a look at how NativeBoost maps C to Smalltalk and the inverse. The message ==nbCall:== parses the signature of the function to call as a literal array. NativeBoost automatically does the marshalling between C and Pharo, given a few rules.
 
-First, in C you have these primitive types: ==int==, ==unsigned int==, == void *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Here are some primitive types are mapped to Pharo types. See below for a longer list.
+First, in C you have these primitive types: ==int==, ==unsigned int==, == void *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Here are some primitive types and their mapping to Pharo types. 
 - uint or int: Integer
 - bool: Boolean
 - float: Float
 - char: Character
 
+See below for a longer list.
+
 !!! About C strings
 
-Usually the C idioms to represent a string datatype is to declare a pointer on a character and that the array containing characters is null terminated -- In C there is no such formal type definition of what string is. Now when we want to call functions expecting ==char *== care must be taken. Let us see why.
+Usually the C idioms to represent a string datatype is to declare a pointer on a character and that the array containing characters is null terminated -- In C there is no such formal type definition of what string is. Now when we want to call functions expecting char ==x== care must be taken. Let us see why.
 
-We should pay attention because  ==char *== data type is not a string. It means that a library could specify such type 
+We should pay attention because  char ==*== data type is not a string. It means that a library could specify such type 
 but in reality does not expect a string but simply a pointer. Therefore and read the documentation of the library to make sure
 that function argument in the question is expecting a string and not just a pointer to char value.
 
 For null terminated strings, NativeBoost provides special type named ==String==. Using this type, the value is automatically converted between a Smalltalk byteString and a C null-terminated string. 
 
-When you know that your library is really expecting a C null terminated string, it is safer to use ==String== in a NativeBoost type declaration than ==char *== because ==char *== is just managed as a simple pointer to the beginning of string but does not make sure that the string is null-terminated.
+When you know that your library is really expecting a C null terminated string, it is safer to use ==String== in a NativeBoost type declaration than ==char *== because char ==*== is just managed as a simple pointer to the beginning of string but does not make sure that the string is null-terminated.
 
 So we can change ==NBXLibDisplay class>>open== to use ==String==:
 
@@ -594,7 +596,6 @@ int XGetWindowProperty (
 - The three first parameters are easy: the display, the root window in our case, and the Atom ==_NET_CLIENT_LIST_STACKING==. 
 - For ==long_offset== and ==long_length==, they can be used to do a partial read of the properties. To get easy, we will get all, so ==0== for the offset and ==16rFFFF== for the length. So we don't care about ==bytes_after_return== in our case
 - For the ==req_type==, we can use the Xlib constant ==AnyPropertyType== and don't care about ==actual_type_return== and ==actual_format_return== actually
-- We need to use ==nitems_return== and ==prop_return== to create all ==NBXLibWindow== objects returned.
 
 The Atom ==AnyPropertyType== is a special Atom defined to 0. We can add it to the shared pool for later use:
 
@@ -605,18 +606,25 @@ NBXLibTypes class>>initialize
 	AnyPropertyType := 0.
 ]]]
 
-And then define the primitive. Note that ==actual_type_return==, ==actual_format_return==, ==nitems_return==, ==bytes_after_return== and ==prop_return== are output parameters that will be filled by the ==XGetWindowProperty==.
 
-For ==int *== and ==unsigned long *==, we can use a ==ByteArray== buffer. 
+!!!! About returned values.
 
-@@note why ask igor.
+The last five arguments of the function ==XGetWindowProperty== are output parameters. They are used by the library to store
+return values at the location that user must provide. This is why they are specified as pointers.
+
+The first four we can use a ByteArray buffer that is big enough to hold the returned data. In our case this is 4 bytes each as we will show just after. The NativeBoost declaration for ==actual_type_return==, ==actual_format_return==, ==nitems_return==, ==bytes_after_return== is simply the following one: 
+
+[[[
+Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn
+]]]
+
+The last argument requires a bit more attention. 
 
 !!! Dealing with char **
 
 The ==prop_return==  is defined as ==unsigned char \*\*==, literally a pointer on a pointer on a character or a pointer on string. 
 The idea is that this is a pointer that a library will use to give back a string: a pointer to the resulting string. To deal with such 
-C idioms NativeBoost offers the notion of external address. Using and instance of the class ==NBExternalAddress== will hodl an address.
-
+C idioms NativeBoost offers the notion of external address. Using and instance of the class ==NBExternalAddress== will hold an address.
 
 Let's add the primitive that will retrieve the properties using the ==XgetWindowProperty== function.
 
@@ -636,19 +644,28 @@ NBXLibWindow>>primGetWindowProperty: anAtom
 	^self nbCall: #(int XGetWindowProperty(Display display, self, Atom  anAtom, long offset, long length, bool delete, Atom requiredType, Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn, NBExternalAddress * data ))
 ]]]
 
-Here we see that we use ==NBExternalAddress * data== which means that data is a pointer to an external address. - why not ==NBExternalAddress data==??)
+Here we see that we use ==NBExternalAddress * data== in a signature.
+By default, in NativeBoost, there is no difference whether you specify ==anytype*== or ==anytype**== or ==anytype***== etc in function signature, because NativeBoost treats all pointer types similarly: it just checks that value you passed to the function can be converted to a pointer.
+For instance, if we use ==void*== in function signature, we can pass any of following: any variable-byte instance (ByteArray, ByteString etc),
+any variable-word instance (WordArray etc) and lastly, an instance of NBExternalAddress.
+For variable-sized objects a pointer to the first indexable element will be passed, and for instances of NBExternalAddress which holding a pointer value,
+the actual value will be passed.
 
+But if we explicitly specify ==NBExternalAddress * ==, in this case, NativeBoost will accept only an instance of NBExternalAddress as valid argument (no variable-sized arrays),
+and instead of passing a value held by NBExternalAddress instance, it will pass a pointer to a location where this value is stored.
+As result, after calling the function, it will store an output value in provided NBExternalAddress instance, which we're free to use later.
 
+!!! Dealing with Arrays of C type values
 
+Communicating with C library often requires dealing with arrays of certain data type (ints, floats etc).
+There is no direct correspondence between smalltalk Array (array of objects) and arrays in C (array of certain data type values), and NativeBoost provides no implicit conversions between them. While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex data types, like array of structures it is impossible.
+Moreover, conversion between C array and smalltalk Array will require copying data to represent each array element as an object, and obviously require knowledge about the array size beforehand, which also is not always the case. 
 
-
-
-
-
-!!! Dealing with Arrays of C types
+In case if we don't need accessing array's elements and just need a space to store array as a whole, we can just use instances of ByteArray big enough
+to accommodate C array of requested size (after all, anything held in computer memory is just a bunch of bytes). 
+And while this is cheap and simple way to hold external data, there is an apparent downside, when it comes to accessing or enumerating elements of such C array, because ByteArray has no any helpers for that and its elements are bare bytes but not some C type value(s).
 
 	 ==NBExternalArray== to work with arrays whose elements are values of some external (C) type.
-
 
 The class ==NBExternalArray== should be subclassed and the class side ==initialize== method has to initialize the element type:
 
