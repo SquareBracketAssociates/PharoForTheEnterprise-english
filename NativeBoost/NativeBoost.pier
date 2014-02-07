@@ -1,6 +1,6 @@
 ! NativeBoost Recipes
 
-There is nothing better than real examples to learn. In this chapter, we will create some bindings to X11 Xlib. This chapter was written by L. Laffont during a visit in the RMOD team and largely revisited by S. Ducasse. 
+There is nothing better than real examples to learn. In this chapter, we will create some bindings to X11 Xlib. This chapter was written by L. Laffont during a visit in the RMOD team and largely revisited by S. Ducasse and I. Stasenko. 
 
 
 !! Some documentation
@@ -774,8 +774,18 @@ intValue value "read the value set by a function"
 Note during the call, the function foo() stores an int at the given address (address represented by the instance of ==NBXIntValue==).
 Then we can retrieve the value of this stored int as a Pharo ==Integer== sending the message ==value== to ==intValue==.
 
+!!!! Note
+Before the introduction of ==NBExternalTypeValue==, you would had to do the following to get the same example working.
+
+[[[
+intValueBuffer := ByteArray new: 4.
+self foo: intValueBuffer.
+value := intValueBuffer nbUInt32AtOffset: 0.
+]]]
+
+
 !!!! Anonymous classes.
-Again in certain situations, it is tedious to have to define a class for each data types, especially when there are way too many as in some libraries. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==.
+Again in certain situations, it is tedious to have to define a class for each data type, especially when there are way too many as in some libraries. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==.
 Here is the equivalent of the previous one:
 
 [[[
@@ -783,6 +793,9 @@ myClass := NBExternalTypeValue ofType: 'int'.
 myClass new value: 10.
 ...
 ]]]
+
+Please note that the ==ofType:== expression creates a fresh anonymous subclass each time it is invoked. Since it is expensive, it is recommended to store it in some kind of class variable and reuse the resulting class.
+
 
 !!! Back to X11
 Now we are ready to get write our method to access the existing windows. 
@@ -801,41 +814,113 @@ NBXLibArrayOfWindows class>>initialize
 
 Do not forget to execute ==NBXLibArrayOfWindows initialize==. 
 
-Now let us define a method to access all the currently display windows. Here we see how we have to pass actual space 
+
+Now let us define a method ==managedWindows== to access all the currently display windows. We use two instances of ==NBXIntValue==, one to represent the returned number of items and a dummy one for values we do not use. 
 
 [[[
 NBXLibWindow>>managedWindows
-  | numberOfItems dataPtr numberOfItemsBuffer |
-  numberOfItemsBuffer := ByteArray new: 4.
-  dataPtr := NBExternalAddress new.
 
-  self primGetWindowProperty: (display atomNamed: '_NET_CLIENT_LIST_STACKING')
-		offset: 0 
-		length: 16rFFFF
-		delete: false 
-		requiredType: AnyPropertyType
-		intoActualType: (ByteArray new: 4)
-		actualFormat: (ByteArray new: 4)
-		numberOfItems: numberOfItemsBuffer  
-		bytesAfterReturn: (ByteArray new: 4) 
-		data: dataPtr.
-
-    "Retrieves the actual number of items from the buffer"		
-	numberOfItems := numberOfItemsBuffer nbUInt32AtOffset: 0.
+	| numberOfItems dataPtr dummy |
+	numberOfItems := NBXIntValue new. 
+	dummy := NBXIntValue new.
+	dataPtr := NBExternalAddress new.
 	
-    "Fetch all the windows and init their display reference"	
-  ^ (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems) asArray
-	       do: [ :aWindow| aWindow display: display ]
+	self primGetWindowProperty: (display atomNamed: '_NET_CLIENT_LIST_STACKING')
+		offset: 0
+		length: 16rFFFF
+		delete: false
+		requiredType: AnyPropertyType 
+		intoActualType: dummy
+		actualFormat: dummy
+		numberOfItems: numberOfItems 
+		bytesAfterReturn: dummy 
+		data: dataPtr.
+		
+	"Fetch all the windows"
+	^ (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems value) 
 ]]]
 
-
-
-
+Note that we will improve this method because it has some shortcomings. But first have fun and try the following expression. 
 You should get all the windows managed by your window manager (including docks and task bars):
 
 [[[
 NBXLibDisplay open defaultRootWindow managedWindows inspect
 ]]]
+
+Now let us explain ==(NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems value)==. This message returns an array of the given size located on an address in memory. The type of this array elements are C Window opaque type. It means that the  array contains only handles to some windows. Those handles on the Pharo side are represented as NBXLibWindow instances. When we read a particular element like when using at: or do: each time NativeBoost will convert the handle in a fresh ==NBXLibWindow== object. 
+
+
+To turn an array of handles into an array of ==NBXLibWindow== instances, we send the message ==asArray== to the ==(NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems value)==. Now we can at the Pharo level connect a window with its display object. This is what we do with the last do statement of the method.
+
+[[[
+NBXLibWindow>>managedWindows
+
+	| numberOfItems dataPtr dummy |
+	numberOfItems := NBXIntValue new. 
+	dummy := NBXIntValue new.
+	dataPtr := NBExternalAddress new.
+	
+	self primGetWindowProperty: (display atomNamed: '_NET_CLIENT_LIST_STACKING')
+		offset: 0
+		length: 16rFFFF
+		delete: false
+		requiredType: AnyPropertyType 
+		intoActualType: dummy
+		actualFormat: dummy
+		numberOfItems: numberOfItems 
+		bytesAfterReturn: dummy 
+		data: dataPtr.
+		
+	"Fetch all the windows and init their display reference"
+	^ (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems value) asArray
+		do: [ :aWindow| aWindow display: display ]
+]]]
+
+
+
+!!!! Memory Housekeeping 
+
+The documentation of X11 says that we should free the memory allocated for retrieved data once we no longer need it. Since there is no garbage collector in C, each time we will call this function we will create a memory leak. The documentation says that we should use the ==XFree()== function. Therefore we going to define the ==free:== method as follows.
+
+[[[
+NBXLibDisplay>>free: aPointer
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+
+	^self nbCall: #(void XFree (void* aPointer))
+]]]
+
+We define ==free:== in NBXLibDisplay because display plays a central role in the window management with X11. But we could have implement it in ==NBXLibWindow==.
+Now we change the definition of managedWindows method into its final form.
+
+[[[
+NBXLibWindow>>managedWindows
+
+	| numberOfItems dataPtr dummy result |
+	numberOfItems := NBXIntValue new. 
+	dummy := NBXIntValue new.
+	dataPtr := NBExternalAddress new.
+	
+	self primGetWindowProperty: (display atomNamed: '_NET_CLIENT_LIST_STACKING')
+		offset: 0
+		length: 16rFFFF
+		delete: false
+		requiredType: AnyPropertyType 
+		intoActualType: dummy
+		actualFormat: dummy
+		numberOfItems: numberOfItems 
+		bytesAfterReturn: dummy 
+		data: dataPtr.
+		
+	"Fetch all the windows and init their display reference"
+	result := (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems value) asArray 
+		do: [ :aWindow| aWindow display: display ].
+	display free: dataPtr.
+	^ result		
+]]]
+
+
+
+Here
 
 
 !! I like to move it, move it
@@ -862,6 +947,11 @@ aWindow := aDisplay defaultRootWindow managedWindows at: 2.
 aWindow x: 10 y: 50 width: 200 height: 500.
 aDisplay close.
 ]]]
+
+
+
+
+
 
 
 !! Reading window attributes
