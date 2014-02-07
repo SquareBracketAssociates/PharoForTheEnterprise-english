@@ -231,7 +231,7 @@ See below for a longer list.
 
 !!! About C strings
 
-Usually the C idioms to represent a string datatype is to declare a pointer on a character and that the array containing characters is null terminated -- In C there is no such formal type definition of what string is. Now when we want to call functions expecting char ==x== care must be taken. Let us see why.
+Usually the C idioms to represent a string datatype is to declare a pointer on a character and that the array containing characters is null terminated - In C there is no such formal type definition of what string is. Now when we want to call functions expecting char ==*== care must be taken. Let us see why.
 
 We should pay attention because  char ==*== data type is not a string. It means that a library could specify such type 
 but in reality does not expect a string but simply a pointer. Therefore and read the documentation of the library to make sure
@@ -250,51 +250,53 @@ So we can change ==NBXLibDisplay class>>open== to use ==String==:
 
 !!! Supported Types
 
-Here is the list of types NativeBoost supports by default. 
+Here is the list of types NativeBoost supports by default. We show the C names as well as the NativeBoost equivalent.
 
 !!!! Booleans
-- bool NBBool
+- ==bool NBBool==
 
 !!!! Fixed size integer types. Here the byte order is platform dependent. 
-- int8 NBInt8
-- uint8 NBUInt8
-- int16 NBInt16
-- uint16 NBUInt16
-- int32 NBInt32
-- uint32 NBUInt32
-- int64 NBInt64
-- uint64 NBUInt64
+- ==int8 NBInt8==
+- ==uint8 NBUInt8==
+- ==int16 NBInt16==
+- ==uint16 NBUInt16==
+- ==int32 NBInt32==
+- ==uint32 NBUInt32==
+- ==int64 NBInt64==
+- ==uint64 NBUInt64==
 
-!!!! Aliases to common C compiler types.. some of them are platform dependent, some is not... because the C standard does not fully specify it
+!!!! Aliases to common C compiler types.
+Some of them are platform dependent, some is not... because the C standard does not fully specify it
 
--		signedByte int8
--		unsignedByte int8
--		signedShort int16
--		unsignedShort uint16
--		signedChar int8  
--		unsignedChar uint8
--		schar int8
--		uchar uint8
--		signedLong int32
--		unsignedLong uint32
--		sbyte int8
--		byte uint8
--		short int16
--		ushort uint16
--		long int32
--		ulong uint32
--		longlong int64
--		ulonglong uint64
--		uint uint32
--		int int32
+-	==signedByte int8==
+-	==unsignedByte int8==
+-	==signedShort int16==
+-	==unsignedShort uint16==
+-	==signedChar int8==
+-	==unsignedChar uint8==
+-	==schar int8==
+-	==uchar uint8==
+-	==signedLong int32==
+-	==unsignedLong uint32==
+-	==sbyte int8==
+-	==byte uint8==
+-	==short int16==
+-	==ushort uint16==
+-	==long int32==
+-	==ulong uint32==
+-	==longlong int64==
+-	==ulonglong uint64==
+-	==uint uint32==
+-	==int int32==
 
 !!!! Unsigned for sizes.
 Usually same size as platform's word size. It is unsigned integer types having the same length as a pointer. 
-- size_t NBSizeT
+- ==size_t NBSizeT==
 		
 !!!! Character type. 
--		Character NBCharacterType
--		char NBCharacterType
+-	==Character NBCharacterType==
+-	==char NBCharacterType==
+
 Note that Character and char are special. NativeBoost converts between C character and Pharo Character instances. 
 If you just want to use unsigned integer value use ==uint8== or ==int8== instead (The 8 indicates that this is one byte). 
 		
@@ -302,16 +304,16 @@ If you just want to use unsigned integer value use ==uint8== or ==int8== instead
 !!!! Floats fixed-size. 
 Here again such type are platform-dependent byte order.
 
--		float16 NBFloat16
--		float32 NBFloat32
--		float64 NBFloat64
--		float128 NBFloat128
+-	==float16 NBFloat16==
+-	==float32 NBFloat32==
+-	==float64 NBFloat64==
+-	==float128 NBFloat128==
 
 !!!! Floats common type names.
 NativeBoost provides some aliases to C type names. 				
--		float float32
--		double float64
--		shortFloat float16
+-	==float float32==
+-	==double float64==
+-	==shortFloat float16==
 
 
 
@@ -576,7 +578,7 @@ NBXLibDisplay>>primDefaultRootWindow
 
 !!! Getting Properties 
 
-Now the hard part. Xlib defines a generic function to get properties, ==XGetWindowProperty==. It is a bit verbose and its signature is:
+Now the hard part. Xlib defines a generic function to get properties, ==XGetWindowProperty()==. It is a bit verbose and its signature is:
 [[[
 int XGetWindowProperty (
   Display *display, 
@@ -620,13 +622,15 @@ Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterRetur
 
 The last argument requires a bit more attention. 
 
-!!! Dealing with char **
+!!! Dealing with pointer output arguments
 
-The ==prop_return==  is defined as ==unsigned char \*\*==, literally a pointer on a pointer on a character or a pointer on string. 
-The idea is that this is a pointer that a library will use to give back a string: a pointer to the resulting string. To deal with such 
-C idioms NativeBoost offers the notion of external address. Using and instance of the class ==NBExternalAddress== will hold an address.
+The ==prop_return==  is defined as ==unsigned char **==, literally a pointer on a pointer.
+What the C idiom want to convey is that the function is expecting a pointer where it will store the pointer to the returned data. From that perspective, the signature ==char **== could have been expressed as ==void **==.
 
-Let's add the primitive that will retrieve the properties using the ==XgetWindowProperty== function.
+To deal with such idioms, NativeBoost offers the notion of external addresses. Using an instance of the class ==NBExternalAddress==  holds an address.
+
+
+Now let's define in Pharo the primitive that will retrieve the properties calling the ==XgetWindowProperty()== function.
 
 [[[
 NBXLibWindow>>primGetWindowProperty: anAtom 
@@ -644,34 +648,145 @@ NBXLibWindow>>primGetWindowProperty: anAtom
 	^self nbCall: #(int XGetWindowProperty(Display display, self, Atom  anAtom, long offset, long length, bool delete, Atom requiredType, Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn, NBExternalAddress * data ))
 ]]]
 
-Here we see that we use ==NBExternalAddress * data== in a signature.
-By default, in NativeBoost, there is no difference whether you specify ==anytype*== or ==anytype**== or ==anytype***== etc in function signature, because NativeBoost treats all pointer types similarly: it just checks that value you passed to the function can be converted to a pointer.
-For instance, if we use ==void*== in function signature, we can pass any of following: any variable-byte instance (ByteArray, ByteString etc),
-any variable-word instance (WordArray etc) and lastly, an instance of NBExternalAddress.
-For variable-sized objects a pointer to the first indexable element will be passed, and for instances of NBExternalAddress which holding a pointer value,
+Here we see that we use ==NBExternalAddress * data== in a signature. By default, in NativeBoost, there is no difference whether you specify ==anytype*== or ==anytype**== or ==anytype***== etc in function signature, because NativeBoost treats all pointer types similarly: it just checks that value you passed to the function can be converted to a pointer. 
+
+For instance, if we use ==void *== in function signature, we can pass any of following: any variable-byte instance (==ByteArray==, ==ByteString== etc), any variable-word instance (==WordArray== etc) and lastly, an instance of ==NBExternalAddress==.
+For variable-sized objects a pointer to the first indexable element will be passed, and for instances of ==NBExternalAddress== which are holding a pointer value,
 the actual value will be passed.
 
-But if we explicitly specify ==NBExternalAddress * ==, in this case, NativeBoost will accept only an instance of NBExternalAddress as valid argument (no variable-sized arrays),
-and instead of passing a value held by NBExternalAddress instance, it will pass a pointer to a location where this value is stored.
-As result, after calling the function, it will store an output value in provided NBExternalAddress instance, which we're free to use later.
+But if we explicitly specify ==NBExternalAddress *== as an argument type, in this case, NativeBoost will accept only an instance of ==NBExternalAddress== 
+as valid argument (no variable-sized objects), and instead of passing a value held by ==NBExternalAddress== instance, it will pass a pointer to a location where this value is stored.
+
+As result, after calling the function, it will store an output value in provided ==NBExternalAddress== instance, which we're free to use later.
+
+
+!!!! NBExternalAddress vs. void.
+We use ==NBExternalAddress *== and not ==void *== because: using ==void *== we could pass a byte array and we would get back the address stored inside the byte array. And from these four bytes we would have to construct an address. In addition, using NBExternalAddress provides extra safety because NativeBoost will refuse to perform a call when given something else than a NBExternalAddress instance. 
+
+
+
 
 !!! Dealing with Arrays of C type values
+So far we defined a method (primitive) to call the C function but we did not define how to perform the actual call.
 
-Communicating with C library often requires dealing with arrays of certain data type (ints, floats etc).
-There is no direct correspondence between smalltalk Array (array of objects) and arrays in C (array of certain data type values), and NativeBoost provides no implicit conversions between them. While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex data types, like array of structures it is impossible.
-Moreover, conversion between C array and smalltalk Array will require copying data to represent each array element as an object, and obviously require knowledge about the array size beforehand, which also is not always the case. 
+Communicating with a C library often requires dealing with arrays of certain data type (ints, floats etc).
+There is no direct correspondence between Smalltalk arrays (array of objects) and arrays in C (array of certain data type values), and NativeBoost provides no implicit conversions between them because there is no magic.  While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex data types, like array of structures it is impossible.
+Moreover, an automatic conversion between C arrays and instances of ==Array== would require copying/converting data to represent each array element as an object (which is expensive if done systematically). Such automatic conversion requires knowledge about the array size beforehand, which also is not always the case. 
 
-In case if we don't need accessing array's elements and just need a space to store array as a whole, we can just use instances of ByteArray big enough
+In case, if we don't need accessing array's elements and just need a space to store an array as a whole, we can just use instances of ==ByteArray== big enough
 to accommodate C array of requested size (after all, anything held in computer memory is just a bunch of bytes). 
-And while this is cheap and simple way to hold external data, there is an apparent downside, when it comes to accessing or enumerating elements of such C array, because ByteArray has no any helpers for that and its elements are bare bytes but not some C type value(s).
+And while this is cheap and a simple way to hold external data, there is a downside, when it comes to accessing or enumerating elements of such C array: Indeed we ==ByteArray== does not provide helpers to access the elements other than bare bytes in an easy way. It means that it can cumbersome to retrieve the elements of C array stored in the ==ByteArray==.
 
-	 ==NBExternalArray== to work with arrays whose elements are values of some external (C) type.
+NativeBoost provides a way to operate with arrays of C type using  ==NBExternalArray==. Let us look at a simple example before going back to our X11 tutorial.
 
-The class ==NBExternalArray== should be subclassed and the class side ==initialize== method has to initialize the element type:
+!!!! Array of ==int==
 
-% @@note missing explanation why. Especially since after we have NBExternalAddress * data 
+Imagine that we want to work with arrays of int (==int [ ]==). We subclass the class ==NBExternalArray== and redefine the class side ==initialize== method to initialize the array element type:
 
-For example imagine that we would need an array of windows. We would define it as follows. 
+[[[
+NBExternalArray subclass: #NBXArrayOfInts
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'NBXLib'
+
+NBXArrayOfInts class>>initialize
+	self initElementType: 'int'
+]]]
+
+Then before using the class, you should not forget to initialize it by executing ==NBArrayOfInts initialize==.
+
+Now we can create an array of 10 ints as follows:
+
+[[[
+(NBXArrayOfInts new: 10) 
+
+  	yields a NBXArrayOfInts(0 0 0 0 0 0 0 0 0 0)
+]]]
+
+Since ==NBExternalArray== is a subclass of ==ArrayedCollection==, we can use it as a regular array responding to the normal messages of Array like collections.
+The only difference is that the elements has fixed type. If we pass invalid objects in ==at:put:== an error will be raised. The following code snippet shows how to  
+
+
+[[[
+(NBXArrayOfInts new: 10) at: 10 put: -1
+
+(NBXArrayOfInts new: 10) at: 10 put: nil
+will raise an error
+]]]
+
+!!!! Anonymous classes.
+In certain situations, it is tedious to have to define a class for each data types. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==.
+Here is the equivalent of the previous one:
+
+[[[
+myClass := NBExternalArray ofType: 'int'.
+myClass new: 10.
+...
+]]]
+
+
+!! Handling a single C value with NBExternalTypeValue
+
+Similar to ==NBExternalArray==, NativeBoost proposes ==NBExternalTypeValue== which instance of which holds a single value of a concrete C type. 
+Using sub instances of ==NBExternalTypeValue== is particularly handy when dealing with output parameters of functions (as we will see in the next Section).
+
+For example, to define an output parameter of an int type, first define a subclass of ==NBExternalTypeValue==, then define the class method ==initialize==
+as follows:
+
+[[[
+NBExternalTypeValue subclass: #NBXIntValue
+	instanceVariableNames: ''
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'NBXLib'
+
+NBXIntValue class>>initialize
+	"self initialize"
+	self initValueType: 'int'
+]]]
+
+Of course, do not forget to initialize the class (==NBXIntValue initialize==) before using it.
+
+Now we can set and access the value using the messages ==value== and ==value:== for instances of the newly created class. NativeBoost generates those accessors automatically.
+
+[[[
+(NBXIntValue new value: 33) value
+]]]
+
+Now we can pass instances of this class as a output parameter to function which expects a pointer to an int. Imagine that we have a C function with the signature  ==foo(int * i)== and its Pharo binding ==foo:== method defined as follows:
+
+[[[
+foo: aValue
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+
+	^self nbCall: #(void foo(int * aValue))	
+]]]
+
+We can simply create an instance of NBXIntValue and pass it to the function. 
+[[[
+intValue := NBXIntValue new.
+self foo: intValue
+
+intValue value "read the value set by a function"
+]]]
+
+Note during the call, the function foo() stores an int at the given address (address represented by the instance of ==NBXIntValue==).
+Then we can retrieve the value of this stored int as a Pharo ==Integer== sending the message ==value== to ==intValue==.
+
+!!!! Anonymous classes.
+Again in certain situations, it is tedious to have to define a class for each data types, especially when there are way too many as in some libraries. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==.
+Here is the equivalent of the previous one:
+
+[[[
+myClass := NBExternalTypeValue ofType: 'int'.
+myClass new value: 10.
+...
+]]]
+
+!!! Back to X11
+Now we are ready to get write our method to access the existing windows. 
+Let us define a new class to handle arrays of windows. We subclass ==NBExternalArray== and we define the class side ==initialize== method as we did previously.
 
 [[[
 NBExternalArray subclass: #NBXLibArrayOfWindows
@@ -684,11 +799,9 @@ NBXLibArrayOfWindows class>>initialize
 	self initElementType: 'NBXLibWindow'
 ]]]
 
-Run ==NBXLibArrayOfWindows initialize==. 
+Do not forget to execute ==NBXLibArrayOfWindows initialize==. 
 
-
-
-and the method that uses it:
+Now let us define a method to access all the currently display windows. Here we see how we have to pass actual space 
 
 [[[
 NBXLibWindow>>managedWindows
@@ -715,7 +828,7 @@ NBXLibWindow>>managedWindows
 	       do: [ :aWindow| aWindow display: display ]
 ]]]
 
-% @@note I do not get why we need (NBXLibArrayOfWindows onAddress: dataPtr size: numberOfItems) nor from where it comes from
+
 
 
 You should get all the windows managed by your window manager (including docks and task bars):
