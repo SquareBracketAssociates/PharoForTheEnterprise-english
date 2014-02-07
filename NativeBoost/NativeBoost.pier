@@ -419,8 +419,7 @@ Here, we assume that ==XOpenDisplay()== returns some handle (or pointer) to some
 
 When used as argument type, the value, which is used to pass to the external function is a value held in the ==handle== instance variable.
 
-The main advantage of using ==NBExternalObject== subclass as a type name for arguments is that it provides type safety by checking the incoming argument, that it
-is an instance of your class, and nothing else. If not, the primitive will fail without calling the external function.
+The main advantage of using ==NBExternalObject== subclass as a type name for arguments is that it provides type safety by checking the incoming argument, that it is an instance of your class, and nothing else. If not, the primitive will fail without calling the external function.
 
 
 !! Self magic
@@ -561,8 +560,7 @@ NBXLibWindow>>display
 
 ]]]
 
-Then we rename the previous ==defaultRootWindow== to ==primitiveDefaultRootWindow== and move it to the private protocol. Finally we define
-a new method ==defautlRootWindow== as follows:
+Then we rename the previous ==defaultRootWindow== to ==primitiveDefaultRootWindow== and move it to the private protocol. Finally we define a new method ==defautlRootWindow== as follows:
 
 
 [[[
@@ -611,8 +609,7 @@ NBXLibTypes class>>initialize
 
 !!!! About returned values.
 
-The last five arguments of the function ==XGetWindowProperty== are output parameters. They are used by the library to store
-return values at the location that user must provide. This is why they are specified as pointers.
+The last five arguments of the function ==XGetWindowProperty== are output parameters. They are used by the library to store return values at the location that user must provide. This is why they are specified as pointers.
 
 The first four we can use a ByteArray buffer that is big enough to hold the returned data. In our case this is 4 bytes each as we will show just after. The NativeBoost declaration for ==actual_type_return==, ==actual_format_return==, ==nitems_return==, ==bytes_after_return== is simply the following one: 
 
@@ -624,8 +621,7 @@ The last argument requires a bit more attention.
 
 !!! Dealing with pointer output arguments
 
-The ==prop_return==  is defined as ==unsigned char **==, literally a pointer on a pointer.
-What this C idiom wants to convey is that the function is expecting a pointer where it will store the pointer to the returned data. From that perspective, the signature ==char **== could have been expressed as ==void **==.
+The ==prop_return==  is defined as ==unsigned char **==, literally a pointer on a pointer. What this C idiom wants to convey is that the function is expecting a pointer where it will store the pointer to the returned data. From that perspective, the signature ==char **== could have been expressed as ==void **==.
 
 To deal with such an idiom, NativeBoost offers the notion of external addresses. Using an instance of the class ==NBExternalAddress==  holds an address.
 
@@ -673,8 +669,7 @@ Communicating with a C library often requires dealing with arrays of certain dat
 There is no direct correspondence between Pharo arrays (array of objects) and arrays in C (array of certain data type values), and NativeBoost provides no implicit conversions between them because there is no magic.  While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex data types, like array of structures it is impossible.
 Moreover, an automatic conversion between C arrays and instances of ==Array== would require copying/converting data to represent each array element as an object (which is expensive if done systematically). Such automatic conversion requires knowledge about the array size beforehand, which also is not always the case. 
 
-In case, if we don't need accessing array's elements and just need a space to store an array as a whole, we can just use instances of ==ByteArray== big enough
-to accommodate C array of requested size (after all, anything held in computer memory is just a bunch of bytes). 
+In case, if we don't need accessing array's elements and just need a space to store an array as a whole, we can just use instances of ==ByteArray== big enough to accommodate C array of requested size (after all, anything held in computer memory is just a bunch of bytes). 
 And while this is cheap and a simple way to hold external data, there is a downside, when it comes to accessing or enumerating elements of such C array: Indeed we ==ByteArray== does not provide helpers to access the elements other than bare bytes in an easy way. It means that it can cumbersome to retrieve the elements of C array stored in the ==ByteArray==.
 
 NativeBoost provides a way to operate with arrays of C type using  ==NBExternalArray==. Let us look at a simple example before going back to our X11 tutorial.
@@ -716,8 +711,7 @@ will raise an error
 ]]]
 
 !!!! Anonymous classes.
-In certain situations, it is tedious to have to define a class for each data types. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==.
-Here is the equivalent of the previous one:
+In certain situations, it is tedious to have to define a class for each data types. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==. Here is the equivalent of the previous one:
 
 [[[
 myClass := NBExternalArray ofType: 'int'.
@@ -731,8 +725,7 @@ myClass new: 10.
 Similar to ==NBExternalArray==, NativeBoost proposes ==NBExternalTypeValue== which instance of which holds a single value of a concrete C type. 
 Using sub instances of ==NBExternalTypeValue== is particularly handy when dealing with output parameters of functions (as we will see in the next Section).
 
-For example, to define an output parameter of an int type, first define a subclass of ==NBExternalTypeValue==, then define the class method ==initialize==
-as follows:
+For example, to define an output parameter of an int type, first define a subclass of ==NBExternalTypeValue==, then define the class method ==initialize== as follows:
 
 [[[
 NBExternalTypeValue subclass: #NBXIntValue
@@ -785,8 +778,7 @@ value := intValueBuffer nbUInt32AtOffset: 0.
 
 
 !!!! Anonymous classes.
-Again in certain situations, it is tedious to have to define a class for each data type, especially when there are way too many as in some libraries. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==.
-Here is the equivalent of the previous one:
+Again in certain situations, it is tedious to have to define a class for each data type, especially when there are way too many as in some libraries. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==. Here is the equivalent of the previous one:
 
 [[[
 myClass := NBExternalTypeValue ofType: 'int'.
