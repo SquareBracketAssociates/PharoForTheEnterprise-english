@@ -191,7 +191,7 @@ When you inspect the result of the last expression you should obtain Figure
 
 
 !! About NativeBoostPlugin primitives
-Now it is time to explain a bit what we did.
+Now it is time to explain what we did a bit.
 
 This line:
 
@@ -199,7 +199,7 @@ This line:
 <primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 ]]]
 
-is called a ==pragma==. It indicates that the ==#primitiveNativeCall== of the ==#NativeBoostPlugin== should be called when this method is executed. If it fails, an ==errorCode== is returned and the  code below is executed. The pragma indicates to the system to execute the assembly code that was generated to perform a foreign call. If it fails the code ==nbCall:== is executed. 
+is a ==pragma== that tries to execute a primitive function, only evaluating the body of the method (in this case the send of ==nbCall:==) if it fails. First, the ==#primitiveNativeCall== of the ==#NativeBoostPlugin==  tries to perform the foreign call by executing assembly code. If it fails (which it always will the first time because the assembly code has not been generated yet), an ==errorCode== is returned and the body of the method is evaluated. 
 
 
 
@@ -207,7 +207,7 @@ is called a ==pragma==. It indicates that the ==#primitiveNativeCall== of the ==
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (char * displayName))
 ]]]
 
-The ==nbCall:== will parse the array and produces the adequate machine code to perform a function call. 
+==nbCall:== will parse the array and produce the machine code to perform the function call to XOpenDisplay. 
 
 
 
@@ -219,9 +219,9 @@ Now remember that the actual C signature is:
 Display *XOpenDisplay(char *display_name);
 ]]]
 
-Let us have a look at how NativeBoost maps C to Pharo and the inverse. The message ==nbCall:== parses the signature of the function to call as a literal array. NativeBoost automatically does the marshalling between C and Pharo, given a few rules.
+Let's have a look at how NativeBoost maps C to Pharo and vice versa. First, the message ==nbCall:== parses the function signature as a literal array. Then, NativeBoost automatically does the marshalling between C and Pharo.
 
-First, in C you have these primitive types: ==int==, ==unsigned int==, == void *==  and so on. The NativeBoost parser ==NBFnSpecParser== actually handles single keyword type. So, instead of writing ==unsigned int==, we should use ==uint==. Here are some primitive types and their mapping to Pharo types. 
+Many primitive C types like ==int== and ==void *== are fine as is. However, types with multiple-word names, like ==unsigned int==, must be replaced because the NativeBoost parser ==NBFnSpecParser== expects single-word type names. So instead of writing ==unsigned int==, we use ==uint==. Here are some primitive types and their mapping to Pharo types. 
 - uint or int: Integer
 - bool: Boolean
 - float: Float
@@ -231,15 +231,14 @@ See below for a longer list.
 
 !!! About C strings
 
-Usually the C idioms to represent a string datatype is to declare a pointer on a character and that the array containing characters is null terminated - In C there is no such formal type definition of what string is. Now when we want to call functions expecting char ==*== care must be taken. Let us see why.
+Usually the C idiom to represent a string datatype is to declare a pointer to the first character of a null-terminated array - In C there is no formal definition of what a string is. Now when we want to call functions expecting ==char *==, care must be taken. Let us see why.
 
-We should pay attention because  char ==*== data type is not a string. It means that a library could specify such type 
-but in reality does not expect a string but simply a pointer. Therefore and read the documentation of the library to make sure
-that function argument in the question is expecting a string and not just a pointer to char value.
+We should pay attention because a ==char *== data type is not necessarily a string. It could simply be a pointer. Therefore, read the documentation of the library to make sure
+that the function argument in question is expecting a string and not just a pointer to a char value.
 
-For null terminated strings, NativeBoost provides special type named ==String==. Using this type, the value is automatically converted between a Pharo byteString and a C null-terminated string. 
+For null-terminated strings, NativeBoost provides a special type named ==String==. Using this type, the value is automatically converted between a Pharo ==ByteString== and a C null-terminated string. 
 
-When you know that your library is really expecting a C null terminated string, it is safer to use ==String== in a NativeBoost type declaration than ==char *== because char ==*== is just managed as a simple pointer to the beginning of string but does not make sure that the string is null-terminated.
+When you know that your library is really expecting a C null-terminated string, it is safer to use ==String== in a NativeBoost type declaration than ==char *== because ==char *== is just managed as a simple pointer and does not make sure that the string is null-terminated.
 
 So we can change ==NBXLibDisplay class>>open== to use ==String==:
 
@@ -255,7 +254,8 @@ Here is the list of types NativeBoost supports by default. We show the C names a
 !!!! Booleans
 - ==bool NBBool==
 
-!!!! Fixed size integer types. Here the byte order is platform dependent. 
+!!!! Fixed size integer types
+Here the byte order is platform dependent. 
 - ==int8 NBInt8==
 - ==uint8 NBUInt8==
 - ==int16 NBInt16==
@@ -265,8 +265,8 @@ Here is the list of types NativeBoost supports by default. We show the C names a
 - ==int64 NBInt64==
 - ==uint64 NBUInt64==
 
-!!!! Aliases to common C compiler types.
-Some of them are platform dependent, some is not... because the C standard does not fully specify it
+!!!! Aliases to common C compiler types
+Some of them are platform dependent, some are not... because the C standard does not fully specify it
 
 -	==signedByte int8==
 -	==unsignedByte int8==
@@ -289,27 +289,27 @@ Some of them are platform dependent, some is not... because the C standard does 
 -	==uint uint32==
 -	==int int32==
 
-!!!! Unsigned for sizes.
-Usually same size as platform's word size. It is unsigned integer types having the same length as a pointer. 
+!!!! Unsigned for sizes
+Usually the same size as the platform's word size. It is unsigned integer types having the same length as a pointer. 
 - ==size_t NBSizeT==
 		
-!!!! Character type. 
+!!!! Character type
 -	==Character NBCharacterType==
 -	==char NBCharacterType==
 
-Note that Character and char are special. NativeBoost converts between C character and Pharo Character instances. 
-If you just want to use unsigned integer value use ==uint8== or ==int8== instead (The 8 indicates that this is one byte). 
+Note that ==Character== and ==char== are special. NativeBoost converts between C character and Pharo Character instances. 
+If you just want an unsigned integer value, use ==uint8== or ==int8== instead (The 8 indicates that this is one byte). 
 		
 
-!!!! Floats fixed-size. 
-Here again such type are platform-dependent byte order.
+!!!! Floats fixed-size
+Here again such types have platform-dependent byte order.
 
 -	==float16 NBFloat16==
 -	==float32 NBFloat32==
 -	==float64 NBFloat64==
 -	==float128 NBFloat128==
 
-!!!! Floats common type names.
+!!!! Floats common type names
 NativeBoost provides some aliases to C type names. 				
 -	==float float32==
 -	==double float64==
@@ -323,19 +323,26 @@ NativeBoost provides some aliases to C type names.
 
 !!! Customizing Type Resolution
 
-We can also affect the way NativeBoost resolves types. For example, we would like to keep the type ==Display== used in the C signature instead of writing ==NBXLibDisplay==. So we would like to write simply the following:
-
+We can also affect the way NativeBoost resolves types. This is useful for preserving C function signatures. If you remember, we had to change the original signature from
+[[[
+Display *XOpenDisplay(char *display_name);
+]]]
+to
+[[[
+NBXLibDisplay XOpenDisplay (char * displayName)
+]]]
+But we'd like to write:
 [[[
 ^self nbCall: #(Display XOpenDisplay (String displayName))
 ]]]
 
 
-To know which class to use for the ==Display== type, NativeBoost looks up for the type in this order:
+We have three options to specify which class to use for the ==Display== type (listed in look-up order):
 - class variable
 - shared pool
 - class
 
-If we decide to use class variable, we can change the definition of ==NBXLibDisplay== to:
+If we decide to use a class variable, we change the definition of ==NBXLibDisplay== to:
 
 [[[
 NBExternalObject subclass: #NBXLibDisplay
@@ -346,8 +353,7 @@ NBExternalObject subclass: #NBXLibDisplay
 	category: 'NBXLib'
 ]]]
 
-and then initialize the ==Display== class variable. Note that the value is a symbol because the array contains literal values.
-Do not forget to evaluate ==NBXLibDisplay initialize== once you define the method:
+and then initialize the ==Display== class variable. Note that the value is a symbol because the array contains literal values. Do not forget to evaluate ==NBXLibDisplay initialize== once you define the method:
 
 [[[
 NBXLibDisplay class>>initialize
@@ -356,10 +362,12 @@ NBXLibDisplay class>>initialize
 ]]]
 
 
-When we run again ==NBXLibDisplay open==, NativeBoost will map ==Display== return type to ==NBXLibDisplay== class.
+Now when we run ==NBXLibDisplay open==, NativeBoost will map the ==Display== return type to the ==NBXLibDisplay== class.
 
-As we often need to have these mapping across several classes in our package, it is best to use shared pools. We then define the shared pool ==NBXLibTypes== 
-and define a class variable named ==Display== that we initialize correctly. Then all our code is:
+As we often need to share these mappings between several classes in our package, it is best to use shared pools. We'll call it ==NBXLibTypes== 
+and move the ==Display== class variable and its initializer there.
+
+Now all our code is:
 
 [[[
 Trait named: #TNBXLibLibrary
@@ -401,7 +409,7 @@ NBXLibDisplay class>>open: displayName
 
 !!! A word about NBExternalObject
 
-Instances of ==NBExternalObject== represent an external object of one kind, provided by some external library/function. An instance holds a handle, which is used to identify the external object when this instance is passed as an argument, or when it is used as a return type in function signature.
+Instances of ==NBExternalObject== represent an external object of one kind, provided by some external library/function. An instance holds a handle, which is used to identify the external object when this instance is passed as an argument, or when it is used as a return type in a function signature.
 
 A typical usage of ==NBExternalObject== is to create a subclass, and then use that subclass name directly in function signatures. This is what we did previously.
 
@@ -410,16 +418,16 @@ NBExternalObject subclass: #NBXLibDisplay
 
 newObj := NBXLibDisplay newObject.
 
-MyExternalObject class>>newObject
+NBXLibDisplay class>>newObject
 	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	^self nbCall: #(Display XOpenDisplay (nil))
+	^self nbCall: #(NBXLibDisplay XOpenDisplay (nil))
 ]]]
 
-Here, we assume that ==XOpenDisplay()== returns some handle (or pointer) to some opaque external structure. Using a NBExternalObject' subclass (e.g., MyExternalObject) as a return type into the function signature, we are telling the code generator to automatically convert the return value into an instance of a given class and initialize its handle to the value returned by the function.
+Here, we assume that ==XOpenDisplay()== returns a handle (or pointer) to some opaque external structure. Using an NBExternalObject subclass (i.e. NBXLibDisplay) as a return type in the function signature, we are telling the code generator to automatically convert the return value into an instance of that class and initialize its handle to the value returned by the function.
 
-When used as argument type, the value, which is used to pass to the external function is a value held in the ==handle== instance variable.
+When used as argument type, the ==handle== instance variable is passed to the external function.
 
-The main advantage of using ==NBExternalObject== subclass as a type name for arguments is that it provides type safety by checking the incoming argument, that it is an instance of your class, and nothing else. If not, the primitive will fail without calling the external function.
+The main advantage of using an ==NBExternalObject== subclass as a type name for arguments is that it provides type safety by checking that the incoming argument is an instance of your class, and nothing else. Otherwise, the primitive will fail without calling the external function.
 
 
 !! Self magic
@@ -431,7 +439,7 @@ int XCloseDisplay(Display *);
 ]]]
 
 
-Since we are in Pharo, we would like to have an oriented-object API instead of defining all C functions on class side for example. So we would like to close the connection like this: ==myDisplay close==. Let's define an instance level method in the class ==NBXLibDisplay==:
+Since we are in Pharo, we would like to have an oriented-object API instead of defining all C functions on class side for example. So we would like to close the connection like this: ==myDisplay close==. Let's define an instance-side method in ==NBXLibDisplay==:
 
 [[[
 NBXLibDisplay>>close
@@ -458,7 +466,7 @@ display close.
 
 !! Let's start the real fun stuff!
 
-The goal of this section is to be able to find our desktop application windows and then to move or resize them. Each window has properties attached, called Atoms. Each Atom type has a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html), you can get all windows managed by the window manager using Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
+The goal of this section is to find our desktop application windows and then to move or resize them. Each window has properties attached, called Atoms. Each Atom type has a unique identifier. When your window manager follows the ==Extended Window Manager Hints (EWMH)== spec (this is the case for Gnome and KDE, see http://standards.freedesktop.org/wm-spec/wm-spec-1.3.html), you can get all windows managed by the window manager using the Xlib C function ==XGetWindowProperty== for the Atom ==_NET_CLIENT_LIST_STACKING==.
 
 
 First we need to find the identifier of the Atom ==_NET_CLIENT_LIST_STACKING== using the Xlib function ==XInternAtom==:
@@ -491,8 +499,8 @@ NBXLibDisplay>>atomNamed: aString
 	^self nbCall: #(Atom XInternAtom(self, String aString, true))
 ]]]
 
-Note that we define the method as an instance method since we will invoke it on an existing object representing the display. 
-Here we give ==true== to the last argument so the Atom will be created if it does not exist. Note that for booleans we don't need to specify the type. You can check that this is working:
+Note that we define the method on the instance side since we will invoke it on an existing object representing the display. 
+Here we give ==true== as the last argument so the Atom will be created if it does not exist. Note that for booleans we don't need to specify the type. You can check that this is working:
 
 [[[
 NBXLibDisplay open atomNamed: '_NET_CLIENT_LIST_STACKING' 
@@ -508,7 +516,7 @@ We need to get the root window of the display before querying any property on it
 Window XDefaultRootWindow(Display *display);
 ]]]
 
-Since  ==Window== will be an external object we want to attach functions to, so let's define it as:
+Since we will want to send messages to ==Window==, let's make it a class:
 
 [[[
 NBExternalObject subclass: #NBXLibWindow
@@ -527,8 +535,7 @@ NBXLibTypes class>>initialize
 	Window := #NBXLibWindow.
 ]]]
 
-We can implement a method defined on the ==NBXLibDisplay== class to get the defaultRootWindow by calling the ==XDefaultRootWindow== function.
-Now you should be able to define it by yourself without reading the following definition. We define it as follows:
+We can implement a method in ==NBXLibDisplay== to get the defaultRootWindow by calling the ==XDefaultRootWindow== function. Why don't you take a moment to define it by yourself before reading the following definition:
 
 [[[
 NBXLibDisplay>>defaultRootWindow
@@ -536,13 +543,13 @@ NBXLibDisplay>>defaultRootWindow
 	^self nbCall: #(Window XDefaultRootWindow(self))
 ]]]
 
-This code should answer a ==NBXLibWindow== instance:
+This code should answer an ==NBXLibWindow== instance:
 [[[
 NBXLibDisplay open defaultRootWindow
 ]]]
 
 
-As Xlib functions often need to access the display and the window for window manipulations, we should update the code so that a ==NBXLibWindow== instance could reference its display. We add an instance variable ==display== to the NBXLibWindow class and defined accessor methods.
+As Xlib functions often need to access the display and the window for window manipulations, let's allow ==NBXLibWindow== to reference its display by adding an instance variable ==display== and accessor methods.
 
 [[[
 NBExternalObject subclass: #NBXLibWindow
@@ -560,7 +567,7 @@ NBXLibWindow>>display
 
 ]]]
 
-Then we rename the previous ==defaultRootWindow== to ==primitiveDefaultRootWindow== and move it to the private protocol. Finally we define a new method ==defautlRootWindow== as follows:
+Then we rename the previous ==defaultRootWindow== to ==primitiveDefaultRootWindow== and move it to the 'private' protocol. Finally we define a new method ==defaultRootWindow== as follows:
 
 
 [[[
@@ -594,8 +601,8 @@ int XGetWindowProperty (
 ]]]
 
 - The three first parameters are easy: the display, the root window in our case, and the Atom ==_NET_CLIENT_LIST_STACKING==. 
-- For ==long_offset== and ==long_length==, they can be used to do a partial read of the properties. To get easy, we will get all, so ==0== for the offset and ==16rFFFF== for the length. So we don't care about ==bytes_after_return== in our case
-- For the ==req_type==, we can use the Xlib constant ==AnyPropertyType== and don't care about ==actual_type_return== and ==actual_format_return== actually
+- For ==long_offset== and ==long_length==, they can be used to do a partial read of the properties. To keep things simple, we will get all of the, so ==0== for the offset and ==16rFFFF== for the length. Now, we don't care about ==bytes_after_return==
+- For the ==req_type==, we can use the Xlib constant ==AnyPropertyType== and don't care about ==actual_type_return== and ==actual_format_return==
 
 The Atom ==AnyPropertyType== is a special Atom defined to 0. We can add it to the shared pool for later use:
 
@@ -607,11 +614,11 @@ NBXLibTypes class>>initialize
 ]]]
 
 
-!!!! About returned values.
+!!!! About returned values
 
-The last five arguments of the function ==XGetWindowProperty== are output parameters. They are used by the library to store return values at the location that user must provide. This is why they are specified as pointers.
+The last five arguments of the function ==XGetWindowProperty== are output parameters. They are locations provided by the user in which the library stores values. This is why they are specified as pointers.
 
-The first four we can use a ByteArray buffer that is big enough to hold the returned data. In our case this is 4 bytes each as we will show just after. The NativeBoost declaration for ==actual_type_return==, ==actual_format_return==, ==nitems_return==, ==bytes_after_return== is simply the following one: 
+For the first four we can use a ByteArray buffer that is big enough to hold the returned data. In our case this is 4 bytes each as we will show in a moment. The NativeBoost declaration for ==actual_type_return==, ==actual_format_return==, ==nitems_return==, ==bytes_after_return== is simply: 
 
 [[[
 Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn
@@ -623,10 +630,10 @@ The last argument requires a bit more attention.
 
 The ==prop_return==  is defined as ==unsigned char **==, literally a pointer on a pointer. What this C idiom wants to convey is that the function is expecting a pointer where it will store the pointer to the returned data. From that perspective, the signature ==char **== could have been expressed as ==void **==.
 
-To deal with such an idiom, NativeBoost offers the notion of external addresses. Using an instance of the class ==NBExternalAddress==  holds an address.
+To deal with such an idiom, NativeBoost provides the ==NBExternalAddress== class to hold an external address.
 
 
-Now let's define in Pharo the primitive that will retrieve the properties calling the ==XgetWindowProperty()== function.
+Now let's define the primitive that will retrieve the properties calling the ==XgetWindowProperty()== function.
 
 [[[
 NBXLibWindow>>primGetWindowProperty: anAtom 
@@ -644,19 +651,20 @@ NBXLibWindow>>primGetWindowProperty: anAtom
 	^self nbCall: #(int XGetWindowProperty(Display display, self, Atom  anAtom, long offset, long length, bool delete, Atom requiredType, Atom * actualType,  int * actualFormat, ulong * nbItems, ulong * bytesAfterReturn, NBExternalAddress * data ))
 ]]]
 
-Here we see that we use ==NBExternalAddress * data== in a signature. By default, in NativeBoost, there is no difference whether you specify ==anytype*== or ==anytype**== or ==anytype***== etc in function signature, because NativeBoost treats all pointer types similarly: it just checks that value you passed to the function can be converted to a pointer. 
+Here we see that we use ==NBExternalAddress * data== in a signature. By default there is no difference whether you specify ==anytype*== or ==anytype**== or ==anytype***== etc in function signature, because NativeBoost treats all pointer types similarly: it just checks that value you passed to the function can be converted to a pointer. 
 
-For instance, if we use ==void *== in function signature, we can pass any of following: any variable-byte instance (==ByteArray==, ==ByteString== etc), any variable-word instance (==WordArray== etc) and lastly, an instance of ==NBExternalAddress==.
-For variable-sized objects a pointer to the first indexable element will be passed, and for instances of ==NBExternalAddress== which are holding a pointer value,
-the actual value will be passed.
+For instance, if we use ==void *== in the function signature, we can pass any of following:
+- any variable-byte instance (==ByteArray==, ==ByteString== etc)
+- any variable-word instance (==WordArray== etc)
+- an instance of ==NBExternalAddress==. For variable-sized objects a pointer to the first indexable element will be passed, and for instances of ==NBExternalAddress== the actual value will be passed.
 
-But if we explicitly specify ==NBExternalAddress *== as an argument type, in this case, NativeBoost will accept only an instance of ==NBExternalAddress== 
-as valid argument (no variable-sized objects), and instead of passing a value held by ==NBExternalAddress== instance, it will pass a pointer to a location where this value is stored.
+But if we explicitly specify ==NBExternalAddress *== as an argument type, in this case NativeBoost will accept only an instance of ==NBExternalAddress== 
+as a valid argument (no variable-sized objects), and instead of passing a value held by an ==NBExternalAddress== instance, it will pass a pointer to a location where this value is stored.
 
-As result, after calling the function, it will store an output value in provided ==NBExternalAddress== instance, which we're free to use later.
+As result, after calling the function, it will store an output value in the provided ==NBExternalAddress== instance, which we're free to use later.
 
 
-!!!! NBExternalAddress vs. void.
+!!!! NBExternalAddress vs. void
 We use ==NBExternalAddress *== and not ==void *== because: using ==void *== we could pass a byte array and we would get back the address stored inside the byte array. And from these four bytes we would have to construct an address. In addition, using NBExternalAddress provides extra safety because NativeBoost will refuse to perform a call when given something else than a NBExternalAddress instance. 
 
 
