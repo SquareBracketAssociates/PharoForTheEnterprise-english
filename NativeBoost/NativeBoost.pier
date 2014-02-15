@@ -7,9 +7,9 @@ There is nothing better than real examples to learn. In this chapter, we will cr
 
 First, you may need some documentation:
 
-- The Xlib documentation: http://www.x.org/docs/X11/xlib.pdf
-- NativeBoost project on SmalltalkHub: http://www.smalltalkhub.com/#!/~Pharo/NativeBoost
-- Language-side Foreign Function Interfaces with NativeBoost: http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf
+- The Xlib documentation: *http://www.x.org/docs/X11/xlib.pdf*
+- NativeBoost project on SmalltalkHub: *http://www.smalltalkhub.com/#!/~Pharo/NativeBoost*
+- Language-side Foreign Function Interfaces with NativeBoost: *http://hal.archives-ouvertes.fr/docs/00/84/07/81/PDF/paper.pdf*
 
 
 !! Must read before start!
