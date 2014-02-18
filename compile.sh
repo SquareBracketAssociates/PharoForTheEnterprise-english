@@ -10,7 +10,6 @@ function pillar_all() {
     ./pillar export --to='LaTeX by chapter'
     ./pillar export --to='HTML by chapter'
     ./pillar export --to='Markdown by chapter'
-    ./pillar show inputFiles 2>/dev/null 1> chapters.list
 }
 
 function pillar_one() {
@@ -44,7 +43,7 @@ function produce_pdf() {
 }
 
 function compile_chapters() {
-    chapters=$(cat chapters.list)
+    chapters=$(./pillar show inputFiles 2>/dev/null)
 
     for chapter in $chapters; do
         echo =========================================================
