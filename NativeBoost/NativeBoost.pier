@@ -201,13 +201,11 @@ This line:
 
 is a ==pragma== that tries to execute a primitive function, only evaluating the body of the method (in this case the send of ==nbCall:==) if it fails. First, the ==#primitiveNativeCall== of the ==#NativeBoostPlugin==  tries to perform the foreign call by executing assembly code. If it fails (which it always will the first time because the assembly code has not been generated yet), an ==errorCode== is returned and the body of the method is evaluated. 
 
-
-
 [[[
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (char * displayName))
 ]]]
 
-==nbCall:== will parse the array and produce the machine code to perform the function call to XOpenDisplay. 
+Here, ==nbCall:== will parse the array and produce the machine code to perform the function call to ==XOpenDisplay==.
 
 
 
