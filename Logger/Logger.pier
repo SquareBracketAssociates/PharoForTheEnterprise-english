@@ -16,10 +16,11 @@ Let us step back one minute. ==message:== is equivalent to the old ==Transcript 
 
 
 When you are debugging and want to identify more specific paths in your code, issuing a message is a bit broad and it will be mixed with all the other messages. To help you finding your ways among the collected logs, you can also use the message ==trace:==.
+
 It looks simple and so far it is. What you see is that as a normal user of the log objects you just have to express what you want.
 Then the system takes care about collecting the logs into a logger as we will see later. 
 
-Now you may want to raise log of different importance. ==Log== provides some predefined ways to tag your log: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warm:==. 
+Now you may want to raise log of different importance. ==Log== provides some predefined ways to express the severity of your log: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warm:==. 
 
 [[[ 
 	Log error: 'Damn this is broken'.
@@ -47,7 +48,7 @@ Here is an example
 ]]]
 
 
-!!! Extra information.
+!!! Extra information
 A log can also accept any optional information using key/value  
 
 [[[
@@ -64,20 +65,21 @@ Since we do not know the exact scenario the Log class proposes the following mes
 - ==extensionKeys== returns the list of extensions.
 
 
-!! Three Core classes
+!! Three core classes
 
 SystemLogger core is composed about 3 classes: ==Log==, ==SystemLogger== and ==LogDispatcher==. The two first ones are public while the last one is a private class that the end user does not have to know. It raises also announcements: ==LogAdded== and ==LogRemoved==.
 
 In addition, ==LogLevel== encapsulates the logic of defining a level. A logLevel represents a level of severity in log messages. There are default log levels which can be used via class methods such as ==critical==, ==error==, ==warning==, ==information==, ==debug== and ==trace==.
 
-!! Core Element One: Log objects
+!!! Core element one: Log objects
 
 Log objects are represented by the classes ==Log== and its superclass ==BasicLog==. ==Log== is named like that because we wanted to have it as short as possible to write concise code.  ==Log== represents a simple log entity: be it a compilation overrides, an image snapshot or a simple string output. It collaborates with the current log dispatcher to emit log objects to loggers.
 
 Note that ==Log== is named ==Log== and not ==SLLogObject== or whatever because it is the main entry point for a client point of view.
 
 	
-!!!! Important point. One of the key responsibility of a log object is to emit the logger to the log dispatcher. However, in general you do it by yourself. The emit message is invoked for you by the creation messages. All the class creation methods use emit. The subclasses may introduce extra information such as policy to display, filtering, extra logging information. They should offer a nice API and invoke the emit message. 
+!!!! Important point. 
+One of the key responsibility of a log object is to emit the logger to the log dispatcher. However, in general you do it by yourself. The emit message is invoked for you by the creation messages. All the class creation methods use emit. The subclasses may introduce extra information such as policy to display, filtering, extra logging information. They should offer a nice API and invoke the emit message. 
 
 
  ==BasicLog==, the superclass of ==Log== represents a simpler log object consisting only of a timeStamp and a message.   More specialized log classes may be derived from this class like the default ==Log== class does. Usually as a normal user you will not use directly ==BasicLog== but ==Log== because it proposes a better API.
@@ -87,7 +89,7 @@ Note that ==Log== is named ==Log== and not ==SLLogObject== or whatever because i
 ]]]
 	
 
-!! Core Element Two: LogDispatcher
+!!! Core element two: LogDispatcher
 When a log object is created, it is passed to the system log dispatcher. There is only one logDispatcher in the system, it is an instance of ==LogDispatcher== and can be accessed ==LogDispatcher current==. His role is to dispatch the emitted log objects to the system loggers that registered to the dispatcher. 
 
 There is one favorite system logger associated to the current dispatcher. It is the main default logger. It can be accessed by the following expression: ==self current defaultLogger==. 
@@ -106,13 +108,16 @@ or
 
 Similarly you can remove a system logger using the ==removeLogger:== or ==removeLoggerNamed:== messages.
 	
-Finally all loggers can be stopped to receive log objects from the log dispatcher and started using the messages 
-==startAllLoggers== and ==stopAllLoggers==. 
+Finally all loggers can be stopped to receive log objects from the log dispatcher and started using the messages ==startAllLoggers== and ==stopAllLoggers==. 
 
 
-!! Core Element Three: SystemLogger
+!!! Core element three: SystemLogger
 
-The third player in the framework is a logger. A logger is responsible to decide if it is interested to handle log objects and if this is case to handle them according to its function. ==Logger== is the abstract superclass of system loggers. It has a name. 
+The third player in the framework is a logger. A logger is responsible to decide if it is interested to handle log objects and if this is case to handle them according to its function. 
+
+!!! Logger
+
+ ==Logger== is the abstract superclass of system loggers. It has a name. 
 
 It defined the following messages:
 
@@ -122,9 +127,98 @@ It defined the following messages:
 - ==addLogHook: aLog== is a hook message that specifies the effective action performed when handling a log object.
 - ==reset== flushes the log objects if any that could have been hold by the receiver.
 
-!! First Useful Extensions
+!!! SystemLogger
+
+ ==SystemLogger== is a subclass of ==Logger==. It keeps the log objects in memory. One of its instance is the default system logger associated to the ==LogDispatcher== singleton. We can imagine in the future to change it to support a cyclic structure to hold a maximum amount of log objects.
+
+
+
+!! About LogLevels
+
+As we saw you can raise logs of different severities: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warm:==.  ==LogLevel== represents such a severity. A log level that has a larger number for severity is more severe. 
+
+A convenience method ==LogLevel>>orMoreSevere== allows one to express that we are interested
+in a given level or more severe ones. 
+
+[[[
+aLogger filter: LogLevel warning orMoreSevere
+]]]
+
+!! First useful extensions
 
 The first extension is to provide a system logger that can emit strings to our lovely Transcript. 
+The idea there is that in addition to log objects to the ==SystemLogger== we would like that the system
+create a textual trace in the Transcript as in the old days. 
+
+The package already defines it. Now we will simply explain some key aspects of the solution. ==StringStreamLogger== is a special logger. It is a logger that emits formatted strings into a stream. It subclasses the class ==FormattingFormatter== and add the notion of stream.
+
+
+[[[
+FormattingLogger subclass: #StringStreamLogger
+	instanceVariableNames: 'stream'
+	classVariableNames: ''
+	category: 'SystemLogger-Extensions-StringOutputter'
+]]]
+
+The class ==FormattingLogger== is a subclass of ==Logger== (and not ==SystemLogger==) that simply 
+pass the logs object to a formatter before storing them. 
+
+
+[[[
+FormattingLogger>>addLogHook: aLog 
+
+	self storeObject: (self convertLog: aLog)
+
+FormattingLogger>>storeObject: anObject
+	"Hook to customize to specify how an object should be stored once converted."
+
+	self subclassResponsibility
+
+FormattingLogger>>convertLog: aLog
+	^ self formatter
+		formatLog: aLog
+		from: self 
+]]]
+
+Note that this design decomposes the actual formatting from the storing: it is possible to then store on different media the formatted version of our log objects. ==StringStreamLogger== will store formatted logs in a stream but other subclasses may store the items into a database.
+
+
+A default formatter is created when none if specified. It is an instance of ==LogFormatter==. ==LogFormatter== is a simple class that defines two methods: ==formatLog:from:== and ==formatLog:on:from:==.
+The first one just returns a formatted string for a log object, while the second one pushes a formatted string to the argument stream. 
+
+[[[
+LogFormatter>>formatLog: aLog from: aLogger 
+
+	^ aLog printString
+]]]
+
+
+[[[
+LogFormatter>>formatLog: aLog on: aStream from: aLogger 
+
+	aStream cr.
+	aLog printOn: aStream.
+]]]
+
+Now we are ready to define the behavior of ==StringStreamLogger==. We redefine the ==storeObject:== method to write to a stream that by default is defined to return Transcript. 
+
+
+[[[
+StringStreamLogger>>storeObject: aLog
+	
+	self stream cr.
+	self stream << (formatter formatLog: aLog from: self)
+]]]
+
+
+[[[
+StringStreamLogger class>>defaultStream
+	^ Transcript
+]]]
+
+
+
+
 
 
 
@@ -140,19 +234,17 @@ Logger
         StringStreamLogger
             StdoutStreamLogger
 
-Logger is the abstract base class with instVars "name isLogging filter“
-
-SystemLogger is the in-memory logger of Log objects
-
 FormattingLogger holds a formatter to treat Log objects in a special way. I separated it from StringStreamLogger because a lot of use cases of mine need a logger that converts Log object but to JSON or the like and not to string. The #addLog: in FormattingLogger is
 
    self storeObject: (self convertLog: aLog)
 
 You can see I separated the act of converting a log and storing it in an external place. This opens new use cases but not the best suited for streams. So there is two methods in formatter. One returns the formatted object. In the second case the formatter can put it immediately on the stream. I’m not sure if this turns out to be troublesome later on but will see.
 
-LogLevels have changed to have an instvar severity instead of priority. The numbers are reversed also. So a log level that has a larger number for severity is more severe. With an added convenience method LogLevel>>#orMoreSevere (returns a filter block) we can do 
 
-   aLogger filter: LogLevel warning orMoreSevere
+
+
+
+
 
 More convenience methods are
 
@@ -171,7 +263,7 @@ Anyway I’ll start using the logger now in my project and see the shortcomings 
 Norbert
 
 
-! Conclusion
+!! Conclusion
 
 
 
