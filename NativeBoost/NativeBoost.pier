@@ -220,10 +220,10 @@ Display *XOpenDisplay(char *display_name);
 Let's have a look at how NativeBoost maps C to Pharo and vice versa. First, the message ==nbCall:== parses the function signature as a literal array. Then, NativeBoost automatically does the marshalling between C and Pharo.
 
 Many primitive C types like ==int== and ==void *== are fine as is. However, types with multiple-word names, like ==unsigned int==, must be replaced because the NativeBoost parser ==NBFnSpecParser== expects single-word type names. So instead of writing ==unsigned int==, we use ==uint==. Here are some primitive types and their mapping to Pharo types. 
-- uint or int: Integer
-- bool: Boolean
-- float: Float
-- char: Character
+- ==uint== or ==int==: ==Integer==
+- ==bool==: ==Boolean==
+- ==float==: ==Float==
+- ==char==: ==Character==
 
 See below for a longer list.
 
