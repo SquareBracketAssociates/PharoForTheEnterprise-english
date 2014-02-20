@@ -16,8 +16,7 @@ First, you may need some documentation and pointers:
 
 Before doing anything we should check first that we can link with the library that we want to use, here X11. 
 
-
-First, as the Pharo VM runs in 32-bit, the libraries you want to bind to (and their dependencies) must be compiled for 32-bit. Major Linux distributions provide 32-bit versions of their packages. For example, on ArchLinux 64-bit, when you search for ==libx11== package:
+First, as the Pharo VM runs in 32-bit, the libraries you want to bind to (and their dependencies) must be compiled for 32-bit as well. There are plans to have a 64 bits version of the Pharo VM, and as soon as this happens there will be a 64-bit version of NativeBoost. Major Linux distributions provide 32-bit versions of their packages. For example, on ArchLinux 64-bit, when you search for the ==libx11== package:
 
 [[[
 $ pacman -Ss libx11
@@ -47,16 +46,14 @@ $ make
 $ sudo make install
 ]]]
 
-We can check that the library is 32-bit with the ==file== command. Here the output mention that the library is 32-bit which is compatible with the current implementation of NativeBoost and Pharo VM \footnote{There are plans to have a 64 bits version of the Pharo VM and as soon as this happens there will be a 64 bit version of NativeBoost.}.
+We can check that a library is 32-bit with the ==file== command. Here, the output mentions that the library is indeed 32-bit, which is compatible with the current implementation of NativeBoost and the Pharo VM.
 
 [[[
 $ file /usr/local/lib/libyaz.so.4.0.0 
 /usr/local/lib/libyaz.so.4.0.0: ELF 32-bit LSB  shared object, Intel 80386, version 1 (SYSV), dynamically linked, BuildID[sha1]=479fbc7e495cb53600f145cf575dc1f176703c20, not stripped
 ]]]
 
-
-
-We also have to be sure that all dependent libraries are found:
+We also have to make sure that all dependent libraries are found:
 
 [[[
 $ ldd /usr/local/lib/libyaz.so.4.0.0
@@ -81,19 +78,17 @@ To add a custom directory globally to ==LD_LIBRARY_PATH==, just add it in ==/etc
 At last, remember that we can write bindings for C libraries easily, other languages such as ==C\+\+== are beyond the scope of this chapter.
 
 !!! To install X11 on Mac
-If you are on Mac OSX you can try one of the following way to install X11. Based on our experience, the last one seems more reliable. 
-[[[
-sudo port install xorg-libX11
-sudo port -v install xorg-server
-http://xquartz.macosforge.org/landing/
-]]]
 
-Once install open a new shell and type ==xeye&== you should get the famous eye application looking at you. 
+If you are on Mac OSX, your best bet to get X11 working is to download and install the package from *http://xquartz.macosforge.org*. Alternatively, if you're using *Macports>http://www.macports.org*, you can try installing their packages ==xorg-libX11== and ==xorg-server==.
 
-Oh, do not forget to save your image quite often, a crash can easily occur if we make some mistake on this field!
+To check X11 is installed and works, open a new shell and run ==xeyes==. You should get the famous eye application looking at you.
 
 
 !! A first NativeBoost binding
+
+While you follow along, do not forget to save your image quite often, crashes easily occur in this field!
+
+!!! Connecting to the X Server
 
 Before our program can use a display, we must establish a connection to the X server using ==XOpenDisplay==. 
 Taking from the documentation: "==The XOpenDisplay()== function returns a Display structure that serves as the connection to the X server and that contains all the information about that X server. ==XOpenDisplay()== connects your application to the X server through TCP or DECnet communications protocols, or through some local inter-process communication protocol."
