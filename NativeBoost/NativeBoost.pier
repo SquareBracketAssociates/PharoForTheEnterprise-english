@@ -18,7 +18,7 @@ Before doing anything we should check first that we can link with the library th
 
 First, as the Pharo VM runs in 32-bit, the libraries you want to bind to (and their dependencies) must be compiled for 32-bit as well. There are plans to have a 64 bits version of the Pharo VM, and as soon as this happens there will be a 64-bit version of NativeBoost. Major Linux distributions provide 32-bit versions of their packages. For example, on ArchLinux 64-bit, when you search for the ==libx11== package:
 
-[[[
+[[[language=shellcommands
 $ pacman -Ss libx11
 extra/libx11 1.6.1-1 [installed: 1.6.0-1]
     X11 client-side library
@@ -28,16 +28,15 @@ multilib/lib32-libx11 1.6.1-1
 
 In order to create the bindings, we need to install the 32-bit package: 
 
-[[[
-pacman -S multilib/lib32-libx11
+[[[language=shellcommands
+$ pacman -S multilib/lib32-libx11
 ]]]
 
 and the library will be found at ==/usr/lib32/libX11.so==.
 
-
 Sometimes the library isn't available for 32-bit, so you will have to build it. Often libraries rely on autotools for the compilation and it's just a story of setting ==-m32== flags for ==gcc==. Here's the example for ==YAZ== library:
 
-[[[
+[[[language=shellcommands
 $ wget http://ftp.indexdata.dk/pub/yaz/yaz-4.2.63.tar.gz
 $ tar -xvzf yaz-4.2.63.tar.gz
 $ cd yaz-4.2.63
@@ -48,14 +47,14 @@ $ sudo make install
 
 We can check that a library is 32-bit with the ==file== command. Here, the output mentions that the library is indeed 32-bit, which is compatible with the current implementation of NativeBoost and the Pharo VM.
 
-[[[
+[[[language=shellcommands
 $ file /usr/local/lib/libyaz.so.4.0.0 
 /usr/local/lib/libyaz.so.4.0.0: ELF 32-bit LSB  shared object, Intel 80386, version 1 (SYSV), dynamically linked, BuildID[sha1]=479fbc7e495cb53600f145cf575dc1f176703c20, not stripped
 ]]]
 
 We also have to make sure that all dependent libraries are found:
 
-[[[
+[[[language=shellcommands
 $ ldd /usr/local/lib/libyaz.so.4.0.0
         linux-gate.so.1 (0xf773a000)
         libgnutls.so.28 => /usr/lib32/libgnutls.so.28 (0xf745d000)
@@ -65,7 +64,7 @@ $ ldd /usr/local/lib/libyaz.so.4.0.0
 
 Here ==libexslt.so.0== is not found, so we have to make sure it is present, 32-bit and on the right path. On the system I use, ==libexstl== has been installed on ==/usr/local/lib/== and I should either move them to ==/usr/lib32==, or set the environment variable ==LD_LIBRARY_PATH==.
 
-[[[
+[[[language=shellcommands
 $ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 $ ldd libyaz.so
         linux-gate.so.1 (0xf7728000)
