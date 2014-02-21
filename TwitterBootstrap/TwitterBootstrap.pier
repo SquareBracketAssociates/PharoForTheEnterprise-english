@@ -75,11 +75,11 @@ ZnZincServerAdaptor startOn: 8080
 and then browse the examples at the following location: http://localhost:8080/bootstrap
 
 
-+Bootstrap>file://figures/webBootstrap.png|width=80|label=webBootstrap+
++Bootstrap for Seaside running>file://figures/webBootstrap.png|width=80|label=webBootstrap+
 
-+Bootstrap>file://figures/webBootstrap2.png|width=80|label=webBootstrap2+
 
-!!!Project Intro page
+
+!!!Component Examples
 
 As you will see you will find nearly all Bootstrap components:
 
@@ -95,15 +95,15 @@ Tables
 Pagination
 ...
 ]]]
-Component example
+
+
++Bootstrap Buttons>file://figures/webBootstrap2.png|width=80|label=webBootstrap2+
 
 The examples are oriented towards the HTML examples given on the Bootstrap website and also show the according Smalltalk code. So you can easily see how to use the component set in your own projects.
 
 !!! Architecture
 
-Package structure and naming conventions
-
-The project contains three basic packages:
+Here are some points about the project architecture. The project contains three basic packages:
 
 [[[
 Bootstrap-Core
@@ -112,17 +112,17 @@ Bootstrap-Tests
 Bootstrap-Examples
 ]]]
 
-The classes use a =="TBS"== prefix and the method extensions the =="tbs"== prefix. The =="Bootstrap-Core"== package includes core classes and styles, while =="Bootstrap-Widgets"== include additional widgets useful when working with Seaside.
+Classes use a =="TBS"== prefix and the method extensions the =="tbs"== prefix. The =="Bootstrap-Core"== package includes core classes and styles, while =="Bootstrap-Widgets"== include additional widgets useful when working with Seaside.
 
-The =="Bootstrap-Tests"== package includes tests in the form of SUnit tests. The example package =="Bootstrap-Examples"== include an examples browser and some demos that may give an understanding on how to use the components.
+The =="Bootstrap-Tests"== package includes tests in the form of SUnit tests. The example package =="Bootstrap-Examples"== includes an examples browser and some demos that may give an understanding on how to use the components.
 
 !!Using the project in your own applications
 
-If you want to use the project in your own web project only the "Bootstrap-Core" package is required.
+If you want to use the project in your own web project only the =="Bootstrap-Core"== package is required.
 
 !!!!Registering the file libraries
 
-To use the project just add the bootstrap file library to your Seaside application, depending on state of your project use either the ==TBSDevelopmentLibrary== (for development) or ==TBSDeploymentLibrary== (for production). Also note that the JQuery library is required.
+To use the project just add the bootstrap file library to your Seaside application, depending on state of your project use either the ==TBSDevelopmentLibrary== (for development) or ==TBSDeploymentLibrary== (for production). Also note that the JQuery library is required. The following script shows how to register the libraries for an application.
 
 [[[
 |app|
@@ -151,19 +151,19 @@ By default the Bootstrap positioned rows/columns are invisible. To easily find o
 
 !!!! Code Contributions
 
-The project is MIT licensed and accepts contributions. If you want to contribute just check that your contributed code is covered by automatic tests and keeps the projects test suite green. Also note that the Bootstrap library itself is under the Apache 2.0 license and adds a "Copyright 2013 Twitter, Inc".
+The project is MIT licensed and it accepts contributions. If you want to contribute just check that your contributed code is covered by automatic tests and keeps the projects test suite green. Also note that the Bootstrap library itself is under the Apache 2.0 license and adds a "Copyright 2013 Twitter, Inc".
 
-CI
-
-The project is controlled by a CI server under: https://ci.inria.fr/pharo-contribution/job/Bootstrap/
-
-Build Status
+The project is verified by a CI server under: https://ci.inria.fr/pharo-contribution/job/Bootstrap/
 
 !!!Thanks
 
 Thanks go to
 
-the Bootstrap team who invented the Bootstrap framework at Twitter (Mark Otto, Jacob Thornton and contributors)
-the contributors of the first Seaside based TwitterBootstrap project (Nick Ager, Jan van de Sandt, Gastón Dall' Oglio, Tobias Pape, Tudor Girba, Paul DeBruicker, Francois Stephany, Philippe Marschall, Norbert Hartl, Yanni Chiu, Diego Lont)
-to Gaston Dall Oglio (creator of TBootstrap)
-pharocloud.com for hosting the demo of the open source project
+- the Bootstrap team who invented the Bootstrap framework at Twitter (Mark Otto, Jacob Thornton and contributors),
+- the contributors of the first Seaside based TwitterBootstrap project (Nick Ager, Jan van de Sandt, Gastón Dall' Oglio, Tobias Pape, Tudor Girba, Paul DeBruicker, Francois Stephany, Philippe Marschall, Norbert Hartl, Yanni Chiu, Diego Lont),
+- to Gaston Dall Oglio (creator of TBootstrap) and
+- pharocloud.com for hosting the demo of the open source project.
+
+!! Conclusion
+Twitter Bootstrap is a really important library that is really nicely integrated with Seaside. It is a key library to support web application development. 
+
