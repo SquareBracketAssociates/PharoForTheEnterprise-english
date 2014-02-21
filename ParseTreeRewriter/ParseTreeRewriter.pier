@@ -114,15 +114,14 @@ To express patterns, the rewriter uses a special syntax that extends the standar
 
 !!! Loading Flamel
 
-Executing rules using the default refactoring rule engine is a bit arcane so we will load first a nice extension called Flamel developed by Gisela 
-Decuzzi. Execute the following expression to get Flamel loaded.
+Executing rules using the default refactoring rule engine is a bit arcane so we will load first a nice extension called Flamel developed by Gisela Decuzzi. Execute the following expression to get Flamel loaded.
 
 [[[
 Gofer it
-	  smalltalkhubUser: ‘gisela’ project: ‘Flamel’;
-	  configurationOf: ‘Flamel’;
+	  smalltalkhubUser: 'gisela' project: 'Flamel';
+	  configurationOf: 'Flamel';
 	  loadVersion: #development.
-]]]
+]]].
 
 !!! Step by Step
 
@@ -183,8 +182,7 @@ FlamelRule new
 
 Execute and inspect the result. It may take some minutes because it is matching all the methods of the system. 
 You get an RBParseTreeEnvironment and the results are in classSelectors and metaSelectors.
-Let us explain the script, once the rule object is created we specify the expresssion using ==matchingExpression:==, then we specify that 
-we want to match an expression (and not a complete method as we will explain in Section *MatchingMethods*, then we run the rule and ask for its resutls. 
+Let us explain the script, once the rule object is created we specify the expression using ==matchingExpression:==, then we specify that we want to match an expression (and not a complete method as we will explain in Section *MatchingMethods*, then we run the rule and ask for its results. 
 
 !!!! Refining the scope
 Sometimes you do not want to look in the complete system but in a restricted environment. To do so we use the message ==scope:==
@@ -259,7 +257,6 @@ FlamelRule new
    result
 ]]]
 
-
 !!! Dealing with Literals
 todo 
 
@@ -272,9 +269,7 @@ todo
 What's happen if a variable matches a complex expression that also contains the expression we are looking for.
 For example 
 
-
 Finally when trying to match an expression, there is another operator ==``== which supports recurvise match.
-
 
 
 !! Matching Expressions
