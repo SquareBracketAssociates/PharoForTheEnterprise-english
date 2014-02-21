@@ -114,7 +114,7 @@ Those last two bar graphs are very exciting, because we can see live how the num
 
 In Graph-ET you even can merge the graphs of the benchmarks and the accuracies.
 
-Benchmarks are measured in milliseconds, and the accuracies are just the numbers. Therefore, to merge it correctly, we converted all values ​​to percentages.
+Benchmarks are measured in milliseconds, and the accuracies are just the numbers. Therefore, to merge it correctly, we converted all values to percentages.
 
 +Picture 13>file://pictures/13.png|width=10+
 

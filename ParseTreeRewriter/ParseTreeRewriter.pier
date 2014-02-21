@@ -13,7 +13,7 @@ Authors:
 - Stéphane Ducasse
 - Camille Teruel
 
-%http://pharorwrules.wordpress.com/2013/08/06/just-want-to-match/
+% http://pharorwrules.wordpress.com/2013/08/06/just-want-to-match/
 
 
 
@@ -119,8 +119,8 @@ Decuzzi. Execute the following expression to get Flamel loaded.
 
 [[[
 Gofer it
-	  smalltalkhubUser: ‘gisela’ project: ‘Flamel’;
-	  configurationOf: ‘Flamel’;
+	  smalltalkhubUser: 'gisela' project: 'Flamel';
+	  configurationOf: 'Flamel';
 	  loadVersion: #development.
 ]]]
 
@@ -514,13 +514,13 @@ When you are defining your rule:
 - define what to do with a result
 run your rule
 use your results
-if you want to reuse it reset your rule, again if it’s a search rule, reset the matcher, if it’s a transformation rule the rewriteRule.
+if you want to reuse it reset your rule, again if it's a search rule, reset the matcher, if it's a transformation rule the rewriteRule.
 
 
 
 In our example:
 
-we want to match, so let’s create an object that extends: RBParseTreeLintRule:
+we want to match, so let's create an object that extends: RBParseTreeLintRule:
 
 [[[
 RBParseTreeLintRule subclass: #SearchGlobalsAtUsage
