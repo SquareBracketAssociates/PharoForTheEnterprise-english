@@ -1,6 +1,6 @@
 ! An Extensible Object Logger
 
-There are several logging frameworks available for Pharo: SimplerLogger, PaulThePoulpe and ToothPick. Toothpick is developed by Joseph Pelrine from MetaProg ==http://www.metaprog.com/Toothpick/==. It is the most advanced and has a nice documentation. SimpleLogger developed by German Arduino is available at ==http://ss3.gemstone.com/ss/SimpleLogger.html==. SimpleLogger is a really simple text only logger and Paul le Poulp is another interesting framework ==http://concretetypeinference.blogspot.fr/2012/06/pharo-logger-aka-paul-octopus-or-le.html==.
+There are several logging frameworks available for Pharo: SimplerLogger, PaulThePoulpe and ToothPick. Toothpick is developed by Joseph Pelrine from MetaProg ==http://www.metaprog.com/Toothpick/==. It is the most advanced and has a nice documentation. SimpleLogger developed by German Arduino is available at ==http://ss3.gemstone.com/ss/SimpleLogger.html==. SimpleLogger is a really simple text only logger and Paul le Poulp is another interesting framework ==http://concretetypeinference.blogspot.fr/2012/06/pharo-logger-aka-paul-octopus-or-le.html==. Finally there is also SimpleLog developed by Keith P. Hodges available at http://map.squeak.org/packagebyname/simplelog.
 
 So you can wonder why there is a need for yet another one. Well let us think a bit about the domain. Often logging is associated with outputting strings into a file and using grep to make sense out of them. Why only focusing on strings. We have objects and they can be converted into strings so we have only to win. SystemLogger is an easy to use, very lightweight, and highly configurable object logging framework. SystemLogger manipulates objects and this opens a complete new set of scenario and in addition it is compatible with the idea of a string logger.
 
@@ -20,14 +20,14 @@ When you are debugging and want to identify more specific paths in your code, is
 It looks simple and so far it is. What you see is that as a normal user of the log objects you just have to express what you want.
 Then the system takes care about collecting the logs into a logger as we will see later. 
 
-Now you may want to raise log of different importance. ==Log== provides some predefined ways to express the severity of your log: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warm:==. 
+Now you may want to raise log of different importance. ==Log== provides some predefined ways to express the severity of your log: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warn:==. 
 
 [[[ 
 	Log error: 'Damn this is broken'.
 	Log critical: 'Damn this is really broken'.
 	Log message: 'Hello it looks we got a trouble'.
 	Log trace: 'We passed here '.
-	Log warm: 'the system is still running but you should have look at it'.
+	Log warn: 'the system is still running but you should have look at it'.
 ]]]
 
 !!! Log creation messages
@@ -139,7 +139,7 @@ It defined the following messages:
 
 !! About LogLevels
 
-As we saw you can raise logs of different severities: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warm:==.  ==LogLevel== represents such a severity. A log level that has a larger number for severity is more severe. 
+As we saw you can raise logs of different severities: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warn:==.  ==LogLevel== represents such a severity. A log level that has a larger number for severity is more severe. 
 
 A convenience method ==LogLevel>>orMoreSevere== allows one to express that we are interested
 in a given level or more severe ones. 
@@ -228,13 +228,9 @@ StringStreamLogger class>>defaultStream
 
 
 %More convenience methods are
-
 %   Logger default 
-
 %returns LogDispatcher current defaultLogger. And
-
 %   Log toTranscript
-
 %that adds a StringStreamLogger that logs to transcript. 
 
 
