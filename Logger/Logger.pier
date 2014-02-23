@@ -4,6 +4,10 @@ There are several logging frameworks available for Pharo: SimplerLogger, PaulThe
 
 So you can wonder why there is a need for yet another one. Well let us think a bit about the domain. Often logging is associated with outputting strings into a file and using grep to make sense out of them. Why only focusing on strings? As an object-oriented programmer we all know that strings are dead objects. With strings we can do exciting operations like computing their size, concatenating them and replacing all the 'a' buy 'z'. But this is a bit limited. We have objects and they can be converted into strings so we have only to win. SystemLogger is an easy to use, very lightweight, and highly configurable object logging framework. SystemLogger manipulates objects and this opens a complete new set of scenario and in addition it is compatible with the idea of a string logger.
 
+Todo:
+- add a point on Log being in fact both a Factory and a class (named LogEnty)
+- add a point on asLog	
+
 
 !! Starting with an example
 With SystemLogger logging a message is as simple as sending the message ==message:== to the class ==Log==.
@@ -15,12 +19,28 @@ With SystemLogger logging a message is as simple as sending the message ==messag
 Let us step back one minute. ==message:== is equivalent to the old ==Transcript show:==. Note however that what is cool with SystemLogger and dealing with objects is that you should not be concerned about the handling of carriage return. Why? Simply because log objects do not have this notion and when we want to transform them into strings, then the formatter will do it for you. We are sure that you start understanding that dealing with objects is the way to go and will make our live easier.
 
 
+!!!! About any object as message carrier. 
+Note in addition that the argument passed to the message ==message:== could be any object and not necessarily a string. 
+A possible way to define a new log event is to use the ==asLog== message as follow:
+
+[[[
+	myObject asLog emit
+]]]
+
+When using such way of creating logs, the ==logClass== message associated to the class of myObject is used to determine the class of the log (by default Log) and myObject is passed as message of the created log event. SystemLogger provides the possibility to defines the class of the log event that will be created. Just redefine the class method  ==logClass== on your domain object. 
+
+Finally note that the first form of logging event is nice because it does not expose to the user that he has to explicitly send the ==emit== message. 
+
+
+
+
+
 When you are debugging and want to identify more specific paths in your code, issuing a message is a bit broad and it will be mixed with all the other messages. To help you finding your ways among the collected logs, you can also use the message ==trace:==.
 
 It looks simple and so far it is. What you see is that as a normal user of the log objects you just have to express what you want.
 Then the system takes care about collecting the logs into a logger as we will see later. 
 
-Now you may want to raise log of different importance. ==Log== provides some predefined ways to express the severity of your log: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warn:==. 
+Now you may want to raise log of different importance. ==Log== provides some predefined ways to express the severity of your log: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warn:==. It follows sysLog order. 
 
 [[[ 
 	Log error: 'Damn this is broken'.
@@ -79,18 +99,28 @@ In addition, ==LogLevel== encapsulates the logic of defining a level. A logLevel
 
 Log objects are represented by the classes ==Log== and its superclass ==BasicLog==. ==Log== is named like that because we wanted to have it as short as possible to write concise code.  ==Log== represents a simple log entity: be it a compilation overrides, an image snapshot or a simple string output. It collaborates with the current log dispatcher to emit log objects to loggers.
 
-Note that ==Log== is named ==Log== and not ==SLLogObject== or whatever because it is the main entry point for a client point of view.
+Note that ==Log== is named ==Log== and not ==SLLogEntry== or whatever because it is the main entry point for a client point of view.
+In fact ==Log== instance level represents the behavior of a log entry object and the class level act as a log entry generator.
 
 	
 !!!! Important point. 
-One of the key responsibility of a log object is to emit the logger to the log dispatcher. However, in general you do it by yourself. The emit message is invoked for you by the creation messages. All the class creation methods use emit. The subclasses may introduce extra information such as policy to display, filtering, extra logging information. They should offer a nice API and invoke the emit message. 
+One of the key responsibility of a log object is to emit the logger to the log dispatcher. However, in general you do it by yourself. The ==emit== message is sent for you by the creation messages. All the class creation methods use emit. The subclasses may introduce extra information such as policy to display, filtering, extra logging information. They should offer a nice API and send the ==emit== message. 
 
 
  ==BasicLog==, the superclass of ==Log== represents a simpler log object consisting only of a timeStamp and a message.   More specialized log classes may be derived from this class like the default ==Log== class does. Usually as a normal user you will not use directly ==BasicLog== but ==Log== because it proposes a better API.
 
 [[[
-(BasicLog message: 'Test message string') emit
+BasicLog message: 'Test message string'
 ]]]
+
+
+As already mentioned above, a message can be any object and it is not limited to be a string. The following example shows that we can pass a stack as message. 
+
+[[[
+BasicLog message: thisContext sender
+]]]
+
+
 	
 
 !!! Core element two: LogDispatcher
@@ -139,7 +169,27 @@ It defined the following messages:
 
 !! About LogLevels
 
-As we saw you can raise logs of different severities: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warn:==.  ==LogLevel== represents such a severity. A log level that has a larger number for severity is more severe. 
+As we saw you can raise logs of different severities: ==error:==, ==critical:==, ==message:==, ==trace:== and ==warn:==.  ==LogLevel== represents such a severity. We follow the severity levels of syslog 0 being the most severe and 7 the least. 
+
+
+SysLog defines severety as follow: 
+
+
+
+
+
+|!Code|!Severity|!Keyword|!Description|!General Description|
+
+|{0	|{Emergency	emerg (panic)|{	System is unusable. |{A "panic" condition usually affecting multiple apps/servers/sites. At this level it would usually notify all tech staff on call.
+|{1	|{Alert|{alert|{Action must be taken immediately.|{Should be corrected immediately, therefore notify staff who can fix the problem. An example would be the loss of a primary ISP connection.
+|{2|{Critical|{crit|{Critical conditions.|{Should be corrected immediately, but indicates failure in a secondary system, an example is a loss of a backup ISP connection.
+|{3|{Error|{err (error)|{Error conditions.|{Non-urgent failures, these should be relayed to developers or admins; each item must be resolved within a given time.
+|{4|{Warning|{warning (warn)|{Warning conditions.|{Warning messages, not an error, but indication that an error will occur if action is not taken, e.g. file system 85% full - each item must be resolved within a given time.
+|{5|{Notice|{notice|{Normal but significant condition.|{Events that are unusual but not error conditions - might be summarized in an email to developers or admins to spot potential problems - no immediate action required.
+|{6|{Informational|{info|{Informational messages.|{Normal operational messages - may be harvested for reporting, measuring throughput, etc. - no action required.
+|{7|{Debug|{debug|{Debug-level messages.|{Info useful to developers for debugging the application, not useful during operations.
+
+
 
 A convenience method ==LogLevel>>orMoreSevere== allows one to express that we are interested
 in a given level or more severe ones. 
