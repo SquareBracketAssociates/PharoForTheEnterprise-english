@@ -121,7 +121,6 @@ BasicLog message: thisContext sender
 ]]]
 
 
-	
 
 !!! Core element two: LogDispatcher
 When a log object is created, it is passed to the system log dispatcher. There is only one logDispatcher in the system, it is an instance of ==LogDispatcher== and can be accessed ==LogDispatcher current==. His role is to dispatch the emitted log objects to the system loggers that registered to the dispatcher. 
@@ -131,13 +130,13 @@ There is one favorite system logger associated to the current dispatcher. It is 
 In addition, we can add loggers to the current dispatcher using ==addLogger:==. A dispatcher will dispatch log to any available loggers. 
 
 [[[
-	LogDispatcher current addLogger: (SystemLogger name: 'test1').
+	LogDispatcher current addLogger: (MySpecialLogger name: 'test1').
 ]]]
 
-or 
+Note that from an access point of view ==LogDispatcher== is a private class and it is much better to access it via the ==Log== class using the dispatcher message as follow:
 
 [[[
-	LogDispatcher addLogger: (SystemLogger name: 'test1').
+	Log dispatcher addLogger: (MySpecialLogger name: 'test1').
 ]]]
 
 Similarly you can remove a system logger using the ==removeLogger:== or ==removeLoggerNamed:== messages.
@@ -163,7 +162,12 @@ It defined the following messages:
 
 !!! SystemLogger
 
- ==SystemLogger== is a subclass of ==Logger==. It keeps the log objects in memory. One of its instance is the default system logger associated to the ==LogDispatcher== singleton. We can imagine in the future to change it to support a cyclic structure to hold a maximum amount of log objects.
+ ==SystemLogger== is a subclass of ==Logger==. It keeps the log objects in memory. One of its instance is the default system logger associated to the ==LogDispatcher== singleton. It can be accessed via ==Logger default==. There is no need to add explicitly SystemLogger instances to the dispatcher because the system does it automatically (since SystemLogger plays the special role to make sure that all the system logs are recorded).
+
+We imagine in the future we will change ==SystemLogger== to use a cyclic structure to hold a maximum amount of log entries.
+
+
+
 
 
 
@@ -272,6 +276,25 @@ StringStreamLogger>>handleConvertedLog: aLog
 StringStreamLogger class>>defaultStream
 	^ Transcript
 ]]]
+
+
+!!!! Registering a new logger. 
+
+Now we declare this new logger using the message ==addLoger:== as follow. 
+
+[[[
+| logger |
+logger := StringStreamLogger new.
+Log dispatcher addLogger: logger.
+Log dispatcher startAllLoggers.
+]]]
+
+
+
+
+
+
+
 
 
 
