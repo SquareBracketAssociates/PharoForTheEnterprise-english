@@ -224,9 +224,9 @@ pass the logs object to a formatter before storing them.
 [[[
 FormattingLogger>>addLogHook: aLog 
 
-	self storeObject: (self convertLog: aLog)
+	self handleConvertedLog: (self convertLog: aLog)
 
-FormattingLogger>>storeObject: anObject
+FormattingLogger>>handleConvertedLog: anObject
 	"Hook to customize to specify how an object should be stored once converted."
 
 	self subclassResponsibility
@@ -257,11 +257,11 @@ LogFormatter>>formatLog: aLog on: aStream from: aLogger
 	aLog printOn: aStream.
 ]]]
 
-Now we are ready to define the behavior of ==StringStreamLogger==. We redefine the ==storeObject:== method to write to a stream that by default is defined to return Transcript. 
+Now we are ready to define the behavior of ==StringStreamLogger==. We redefine the ==handleConvertedLog:== method to write to a stream that by default is defined to return Transcript. 
 
 
 [[[
-StringStreamLogger>>storeObject: aLog
+StringStreamLogger>>handleConvertedLog: aLog
 	
 	self stream cr.
 	self stream << (formatter formatLog: aLog from: self)
