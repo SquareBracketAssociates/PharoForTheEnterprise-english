@@ -18,6 +18,7 @@
         {CalculatorTutorial/}
         {ConcurrencyBasics/}
         {DSL/}
+		{WebSockets/}
         {Deltawerken/}
         {Fuel/}
         {Installation/}
@@ -28,6 +29,7 @@
         {NeoCSV/}
         {ParseTreeRewriter/}
         {Reddit/}
+		{NeoCSV/}
         {ODE/}
         {STON/}
         {Spec/}
