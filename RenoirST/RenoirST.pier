@@ -283,14 +283,20 @@ div + ol
 }
 ]]]
 
+[[[
 CascadingStyleSheetBuilder new 
   declareRuleSetFor: [:selector | selector div ~ selector orderedList ]
   with: [:style | style listStyleType: CssConstants lowerRoman ];
   build
+]]]
+produces
+
+[[[
 div ~ ol
 {
     list-style-type: lower-roman;
 }
+]]]
 
 !!Class and Id Selectors
 
@@ -363,12 +369,12 @@ input:checked
 }
 ]]]
 
-!! Language Pseudo-class:
+!!!! Language Pseudo-class:
 
 [[[
 CascadingStyleSheetBuilder new 
   declareRuleSetFor: [:selector | (selector lang: 'es') > selector div ]
-  with: [:style | style quotes: { '"«"'. '"»"' }  ];
+  with: [:style | style quotes: { '"<"'. '">"' }  ];
   build
 ]]]
 
@@ -377,11 +383,11 @@ produces
 [[[
 :lang(es) > div
 {
-    quotes: "«" "»";
+    quotes: "<" ">";
 }
 ]]]
 
-!! Structural Pseudo-classes
+!!!! Structural Pseudo-classes
 
 These selectors allow selection based on extra information that lies in the document tree but cannot be represented by other simpler selectors nor combinators.
 
@@ -398,7 +404,7 @@ CascadingStyleSheetBuilder new
   build
 ]]]
 
-!! Kind of nth-child Pseudo-classes
+!!!! Kind of nth-child Pseudo-classes
 
 The :nth-child(an+b) pseudo-class notation represents an element that has an+b-1 siblings before it in the document tree, for any positive integer or zero value of n, and has a parent element. For values of a and b greater than zero, this effectively divides the element's children into groups of a elements (the last group taking the remainder), and selecting the bth element of each group. The a and b values must be integers (positive, negative, or zero). The index of the first child of an element is 1.
 
@@ -426,8 +432,9 @@ CascadingStyleSheetBuilder new
     color: blue;
 }
 ]]]
-The rest of the selectors in this category are modeled using the following messsages:
+The rest of the selectors in this category are modeled using the following messages:
 
+[[[
 nth-last-child() -> childFromLastAt:
 nth-of-type() -> siblingOfTypeAt:
 nth-last-of-type() -> siblingOfTypeFromLastAt:
@@ -438,36 +445,51 @@ last-of-type -> lastOfType
 only-child -> onlyChild
 only-of-type -> onlyOfType
 empty -> empty
-Pseudo-Elements
+]]]
+
+!! Pseudo-Elements
 
 Pseudo-elements create abstractions about the document tree beyond those specified by the document language. For instance, document languages do not offer mechanisms to access the first letter or first line of an element's content. Pseudo-elements allow authors to refer to this otherwise inaccessible information. Pseudo-elements may also provide authors a way to refer to content that does not exist in the source document.
 
-First line
+!!!! First line
 
 This selector describes the contents of the first formatted line of an element.
 
+[[[
 CascadingStyleSheetBuilder new 
   declareRuleSetFor: [:selector | selector paragraph firstLine ]
   with: [:style | style textTransform: CssConstants uppercase ];
   build
+]]]
+produces
+
+[[[
 p::first-line
 {
     text-transform: uppercase;
 }
-First letter
+]]]
+
+!!!!First letter
 
 This pseudo-element represents the first letter of an element, if it is not preceded by any other content (such as images or inline tables) on its line.
 
+[[[
 CascadingStyleSheetBuilder new 
   declareRuleSetFor: [:selector | selector paragraph firstLetter ]
   with: [:style | style fontSize: 200 percent ];
   build
+]]]
+produces
+
+[[[
 p::first-letter
 {
     font-size: 200%;
 }
+]]]
 
-!!! Before and After
+!!!! Before and After
 
 These pseudo-elements can be used to describe generated content before or after an element's content. The content property, in conjunction with these pseudo-elements, specifies what is inserted.
 
@@ -493,7 +515,7 @@ p.note::after
 } 
 ]]]
 
-!!! Selector Groups
+!! Selector Groups
 
 A comma-separated list of selectors represents the union of all elements selected by each of the individual selectors in the list. For example, in CSS when several selectors share the same declarations, they may be grouped into a comma-separated list.
 
