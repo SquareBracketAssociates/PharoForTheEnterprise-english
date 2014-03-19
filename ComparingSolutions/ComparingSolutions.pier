@@ -1,0 +1,360 @@
+SciSmalltalk is a new Smalltalk project, similar to existing scientific libraries like NumPy, SciPy for Python or SciRuby for Ruby. ODE package is a library of ODE(Ordinary Differential Equations) solvers. You can read more about ODE in Wikipedia http://en.wikipedia.org/wiki/Ordinary_differential_equation.
+
+In this chapter...
+
+
+
+					
+!!Small intro to ODE
+
+
+To understand how you can work with the ODE package, let's look at the example with ''Adams-Bashforth'' second order method. Read about Adams-Bashforth method and see what the algorithm we will use. Let's start. First of all you need to understand how this method works. If you want to solve some ODE using this method you need to do next steps:
+
+#Check whether ''t@@1@@'' is equal to ''lastT'', if not then
+#Find the first state ''x@@1@@'' using first order method from Adams-Bashforth family of methods and initial data: initial state ''x@@0@@'', initial time ''t@@0@@'' and step size ''dt''. Check whether ''t@@2@@'' is equal to ''lastT'', if not then
+#Find the second state ''x@@2@@'' using second order Adams-Bashforth method and previous datas: ''x@@1@@'', ''x@@0@@'', ''t@@1@@'', ''t@@0@@'', ''dt''. Check whether ''t@@3@@'' is equal to ''lastT'', if not then
+#Find the ''n'' next states ''x@@3@@'', ..., ''x@@n@@'' using second order Adams-Bashforth method and previous datas. Here ''n'' is equal to ''(t - t@@0@@) / dt''. If on some ''(k + 1)'' step you have ''t@@k@@ < lastT < t@@ k + 1@@'' then find ''x@@ k + 1@@'' using ''k + 1'' order Adams-Bashforth method but with ''new_dt = lastT - t@@k@@''. If on some ''k'' step ''t@@k@@ = lastT'' then find ''x@@k@@'' and it's all.
+
+Now, when you know how does the method works, it's a time to look on the ''AB2Solver''. The solve method do all previous steps.
+
+[[[
+solve: aSystem startState: initialState startTime: initialTime endTime: endTime
+    |prevState statesPair|
+    self system: aSystem.
+    self stepper: ((self firstStepperClass) onSystem: self system).
+    state := initialState.
+    lastTime:=initialTime.
+
+    "announce initial conditions"
+    self announceState: state time: initialTime.
+
+    (lastTime+dt > endTime and: lastTime < endTime)
+    ifTrue:[
+        state :=self lastStepState: state endTime: endTime].
+
+    lastTime+dt<= endTime 
+    ifTrue:[
+        prevState:= initialState.
+
+        state := self firstStepStartTime: initialTime.
+        "announce first step"
+        self announceState: state time: (initialTime + dt).
+
+        self stepper: ((self stepperClass) onSystem: self system).
+
+        "step until the end"
+        statesPair := self mainStepsPrevState: prevState startTime: ( initialTime + dt) endTime: endTime.
+        state:=statesPair second.
+        prevState:= statesPair first.
+
+        "sanity check"
+        self assert: [(lastTime between: initialTime and: endTime) 
+            or: [lastTime between: endTime and: initialTime]].
+
+        "take another step if needed"
+        state := self lastStepPrevState: prevState endTime: endTime.].
+
+    ^ state]]]
+In previous code-block we used next methods:
+
+[[[
+firstStepStartTime: t
+  state := stepper doStep: state time: t stepSize: self dt. 
+  self announceState: state time: t + self dt.
+  lastTime := t + self dt.
+  ^ state]]]
+which sent a message to ''MidpointStepper''. This method does the second step.
+
+[[[
+mainStepsPrevState: prevState startTime: initialTime endTime: endTime
+|previousState|
+    previousState := prevState. 
+    "don't go to end time to avoid overrunning"
+    (initialTime to: endTime - self dt  by: self dt) do:
+    [:time | | tempState|
+        tempState := state.
+        state := stepper
+            doStep: state 
+            prevState: previousState
+            time:  time 
+            stepSize: self dt.
+        previousState := tempState.
+        "announce step results"
+        self announceState: state time: time + self dt.
+        lastTime := time + self dt].        
+    ^ {previousState . state}]]]
+	
+This method does the third and forth steps. It sents the messages to the method ''doStep: prevState:'' from ''AB2Stepper''
+
+[[[
+doStep: aState prevState: prevState time: t
+    self stepSize isNil
+        ifTrue: [ self error: 'step size required by stepper' ].
+    ^ (self stepSize / 2) * (3 * (system x: aState t: t) - (system x: prevState t: t - self stepSize)) + aState]]]
+	
+[[[
+lastStepPrevState: prevState endTime: endTime
+"catch partial or full step at end"
+    (lastTime equalsTo: endTime ) ifFalse:
+    [state := stepper 
+        lastStep: state 
+        prevState: prevState
+        time: lastTime 
+        stepSize: endTime - lastTime
+        deltaT: dt.
+        self announceState: state time: endTime].           
+    ^ state]]]
+This method works in this case ''t@@k@@ < lastT < t@@ k + 1 @@''.It also sents a message to the method ''lastStep: prevState: time: deltaT:'' from ''AB2Stepper''
+
+[[[
+lastStep: aState prevState: prevState time: t deltaT: incrementOfTime
+    self stepSize isNil
+    ifTrue: [ self error: 'step size required by stepper' ].
+    ^ self stepSize / 2 * (3 * (system x: aState t: t) - (system x: prevState t: t - incrementOfTime)) + aState]]]
+	
++AB2 example>file://pictures/AB2.png|width=80+
+
+
+!!Loading Smark and using it
+	
+	SMark is a framework by Stefan Marr for writing benchmarks. To load this package in your image in workspace do it :
+
+[[[
+Gofer new
+    url: 'http://smalltalkhub.com/mc/StefanMarr/SMark/main';
+    package: 'ConfigurationOfSMark';
+    load.
+(Smalltalk at: #ConfigurationOfSMark) load	]]]
+
++Download SMark>file://pictures/Download_SMark.png|width=75+
+
+
+
+!!!Writing a benchmark
+
+Now you need to create the new class, where your future benchmarks will be written. Pay attention: this class must be SMarkSuit's subclass. Let's call it SomeBenchmark.
+
++Writing benchmark>file://pictures/Writing_benchmark1.png|width=70+
+
+It's time to write your first benchmark. To follow SMark's convention you have to prefix names of your benchmark methods with the word "bench". Then write your code. For example:
+
+[[[
+benchFactorial
+  1000 factorial]]]
+
+But not all benchmarks look so simple. For example in the context of ODE project:
+
++Midpoint benchmark>file://pictures/Midpoint_benchmark.png|width=100+
+
+As you can see on this image benchmark is very similar to a test. So if you are writing tests for your code, adding some benchmarks will be a piece of cake.
+
+
+!!!Runing benchmarks
+
+One of the most important reasons why we write the benchmark is the result of it's execution.
+To see this result in workspace you should execute "SomeBenchmark run" or better "SomeBenchmark run:" and pass a number of iterations.
+
++Runing benchmarks 1>file://pictures/Runing_benchmark1.png|width=70+
+
+Same as the tests, benchmarks have ==setUp== method, which can be used to initialise all the shared data for benchmarks. In my case it looked like that:
+
++Runing benchmarks 2>file://pictures/Runing_benchmark2.png|width=80+
+
+And then our benchmark was DRYed to this:
+
++Runing benchmarks 3>file://pictures/Runing_benchmark3.png|width=80+
+
+
+""Nota bene"": Don't forget to write ==super setUp== in the ==setUp== methods of subclasses.
+
+
+
+!!!Metacello configuration
+
+As for me it is hard to figure out what to write in metacello configuration, so if your project has it and you agree with me, I propose to write some lines of code so metacello will download SMark for you.
+In order to do that go to the configuration of your project (e.g. ConfigurationOfSciSmalltalk) open last baseline and add:
+
+[[[
+spec for: #common do: [
+  spec
+    ...
+    package: 'Math-Benchmarks-ODE' with: [spec requires: #( 'Math-ODE' 'SMark' )];
+    ...
+  spec project: 'SMark' with: [
+    spec
+      className: 'ConfigurationOfSMark';
+      repository: 'http://smalltalkhub.com/mc/StefanMarr/SMark/main' ].
+]]]
+
+
+
+!!!Improving SMark
+
+If you have SomeBenchmark's subclasses of benchmarks and want to run them all with one message, then add the next method to the class side of your SomeBenchmark.
+[[[
+runAll:  numOfIterations
+  ^ (self withAllSubclasses collect:[ :each |
+     each run: numOfIterations ]) joinUsing: Character cr
+]]]
+
++Improving Smark>file://pictures/Improving_Smark1.png|width=80+
+
+
+!!!Quality criteria
+
+Everyone knows about unit testing. We are writing the tests in order to check, that our methods work as we expect them to. This approach saves us money and time when something breaks. In this case we know exactly where to look for a mistake.
+
+When it comes to numerical methods it's not enough to have correctly working methods. When you use numerical calculations another important criterion is the time of execution. To test the code for execution time we have written benchmarks for it . It turns out, that these benchmarks have the same idea as the tests, but instead of returning the value of 'true' or 'false', they return the time of method execution. SMark, the framework for writing benchmarks also has a design similar to SUnit. 
+
+Obviously, all methods give us a different execution time, and according to our previous quality criteria the best method is the one that is passing all unit tests and has the fastest execution time. In fact we forgot about the accuracy, because all the numerical method's solutions differ from the actual value that can be found by solving equation analytically.
+
+
+!!!Accuracy
+
+
+
+
+
+
++Accuracy for AB2 method>file://pictures/Accuracy_for_AB2_method.png|width=80+
+
++Accuracy for AB3 method>file://pictures/Accuracy_for_AB3_method.png|width=80+
+
++Accuracy's initialise>file://pictures/Accuracy_initialise.png|width=80+
+
+Also we have methods for running ???????????
+
+
+?????????????
+
+[[[
+run
+	| instance checkSelectors |
+	instance := self new.
+	checkSelectors := self selectors select: [ :each | each beginsWith: 'check' ].
+	^ (checkSelectors collect: [ :selector |
+		(selector copyFrom: 6 to: selector size) ->
+		((instance perform: selector) - instance standard) abs ]) asDictionary]]]
+		
+		
+[[[--
+runToXML
+	| writer |
+	writer := XMLWriter new.
+	writer
+		enablePrettyPrinting;
+		xml.
+	writer tag: 'accuracy' with: [ 
+		self run keysAndValuesDo:  [ :key :value |
+			writer tag: key with: value asString]].
+
+	^ writer --]]]
+
+
+
+
+
+
+
+ So we have again something similar to SUnit, but this time it was calculating the deviation of a numerical method from the actual value. 
+ 
+So using these automated tests helps you to stay updated with a quality changes of your code.
+
+You will notice when the time of execution becomes twice as big because of an architecture refactoring, or the method's accuracy decreases dramatically because of performance optimizations.
+
+  --Both benchmarks and accuracy infrastructure were very similar to SUnit, and this brings us to a question: maybe we need a bit broader set of tools in order to write the different kinds of the quality tests? Each separate tool will have to implement a way to write, run, report in different formats. Maybe we need a framework for writing a quality criteria tests--?
+
+
+
+
+!!Loading Graph-ET and using it
+
+
+Some data you may want to see as statistics on server, but often you want to have live visual feedback on your computer to do what you need in the best way. In that case you can use Graph-ET. It is a GSoC project written by Daniel Aviv Notario. You can use that framework to draw the graphs, to experiment with size, position, - everything that you have on your image and what you would like to add.
+
+To download Graph-ET in your Pharo image you should write the following code in the workspace: 
+
+[[[
+MCHttpRepository
+ location: 'http://smalltalkhub.com/mc/DanielAvivNotario/Graph-ET/main'
+ user: ''
+ password: '']]]
+
+
+!!!Benchmarks in Graph-ET
+
+% Write some example to show the code so that if somebody has another problem he can reuse.
+
++Benchmarks in Graph-ET>file://pictures/4BenchmarksinGraph-ET.png|width=50+
+
+ 
+In the case that your benchmark results are close to zero, it is necessary to increase the ''problemSize'', which multiplies the results. Make the smallest your results greater or equal to 10.
+
++ProblemSize equal 100.>file://pictures/5ProblemSize-equal-100.png|width=50+ 
+
+
++ProblemSize equal 1>file://pictures/6ProblemSize-equal-1.png|width=50+
+
+   
+As you can see the results are similar, but not identical.
+
+
+!!!Accuracies in Graph-ET
+
+The deviation can be plotted on CI server like the benchmarks. But the result is not affected by the machine workload, and if a graph has been changed, it indicates a change of code.
+
+With a bar graph it could be a more interesting situation, because at first I got an image similar to this one:
+ 
++Accuracies with the small step size>file://pictures/7.png|width=50+
+
+ The problem was that step size, that I used, was so small, that every method returned almost the same result.
+  The graph of accuracies with the larger step looks different :
+
++Accuracies with the larger step size >file://pictures/8Accuracies-in-Graph-ET.png|width=50+
+ 
+
+
+The biggest deviation comes from the Euler and Backward Euler methods, which are the first order methods. And the family of Adam-Moulton multistep methods ( Trapezoid, AM3, AM4) returns the best results.
+
+
+Now a question arises. How the deviation varies depending on the step size?
+
+
+And it is one of the most interesting things.
+
+On the image the darker colors  correspond to the smaller steps. We can see that the colors are distributed differently. It depends on how each method's result is close to the actual point. For example, the Euler and BackwardEuler methods are approaching to the point from one side, so the colors change smoothly.
+
++Example 1>file://pictures/9.png|width=50+
+
+An even more impressive thing is the dependence of accuracy on the initial state.
+
++Example 2>file://pictures/10.png|width=50+
+
+On the ''y''-axis we have deviation between given and actual results. The intensity of the color displays the shift of initial value both positive or negative.
+The shades of a blue color indicate the negative deviation, and the shades of red - the positive deviation.
+The best methods are those, that at zero point have black colour. Because, the closer we are to the initial point (it is indicated with a black colour close to ''x''-axis ), the closer we are to the actual value.
+
++Deviation scale>file://pictures/11.jpg|width=50+
+
+ As with previous images, the graphics of Euler and BackwardEuler methods are the simplest, with the colors that are changing gradually. However, exactly these methods draw the most attention, and from their graphs we can understand that they are not the best methods. This happens because, if we take the point ''(A@@0@@ - 1)'' as the initial one, than we will get a value less than ''A@@4@@'' and closer to the function which is drawn with blue colour. 
+
++Euler method>file://pictures/12.png|width=50+
+
+
+For the BackwardEuler method it's the same situation with initial point ''(A@@0@@ + 1)''. 
+
+Those last two bar graphs are very exciting, because we can see live how the numerical methods work.
+
+
+!!!Benchmarks with Accuracies
+
+
+In Graph-ET you even can merge the graphs of the benchmarks and the accuracies.
+
+Benchmarks are measured in milliseconds, and the accuracies are just the numbers. Therefore, to merge it correctly, we converted all values to percentages.
+
++Benchmark's and accuracy's values in percentages>file://pictures/13.png|width=50+
+
+In this image accuracy is red and benchmark's time is blue.
+
+It's important and interesting, because we can see both the most accurate and the quickest methods. As a result we can determine which method is the best for our ODE.
