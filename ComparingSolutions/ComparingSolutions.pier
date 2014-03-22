@@ -1,19 +1,22 @@
-
+! Comparing solutions
 
 In this chapter it is shown how to use Graph-ET and Smark to some project (here it is used for SciSmalltalk package.
-SciSmalltalk is a new Smalltalk project, similar to existing scientific libraries like NumPy, SciPy for Python or SciRuby for Ruby. ==Math-ODE== package is a library of ODE(Ordinary Differential Equations) solvers. You can read more about ODE in Wikipedia http://en.wikipedia.org/wiki/Ordinary_differential_equation.
+
+SciSmalltalk is a new Smalltalk project, similar to existing scientific libraries like NumPy, SciPy for Python or SciRuby for Ruby. ==Math-ODE== package is a library of ODE (Ordinary Differential Equations) solvers. You can read more about ODE in Wikipedia http://en.wikipedia.org/wiki/Ordinary_differential_equation.
+
 The main idea of this chapter is that you (the reader) can easily use Graph-ET and Smark for your own project.
 
 					
-!Small intro to Math-ODE
+!!Small intro to Math-ODE
 
-To understand how you can work with the ODE package, let's look at the example with ''Adams-Bashforth'' second order method ( read more here: http://en.wikipedia.org/wiki/Linear_multistep_method#Adams.E2.80.93Bashforth_methods). --Read about Adams-Bashforth method and see what the algorithm we will use--.
- Let's start. First of all you need to understand how this method works. 
+To understand how you can work with the ODE package, let's look at the example with ''Adams-Bashforth'' second order method.
+ 
+Let's start. First of all you need to understand how this method works. 
 
 The Adams–Bashforth methods are multistep explicit methods.
 Numerical methods for ordinary differential equations approximate solutions to initial value problems of the form
  ''x' = f( t,x )'',  ''x( t@@0@@ ) = x@@0@@''. 
-The result is approximations for the value of  ''x(t)''  at discrete times '' t@@i@@'': ''x@@i@@ {{{html: ≈}}} {{{markdown: ≈}}} {{{latex: $\approx$}}} x( t@@i@@ )'' where ''t@@i@@ = t@@0@@ + i*h'', where h is the time step (sometimes referred to as delta t or dt ).
+The result is approximations for the value of  ''x(t)''  at discrete times '' t@@i@@'': ''x@@i@@ {{{html: ≈}}} {{{markdown: ≈}}} {{{latex: $\approx$}}} x( t@@i@@ )'' where ''t@@i@@ = t@@0@@ + i*h'', where h is the time step (sometimes referred to as delta t or dt ). 
 Multistep methods use information from the previous s steps to calculate the next value.
  If you want to solve some ODE using this method you need to do next steps:
 
@@ -120,14 +123,14 @@ lastStep: aState prevState: prevState time: t deltaT: incrementOfTime
     ifTrue: [ self error: 'step size required by stepper' ].
     ^ self stepSize / 2 * (3 * (system x: aState t: t) - (system x: prevState t: t - incrementOfTime)) + aState]]]
 	
-+AB2 example>file://pictures/AB2.png|width=80+
++AB2 example>file://pictures/AB2.png|width=80|label=AB2 example+
 
 
-!SMark
+!!SMark
 
 When it comes to numerical methods it's not enough to have correctly working methods. When you use numerical calculations another important criterion is the time of execution. To test our code for execution time we can write benchmarks for it.
 
-!!Loading Smark and using it
+!!!Loading Smark and using it
 	
 	SMark is a framework by Stefan Marr for writing benchmarks. To load this package in your image in workspace do it :
 
@@ -138,7 +141,7 @@ Gofer new
     load.
 (Smalltalk at: #ConfigurationOfSMark) load	]]]
 
-+Download SMark>file://pictures/Download_SMark.png|width=75+
++Download SMark>file://pictures/Download_SMark.png|width=75|label=Download SMark+
 
 
 
@@ -146,7 +149,7 @@ Gofer new
 
 Now you need to create the new class, where your future benchmarks will be written. Pay attention: this class must be SMarkSuit's subclass. Let's call it SomeBenchmark.
 
-+Writing benchmark>file://pictures/Writing_benchmark1.png|width=70+
++Writing benchmark>file://pictures/Writing_benchmark1.png|width=70|label=Writing benchmark+
 
 It's time to write your first benchmark. To follow SMark's convention you have to prefix names of your benchmark methods with the word "bench". Then write your code. For example:
 
@@ -156,7 +159,7 @@ benchFactorial
 
 But not all benchmarks look so simple. For example in the context of ODE project:
 
-+Midpoint benchmark>file://pictures/Midpoint_benchmark.png|width=100+
++Midpoint test and benchmark>file://pictures/Midpoint_benchmark.png|width=100|label=Midpoint test and benchmark+
 
 As you can see on this image benchmark is very similar to a test. So if you are writing tests for your code, adding some benchmarks will be a piece of cake.
 
@@ -166,15 +169,15 @@ As you can see on this image benchmark is very similar to a test. So if you are 
 One of the most important reasons why we write the benchmark is the result of it's execution.
 To see this result in workspace you should execute "SomeBenchmark run" or better "SomeBenchmark run:" and pass a number of iterations.
 
-+Runing benchmarks 1>file://pictures/Runing_benchmark1.png|width=70+
++Runing benchmarks 1>file://pictures/Runing_benchmark1.png|width=70|label=Runing benchmarks 1+
 
 Same as the tests, benchmarks have ==setUp== method, which can be used to initialise all the shared data for benchmarks. In my case it looked like that:
 
-+Runing benchmarks 2>file://pictures/Runing_benchmark2.png|width=80+
++Runing benchmarks 2>file://pictures/Runing_benchmark2.png|width=80|label=Runing benchmarks 2+
 
 And then our benchmark was DRYed to this:
 
-+Runing benchmarks 3>file://pictures/Runing_benchmark3.png|width=80+
++Runing benchmarks 3>file://pictures/Runing_benchmark3.png|width=80|label=Runing benchmarks 3+
 
 
 ""Nota bene"": Don't forget to write ==super setUp== in the ==setUp== methods of subclasses.
@@ -209,7 +212,7 @@ runAll:  numOfIterations
      each run: numOfIterations ]) joinUsing: Character cr
 ]]]
 
-+Improving Smark>file://pictures/Improving_Smark1.png|width=80+
++Improving Smark>file://pictures/Improving_Smark1.png|width=80\label=Improving Smark+
 
 
 !!Quality criteria for Math-ODE
@@ -227,11 +230,11 @@ Obviously, all methods give us a different execution time, and according to our 
 For Math-ODE project was written new package Math-Accuracy-ODE.
 There we have methods, which compute the accuracies:
 
-+Accuracy for AB2 method>file://pictures/Accuracy_for_AB2_method.png|width=80+
++Accuracy for AB2 method>file://pictures/Accuracy_for_AB2_method.png|width=80|label=Accuracy for AB2 method+
 
-+Accuracy for AB3 method>file://pictures/Accuracy_for_AB3_method.png|width=80+
++Accuracy for AB3 method>file://pictures/Accuracy_for_AB3_method.png|width=80|label=Accuracy for AB3 method+
 
-+Accuracy's initialise>file://pictures/Accuracy_initialise.png|width=80+
++Accuracy's initialise>file://pictures/Accuracy_initialise.png|width=80|label=Accuracy's initialise+
 
 and methods for running them:
 
@@ -245,7 +248,7 @@ run
 		((instance perform: selector) - instance standard) abs ]) asDictionary]]]
 		
 We can get the results in XML.	
-[[[--
+[[[
 runToXML
 	| writer |
 	writer := XMLWriter new.
@@ -256,7 +259,7 @@ runToXML
 		self run keysAndValuesDo:  [ :key :value |
 			writer tag: key with: value asString]].
 
-	^ writer --]]]
+	^ writer ]]]
 
  So we have again something similar to SUnit, but this time it was calculating the deviation of a numerical method from the actual value. 
  
@@ -264,17 +267,13 @@ So using these automated tests helps you to stay updated with a quality changes 
 
 You will notice when the time of execution becomes twice as big because of an architecture refactoring, or the method's accuracy decreases dramatically because of performance optimizations.
 
-  --Both benchmarks and accuracy infrastructure were very similar to SUnit, and this brings us to a question: maybe we need a bit broader set of tools in order to write the different kinds of the quality tests? Each separate tool will have to implement a way to write, run, report in different formats. Maybe we need a framework for writing a quality criteria tests--?
 
-
-
-
-! Graph-ET 
+!! Graph-ET 
 
 
 Some data you may want to see as statistics on server, but often you want to have live visual feedback on your computer to do what you need in the best way. In that case you can use Graph-ET. It is a GSoC project written by Daniel Aviv Notario. You can use that framework to draw the graphs, to experiment with size, position, - everything that you have on your image and what you would like to add.
 
-!!Loading Graph-ET and using it
+!!!Loading Graph-ET and using it
 
 To download Graph-ET in your Pharo image you should write the following code in the workspace: 
 
@@ -287,19 +286,71 @@ MCHttpRepository
 
 !!!Benchmarks in Graph-ET
 
+We get our benchmarks data as an ordered collection:
 
-some example???????
-% Write some example to show the code so that if somebody has another problem he can reuse.
++Benchmarks results>file://pictures/Benchmarks_results.png|width=80|label=Benchmarks results+
 
-+Benchmarks in Graph-ET>file://pictures/4BenchmarksinGraph-ET.png|width=50+
+but it is'n the suitable for Graph-ET, that's why we transform it to the dictionary:
+
+[[[
+benchmarksData
+^((((ODEBenchmark runAll: 100) collect: [ :suite |
+		suite results ]) fold: [ :result :current |
+			result addAll: current; yourself ]) collect: [ :value |
+				(value inject: 0 into: [ :subTotal :each |
+					subTotal + each total ]) / value size ] )
+]]]
+
++benchmarksData>file://pictures/benchmarksData.png|width=80|label=benchmarksData+
+
+Then the method which will build the diagram has the following form: 
+[[[
+graphBenchmarks
+	| diagram model | 
+	model := self benchmarksData associations.
+	
+	diagram := GETDiagramBuilder new.
+	diagram verticalBarDiagram
+		models: model;
+		y: #value;
+		spacing: 15;
+		regularAxis.
+		
+	diagram interaction
+		popUpText.
+		
+	 diagram open.
+		
+model do: [ :value | 
+    | bar label |
+    "We define a label, and add it to the view"
+    label := ROLabel elementOn:( value key joinUsing: Character cr) .
+    diagram rawView add: label.
+
+    "We get the bar, the gray element that grows up"
+    bar := diagram rawView elementFromModel: value.
+
+    "Move the label below its corresponding bar"
+    ROConstraint move: label below: bar ].
+]]]
+When you did in the Workspace it:
+[[[
+SciSmalltalkMetrificator graphBenchmarks]]]
+
+you will get the next graph:
+
++graphBenchmarks result>file://pictures/graphBenchmarks_result.png|width=50|label=graphBenchmarks+
+
+
++Benchmarks in Graph-ET>file://pictures/4BenchmarksinGraph-ET.png|width=50|label=Benchmarks in Graph-ET+
 
  
-In the case that your benchmark results are close to zero, it is necessary to increase the ''problemSize'', which multiplies the results. Make the smallest your results greater or equal to 10.
+""Nota bene:"" in the case that your benchmark results are close to zero, it is necessary to increase the ''problemSize'', which multiplies the results. Make the smallest your results greater or equal to 10.
 
-+ProblemSize equal 100.>file://pictures/5ProblemSize-equal-100.png|width=50+ 
+%+ProblemSize equal 100.>file://pictures/5ProblemSize-equal-100.png|width=50|label=ProblemSize equal 100.+ 
 
 
-+ProblemSize equal 1>file://pictures/6ProblemSize-equal-1.png|width=50+
++ProblemSize equal 1>file://pictures/6ProblemSize-equal-1.png|width=50|label=ProblemSize equal 1+
 
    
 As you can see the results are similar, but not identical.
@@ -307,23 +358,59 @@ As you can see the results are similar, but not identical.
 
 !!!Accuracies in Graph-ET
 
-some example???????
-% Write some example to show the code so that if somebody has another problem he can reuse.
+Despide of benchmarks  we get our accuracies data as a dictionary:
 
-?????The deviation can be plotted on CI server like the benchmarks. But the result is not affected by the machine workload, and if a graph has been changed, it indicates a change of code.
++Accuracies results>file://pictures/Accuracies_results.png|width=80|label=Accuracies results+
 
-With a bar graph it could be a more interesting situation, because at first I got an image similar to this one:
+so, we can use it instantly.
+
+[[[
+accuracyData
+^ ODEAccuracy run ]]]
+
+The method looks similar to == graphBenchmarks ==
+
+[[[
+graphAccuracy
+	| diagram model |
+	model := self accuracyData associations.
+	
+	diagram := GETDiagramBuilder new.
+	diagram verticalBarDiagram
+		models: model;
+		spacing: 25;
+		"barWidth: 25;"
+		y: #value;
+		regularAxis.
+		
+	diagram interaction
+		popUpText.
+		
+	 diagram open.
+	
+model do: [ :value | 
+    | bar label |
+    "We define a label, and add it to the view"
+    label := ROLabel elementOn:( value key joinUsing: Character cr) .
+    diagram rawView add: label.
+
+    "We get the bar, the gray element that grows up"
+    bar := diagram rawView elementFromModel: value.
+
+    "Move the label below its corresponding bar"
+    ROConstraint move: label below: bar ].
+]]]
+
+ ""Nota bene:"" you can get an image similar to this one:
  
-+Accuracies with the small step size>file://pictures/7.png|width=50+
++Accuracies with the small step size>file://pictures/7.png|width=50|label=Accuracies with the small step size+
 
- The problem was that step size, that I used, was so small, that every method returned almost the same result.
+ The problem is that step size, that I used, was so small, that every method returned almost the same result.
   The graph of accuracies with the larger step looks different :
 
-+Accuracies with the larger step size >file://pictures/8Accuracies-in-Graph-ET.png|width=50+
++Accuracies with the larger step size>file://pictures/8Accuracies-in-Graph-ET.png|width=50|label=Accuracies with the larger step size+
  
-
-
-The biggest deviation comes from the Euler and Backward Euler methods, which are the first order methods. And the family of Adam-Moulton multistep methods ( Trapezoid, AM3, AM4) returns the best results.
+You can experiment a lot with Graph-ET. For example, on the *Accuracies with the larger step size* you can see that the biggest deviation comes from the Euler and Backward Euler methods, which are the first order methods. And the family of Adam-Moulton multistep methods ( Trapezoid, AM3, AM4) returns the best results.
 
 
 Now a question arises. How the deviation varies depending on the step size?
@@ -333,21 +420,21 @@ And it is one of the most interesting things.
 
 On the image the darker colors  correspond to the smaller steps. We can see that the colors are distributed differently. It depends on how each method's result is close to the actual point. For example, the Euler and BackwardEuler methods are approaching to the point from one side, so the colors change smoothly.
 
-+Example 1>file://pictures/9.png|width=50+
++Example 1>file://pictures/9.png|width=50|label=Example 1+
 
 An even more impressive thing is the dependence of accuracy on the initial state.
 
-+Example 2>file://pictures/10.png|width=50+
++Example 2>file://pictures/10.png|width=50|label=Example 2+
 
 On the ''y''-axis we have deviation between given and actual results. The intensity of the color displays the shift of initial value both positive or negative.
 The shades of a blue color indicate the negative deviation, and the shades of red - the positive deviation.
 The best methods are those, that at zero point have black colour. Because, the closer we are to the initial point (it is indicated with a black colour close to ''x''-axis ), the closer we are to the actual value.
 
-+Deviation scale>file://pictures/11.jpg|width=50+
++Deviation scale>file://pictures/11.jpg|width=50|label=Deviation scale+
 
  As with previous images, the graphics of Euler and BackwardEuler methods are the simplest, with the colors that are changing gradually. However, exactly these methods draw the most attention, and from their graphs we can understand that they are not the best methods. This happens because, if we take the point ''(A@@0@@ - 1)'' as the initial one, than we will get a value less than ''A@@4@@'' and closer to the function which is drawn with blue colour. 
 
-+Euler method>file://pictures/12.png|width=50+
++Euler method>file://pictures/12.png|width=50|label=Euler method+
 
 
 For the BackwardEuler method it's the same situation with initial point ''(A@@0@@ + 1)''. 
@@ -362,8 +449,12 @@ In Graph-ET you even can merge the graphs of the benchmarks and the accuracies.
 
 Benchmarks are measured in milliseconds, and the accuracies are just the numbers. Therefore, to merge it correctly, we converted all values to percentages.
 
-+Benchmark's and accuracy's values in percentages>file://pictures/13.png|width=50+
++Benchmark's and accuracy's values in percentages>file://pictures/13.png|width=50|label=Benchmark's and accuracy's values in percentages+
 
 In this image accuracy is red and benchmark's time is blue.
 
 It's important and interesting, because we can see both the most accurate and the quickest methods. As a result we can determine which method is the best for our ODE.
+
+
+
+
