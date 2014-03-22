@@ -1,8 +1,8 @@
 ! Comparing solutions
 
-In this chapter it is shown how to use Graph-ET and Smark to some project (here it is used for SciSmalltalk package.
-
-SciSmalltalk is a new Smalltalk project, similar to existing scientific libraries like NumPy, SciPy for Python or SciRuby for Ruby. ==Math-ODE== package is a library of ODE (Ordinary Differential Equations) solvers. You can read more about ODE in Wikipedia http://en.wikipedia.org/wiki/Ordinary_differential_equation.
+Often you have several solutions for a given problems and you would like to understand and evaluate which ones is the best.
+In this chapter we will show you how to use Graph-ET and Smark to analyze and compare different solutions - we will take 
+SciSmalltalk as an example. SciSmalltalk is a new Smalltalk project, similar to existing scientific libraries like NumPy, SciPy for Python or SciRuby for Ruby. Within such project we will use the ==Math-ODE== package which is a library of  Ordinary Differential Equations (ODE) solvers. You can read more about ODE in Wikipedia *http://en.wikipedia.org/wiki/Ordinary_differential_equation*.
 
 The main idea of this chapter is that you (the reader) can easily use Graph-ET and Smark for your own project.
 
@@ -16,6 +16,7 @@ Let's start. First of all you need to understand how this method works.
 The Adams–Bashforth methods are multistep explicit methods.
 Numerical methods for ordinary differential equations approximate solutions to initial value problems of the form
  ''x' = f( t,x )'',  ''x( t@@0@@ ) = x@@0@@''. 
+
 The result is approximations for the value of  ''x(t)''  at discrete times '' t@@i@@'': ''x@@i@@ {{{html: ≈}}} {{{markdown: ≈}}} {{{latex: $\approx$}}} x( t@@i@@ )'' where ''t@@i@@ = t@@0@@ + i*h'', where h is the time step (sometimes referred to as delta t or dt ). 
 Multistep methods use information from the previous s steps to calculate the next value.
  If you want to solve some ODE using this method you need to do next steps:
