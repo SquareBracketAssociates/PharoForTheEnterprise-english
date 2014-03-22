@@ -10,6 +10,10 @@
 *.pier.md
 *.pier.tex
 *.pier.html
+*.pillar.pdf
+*.pillar.md
+*.pillar.tex
+*.pillar.html
 /crash.dmp
 .DS_Store
 /Pharo.changes

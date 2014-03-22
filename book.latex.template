@@ -16,9 +16,10 @@
         {BabyMock/}
         {BioPharo/}
         {CalculatorTutorial/}
+        {ComparingSolutions/}
         {ConcurrencyBasics/}
         {DSL/}
-		{WebSockets/}
+        {WebSockets/}
         {Deltawerken/}
         {Fuel/}
         {Installation/}
@@ -29,11 +30,11 @@
         {NeoCSV/}
         {ParseTreeRewriter/}
         {Reddit/}
-		{NeoCSV/}
+        {NeoCSV/}
         {ODE/}
         {STON/}
         {Spec/}
-		{RenoirST/}
+        {RenoirST/}
         {Voyage/}
         {Zinc/}
 }
