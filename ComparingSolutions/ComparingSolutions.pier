@@ -1,25 +1,29 @@
-! Comparing solutions
+! Comparing Solutions: Benchmarking and Charting at Work
 
-Often you have several solutions for a given problems and you would like to understand and evaluate which ones is the best.
-In this chapter we will show you how to use Graph-ET and Smark to analyze and compare different solutions - we will take 
-SciSmalltalk as an example. SciSmalltalk is a new Smalltalk project, similar to existing scientific libraries like NumPy, SciPy for Python or SciRuby for Ruby. Within such project we will use the ==Math-ODE== package which is a library of  Ordinary Differential Equations (ODE) solvers. You can read more about ODE in Wikipedia *http://en.wikipedia.org/wiki/Ordinary_differential_equation*.
+Written by Natalia Tymchuk
 
-The main idea of this chapter is that you (the reader) can easily use Graph-ET and Smark for your own project.
+Often you have several solutions to a given problem and you would like to understand and evaluate which ones are the best.
+To get such an assessment, you will measure your solutions, however it is important to be able to perform your measures
+in a controlled and repeatable way. Once you are able to repeat your measuring process, it is also important to put the measures in perspective and charting them is a nice and powerful way to do so. 
+
+In this chapter we will show you how to use SMark - a benchmarking frameworks and Graph-ET - a charting libraries to analyze and compare different solutions - we will take SciSmalltalk as an example. SciSmalltalk is a new Smalltalk project, similar to existing scientific libraries like NumPy, SciPy for Python or SciRuby for Ruby. Within such project we will use the ==Math-ODE== package which is a library of  Ordinary Differential Equations (ODE) solvers. You can read more about ODE in Wikipedia *http://en.wikipedia.org/wiki/Ordinary_differential_equation*.
+
+The main idea of this chapter is that you (the reader) can easily use Graph-ET and SMark for your own project.
 
 					
-!!Small intro to Math-ODE
+!! A small Introduction to Math-ODE
 
 To understand how you can work with the ODE package, let's look at the example with ''Adams-Bashforth'' second order method.
- 
-Let's start. First of all you need to understand how this method works. 
 
-The Adams–Bashforth methods are multistep explicit methods.
-Numerical methods for ordinary differential equations approximate solutions to initial value problems of the form
+@@comment@@ May be you should give one example of an ODE and an example of 
+
+Let's start. First of all you need to understand how this method works.  The Adams–Bashforth methods are multistep explicit methods. Numerical methods for ordinary differential equations approximate solutions to initial value problems of the form
  ''x' = f( t,x )'',  ''x( t@@0@@ ) = x@@0@@''. 
 
 The result is approximations for the value of  ''x(t)''  at discrete times '' t@@i@@'': ''x@@i@@ {{{html: ≈}}} {{{markdown: ≈}}} {{{latex: $\approx$}}} x( t@@i@@ )'' where ''t@@i@@ = t@@0@@ + i*h'', where h is the time step (sometimes referred to as delta t or dt ). 
-Multistep methods use information from the previous s steps to calculate the next value.
- If you want to solve some ODE using this method you need to do next steps:
+
+Multistep methods use information from the previous ''s'' steps to calculate the next value.
+ If you want to solve some ODE using this method you need to do the following  steps:
 
 #Check whether time ''t@@1@@'' is equal to ''lastT'' - time value in which we want find the value of our function, if not then
 #Find the first state ''x@@1@@'' using first order method from Adams-Bashforth family of methods (this is the Euler method: '' x@@n + 1@@ = x@@n@@ \+ dt \* f( t@@n@@, x@@n@@ )'' ) and initial data: initial state ''x@@0@@'', initial time ''t@@0@@'' and step size ''dt''. Check whether ''t@@2@@'' is equal to ''lastT'', if not then
@@ -28,36 +32,47 @@ Multistep methods use information from the previous s steps to calculate the nex
 
 Now, we have the code, which does all previous steps, so if you are not interested, you can skip it.
 
+@@comment: may be you should split the methods with an initialize phase
+@@comment: I simplified the code. If you want I can do a code review of Math-ODE
+
+
+Fig *FigAB2Example* shows a typical test case for an Adams-Bashforth solver.
+
++A typical testcase for an Adams-Bashforth solver example>file://pictures/AB2.png|width=80|label=FigAB2Example+
+
+
 
 [[[
-solve: aSystem startState: initialState startTime: initialTime endTime: endTime
-    |prevState statesPair|
+WHATCLASS>>solve: aSystem startState: initialState startTime: initialTime endTime: endTime
+	"add a comment here: what is a result for example"
+	
+    | prevState statesPair |
     self system: aSystem.
-    self stepper: ((self firstStepperClass) onSystem: self system).
+    self stepper: (self firstStepperClass onSystem: self system).
     state := initialState.
-    lastTime:=initialTime.
+    lastTime := initialTime.
 
     "announce initial conditions"
     self announceState: state time: initialTime.
 
     (lastTime+dt > endTime and: lastTime < endTime)
     ifTrue:[
-        state :=self lastStepState: state endTime: endTime].
+        state := self lastStepState: state endTime: endTime].
 
-    lastTime+dt<= endTime 
+    lastTime+dt <= endTime 
     ifTrue:[
-        prevState:= initialState.
+        prevState := initialState.
 
         state := self firstStepStartTime: initialTime.
         "announce first step"
         self announceState: state time: (initialTime + dt).
 
-        self stepper: ((self stepperClass) onSystem: self system).
+        self stepper: (self stepperClass onSystem: self system).
 
         "step until the end"
         statesPair := self mainStepsPrevState: prevState startTime: ( initialTime + dt) endTime: endTime.
-        state:=statesPair second.
-        prevState:= statesPair first.
+        state := statesPair second.
+        prevState := statesPair first.
 
         "sanity check"
         self assert: [(lastTime between: initialTime and: endTime) 
@@ -67,23 +82,26 @@ solve: aSystem startState: initialState startTime: initialTime endTime: endTime
         state := self lastStepPrevState: prevState endTime: endTime.].
 
     ^ state]]]
-In previous code-block we used next methods:
+
+
+In previous code-block we used the following methods:
 
 [[[
-firstStepStartTime: t
+WHATCLASS>>firstStepStartTime: t
   state := stepper doStep: state time: t stepSize: self dt. 
   self announceState: state time: t + self dt.
   lastTime := t + self dt.
   ^ state]]]
-which sent a message to ''MidpointStepper''. This method does the second step.
+
+which sends a message to ==MidpointStepper==. This method does the second step.
 
 [[[
-mainStepsPrevState: prevState startTime: initialTime endTime: endTime
-|previousState|
+WHATCLASS>>mainStepsPrevState: prevState startTime: initialTime endTime: endTime
+	| previousState |
     previousState := prevState. 
     "don't go to end time to avoid overrunning"
     (initialTime to: endTime - self dt  by: self dt) do:
-    [:time | | tempState|
+    	[:time | | tempState|
         tempState := state.
         state := stepper
             doStep: state 
@@ -96,19 +114,20 @@ mainStepsPrevState: prevState startTime: initialTime endTime: endTime
         lastTime := time + self dt].        
     ^ {previousState . state}]]]
 	
-This method does the third and forth steps. It sents the messages to the method ''doStep: prevState:'' from ''AB2Stepper''
+This method does the third and forth steps. It sends the messages to the method ==doStep: prevState:== from ==
+AB2Stepper==. @@not clear to me@@
 
 [[[
-doStep: aState prevState: prevState time: t
+WHATCLASS>>doStep: aState prevState: prevState time: t
     self stepSize isNil
         ifTrue: [ self error: 'step size required by stepper' ].
     ^ (self stepSize / 2) * (3 * (system x: aState t: t) - (system x: prevState t: t - self stepSize)) + aState]]]
 	
 [[[
-lastStepPrevState: prevState endTime: endTime
-"catch partial or full step at end"
+WHATCLASS>>lastStepPrevState: prevState endTime: endTime
+	"catch partial or full step at end"
     (lastTime equalsTo: endTime ) ifFalse:
-    [state := stepper 
+    	[state := stepper 
         lastStep: state 
         prevState: prevState
         time: lastTime 
@@ -116,22 +135,25 @@ lastStepPrevState: prevState endTime: endTime
         deltaT: dt.
         self announceState: state time: endTime].           
     ^ state]]]
-This method works in this case ''t@@k@@ < lastT < t@@ k + 1 @@''.It also sents a message to the method ''lastStep: prevState: time: deltaT:'' from ''AB2Stepper''
+
+This method works in this case ''t@@k@@ < lastT < t@@ k + 1 @@''. It also sends a message to the method ==lastStep: prevState: time: deltaT:== from ==AB2Stepper==.
 
 [[[
-lastStep: aState prevState: prevState time: t deltaT: incrementOfTime
+WHATCLASS>>lastStep: aState prevState: prevState time: t deltaT: incrementOfTime
     self stepSize isNil
-    ifTrue: [ self error: 'step size required by stepper' ].
+    	ifTrue: [ self error: 'step size required by stepper' ].
     ^ self stepSize / 2 * (3 * (system x: aState t: t) - (system x: prevState t: t - incrementOfTime)) + aState]]]
 	
-+AB2 example>file://pictures/AB2.png|width=80|label=AB2 example+
 
 
-!!SMark
+Now that you get an idea of the process to solve an ordinary differential equation we can proceed.
 
-When it comes to numerical methods it's not enough to have correctly working methods. When you use numerical calculations another important criterion is the time of execution. To test our code for execution time we can write benchmarks for it.
+!!SMark: A benchmarking frameworks
 
-!!!Loading Smark and using it
+When it comes to numerical methods it's not enough to have correctly working methods. When you use numerical calculations another important criterion is execution time. To test our code execution time we can write benchmarks for it. Now what is key is to be able to write reproducible benchmarks. Similarly to SUnit supporting the definition of tests, SMark supports
+the definition of benchmarks.
+
+!!!Loading SMark and using it
 	
 	SMark is a framework by Stefan Marr for writing benchmarks. To load this package in your image in workspace do it :
 
@@ -213,7 +235,7 @@ runAll:  numOfIterations
      each run: numOfIterations ]) joinUsing: Character cr
 ]]]
 
-+Improving Smark>file://pictures/Improving_Smark1.png|width=80\label=Improving Smark+
++Improving SMark>file://pictures/Improving_SMark1.png|width=80\label=Improving SMark+
 
 
 !!Quality criteria for Math-ODE
