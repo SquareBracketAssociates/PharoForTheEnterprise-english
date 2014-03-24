@@ -150,37 +150,51 @@ Now that you get an idea of the process to solve an ordinary differential equati
 
 !!SMark: A benchmarking frameworks
 
-When it comes to numerical methods it's not enough to have correctly working methods. When you use numerical calculations another important criterion is execution time. To test our code execution time we can write benchmarks for it. Now what is key is to be able to write reproducible benchmarks. Similarly to SUnit supporting the definition of tests, SMark supports
-the definition of benchmarks.
+When it comes to numerical methods it's not enough to have correctly working methods. When you use numerical calculations another important criterion is execution time. To test our code execution time we can write benchmarks for it. Now what is key is to be able to write reproducible benchmarks. Similarly to SUnit supporting the definition and execution of unit tests, SMark supports the definition and execution of benchmarks.
 
 !!!Loading SMark and using it
 	
-	SMark is a framework by Stefan Marr for writing benchmarks. To load this package in your image in workspace do it :
+SMark is a framework developed by Stefan Marr for writing benchmarks. To load this package in your image execute in workspace the following expression:
 
 [[[
 Gofer new
     url: 'http://smalltalkhub.com/mc/StefanMarr/SMark/main';
     package: 'ConfigurationOfSMark';
     load.
-(Smalltalk at: #ConfigurationOfSMark) load	]]]
+(Smalltalk at: #ConfigurationOfSMark) load	
+]]]
+
+@@we can use the configuration form to load. To verify
+
+[[[
+Gofer new
+    smalltalkuser: 'StefanMarr' project: 'SMark';
+    configuration';
+    load.
+(Smalltalk at: #ConfigurationOfSMark) load	
+]]]
+
 
 +Download SMark>file://pictures/Download_SMark.png|width=75|label=Download SMark+
 
 
 
 !!!Writing a benchmark
-
-Now you need to create the new class, where your future benchmarks will be written. Pay attention: this class must be SMarkSuit's subclass. Let's call it SomeBenchmark.
+Now we can get started and write a first benchmark. 
+To do so, you need to create the new class, where your future benchmarks will be defined. Pay attention: this class must be a subclass of ==SMarkSuit==. Let's call it ==SomeBenchmark==.
 
 +Writing benchmark>file://pictures/Writing_benchmark1.png|width=70|label=Writing benchmark+
 
-It's time to write your first benchmark. To follow SMark's convention you have to prefix names of your benchmark methods with the word "bench". Then write your code. For example:
+It's time to write your first benchmark. To follow SMark's convention you have to prefix names of your benchmark methods with the prefix ==bench"==. Then write your code. For example:
 
 [[[
-benchFactorial
-  1000 factorial]]]
+SomeBenchmark>>benchFactorial
+  1000 factorial
+]]]
 
 But not all benchmarks look so simple. For example in the context of ODE project:
+
+@@write it here@@
 
 +Midpoint test and benchmark>file://pictures/Midpoint_benchmark.png|width=100|label=Midpoint test and benchmark+
 
