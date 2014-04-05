@@ -1,0 +1,99 @@
+!99ST:99 Problems solved in Pharo
+
+Written by Ignacio Sniechowski
+
+!Problem \#1: Solving Quadratic Equations
+
+!! Description
+Create the necessary classes to solve Quadratic Equations (see: *http://en.wikipedia.org/wiki/Quadratic_equation* for more information).
+
+A Quadratic Equation has the form: ax + bx + c = 0
+
+Where x is the unknown, and a, b, and c are constant with a not equal to 0.
+The term a is called the quadratic coefficient.
+The term b is called the linear coefficient.
+The term c is called the constant or free term.
+
+In this problem, we are interesting in solving only those quadratic equations that have real roots, leaving those who have imaginary roots aside.
+
+The formula used to solved this kind of equations is:
+x = -b ...
+
+!! Solution \#1
+
+Let’s start by creating the following class:
+
+[[[
+
+]]]
+
+The instance variables are self-explanatory; I’ve added a new category called 99ST-Problems to include here the following problems. Feel free to suit the category at your taste.
+
+After that let’s start by adding the accessors:
+
+
+[[[
+
+]]]
+
+
+We add this method in this form, and not a method for each of the coefficients, as we most likely want to calculate the roots of an immutable quadratic equation. 
+However, we must provide getters for each of the instance variables. So create the three methods for accessing those three instance variables:
+
+[[[
+
+]]]
+
+Categorize all these methods under the accessing protocol.
+
+To calculate the roots we must get sure we are not attempting to calculate a negative square root in the following part of the formula used to solve the equation:
+
+So let’s continue by defining a new method that starts the calculation process:
+
+
+[[[
+
+]]]
+
+This method sends a message to another method passing as argument a block. This block will be evaluated if the term mentioned above is negative, meaning that the quadratic equation has no real roots.
+Enter the method and accept it (you will be prompted whether calculateRootsIfNone: is an error. Of course it’s not an error, it’s a method we haven’t defined yet).
+
+So now we define that method:
+
+[[[
+
+]]]
+
+We define here a temporary variable called discriminant, which is the term we want to check whether it’s negative or not. Then comes a simple conditional checking. If the discriminant is negative the block passed as argument to this method is evaluated, showing ‘No real solution for the equation’, if the discriminant is true then we send a message to another method –that it’s not defined yet- passing the discriminant as argument.
+
+[[[
+
+]]]
+
+Let’s define the last method then:
+
+We first create a Set, which will contain the roots of the equation. We chose a Set for two reasons. First, in mathematic terms the roots of an equation form a set. Second, sets, in Smalltalk, do not allow for duplicate elements; therefore if our quadratic equations turns out to have similar roots, only one element will be added.
+That’s it. Categorize all these methods under a calculations protocol and we are ready to check it:
+
+First example:
+Example:  ==-3x^2+2x+2=0==
+Open a Workspace and type:
+
+
+Now Print it and you will get: 
+
+a Set(-0.5485837703548636 1.2152504370215302)
+Which are the roots of our equation. Now let’s try one that has no real solution like: 3x^2+2x+2=0
+
+Print it and you will get: 
+
+'No real solution for the equation'
+
+You can try to find a quadratic equation whose roots are equal and check that the Set has only one element.
+
+Credits: Thanks to Damien Cassou, Camille Teruel, Alain Busser and Ben Coman for their contributions.
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:
