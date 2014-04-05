@@ -7,8 +7,8 @@ Written by Ignacio Sniechowski
 !! Description
 Create the necessary classes to solve Quadratic Equations (see: *http://en.wikipedia.org/wiki/Quadratic_equation* for more information).
 
-A Quadratic Equation has the form: ax + bx + c = 0
-
+A Quadratic Equation has the form like Figure *quadraticEquation*
++A Quadratic Equation>file://figures/ax2bxc.pdf|width=40|label=quadraticEquation+
 Where x is the unknown, and a, b, and c are constant with a not equal to 0.
 The term a is called the quadratic coefficient.
 The term b is called the linear coefficient.
@@ -16,15 +16,18 @@ The term c is called the constant or free term.
 
 In this problem, we are interesting in solving only those quadratic equations that have real roots, leaving those who have imaginary roots aside.
 
-The formula used to solved this kind of equations is:
-x = -b ...
+The formula used to solved this kind of equations is that of Figure *formula*
++The formula to solve QE>file://figures/xsolution.pdf.pdf|width=40|label=formula+
 
 !! Solution \#1
 
 Let’s start by creating the following class:
 
 [[[
-
+Object subclass: #QuadraticEquation
+	instanceVariableNames: 'quadraticCoefficient linearCoefficient constant roots'
+	classVariableNames: ''
+	category: '99ST-Problems'
 ]]]
 
 The instance variables are self-explanatory; I’ve added a new category called 99ST-Problems to include here the following problems. Feel free to suit the category at your taste.
@@ -33,7 +36,10 @@ After that let’s start by adding the accessors:
 
 
 [[[
-
+QuadraticEquation>>setQuadraticCoefficient: aNumber1 linearCoefficient: aNumber2 constant: aNumber3
+	quadraticCoefficient := aNumber1.
+	linearCoefficient := aNumber2.
+	constant := aNumber3
 ]]]
 
 
@@ -41,7 +47,18 @@ We add this method in this form, and not a method for each of the coefficients, 
 However, we must provide getters for each of the instance variables. So create the three methods for accessing those three instance variables:
 
 [[[
+QuadraticEquation>>quadraticCoefficient
+	^ quadraticCoefficient
+]]]
 
+[[[
+QuadraticEquation>>linearCoefficient
+	^ linearCoefficient
+]]]
+
+[[[
+QuadraticEquation>>constant
+	^ constant
 ]]]
 
 Categorize all these methods under the accessing protocol.
@@ -52,7 +69,8 @@ So let’s continue by defining a new method that starts the calculation process
 
 
 [[[
-
+QuadraticEquation>>calculateRoots
+	^ self calculateRootsIfNone: [ ^ 'No real solution for the equation' ]
 ]]]
 
 This method sends a message to another method passing as argument a block. This block will be evaluated if the term mentioned above is negative, meaning that the quadratic equation has no real roots.
@@ -61,16 +79,27 @@ Enter the method and accept it (you will be prompted whether calculateRootsIfNon
 So now we define that method:
 
 [[[
-
+QuadraticEquation>>calculateRootsIfNone: aBlock
+	| discriminant |
+    discriminant := linearCoefficient  squared - ( 4 * quadraticCoefficient  * constant).
+	
+	discriminant  >= 0 
+			ifFalse: aBlock
+			ifTrue: [ ^ self solveRoots: discriminant]
 ]]]
 
 We define here a temporary variable called discriminant, which is the term we want to check whether it’s negative or not. Then comes a simple conditional checking. If the discriminant is negative the block passed as argument to this method is evaluated, showing ‘No real solution for the equation’, if the discriminant is true then we send a message to another method –that it’s not defined yet- passing the discriminant as argument.
+Let’s define the last method then:
 
 [[[
-
+QuadraticEquation>>solveRoots: aDiscriminant
+	| rootA rootB |
+	roots := Set new.
+	rootA := (linearCoefficient  negated + aDiscriminant sqrt) / (2 * quadraticCoefficient).
+	rootB := (linearCoefficient  negated  - aDiscriminant sqrt) / (2 * quadraticCoefficient).
+	roots add: rootA; add: rootB.
+	^ roots
 ]]]
-
-Let’s define the last method then:
 
 We first create a Set, which will contain the roots of the equation. We chose a Set for two reasons. First, in mathematic terms the roots of an equation form a set. Second, sets, in Smalltalk, do not allow for duplicate elements; therefore if our quadratic equations turns out to have similar roots, only one element will be added.
 That’s it. Categorize all these methods under a calculations protocol and we are ready to check it:
@@ -78,13 +107,25 @@ That’s it. Categorize all these methods under a calculations protocol and we a
 First example:
 Example:  ==-3x^2+2x+2=0==
 Open a Workspace and type:
-
+[[[
+| anEquation |
+anEquation := QuadraticEquation new.
+anEquation setQuadraticCoefficient: -3 linearCoefficient: 2 constant: 2. 
+anEquation calculateRoots.
+]]]
 
 Now Print it and you will get: 
 
 a Set(-0.5485837703548636 1.2152504370215302)
-Which are the roots of our equation. Now let’s try one that has no real solution like: 3x^2+2x+2=0
+Which are the roots of our equation. 
 
+Now let’s try one that has no real solution like: 3x^2+2x+2=0
+[[[
+| anEquation |
+anEquation := QuadraticEquation new.
+anEquation setQuadraticCoefficient: 3 linearCoefficient: 2 constant: 2. 
+anEquation calculateRoots.
+]]]
 Print it and you will get: 
 
 'No real solution for the equation'
