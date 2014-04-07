@@ -374,12 +374,12 @@ you will get the graph shown in Figure *graphBenchmarks* and displayed with Grap
 +Benchmarks in Graph-ET>file://pictures/4BenchmarksinGraph-ET.png|width=50|label=graphBenchmarksIn+
 
  
-""Nota bene:"" in the case that your benchmark results are close to zero, it is necessary to increase the ''problemSize'', which multiplies the results. Make the smallest your results greater or equal to 10.
+""Nota bene:"" in the case that your benchmark results are close to zero, it is necessary to increase the ''problemSize'', which multiplies the results (as shown in Figure *ProblemSize*). Make the smallest your results greater or equal to 10.
 
 %+ProblemSize equal 100.>file://pictures/5ProblemSize-equal-100.png|width=50+ 
 
 
-+ProblemSize equal 1>file://pictures/6ProblemSize-equal-1.png|width=50+
++ProblemSize equal 1>file://pictures/6ProblemSize-equal-1.png|width=50|label=ProblemSize+
 
    
 As you can see the results are similar, but not identical.
@@ -387,20 +387,20 @@ As you can see the results are similar, but not identical.
 
 !!!Accuracies in Graph-ET
 
-Despide of benchmarks we get our accuracies data as a dictionary:
+In addition to benchmarks we get our accuracies data as a dictionary as shown in Figure *AccRes*.
+This means that we can chart them immediately. 
 
-+Accuracies results>file://pictures/Accuracies-results.png|width=80+
++Accuracies results>file://pictures/Accuracies-results.png|width=80|label=AccRes+
 
-so, we can use it instantly.
 
 [[[
 accuracyData
-^ ODEAccuracy run ]]]
+   ^ ODEAccuracy run ]]]
 
-The method looks similar to == graphBenchmarks ==
+The method looks similar to ==graphBenchmarks==
 
 [[[
-graphAccuracy
+WAHTClass>>graphAccuracy
 	| diagram model |
 	model := self accuracyData associations.
 	
@@ -412,40 +412,36 @@ graphAccuracy
 		y: #value;
 		regularAxis.
 		
-	diagram interaction
-		popUpText.
-		
-	 diagram open.
+	diagram interaction	popUpText.
+	diagram open.
 	
-model do: [ :value | 
-    | bar label |
-    "We define a label, and add it to the view"
-    label := ROLabel elementOn:( value key joinUsing: Character cr) .
-    diagram rawView add: label.
+    model do: [ :value | 
+        | bar label |
+        "We define a label, and add it to the view"
+        label := ROLabel elementOn:( value key joinUsing: Character cr) .
+        diagram rawView add: label.
 
-    "We get the bar, the gray element that grows up"
-    bar := diagram rawView elementFromModel: value.
+        "We get the bar, the gray element that grows up"
+        bar := diagram rawView elementFromModel: value.
 
-    "Move the label below its corresponding bar"
-    ROConstraint move: label below: bar ].
+        "Move the label below its corresponding bar"
+        ROConstraint move: label below: bar ].
 ]]]
 
- ""Nota bene:"" you can get an image similar to this one:
+ ""Nota bene:"" you can get an image similar to the Figure *smallStep*.
  
-+Accuracies with the small step size>file://pictures/7.png|width=50+
++Accuracies with the small step size>file://pictures/7.png|width=50|label=smallStep+
 
- The problem is that step size, that I used, was so small, that every method returned almost the same result.
+The problem is that step size, that I used, was so small, that every method returned almost the same result.
   The graph of accuracies with the larger step looks different :
 
 +Accuracies with the larger step size>file://pictures/8Accuracies-in-Graph-ET.png|width=50+
  
-You can experiment a lot with Graph-ET. For example, on the *Accuracies with the larger step size* you can see that the biggest deviation comes from the Euler and Backward Euler methods, which are the first order methods. And the family of Adam-Moulton multistep methods ( Trapezoid, AM3, AM4) returns the best results.
+You can experiment a lot with Graph-ET. For example, on the *Accuracies with the larger step size* you can see that the biggest deviation comes from the Euler and Backward Euler methods, which are the first order methods. And the family of Adam-Moulton multistep methods (Trapezoid, AM3, AM4) returns the best results.
 
 
-Now a question arises. How the deviation varies depending on the step size?
-
-
-And it is one of the most interesting things.
+!!!A new question
+Now we ask ourselves an important question: How does the deviation vary depending on the step size?
 
 On the image the darker colors  correspond to the smaller steps. We can see that the colors are distributed differently. It depends on how each method's result is close to the actual point. For example, the Euler and BackwardEuler methods are approaching to the point from one side, so the colors change smoothly.
 
