@@ -194,27 +194,27 @@ SomeBenchmark>>benchFactorial
 
 But not all benchmarks look so simple. For example in the context of ODE project:
 
-WRITE IT HERE!!!
+WRITE IT HERE as Pharo code !!!
 
 +Midpoint test and benchmark>file://pictures/Midpoint-benchmark.png|width=100+
 
 As you can see on this image benchmark is very similar to a test. So if you are writing tests for your code, adding some benchmarks will be a piece of cake.
 
 
-!!!Runing benchmarks
+!!!Running benchmarks
 
 One of the most important reasons why we write the benchmark is the result of it's execution.
-To see this result in workspace you should execute "SomeBenchmark run" or better "SomeBenchmark run:" and pass a number of iterations.
+To see this result in workspace you should execute ==SomeBenchmark run== or better ==SomeBenchmark run: iterationNumber== and pass a number of iterations.
 
-+Runing benchmarks 1>file://pictures/Runing-benchmark1.png|width=70+
++Running benchmarks 1>file://pictures/Runing-benchmark1.png|width=70+
 
 Same as the tests, benchmarks have ==setUp== method, which can be used to initialise all the shared data for benchmarks. In my case it looked like that:
 
-+Runing benchmarks 2>file://pictures/Runing-benchmark2.png|width=80+
++Running benchmarks 2>file://pictures/Runing-benchmark2.png|width=80+
 
-And then our benchmark was DRYed to this:
+And then our benchmark was DRYed to this: (SD what does it mean DRYed?)
 
-+Runing benchmarks 3>file://pictures/Runing-benchmark3.png|width=80+
++Running benchmarks 3>file://pictures/Runing-benchmark3.png|width=80+
 
 
 ""Nota bene"": Don't forget to write ==super setUp== in the ==setUp== methods of subclasses.
@@ -222,9 +222,7 @@ And then our benchmark was DRYed to this:
 
 
 !!!Metacello configuration
-
-As for me it is hard to figure out what to write in metacello configuration, so if your project has it and you agree with me, I propose to write some lines of code so metacello will download SMark for you.
-In order to do that go to the configuration of your project (e.g. ConfigurationOfSciSmalltalk) open last baseline and add:
+You can extend your configuration to automatically load SMark. To do that go to the configuration of your project (e.g. ==ConfigurationOfSciSmalltalk==) open last baseline and add:
 
 [[[
 spec for: #common do: [
@@ -244,9 +242,9 @@ spec for: #common do: [
 
 If you have SomeBenchmark's subclasses of benchmarks and want to run them all with one message, then add the next method to the class side of your SomeBenchmark.
 [[[
-runAll:  numOfIterations
+SomeBenchmark class>>runAll:  numOfIterations
   ^ (self withAllSubclasses collect:[ :each |
-     each run: numOfIterations ]) joinUsing: Character cr
+        each run: numOfIterations ]) joinUsing: Character cr
 ]]]
 
 +Improving SMark>file://pictures/Improving-Smark1.png|width=80+
@@ -254,18 +252,16 @@ runAll:  numOfIterations
 
 !!Quality criteria for Math-ODE
 
-Everyone knows about unit testing. We are writing the tests in order to check, that our methods work as we expect them to. This approach saves us money and time when something breaks. In this case we know exactly where to look for a mistake.
-
-When it comes to numerical methods it's not enough to have correctly working methods. When you use numerical calculations another important criterion is the time of execution. To test the code for execution time we have written benchmarks for it . It turns out, that these benchmarks have the same idea as the tests, but instead of returning the value of 'true' or 'false', they return the time of method execution. SMark, the framework for writing benchmarks also has a design similar to SUnit. 
-
-Obviously, all methods give us a different execution time, and according to our previous quality criteria the best method is the one that is passing all unit tests and has the fastest execution time. In fact we forgot about the accuracy, because all the numerical method's solutions differ from the actual value that can be found by solving equation analytically.
-
+Once we have defined all the benchmarks, we can compare them. Obviously, all methods give us a different execution time, and according to our previous quality criteria the best method is the one that is passing all unit tests and has the fastest execution time. In fact we forgot about the accuracy, because all the numerical method's solutions differ from the actual value that can be found by solving equation analytically.
 
 
 !!!Accuracy
 
-For Math-ODE project was written new package Math-Accuracy-ODE.
-There we have methods, which compute the accuracies:
+For Math-ODE project, we wrote new package Math-Accuracy-ODE. There we have methods which compute the accuracies:
+
+[[[
+Put some code here too
+]]]
 
 +Accuracy for AB2 method>file://pictures/Accuracy-for-AB2-method.png|width=80+
 
@@ -276,7 +272,7 @@ There we have methods, which compute the accuracies:
 and methods for running them:
 
 [[[
-run
+WHATCLASS>>run
 	| instance checkSelectors |
 	instance := self new.
 	checkSelectors := self selectors select: [ :each | each beginsWith: 'check' ].
@@ -286,7 +282,7 @@ run
 		
 We can get the results in XML.	
 [[[
-runToXML
+WHATCLASS>>runToXML
 	| writer |
 	writer := XMLWriter new.
 	writer
@@ -298,21 +294,15 @@ runToXML
 
 	^ writer ]]]
 
- So we have again something similar to SUnit, but this time it was calculating the deviation of a numerical method from the actual value. 
- 
-So using these automated tests helps you to stay updated with a quality changes of your code.
-
-You will notice when the time of execution becomes twice as big because of an architecture refactoring, or the method's accuracy decreases dramatically because of performance optimizations.
+We have again something similar to SUnit, but this time calculating the deviation of a numerical method from the actual value. So using these automated tests helps you to stay updated with a quality changes of your code. You will spot when the time of execution becomes twice as big because of an architecture refactoring, or the method's accuracy decreases dramatically because of performance optimizations.
 
 
 !! Graph-ET 
-
-
-Some data you may want to see as statistics on server, but often you want to have live visual feedback on your computer to do what you need in the best way. In that case you can use Graph-ET. It is a GSoC project written by Daniel Aviv Notario. You can use that framework to draw the graphs, to experiment with size, position, - everything that you have on your image and what you would like to add.
+Depending on your data, you may want to have live visual feedback to understand the results. In such a case you can use Graph-ET. It is a graph charting library written by Daniel Aviv Notario. You can use that Graph-ET  to draw the graphs, experiment with size, position, - everything that you have on your image and what you would like to add.
 
 !!!Loading Graph-ET and using it
 
-To download Graph-ET in your Pharo image you should write the following code in the workspace: 
+To download Graph-ET in your Pharo image you should execute the following code in the workspace: (SD this does not load the code)
 
 [[[
 MCHttpRepository
@@ -323,11 +313,12 @@ MCHttpRepository
 
 !!!Benchmarks in Graph-ET
 
-We get our benchmarks data as an ordered collection:
+We get our benchmarks data as an ordered collection shown in Figure *grresults*
 
-+Benchmarks results>file://pictures/Benchmarks-results.png|width=80+
 
-but it is'n the suitable for Graph-ET, that's why we transform it to the dictionary:
++Benchmarks results>file://pictures/Benchmarks-results.png|width=80|label=grresults+
+
+However it is not suitable for Graph-ET and this is why we transform it to the dictionary as follows
 
 [[[
 benchmarksData
@@ -338,9 +329,12 @@ benchmarksData
 					subTotal + each total ]) / value size ] )
 ]]]
 
+SD: It is not clear to me that we get a dictionnary!
+
+
 +benchmarksData>file://pictures/benchmarksData.png|width=80|label=benchmarksData+
 
-Then the method which will build the diagram has the following form: 
+Then the method which draws the diagram has the following definition: 
 [[[
 graphBenchmarks
 	| diagram model | 
@@ -358,28 +352,26 @@ graphBenchmarks
 		
 	 diagram open.
 		
-model do: [ :value | 
-    | bar label |
-    "We define a label, and add it to the view"
-    label := ROLabel elementOn:( value key joinUsing: Character cr) .
-    diagram rawView add: label.
+	model do: [ :value | 
+    	  | bar label |
+		      "We define a label, and add it to the view"
+		      label := ROLabel elementOn:( value key joinUsing: Character cr) .
+		      diagram rawView add: label.
 
-    "We get the bar, the gray element that grows up"
-    bar := diagram rawView elementFromModel: value.
+		      "We get the bar, the gray element that grows up"
+			  bar := diagram rawView elementFromModel: value.
 
-    "Move the label below its corresponding bar"
-    ROConstraint move: label below: bar ].
+             "Move the label below its corresponding bar"
+             ROConstraint move: label below: bar ].
 ]]]
-When you did in the Workspace it:
-[[[
-SciSmalltalkMetrificator graphBenchmarks]]]
 
-you will get the next graph:
+When you execute the following expression in a workspace ==SciSmalltalkMetrificator graphBenchmarks==
+you will get the graph shown in Figure *graphBenchmarks* and displayed with Graph-ET as Figure *graphBenchmarksIn*.
 
 +graphBenchmarks result>file://pictures/graphBenchmarks-result.png|width=50|label=graphBenchmarks+
 
 
-+Benchmarks in Graph-ET>file://pictures/4BenchmarksinGraph-ET.png|width=50+
++Benchmarks in Graph-ET>file://pictures/4BenchmarksinGraph-ET.png|width=50|label=graphBenchmarksIn+
 
  
 ""Nota bene:"" in the case that your benchmark results are close to zero, it is necessary to increase the ''problemSize'', which multiplies the results. Make the smallest your results greater or equal to 10.
@@ -395,7 +387,7 @@ As you can see the results are similar, but not identical.
 
 !!!Accuracies in Graph-ET
 
-Despide of benchmarks  we get our accuracies data as a dictionary:
+Despide of benchmarks we get our accuracies data as a dictionary:
 
 +Accuracies results>file://pictures/Accuracies-results.png|width=80+
 
@@ -480,7 +472,6 @@ Those last two bar graphs are very exciting, because we can see live how the num
 
 
 !!!Benchmarks with Accuracies
-
 
 In Graph-ET you even can merge the graphs of the benchmarks and the accuracies.
 
