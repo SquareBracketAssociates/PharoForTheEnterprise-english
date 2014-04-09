@@ -50,9 +50,53 @@ Once Athens will be the default rendering engine in Pharo, the ==drawnOn: aCanav
 
 The code snippet once executed and after some interaction with it should display the same as Figure *renderingOne*.
 
-Now let us study a bit the snippet. It is a simple one. First we set the color of the paint using the message ==setPaint:==. Second we create a shape and draw it. To create a shape we use the message ==createPath:==. Note that a shape can be any objects that understand certain message. 
+Now let us study a bit the snippet. It is a simple one. First we set the color of the paint using the message ==setPaint:==. Second we create a shape and draw it. To create a shape we use the message ==createPath:==. Note that a shape can be any objects that understand certain messages. 
 
-!! Main classes
+In essence you got a first feel of Athens.
+
+!! Main Archicture Players
+
+Before showing in details the API using examples, we will present the main architecture elements of the Athens architecture: ==Surface==, ==Canvas==, ==Shape==, ==Paint== and ==Transformation==.
+
+
+
+
+!! Transformations
+There are two kinds of transformations in Athens: paint transformation (imagine that you want to have a tiled pattern color but rotated) and path transformation (to translate, rotate your shapes).
+
+The canvas offers two messages: ==pathTransform== and ==paintTransform==. Both comply with the 
+==AthensTransform== API whose main messages are: 
+
+- rotateByDegrees: angle
+- rotateByRadians: angle
+- scaleBy: factor
+- scaleX: xfactor Y: yfactor
+- translateBy: aPoint
+- translateX: x Y: y
+- loadIdentity that makes sure that the transformation leads to identity 
+
+
+!! PaintMode
+
+A paint mode controls how the incoming color (source) will be transferred to surface (destination).
+
+To set a paint mode for a canvas, send a message with corresponding mode name to the instance of the ==PaintMode==.
+PaintMode instances are available via the canvas protocol ==paintMode==. 
+
+For example, to set an 'over' paint mode, use following:
+[[[
+	canvas paintMode over.
+]]]
+
+If you want to restore original paint mode after performing drawing operations, which may change it, use ==restoreAfter:== message, i.e. 
+
+[[[
+	canvas paintMode restoreAfter: [
+		.. perform any drawing operations here..
+		].
+]]]
+
+Since different backends may support different set of paint modes, the default implementation in AthensPaintMode forall mode setters is to signal an error. To query a set of available paint modes, supported by backend, use #availableModes message.
 
 
 
