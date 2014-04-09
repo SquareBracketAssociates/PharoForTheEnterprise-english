@@ -61,6 +61,43 @@ Before showing in details the API using examples, we will present the main archi
 
 
 
+
+
+!! Canvas
+
+The Athens canvas is a central object which is used to performs drawings on a surface.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+!!! About accessing the surface
+
+Athens does not allow you to instantiate a canvas directly, instead you should obtain a ready for use instance as an argument in ==drawDuring:== message sent to an Athens ==surface==:
+
+[[[
+surface drawDuring: [:canvas | .... ]
+]]]
+
+In general you do not need to create a surface. The system should and will do it for you. Therefore once Athens will be the default graphics frameworks in Pharo, the surface will be managed automatically for you:  For the ones that really want to understand note that the surface is often a resource allocated and managed by the OS, so it should be protected from session to session (when you save an image or reopen it Pharo has to check and recreate a surface because the OS may allocate a new one in between). All this management will be hidden from you.
+
+
+Once Athens will be integrate
+
+Using canvas outside a #drawDuring: method is highly discouraged. Doing so may lead to unpredicted behavior/data corruption/image crash.
+
+
 !! Transformations
 There are two kinds of transformations in Athens: paint transformation (imagine that you want to have a tiled pattern color but rotated) and path transformation (to translate, rotate your shapes).
 
@@ -74,6 +111,14 @@ The canvas offers two messages: ==pathTransform== and ==paintTransform==. Both c
 - translateBy: aPoint
 - translateX: x Y: y
 - loadIdentity that makes sure that the transformation leads to identity 
+- restoreAfter: aBlock. This method reestablish the transformation once aBlock is executed. 
+
+
+[[[
+ athensCanvas pathTransform restoreAfter: [
+                athensCanvas setPaint: self form.
+                athensCanvas draw ]
+]]]
 
 
 !! PaintMode
@@ -88,7 +133,7 @@ For example, to set an 'over' paint mode, use following:
 	canvas paintMode over.
 ]]]
 
-If you want to restore original paint mode after performing drawing operations, which may change it, use ==restoreAfter:== message, i.e. 
+If you want to restore original paint mode after performing drawing operations, which may change it, use ==restoreAfter:== message, i.e., 
 
 [[[
 	canvas paintMode restoreAfter: [
@@ -96,7 +141,63 @@ If you want to restore original paint mode after performing drawing operations, 
 		].
 ]]]
 
-Since different backends may support different set of paint modes, the default implementation in AthensPaintMode forall mode setters is to signal an error. To query a set of available paint modes, supported by backend, use #availableModes message.
+Since different backends may support different set of paint modes, the default implementation in ==AthensPaintMode== for all mode setters is to signal an error. To query a set of available paint modes, supported by backend, use ==availableModes== message.
+
+
+
+!! Journey in drawing
+
+
+!!!
+
+!!! Reusing shapes
+
+
+!!! Fun with Paint transformations
+
+
+
+
+
+
+
+!!! Displaying forms
+
+Usually to display a form in Cairo you can use the ==Canvas>>fromForm:== but it is slow since it copies contents (form's bits) into new cairo surface. Therefore the trick is to cache the 
+
+Need alex example here
+[[[
+athensCanvas pathTransform restoreAfter: [
+ 			  paint := canvas 
+			  		   	 	cacheAt: self form
+			  		   	    ifAbsentPut: [ self form asAthensPaintOn: canvas ]].
+athensCanvas setPaint: paint.
+athensCanvas setShape: ...
+]]]
+
+
+
+!! Tools
+
+As we saw the AthensSceneView let you see rendered shapes.
+
+[[[
+AthensSceneView new
+   scene: [ :canvas | 
+   ....];
+   openInView
+]]]
+
+
+
+Now if you want to use Athens to design new Morph what should you do especially since you may be worried that you will have to redo everything once we will shift to Athens. 
+Athens offers a wrapper that let you define your draw methods using the Athens API and the wrapper integrates smoothly with Morphic default rendering. This approach is nice since to switch to full Athens you will just have to remove the wrapper and your morph will full work. 
+
+
+
+==AthensWrapMorph==
+
+Here we should give an example.
 
 
 
@@ -107,19 +208,9 @@ Since different backends may support different set of paint modes, the default i
 
 
 
+!! Tutorial 
 
-
-
-
-
-
-
-
-
-
-
-
-
+There is also a tutorial 
 
 
 
