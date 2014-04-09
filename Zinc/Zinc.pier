@@ -1076,6 +1076,49 @@ self assert: (encoder decodeBytes: (encoder encodeString: string)) equals: strin
 encoder encodedByteCountForString: string.
 ]]]
 
+There are no automatic conversions in Zinc. So Zinc is one of the pieces of software that does not assume stupid defaults. You should specify a proper Content-Type header including the charset information. Otherwise Zinc has no chance of knowing what to use and the default NullEncoder will make your string wrong.
+
+Let us look at one example 
+SD: We should add back the o umlaut whe pillar/latex can handle it.
+
+[[[
+ZnServer startDefaultOn: 1701.
+
+ZnClient new
+ url: 'http://localhost:1701/echo';
+ entity: (ZnEntity with: 'An der schonen blauen Donau'); 
+ post.
+	
+ZnClient new
+ url: 'http://localhost:1701/echo';
+ entity: (ZnEntity 
+           with: 'An der schonen blauen Donau' 
+           type: (ZnMimeType textPlain charSet: #'iso-8859-1'; yourself));
+ post;
+ yourself.
+]]]
+
+In the first case, a UTF-8 encoded string is POST-ed and correctly returned (in a UTF-8 encoded response).
+
+In the second case, an ISO-8859-1 encoded string is POST-ed and correctly returned (in a UTF-8 encoded response).
+
+In both cases the decoding was done correctly, using the specified charset (if that is missing, the ZnNullEncoder is used). Now, o is not a perfect test example because its encoding value in Unicode, 246 decimal, U\+00F6 hex, still fits in 1 byte and hence survives null encoding/decoding. That is why the following still works, although it is wrong to drop the charset.
+
+
+[[[
+ZnClient new
+ url: 'http://localhost:1701/echo';
+ entity: (ZnEntity 
+           with: 'An der schonen blauen Donau' 
+           type: (ZnMimeType textPlain clearCharSet; yourself));
+ post;
+ yourself.
+]]]
+
+
+
+
+
 !! Resource protection limits
 
 Internet facing HTTP servers will come under attack by malicious clients. Good security is thus important. The first step is a correct and safe implementation of the HTTP protocol. One way a server protects itself is by implementing some resource limits.
