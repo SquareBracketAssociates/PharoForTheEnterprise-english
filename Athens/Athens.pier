@@ -12,22 +12,47 @@ It also sets the foundation for multiple backends (Cairo, openGL).
 Before presenting Athens we want to explain briefly why we need such a new frameworks. First 
 the rendering quality of the old approach is slowly damaging us. There is a need for a system to render vector graphics and not pixels. Second the current implementation suffers from an old design. There are too many canvases and they are a bit bloated. 
 
-The old Canvas (the pre-Athens canvas)
--  methodDict size returns 88,
+The old Canvas (the pre-Athens canvas) has the following drawbacks:
+-  it defines too many methods (methodDict size returns 88),
 -  its coordinate system is fixed, and 
--  in many places are assuming that a canvas has direct access to pixels.
+-  in many places, it assumes that a canvas has direct access to pixels.
 
 
-The AthensCanvas has the following properties
--  methodDict size returns 21,
-- has a free transformation of coordinate system, and 
+The AthensCanvas solves these drawbacks and has the following properties
+- it defines a limited set of well designed messages (methodDict size returns 21),
+- it has a free transformation of coordinate systems, and 
 - in addition there is no assumptions about output media.
 
-The goal of Athens is to define a core abstract API for Canvas and other elements such as Paint, Shape, Surface and Transformations. Then such APIs are specified for different backends. Currently Athens offers thetwo back-ends: Balloon and Cairo back-end. The Ballon back-end is the old default graphics back-end. What is important is that we do not want to get specific back-end specificities to creep into the API because we want to be able to apply Pharo graphics to new back-end fast.
+The goal of Athens is to define a core abstract API for a canvas and other elements such as the medium, paints, shapes, and transformations. Then such APIs are declined for different backends. Currently Athens offers the two back-ends: Balloon and Cairo. The Ballon back-end is the old default graphics back-end. What is important is that we do not want to get back-end specificities to creep into the API and the core because we want to be able to apply Pharo graphics to new back-end fast.
 
-!! A first simple example
+!! A couple of exciting examples
+
 Before going into the details, let us start with a first example to give you a feel of Athens. 
-At the of this writing Athens is fully working in Pharo but it is not replacing the default morphic rendering. Therefore Athens proposes a little tools to see your drawings and be able to move them and zoom in/out them. 
+First fun thing first, execute ==AthensFlakeDemo new openInWindow== into a workspace and you should get the Flake demo showing you a nice recursive  and animated flake shown in Figure *flake*.
+
+
++AthensFlakeDemo new openInWindow>file://figures/flake.pdf|width=80|label=flake+
+
+In the future we expect Athens to go faster because the current implementation is still doing extra buffer copies between the new and old infrastructure. 
+
+
+
+Execute ==AthensSurfaceExample newdrawFontMetrics== into a workspace and you should get 
+fonts displayed as Figure *font*. What is nice in this demo is that if you pay attention is it displays all the distances characterizing a font such as the ascent, descent and others. You can see that you can fully zoom in it. We can of course rotate freely them too even if the example does not implement this.
+
++AthensSurfaceExample newdrawFontMetrics>file://figures/FontRendering.pdf|width=80|label=font+
+
+
+
+
+
+
+At the time of this writing Athens is fully working in Pharo but it is not replacing the default morphic rendering, because a new text editor is missing. Therefore Athens proposes little tools to see your drawings and be able to move them and zoom in/out them. 
+
+
+
+
++A first zoomable shape>file://figures/RenderingOne.pdf|width=50|label=renderingOne+
 
 [[[
 AthensSceneView new
@@ -44,7 +69,8 @@ AthensSceneView new
     openInWindow
 ]]]
 
-+A first zoomable shape>file://figures/RenderingOne.pdf|width=50|label=renderingOne+
+Figure *renderingOne* shows the results we should obtain when you execute the code snippet.
+In this example you see that a shape can be any segmented path. 
 
 Once Athens will be the default rendering engine in Pharo, the ==drawnOn: aCanavs== methods will just use the same logic as the block of the example. Therefore there will be no change for you. 
 
@@ -59,7 +85,12 @@ In essence you got a first feel of Athens.
 Before showing in details the API using examples, we will present the main architecture elements of the Athens architecture: ==Surface==, ==Canvas==, ==Shape==, ==Paint== and ==Transformation==.
 
 
+!! Surface
 
+ ==Surface== is an abstract class which represents an output media and defines backend which you will be using.
+
+
+@@note Think about a surface about as a sheet of paper
 
 
 
