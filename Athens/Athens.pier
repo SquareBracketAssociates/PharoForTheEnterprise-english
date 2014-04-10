@@ -93,22 +93,50 @@ Before showing in details the API using examples, we will present the main archi
 
 !! Surface
 
- ==Surface== is an abstract class which represents an output media and defines backend which you will be using.
-
+ ==Surface== is an abstract class which represents an output media and subclasses define different backends.
 
 @@note Think about a surface about as a sheet of paper
 
 
+In addition a surface acts as a factory for creating paints, paths, canvas and other involved objects. It provides access to its canvas. Note that surfaces are always backend-specific.
+
+- ==createRectanglePath:==
+- ==createRectanglePath: aRectangle==
+- ==createRadialGradient: colorRamp center: aCenter radius: aRadius==
+- ==createRadialGradient: colorRamp center: aCenter radius: aRadius focalPoint: fp==
+- ==createSolidColorPaint: aColor ==
+- ==createStrokePaintFor: aPaint==
+
+
+In general you should always think twice when you access the surface (see below in canvas session).
+
 
 !! Canvas
 
-The Athens canvas is a central object which is used to performs drawings on a surface.
+The Athens canvas is a central object which is used to perform drawings on a surface.
+A canvas is associated to a surface. Canvas implements the following drawing operations:
+
+@@note Think about a canvas as a pen
+
+- ==draw== fills the currently selected shape with currently selected paint. ==drawShape: anObject== is a convenience method, which sets the current shape to anObject and then fills it
+with currently selected paint.
+
+- ==draw: anObject==  draws anObject on receiver, the object should understand ==drawOnAthensCanvas: message==
+- 
 
 
+- ==drawString: aString from: start to: end==
+- ==drawString: aString==
+- ==drawShape: anObject==
+- ==setPaint:==
+- ==setShape:==
+- ==paintMode==
+
+The canvas maintains current coordinate system transformations:
 
 
-
-
+- ==pathTransform==
+- ==paintTransform==
 
 
 
@@ -200,16 +228,24 @@ Since different backends may support different set of paint modes, the default i
 
 !!! Displaying forms
 
-Usually to display a form in Cairo you can use the ==Canvas>>fromForm:== but it is slow since it copies contents (form's bits) into new cairo surface. Therefore the trick is to cache the 
+Usually to display a form in Cairo you can use the ==Canvas>>fromForm:== but it is slow since it copies contents (form's bits) into new cairo surface. Therefore the trick is to cache the form in the paint. Therefore instead of writing 
 
-Need alex example here
 [[[
 athensCanvas pathTransform restoreAfter: [
- 			  paint := canvas 
-			  		   	 	cacheAt: self form
-			  		   	    ifAbsentPut: [ self form asAthensPaintOn: canvas ]].
-athensCanvas setPaint: paint.
-athensCanvas setShape: ...
+             athensCanvas setPaint: aForm.
+             athensCanvas draw ]
+]]]
+
+use the following
+
+
+[[[
+  athensCanvas pathTransform restoreAfter: [
+	paint := ( canvas cacheAt: aForm
+	 			 ifAbsentPut: [ (aForm asAthensPaintOn: canvas) ]).
+	athensCanvas setPaint: paint.
+	athensCanvas setShape: paint
+       athensCanvas draw ]
 ]]]
 
 
