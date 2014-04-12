@@ -113,7 +113,7 @@ QuadraticEquation>>solveRoots: aDiscriminant
 We first create a Set, which will contain the roots of the equation. We chose a Set for two reasons. First, in mathematic terms the roots of an equation form a set. Second, sets, in Smalltalk, do not allow for duplicate elements; therefore if our quadratic equations turns out to have similar roots, only one element will be added.
 That’s it. Categorize all these methods under a calculations protocol and we are ready to check it:
 
-First example: Let us try to find the roots of -3x^2+2x+2=0
+First example: Let us try to find the roots of ==-3x^2+2x+2=0==
 
 Open a Workspace and type:
 [[[
@@ -125,7 +125,7 @@ anEquation calculateRoots.
 
 Now Print it and you will get:  ==a Set(-0.5485837703548636 1.2152504370215302)== Which are the roots of our equation. 
 
-Now let’s try one that has no real solution like: 3x^2+2x+2=0
+Now let’s try one that has no real solution like: ==3x^2+2x+2=0==
 [[[
 | anEquation |
 anEquation := QuadraticEquation new.
@@ -169,7 +169,7 @@ Here is a list of resources on the net
 Written by Ignacio Sniechowski
 
 !!! Description
-While you are researching on how to solved the proposed Katas, let's explore the notion of reusable classes -a very important notion in Pharo. 
+While you are researching on how to solved the proposed Katas, let us explore the notion of reusable classes -a very important notion in Pharo. 
 
 So, define a Class that calculates Phi, or the Golden Ratio. (see: *http://en.wikipedia.org/wiki/Golden_ratio* for more information).
 
@@ -222,6 +222,94 @@ Now Print it and you will get:
 ==a Set(1.618033988749895)==
 
 Which is the solution to the Golden ratio equation.
+
+!!Problem \#3:  Present Value of a stream of cash flows
+Written by Ignacio Sniechowski
+
+Create the necessary classes to calculate the Present Value of a certain, and fixed, cashflow over n number of years given a known discount rate. (see: *http://en.wikipedia.org/wiki/Present_value* for more information).
+The most common used formula used to calculate the PV of a lump sum is that of Figure *pv_formula*
++The formula to calculate the Present Value>file://figures/pv_formula.jpg|width=40|label=pv_formula+
+Where the Present Value (PV) is the sum of the future cash flows (FV) divided by (1 + discount rate (i) ) raised to t; the period.
+
+!!! Solution \#3
+We start by defining the instance variables that we should probably use: 
+-cashFlow: which will be the fixed amount of money to receive each year.
+-years: the number of years we will be receiving this money.
+-discountRate: a reference interest rate to be used as the cost of money. We asume we will enter this rate in percentage form i.e 10 (will be 10%).
+
+
+So let’s create the a class:
+[[[
+Object subclass: #PresentValue
+	instanceVariableNames: 'cashFlow years discountRate'
+	classVariableNames: ''
+	category: '99ST-Problems'
+]]]
+
+So follwing we add the accessors:
+
+
+[[[
+PresentValue>>setCashFlow: aCF discountRate: aDR years: aP
+	cashFlow := aCF.
+	discountRate := aDR.
+	years := aP
+]]]
+
+
+We add this accessor this way -setting all three instance variables in one method- as we want to calculate a given PV. Hence, it would be tedious to enter each argument with its method. However, we must provide getters for each of the instance variables. So create the three methods for accessing those three instance variables:
+
+[[[
+PresentValue>>cashFlow
+	^ cashFlow
+]]]
+
+[[[
+PresentValue>>discountRate
+	^ discountRate
+]]]
+
+[[[
+PresentValue>>years
+	^ years
+]]]
+
+Categorize all these four methods under the accessing protocol.
+
+Now add another protocol called calculations and enter the following method:
+
+[[[
+PresentValue>>calculatePV
+	| flows decimalInterest |
+	decimalInterest := discountRate / 100.0.
+	flows := OrderedCollection new.
+	[ years = 0 ] whileFalse: [ 
+			flows add: cashFlow / ((1 + decimalInterest) raisedTo: years).
+			years := years - 1 
+								].
+				
+	^ flows inject: 0 into: [ :sum :each | sum + each ]
+]]]
+
+The first thing we do is translate the discount rate from percentage points into decimal form. To do that we use a temporal variable called ==decimalInterest== and set it to ==discountRate / 100.0==.
+After that we create an ==OrderedCollection== in this case, the order IS important. It comes clear if you see the formula in detail. We give our ==OrderedCollection== the temporal name ==flows==.
+Then we add a conditional loop. While the number of years is not 0, we calculate the Present Value of each cash flow, using the formula. Then decrease ==years== which in our conditional loop acts as a counter by 1.
+The last thing we do is to make our method to return the sum of all the values of our ==OrderedCollection==.
+
+That’s it. Categorize this method under a calculations protocol and we are ready to check it:
+
+Example:
+Open a ==Workspace== and type:
+[[[
+| aCashFlow |
+aCashFlow := PresentValue new.
+aCashFlow setCashFlow: 100 discountRate: 10  years: 5.
+aCashFlow calculatePV.
+]]]
+
+Now Print it and you will get: == 379.07867694084473==
+
+
 
 
 % Local Variables:
