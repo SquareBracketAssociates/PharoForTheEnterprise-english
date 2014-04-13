@@ -113,7 +113,7 @@ QuadraticEquation>>solveRoots: aDiscriminant
 We first create a Set, which will contain the roots of the equation. We chose a Set for two reasons. First, in mathematic terms the roots of an equation form a set. Second, sets, in Smalltalk, do not allow for duplicate elements; therefore if our quadratic equations turns out to have similar roots, only one element will be added.
 That’s it. Categorize all these methods under a calculations protocol and we are ready to check it:
 
-First example: Let us try to find the roots of ==-3x^2+2x+2=0==
+First example: Let us try to find the roots of ==-3x^2\+2x\+2=0==
 
 Open a Workspace and type:
 [[[
@@ -125,7 +125,7 @@ anEquation calculateRoots.
 
 Now Print it and you will get:  ==a Set(-0.5485837703548636 1.2152504370215302)== Which are the roots of our equation. 
 
-Now let’s try one that has no real solution like: ==3x^2+2x+2=0==
+Now let’s try one that has no real solution like: ==3x^2\+2x\+2=0==
 [[[
 | anEquation |
 anEquation := QuadraticEquation new.
@@ -229,7 +229,7 @@ Written by Ignacio Sniechowski
 Create the necessary classes to calculate the Present Value of a certain, and fixed, cashflow over n number of years given a known discount rate. (see: *http://en.wikipedia.org/wiki/Present_value* for more information).
 The most common used formula used to calculate the PV of a lump sum is that of Figure *pv_formula*
 +The formula to calculate the Present Value>file://figures/pv_formula.jpg|width=40|label=pv_formula+
-Where the Present Value (PV) is the sum of the future cash flows (FV) divided by (1 + discount rate (i) ) raised to t; the period.
+Where the Present Value (PV) is the sum of the future cash flows (FV) divided by (1 \+ discount rate (i) ) raised to t; the period.
 
 !!! Solution \#3
 We start by defining the instance variables that we should probably use: 

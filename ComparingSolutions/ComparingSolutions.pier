@@ -435,9 +435,9 @@ WAHTClass>>graphAccuracy
 The problem is that step size, that I used, was so small, that every method returned almost the same result.
   The graph of accuracies with the larger step looks different :
 
-+Accuracies with the larger step size>file://pictures/8Accuracies-in-Graph-ET.png|width=50+
++Accuracies with the larger step size>file://pictures/8Accuracies-in-Graph-ET.png|width=50|label=8Accuracies-in-Graph-ET+
  
-You can experiment a lot with Graph-ET. For example, on the *Accuracies with the larger step size* you can see that the biggest deviation comes from the Euler and Backward Euler methods, which are the first order methods. And the family of Adam-Moulton multistep methods (Trapezoid, AM3, AM4) returns the best results.
+You can experiment a lot with Graph-ET. For example, in Figure *8Accuracies-in-Graph-ET* you can see that the biggest deviation comes from the Euler and Backward Euler methods, which are the first order methods. And the family of Adam-Moulton multistep methods (Trapezoid, AM3, AM4) returns the best results.
 
 
 !!!A new question
