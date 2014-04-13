@@ -122,8 +122,6 @@ A canvas is associated to a surface. Canvas implements the following drawing ope
 with currently selected paint.
 
 - ==draw: anObject==  draws anObject on receiver, the object should understand ==drawOnAthensCanvas: message==
-- 
-
 
 - ==drawString: aString from: start to: end==
 - ==drawString: aString==
@@ -134,10 +132,8 @@ with currently selected paint.
 
 The canvas maintains current coordinate system transformations:
 
-
-- ==pathTransform==
-- ==paintTransform==
-
+- ==pathTransform== to transform shapes and 
+- ==paintTransform== to transform paint. 
 
 
 
@@ -147,7 +143,8 @@ The canvas maintains current coordinate system transformations:
 
 
 
-!!! About accessing the surface
+
+!!! About accessing the Canvas
 
 Athens does not allow you to instantiate a canvas directly, instead you should obtain a ready for use instance as an argument in ==drawDuring:== message sent to an Athens ==surface==:
 
@@ -157,32 +154,53 @@ surface drawDuring: [:canvas | .... ]
 
 In general you do not need to create a surface. The system should and will do it for you. Therefore once Athens will be the default graphics frameworks in Pharo, the surface will be managed automatically for you:  For the ones that really want to understand note that the surface is often a resource allocated and managed by the OS, so it should be protected from session to session (when you save an image or reopen it Pharo has to check and recreate a surface because the OS may allocate a new one in between). All this management will be hidden from you.
 
+Using canvas outside a ==drawDuring:== method is highly discouraged. Doing so may lead to unpredicted behavior/data corruption/image crash.
 
-Once Athens will be integrate
+!! Paint
+A paint is used to fill a shape. It can be composed of 
 
-Using canvas outside a #drawDuring: method is highly discouraged. Doing so may lead to unpredicted behavior/data corruption/image crash.
+- solid color
+- gradients
+- stroke paints
+- bitmap (form) paints
+
+In addition you can define your own paint. 
+
+[[[ 
+give an example
+]]]
+
+!!Shapes
+
+A shape defines an enclosing region of drawing operation. This region can be a 
+rectangle or paths. 
+
+A path delineates a contour consisting of a sequence of connected segments. Segments
+are line, quadric Bezier curve, cubic Bezier curve, circular arcs, and elliptical arcs. In addition you can define your own shape.
+
+
 
 
 !! Transformations
 There are two kinds of transformations in Athens: paint transformation (imagine that you want to have a tiled pattern color but rotated) and path transformation (to translate, rotate your shapes).
 
-The canvas offers two messages: ==pathTransform== and ==paintTransform==. Both comply with the 
-==AthensTransform== API whose main messages are: 
+The canvas offers two messages: ==pathTransform== and ==paintTransform==. Both comply with the ==AthensTransform== API whose main messages which are: 
 
-- rotateByDegrees: angle
-- rotateByRadians: angle
-- scaleBy: factor
-- scaleX: xfactor Y: yfactor
-- translateBy: aPoint
-- translateX: x Y: y
-- loadIdentity that makes sure that the transformation leads to identity 
-- restoreAfter: aBlock. This method reestablish the transformation once aBlock is executed. 
+- ==rotateByDegrees: angle==
+- ==rotateByRadians: angle==
+- ==scaleBy: factor==
+- ==scaleX: xfactor Y: yfactor==
+- ==translateBy: aPoint==
+- ==translateX: x Y: y==
+- ==loadIdentity== that makes sure that the transformation leads to identity 
+- ==restoreAfter:== aBlock. This method reestablishes the transformation once aBlock is executed. 
+
 
 
 [[[
- athensCanvas pathTransform restoreAfter: [
-                athensCanvas setPaint: self form.
-                athensCanvas draw ]
+
+give an example
+
 ]]]
 
 
@@ -213,7 +231,73 @@ Since different backends may support different set of paint modes, the default i
 !! Journey in drawing
 
 
-!!!
+!!! Ellispsis
+
+[[[
+AthensSceneView new
+scene: [ :can |
+		| path |
+		path := can
+				createPath: [ :builder | 
+					builder
+						absolute;
+						moveTo: 0 @ 0.5;
+						ccwArcTo: 0.5 @ 0.0 angle: 90 degreesToRadians;
+						ccwArcTo: 0.0 @ -0.5 angle: 90 degreesToRadians;
+						ccwArcTo: -0.5 @ 0.0 angle: 90 degreesToRadians;
+						ccwArcTo: 0 @ 0.5 angle: 90 degreesToRadians ].
+					
+		can pathTransform
+			restoreAfter: [ 
+			can pathTransform scaleBy: 200 .
+			can 
+				setPaint: Color red ;
+				drawShape:  path.
+			can drawShape:  path ]			
+		] ;
+openInWindow
+]]]
+
+
+[[[
+AthensSceneView new
+scene: [ :can |
+		| path |
+		path := can
+				createPath: [ :builder | 
+					builder
+						absolute;
+						moveTo: 0 @ 0.5;
+						ccwArcTo: 0.5 @ 0.0 angle: 90 degreesToRadians;
+						ccwArcTo: 0.0 @ -0.5 angle: 90 degreesToRadians;
+						ccwArcTo: -0.5 @ 0.0 angle: 90 degreesToRadians;
+						ccwArcTo: 0 @ 0.5 angle: 90 degreesToRadians ].
+					
+		can pathTransform
+			restoreAfter: [ 
+			can pathTransform scaleBy: 200 .
+			can 
+				setPaint: Color red ;
+				drawShape:  path.
+ 			"(athensCanvas setStrokePaint: strokePaint) 
+				width: (self strokeWidth / self scale) asFloat."
+			can drawShape:  path.].
+		can pathTransform
+			restoreAfter: [ 
+			can pathTransform scaleBy: 190 .
+			can 
+				setPaint: Color blue ;
+				drawShape:  path.
+ 			"(athensCanvas setStrokePaint: strokePaint) 
+				width: (self strokeWidth / self scale) asFloat."
+			can drawShape:  path 
+			
+			]			
+		] ;
+openInWindow
+]]]
+
+
 
 !!! Reusing shapes
 
@@ -233,6 +317,7 @@ Usually to display a form in Cairo you can use the ==Canvas>>fromForm:== but it 
 [[[
 athensCanvas pathTransform restoreAfter: [
              athensCanvas setPaint: aForm.
+		 	athensCanvas setShape: aRect.
              athensCanvas draw ]
 ]]]
 
@@ -244,7 +329,7 @@ use the following
 	paint := ( canvas cacheAt: aForm
 	 			 ifAbsentPut: [ (aForm asAthensPaintOn: canvas) ]).
 	athensCanvas setPaint: paint.
-	athensCanvas setShape: paint
+	athensCanvas setShape: aRect.
        athensCanvas draw ]
 ]]]
 
