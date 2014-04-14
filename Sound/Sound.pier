@@ -1,9 +1,7 @@
 !An Introduction To Sound
 
-In this chapter we will present an uncommon facet of Pharo: sound synthesis.
-
-
-Dès qu'on a besoin de sonoriser un peu notre tout nouveau programme on pense soit à du mp3 pour la musique ou des sons digitalisés pour les bruitages. Dans Pharo on dispose d'outils et bibliothèques permettant créer de toute pièce du son synthétisé pour nos productions. Nous allons vous montrer comment on fait cela en quelques lignes de code seulement.
+In this chapter we will present an uncommon facet of Pharo: sound synthesis. Pharo offers a nice library to create and play various sounds.
+As soon as we need to put some sound in an application one think either to mp3 or sampled sounds. In Pharo we get several tools and libraries to create from scratch synthetised sounds as well as to play samples. We will show how we can do that with a couple of lines of code. 
 
 
 !! Getting Started
@@ -72,7 +70,7 @@ SoundPlayer stopPlayerProcess.
 SoundPlayer startUp
 ]]]
 
-!!Bases de la synthèse FM par l'exemple
+!!Basis of FM Synthesis
 
 Maintenant que nous nous sommes assurés que le son était fonctionnel,  nous allons découvrir comment celui-ci est généré. Prenons le code de la méthode qui définit l'instrument ==organ1==:
 
@@ -149,7 +147,7 @@ Finalement, la méthode retourne le son avec comme paramètre la note (ici expri
 |!|B||30.8||62.0||123||247||494||988||1975||3951||7902
 
 
-!!Comment faire pour jouer notre propre son ?
+!!How to play your own sound?
 
 Nous allons vous montrer comment nous allons créer notre propre son. 
 Commençons par jouer un ==LA== de la manière suivante:
@@ -185,7 +183,7 @@ Le ==SOL#==  par exemple s'écrit
 
 @@comment encore une fois passer une chaine ou un nombre est horrible. cela serait bien de faire le menage dans ce code. - XM: Tu verrais quoi à la place ? deux interfaces differentes et commune qui accepte les deux. setPitchForFrequence: aNumber setPitchForNote: setPitch
 
-!!Jouer plusieurs sons en séquence
+!! Playing several sounds in sequence
 
 Jouer un son c'est bien, mais en jouer deux c'est mieux. Pour cela nous avons à notre disposition une classe nommée ==SequentialSound==. Comme son nom l'indique nous allons pouvoir jouer les sons de manière séquentielle.
 
@@ -242,7 +240,7 @@ seq play.
 
 La séquence est maintenant plus agréable à écouter.
 
-!!Jouer plusieurs sons simultanément
+!!Playing several sounds simultaneously 
 
 Jouer des sons en séquence c'est bien mais pas encore suffisant pour donner une âme à notre production. Pour cela nous allons utiliser La classe ==MixedSound==. Elle va littéralement mixer plusieurs sons en même temps.
 
@@ -360,7 +358,7 @@ Normalement nous devrions entendre 4 sons joués à la suite, or il n'y en a que
 
 Remplaçons la ligne ==seq := SequentialSound== par ==seq := QueueSound== et écoutons de nouveau notre exemple. Nous entendons bien nos 4 sons. Le tour est joué !
 
-!!Les enveloppes
+!!Envelops
 
 Nous avons introduit une première enveloppe qui agit sur le volume d'un son. Il y en a une autre qui change la note ou plutôt sa fréquence pendant qu'elle est jouée, c'est ce qu'on appelle l'attaque de la note, le pitch en anglais.
 De la même manière que pour le volume nous allons définir un ensemble de points qui indiqueront le moment du changement de la fréquence du son. Plus la valeur est haute, plus la note sera haute. Si on indique un chiffre négatif, la note descendra en dessous de la note de départ. Nous définissons donc une enveloppe mais cette fois-ci une enveloppe d'attaque en utilisant la classe ==PitchEnvelope==.
@@ -436,7 +434,7 @@ Les enveloppes viennent compléter nos connaissances sur la génération du son.
 
 Nous avons entre nos mains pratiquement tous les outils pour écrire notre première mélodie, que disons-nous, notre première super production !
 
-!!Jouer une mélodie
+!!Playing a melody
 
 A quoi peut bien ressembler de la musique produite dans Pharo ? Evaluons la ligne de code suivante dans un workspace et écoutons.
 
@@ -462,7 +460,7 @@ notes := #((a3 200 150) (a4 100 150) (g3 150 150))
 
 Nous allons écrire notre premier morceau avec un air qui devrait rappeler des bons souvenirs à tout ceux qui aiment le début de l'air des jeux vidéos. Nous allons définir la mélodie d'introduction du jeu pacman.
 
-!!! Définissons un nouvel élément
+!!! New element definition
 
 Commençons par définir un nouvel instrument. Afin de ne pas compliquer notre exercice, nous allons utiliser la classe ==FMSound== dans laquelle nous allons définir quelques nouvelles méthodes. Notez que pour être plus propre et modulaire, nous devrions définir notre propre package et classes. 
 
@@ -559,7 +557,7 @@ Si votre mélodie utilise des notes à fréquence basse, le volume de celle ci s
 
 Voila il ne reste plus qu'à exécuter la mélodie: ==FMSound pacman play==.
 
-!!Jouer un sample 
+!!Playing a sample
 
 La sonorisation d'une production ne passe pas essentiellement par de la synthèse sonore, parfois il est nécessaire de faire appel à des sons digitalisés reproduisant des bruitages, des voix ou des musiques entières. Nous allons vous montrer comment jouer un sample à partir d'un fichier ou directement depuis la mémoire.
 
@@ -613,7 +611,7 @@ spl2 play.
 
 @@todo estil possible de le jouer a la vitesse ou il a ete enregistre? il me semble que oui avec originalSamplingRate. Il faut que je fasse le test sur un sample plus significatif.
 
-!!Un dernier petit effort
+!!A last ittle effort 
 
 Nous allons clore cet article sur une dernière méthode permettant de jouer plusieurs sons digitalisés en séquence.
 
@@ -673,15 +671,8 @@ Nous vous avons montré une petite partie des possibilités que Pharo offre pour
 
 
 
-+Inspecting and interacting with a Dice>file://figures/DiceNoDetail.pdf|width=50|label=figDiceNoDetail+
 
  
-
-!! Conclusion
-
-This chapter illustrates how to create a small DSL based on the definition of some domain classes (here ==Dice== and  
- ==DiceHandle==) and the extension of core class such ==Integer==.
-It shows that in Pharo we can use usual operators to express natural models.
 
 
 
