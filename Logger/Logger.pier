@@ -293,7 +293,16 @@ Log dispatcher startAllLoggers.
 
 
 
+!! Extensions
 
+SystemLogger has been nicely extended to integrate with Zinc. The extension is simple and just based on a single class ==ZincSystemLogListener==. Here is an example showing how to use it.
+
+[[[
+| client |
+client := ZnClient new url: 'http://www.google.de'.
+client log addListener: ZincSystemLogListener new.
+client get
+]]]
 
 
 
