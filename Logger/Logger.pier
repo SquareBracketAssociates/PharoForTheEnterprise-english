@@ -295,7 +295,10 @@ Log dispatcher startAllLoggers.
 
 !! Extensions
 
-SystemLogger has been nicely extended to integrate with Zinc. The extension is simple and just based on a single class ==ZincSystemLogListener==. Here is an example showing how to use it.
+SystemLogger has been nicely extended to integrate with Zinc. The extension is simple and just based on a single class ==ZincSystemLogListener==. ==ZincSystemLogListener==, a subclass of ==ZnLogListener== bridges Zinc log events to SystemLogger. it can be used with e.g. ZnClient or ZnServer. 
+
+
+Here is an example showing how to use it.
 
 [[[
 | client |
@@ -304,6 +307,18 @@ client log addListener: ZincSystemLogListener new.
 client get
 ]]]
 
+
+A log event emitted by Zinc logging is received and put into the SystemLogger for dispatching. The message ==tag:== can be used to add a domain/tag to the logging message. By doing 
+
+[[[
+Log toTranscript
+]]]
+
+and repeating the ZnClient code above the messages should be visible in the Transcript window. To reduce the verbose logging do
+
+[[[
+(Logger named: 'transcript') filter: LogLevel info orMoreSevere
+]]]
 
 
 
