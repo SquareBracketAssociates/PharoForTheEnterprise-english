@@ -310,6 +310,79 @@ aCashFlow calculatePV.
 Now Print it and you will get: == 379.07867694084473==
 
 
+!!Problem \#4:  Net Present Value of a stream of cash flows
+Written by Ignacio Sniechowski
+
+Now that we have a way to calculate the Present Value of a certain cash flow, we can reuse this class to advance a little further. Suppose some Wall Street guru wants to sell you some interesting piece of financial engineering. This is a bond that will pay you $1,000 each year, over 10 years with no interest (a zero coupon bond). The guy tells you that this is a very attractive investment and pretends to sell you this asset for $8,500.
+You return happy thinking you made a fantastic investment. Is that so?.
+
+
+!!! Solution \#4
+
+If we create a subclass of ==PresentValue== we can easily evaluate this investment. Basically our subclass (we are going to call it ==NetPresentValue==) will be the discounted cash flows promised by this bond, minus the investment needed to purchase it.
+
+[[[
+PresentValue subclass: #NetPresentValue
+	instanceVariableNames: 'investment'
+	classVariableNames: ''
+	category: '99ST-Problems'
+]]]
+
+We have only one instance variable ==investment== which will hold the market value of the financial asset. That is, the price our Wall Street guru asks for it.
+As we did with the superclass, we will only use one accessor to set the arguments:
+
+[[[
+NetPresentValue>> setCashFlow: aCF discountRate: aDR years: aN investment: aI
+	cashFlow 		:= aCF.
+	discountRate	:= aDR.
+	years			:= aN.
+	investment		:= aI
+]]]
+
+We have to add, of course, the accessor to get the value of the ==investment== instance variable.
+[[[
+NetPresentValue>>investment
+	^ investment
+]]]
+
+Categorize all these methods under the accessing protocol.
+
+Now the method that will actually perform the calculation is very simple:
+
+[[[
+NetPresentValue>>calculateNPV
+	| pv |
+	pv := PresentValue new.
+	pv setCashFlow: cashFlow  discountRate: discountRate years: years.
+	^ investment negated + pv calculatePV 
+
+]]]
+We use a temporary variable, ==pv== that will hold an instance of PresentValue. We obtain the present value of our future investment by first passing the arguments to ==pv==.
+So we use the ==setCashFlow:discountRate:years:== selector from that class. After that we send the message ==calculatePV== to the instance of that class ==pv==.
+
+The final step is to subtract the price our guru asks from the obtained present value. As we are entering a positive value for the investment (asset prices are always zero or positive numbers) we have to use ==negated== to turn it into a negative cash flow.
+You call the bank to ask what rate they paid for a time deposit, the manager kindly inform you that they are now paying a 4% annually.
+Let's now try if our guru was right. Open a Workspace and type:
+
+[[[
+| aNPV |
+aNPV:= NetPresentValue new.
+aNPV setCashFlow: 1000 discountRate: 4 years: 10 investment: 8500.
+aNPV calculateNPV.
+]]]
+If we print it we obtain == -389.1042206449738==. Well, we should cleary put the money in the bank instead of buying this asset. You pay a visit to your Wall Street advisor and tell him about your conclusions. He smiles and says that your bank will be soon following other banks in lowering the interest rate.
+You run to the bank to get that 4% rate and when you are there, the manager tells you that now they are paying only 3%. You re-run your calculations:
+
+[[[
+| aNPV |
+aNPV:= NetPresentValue new.
+aNPV setCashFlow: 1000 discountRate: 3 years: 10 investment: 8500.
+aNPV calculateNPV.
+]]]
+And get: ==30.202836775830292==. You are now making some money. But hold on, be aware of comissions, they can ruin your expectations.
+
+Going one step further: Now that you have a way to calculate both, Present Value and Net Present Value you can continue to build upon these classes and reuse code. We are now interested in calculating the discount rate that equalizes the investment with the present value of the cash flow.
+That is which discount rate make the Net Present Value equal to zero. This concept, in finance is called the Internal Rate of Return (IRR) and it's a very important one. Some hints, you can use the Newton-Raphson method (which implies using mathematical derivates) or some sort of guessing algorithm using upper and lower bands.
 
 
 % Local Variables:
