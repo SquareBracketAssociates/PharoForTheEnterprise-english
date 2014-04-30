@@ -13,7 +13,9 @@ Gofer new
 	loadStable
 ]]]
 
-Once you have loaded the code, you need to open the SmaCC Parser Generator. In Pharo, it is in the Tools submenu of the main menu.
+Once you have loaded the code, you need to open the SmaCC Parser Generator (figure *SmaCCGUI*). In Pharo, it is in the Tools submenu of the main menu.
+
++SmaCC GUI in the tools menu>file://figures/SmaCCGUI.png|width=80|label=SmaCCGUI+
 
 Our first calculator is going to be relatively simple. It is going to take two numbers and add them together. To start things off, we have to tell the scanner how to recognize a number. It starts with one or more digits, possibly followed by an decimal point with zero or more digits after it. The scanner definition for this token is:
 
@@ -52,17 +54,21 @@ Expression
 	| Number
 	;
 Number 
-	: <number>
-	;
+	: <number> ;
 ]]]
 
-This basically says that an expressions is either a number or an expression added to a number. You should now have something that looks like:
+This basically says that an expressions is either a number or an expression added to a number. You should now have something that looks like the figure *SmaCCTutorial*.
+
++First grammar>file://figures/SmaCCTutorial.png|width=80|label=SmaCCTutorial+
 
 We should be able to compile a parser now. First, we need to specify the scanner and parser classes to create. These are entered from the ... buttons for Scanner class and Parser class. Enter CalculatorScanner and CalculatorParser respectively. Once the class names are entered, we are ready to compile the parser. Press Compile LR(1) or Compile LALR(1). This will create new Smalltalk classes for the CalculatorScanner and CalculatorParser and compile several methods in those classes. All methods that SmaCC compiles will go into a "generated" method protocol. You should not change those methods or add new methods to the "generated" method protocols since they are replaced or deleted each time you compile.
 
 Whenever SmaCC creates new classes, they are compiled in the package (or package tag) named on the Package entry box. You may wish to select a different package by pressing '...'.
 
-Now we are ready to test our parser. Go to the "test" pane, enter "3 \+ 4", and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and explore"  or "Parse and inspect" you will see an explorer (respectively an inspector) on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect items. For example, try to parse "3 \+ \+ 4" or "3 \+ a". An error message should appear in the text.
+Now we are ready to test our parser. Go to the "test" pane, enter "3 \+ 4", and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and explore"  or "Parse and inspect" you will see an explorer (Figure *3plus4Explorer*) (respectively an inspector (Figure *3plus4Inspector*)) on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect items. For example, try to parse "3 \+ \+ 4" or "3 \+ a". An error message should appear in the text.
+
++Explorer on 3 \+ 4>file://figures/3plus4Explorer.png|width=40|label=3plus4Explorer+
++Inspector on 3 \+ 4>file://figures/3plus4Inspector.png|width=40|label=3plus4Inspector+
 
 If you are interested in the generated parser, you may wish to look at the output from compiling the parser in the Symbols or Item Sets tab. The Symbols tab lists all of the terminal and non-terminal symbols that were used in the parser. The number besides each is the internal id used by the parser. The Item Sets tab lists the LR item sets that were used in the parser. These are printed in a format that is similar to the format used by many text books. The Messages tab is used to display any warnings generated while the parser was compiled. The most common warning is for ambiguous actions.
 
