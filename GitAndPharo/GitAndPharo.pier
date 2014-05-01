@@ -1,0 +1,61 @@
+!!Git And Pharo
+
+This chapter is about how to integrate Pharo with Git, the distributed version control system. Integration with not only git, but possibly others: mercurial, svn, cvs, etc... We will consider that both git and Pharo are working on the target system.
+
+!!!A simple git and pharo workflow
+
+If you are working on a Linux or a Mac system, a first way to explore git and Pharo is the following:
+
+Create a git repository somewhere, in a folder.
+
+[[[
+$ mkdir myProjectRepo
+$ cd myProjectRepo
+$ git init
+]]]
+
+In Pharo, install GitFileTree
+
+[[[
+Gofer new
+	url: 'http://smalltalkhub.com/mc/Pharo/MetaRepoForPharo30/main';
+	configurationOf: 'GitFileTree';
+	loadStable
+]]]
+
+Now, in the Monticello browser, add a repository of type gitfiletree://. In the file dialog which open there, choose your folder above (myProjectRepo). This is done! You can now save your packages into that repository.
+
+Now, create a package named MyPackage. Save it into your gitfiletree repository; open the repository browser (Figure *myProjectRepo*) to see it listed. Go back to git command line and run git log.
+
++Repository browser on myProjectRepo>file://figures/myProjectRepo.png|width=80|label=myProjectRepo+
+
+[[[
+$ git log
+commit ad7033ff06952271993a0c08108e8f0ed55b4cf7
+Author: Author Name <author@example.com>
+Date:   Thu May 1 10:11:29 2014 +0200
+
+    My first package
+
+commit fdc27b15451558dff60f21baea20560d7398ebfd
+Author: Author Name <author@example.com>
+Date:   Thu May 1 10:09:13 2014 +0200
+
+    gitfiletree repository properties
+]]]
+
+You'll see that, in the git log, you see the package save you have done earlier in Pharo, complete with the log message as the package save message. The previous commit in the log is gitfiletree creating a few default files.
+
+Now, let's see the status of the repository:
+
+[[[
+$ git status
+# On branch master
+nothing to commit, working directory clean
+]]]
+
+You can see that everything has been properly committed. And you recognise the "master" branch, which is visible in the repository inspector title.
+
+Your git workflow is ready! Now you can explore by saving more versions of your package and see how the repository keeps logging the relevant commits and show you the full history in the Repository browser.
+
+
