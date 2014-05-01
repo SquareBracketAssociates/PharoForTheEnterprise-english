@@ -13,7 +13,9 @@ Gofer new
 	loadStable
 ]]]
 
-Once you have loaded the code, you need to open the SmaCC Parser Generator. In Pharo, it is in the Tools submenu of the main menu.
+Once you have loaded the code, you need to open the SmaCC Parser Generator (figure *SmaCCGUI*). In Pharo, it is in the Tools submenu of the main menu.
+
++SmaCC GUI in the tools menu>file://figures/SmaCCGUI.png|width=80|label=SmaCCGUI+
 
 Our first calculator is going to be relatively simple. It is going to take two numbers and add them together. To start things off, we have to tell the scanner how to recognize a number. It starts with one or more digits, possibly followed by an decimal point with zero or more digits after it. The scanner definition for this token is:
 
@@ -23,16 +25,25 @@ Our first calculator is going to be relatively simple. It is going to take two n
 
 Let's go over each part:
 
-||! Expression ||! 		Description
-|| <number> |		Names the token. The name inside the <> must be a legal Smalltalk variable name.
-|| : 			|	Separates the name of the token from the token's definition.
-|| [0-9] 		|	Matches any single character in the range '0' to '9' (a digit). We could also use ==\\d== or ==<isDigit>== as these also match digits.
-|| \+ | 				Matches the previous expression one or more times. In this case, we are matching one or more digits.
-|| ( ... ) | 			Groups subexpressions. In this case we are grouping the decimal point and the numbers following the decimal point.
-|| \\. |				Matches the '.' character (. has a special meaning in regular expressions, \ quotes it).
-|| * | 				Matches the previous expression zero or more times.
-|| ? | 				Matches the previous expression zero or one time (i.e., it is optional).
-|| ; | 				Terminates a token specification.
+
+; <number>
+:Names the token. The name inside the <> must be a legal Smalltalk variable name.
+; :
+:Separates the name of the token from the token's definition.
+; [0-9]
+:Matches any single character in the range '0' to '9' (a digit). We could also use ==\\d== or ==<isDigit>== as these also match digits.
+; \+
+:Matches the previous expression one or more times. In this case, we are matching one or more digits.
+; ( ... )
+:Groups subexpressions. In this case we are grouping the decimal point and the numbers following the decimal point.
+; \\.
+:Matches the '.' character (. has a special meaning in regular expressions, \ quotes it).
+; \*
+:Matches the previous expression zero or more times.
+; ?
+:Matches the previous expression zero or one time (i.e., it is optional).
+; ;
+:Terminates a token specification.
 
 We don't want to have to worry about whitespace in our language, so we need to define what a whitespace is and to ignore it. To do this, enter the following token specification on the next line:
 
@@ -56,13 +67,18 @@ Number
 	;
 ]]]
 
-This basically says that an expressions is either a number or an expression added to a number. You should now have something that looks like:
+This basically says that an expressions is either a number or an expression added to a number. You should now have something that looks like the figure *SmaCCTutorial*.
+
++First grammar>file://figures/SmaCCTutorial.png|width=80|label=SmaCCTutorial+
 
 We should be able to compile a parser now. First, we need to specify the scanner and parser classes to create. These are entered from the ... buttons for Scanner class and Parser class. Enter CalculatorScanner and CalculatorParser respectively. Once the class names are entered, we are ready to compile the parser. Press Compile LR(1) or Compile LALR(1). This will create new Smalltalk classes for the CalculatorScanner and CalculatorParser and compile several methods in those classes. All methods that SmaCC compiles will go into a "generated" method protocol. You should not change those methods or add new methods to the "generated" method protocols since they are replaced or deleted each time you compile.
 
 Whenever SmaCC creates new classes, they are compiled in the package (or package tag) named on the Package entry box. You may wish to select a different package by pressing '...'.
 
-Now we are ready to test our parser. Go to the "test" pane, enter "3 \+ 4", and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and explore"  or "Parse and inspect" you will see an explorer (respectively an inspector) on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect items. For example, try to parse "3 \+ \+ 4" or "3 \+ a". An error message should appear in the text.
+Now we are ready to test our parser. Go to the "test" pane, enter "3 \+ 4", and press "Parse"; you will see that the parser correctly parses it. If you press "Parse and explore"  or "Parse and inspect" you will see an explorer (Figure *3plus4Explorer*) (respectively an inspector (Figure *3plus4Inspector*)) on an OrderedCollection that contains the parsed tokens. This is because we haven't specified what the parser is supposed to do when it parses. You can also enter incorrect items. For example, try to parse "3 \+ \+ 4" or "3 \+ a". An error message should appear in the text.
+
++Explorer on 3 \+ 4>file://figures/3plus4Explorer.png|width=40|label=3plus4Explorer+
++Inspector on 3 \+ 4>file://figures/3plus4Inspector.png|width=40|label=3plus4Inspector+
 
 If you are interested in the generated parser, you may wish to look at the output from compiling the parser in the Symbols or Item Sets tab. The Symbols tab lists all of the terminal and non-terminal symbols that were used in the parser. The number besides each is the internal id used by the parser. The Item Sets tab lists the LR item sets that were used in the parser. These are printed in a format that is similar to the format used by many text books. The Messages tab is used to display any warnings generated while the parser was compiled. The most common warning is for ambiguous actions.
 
@@ -509,33 +525,58 @@ TokenName is a valid Smalltalk variable name that is surrounded by <>. For examp
 
 While the rules are specified as regular expressions, there are many different syntaxes for regular expressions. We choose a relatively simple syntax that is specified below. If you wish to have a more rich syntax, you can modify the scanner's parser: SmaCCDefinitionScanner & SmaCCDefinitionParser. These classes were created using SmaCC.
 
-||!Expression ||!			Description
-|| \\character |		Matches a special character. The character immediately following the backslash is matched exactly, unless it is a letter. Backslash-letter combinations have other meanings and are specified below.
-|| \\cLetter |			Matches a control character. Control characters are the first 26 characters (e.g., \\cA equals "Character value: 0"). The letter that follows the "\\c" must be an uppercase letter.
-|| \\d |				Matches a digit, 0-9.
-|| \\D |				Matches anything that is not a digit.
-|| \\f 	|			Matches a form-feed character, "Character value: 12".
-|| \\n 	|			Matches a newline character, "Character value: 10".
-|| \\r 	|			Matches a carriage return character, "Character value: 13".
-|| \\s 	|			Matches any whitespace character, [ \\f\\n\\r\\t\\v].
-|| \\S 	|			Matches any non-whitespace character.
-|| \\t 	|			Matches a tab, "Character value: 9".
-|| \\v 	|			Matches a vertical tab, "Character value: 11"
-|| \\w |				Matches any letter, number or underscore, [A-Za-z0-9_].
-|| \\W |				Matches anything that is not a letter, number or underscore.
-|| \\xHexNumber |	Matches a character specified by the hex number following the "\\x". The hex number must be at least one character long and no more than four characters for Unicode characters and two characters for non-Unicode characters. For example, "\\x20" matches the space character (Character value: 16r20), and "\\x1FFF" matches "Character value: 16r1FFF".
-|| <token> 	|		Copies the definition of <token> into the current regular expression. For 	example, if we have "<hexdigit> : \\d \| [A-F] ;", we can use <hexdigit> in a later rule: "<hexnumber> : <hexdigit> \+ ;".
-|| <isMethod> |		Copies the characters where Character>>isMethod returns true into the current regular expression. For example, instead of using \\d, we could use <isDigit> since Character>>isDigit returns true for digits.
-|| [characters] |		Matches one of the characters inside the []. This is a shortcut for the "\|" operator. In addition to single characters, you can also specify character ranges with the "-" character. For example, "[a-z]" matches any lower case letter.
-|| [^characters] |	Matches any character not listed in the characters block. "[^a]" matches anything except for "a".
-|| # comment	|	Creates a comment that is ignored by SmaCC. Everything from the # to the end of the line is ignored.
-|| exp1 \| exp2 |		Matches either exp1 or exp2.
-|| exp1 exp2 |		Matches exp1 followed by exp2. "\\d \\d" matches two digits.
-|| exp\* |			Matches exp zero or more times. "0\*" matches "" and "000".
-|| exp? |			Matches exp zero or one time. "0?" matches only "" or "0".
-|| exp\+ |			Matches exp one or more times. "0\+" matches "0" and "000", but not "".
-|| exp{min,max} | 	Matches exp at least min times but no more than max times. "0{1,2}" matches only "0" or "00". It does not match "" or "000".
-|| (exp) |			Groups exp for precedence. For example, "(a b)\*" matches "ababab". 	Without the parentheses, "a b \*" would match "abbbb" but not "ababab".
+;\\character
+:Matches a special character. The character immediately following the backslash is matched exactly, unless it is a letter. Backslash-letter combinations have other meanings and are specified below.
+;\\cLetter
+:Matches a control character. Control characters are the first 26 characters (e.g., \\cA equals "Character value: 0"). The letter that follows the "\\c" must be an uppercase letter.
+;\\d
+:Matches a digit, 0-9.
+;\\D
+:Matches anything that is not a digit.
+;\\f
+:Matches a form-feed character, "Character value: 12".
+;\\n
+:Matches a newline character, "Character value: 10".
+;\\r
+:Matches a carriage return character, "Character value: 13".
+;\\s
+:Matches any whitespace character, [ \\f\\n\\r\\t\\v].
+;\\S
+:Matches any non-whitespace character.
+;\\t
+:Matches a tab, "Character value: 9".
+;\\v
+:Matches a vertical tab, "Character value: 11"
+;\\w
+:Matches any letter, number or underscore, [A-Za-z0-9_].
+;\\W
+:Matches anything that is not a letter, number or underscore.
+;\\xHexNumber
+:Matches a character specified by the hex number following the "\\x". The hex number must be at least one character long and no more than four characters for Unicode characters and two characters for non-Unicode characters. For example, "\\x20" matches the space character (Character value: 16r20), and "\\x1FFF" matches "Character value: 16r1FFF".
+;<token>
+:Copies the definition of <token> into the current regular expression. For 	example, if we have "<hexdigit> : \\d \| [A-F] ;", we can use <hexdigit> in a later rule: "<hexnumber> : <hexdigit> \+ ;".
+;<isMethod>
+:Copies the characters where Character>>isMethod returns true into the current regular expression. For example, instead of using \\d, we could use <isDigit> since Character>>isDigit returns true for digits.
+;[characters]
+:Matches one of the characters inside the []. This is a shortcut for the "\|" operator. In addition to single characters, you can also specify character ranges with the "-" character. For example, "[a-z]" matches any lower case letter.
+;[^characters]
+:Matches any character not listed in the characters block. "[^a]" matches anything except for "a".
+;\# comment
+:Creates a comment that is ignored by SmaCC. Everything from the # to the end of the line is ignored.
+;exp1 \| exp2
+:Matches either exp1 or exp2.
+;exp1 exp2
+:Matches exp1 followed by exp2. "\\d \\d" matches two digits.
+;exp\*
+:Matches exp zero or more times. "0\*" matches \"\" and "000".
+;exp?
+:Matches exp zero or one time. "0?" matches only \"\" or "0".
+;exp\+
+:Matches exp one or more times. "0\+" matches "0" and "000", but not \"\".
+;exp{min,max}
+:Matches exp at least min times but no more than max times. "0{1,2}" matches only "0" or "00". It does not match \"\" or "000".
+;(exp)
+:Groups exp for precedence. For example, "(a b)\*" matches "ababab". 	Without the parentheses, "a b \*" would match "abbbb" but not "ababab".
 
 Since there are multiple ways to combine expressions, we need precedence rules for their combination. The or operator, "|", has the lowest precedence and the "\*", "?", "\+", and "{,}" operators have the highest precedence. For example, "a | b c \*" matches "a" or "bcccc", but not "accc" or "bcbcbc". If you wish to match "a" or "b" followed by any number of c's, you need to use "(a | b) c \*".
 
@@ -577,7 +618,7 @@ Parsing converts the stream of tokens provided by the scanner into some object. 
 
 The production rules contains the grammar for the parser. The first production rule is considered to be the starting rule for the parser. Each production rule consists of a non-terminal symbol name followed by a ":" separator which is followed by a list of possible productions separated by vertical bar, "|", and finally terminated by a semicolon, ";".
 
-Each production consists of a sequence of non-terminal symbols, tokens, or keywords followed by some optional Smalltalk code enclosed in curly brackets, {} or a AST node definition enclosed in two curly brackets, {{}}. Non-terminal symbols are valid Smalltalk variable names and must be defined somewhere in the parser definition. Forward references are valid. Tokens are enclosed in angle brackets as they are defined in the scanner (e.g., <token>) and keywords are enclosed in double-quotes (e.g., "then"). Keywords that contain double-quotes need to have two double-quotes per each double-quote in the keyword. For example, if you need a keyword for one double-quote character, you would need to enter """" (four double-quote characters).
+Each production consists of a sequence of non-terminal symbols, tokens, or keywords followed by some optional Smalltalk code enclosed in curly brackets, {} or a AST node definition enclosed in two curly brackets, {{}}. Non-terminal symbols are valid Smalltalk variable names and must be defined somewhere in the parser definition. Forward references are valid. Tokens are enclosed in angle brackets as they are defined in the scanner (e.g., <token>) and keywords are enclosed in double-quotes (e.g., "then"). Keywords that contain double-quotes need to have two double-quotes per each double-quote in the keyword. For example, if you need a keyword for one double-quote character, you would need to enter \"\"\"\" (four double-quote characters).
 
 The Smalltalk code is evaluated whenever that production is matched. If the code is a zero or a one argument symbol, then that method is performed. For a one argument symbol, the argument is an OrderedCollection that contains one element for each item in the production. If the code isn't a zero or one argument symbol, then the code is executed and whatever is returned by the code is the result of the production. If no Smalltalk code is specified, then the default action is to execute the #reduceFor: method (unless you are producing an AST parser). This method converts all items into an OrderedCollection. If one of the items is another OrderedCollection, then all of its elements are added to the new collection.
 
