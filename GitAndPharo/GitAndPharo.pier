@@ -1,0 +1,125 @@
+!!Git And Pharo
+
+This chapter is about how to integrate Pharo with Git, the distributed version control system. Integration with not only git, but possibly others: mercurial, svn, cvs, etc... We will consider that both git and Pharo are working on the target system.
+
+!!!A simple git and pharo workflow
+
+If you are working on a Linux or a Mac system, a first way to explore git and Pharo is the following:
+
+Create a git repository somewhere, in a folder.
+
+[[[
+$ mkdir myProjectRepo
+$ cd myProjectRepo
+$ git init
+]]]
+
+In Pharo, install GitFileTree
+
+[[[
+Gofer new
+	url: 'http://smalltalkhub.com/mc/Pharo/MetaRepoForPharo30/main';
+	configurationOf: 'GitFileTree';
+	loadStable
+]]]
+
+Now, in the Monticello browser, add a repository of type gitfiletree://. In the file dialog which open there, choose your folder above (myProjectRepo). This is done! You can now save your packages into that repository.
+
+Now, create a package named MyPackage. Save it into your gitfiletree repository; open the repository browser (Figure *myProjectRepo*) to see it listed. Go back to git command line and run git log.
+
++Repository browser on myProjectRepo>file://figures/myProjectRepo.png|width=80|label=myProjectRepo+
+
+[[[
+$ git log
+commit ad7033ff06952271993a0c08108e8f0ed55b4cf7
+Author: Author Name <author@example.com>
+Date:   Thu May 1 10:11:29 2014 +0200
+
+    My first package
+
+commit fdc27b15451558dff60f21baea20560d7398ebfd
+Author: Author Name <author@example.com>
+Date:   Thu May 1 10:09:13 2014 +0200
+
+    gitfiletree repository properties
+]]]
+
+You'll see that, in the git log, you see the package save you have done earlier in Pharo, complete with the log message as the package save message. The previous commit in the log is gitfiletree creating a few default files.
+
+Now, let's see the status of the repository:
+
+[[[
+$ git status
+# On branch master
+nothing to commit, working directory clean
+]]]
+
+You can see that everything has been properly committed. And you recognise the "master" branch, which is visible in the repository inspector title.
+
+Your git workflow is ready! Now you can explore by saving more versions of your package and see how the repository keeps logging the relevant commits and show you the full history in the Repository browser.
+
+Now, the interest of git is that it is a distributed version control system, in which you can cooperate with others and store your code in a remote repository. Remote repositories may be set up via internet centralised services (such as *github>http://github.com* and *bitbucket>http://bitbucket.com*) or via your organisation internal servers running software such as gitosis.
+
+So, how to work out of a remote repository? Let's take as an example *github>http://github.com*. First you need an account on github, and you need to register your ssh key (this is the process which avoids that you type your username and password everytime you do a git command with the remote repository. Github has the documentation for you *here>https://help.github.com/articles/generating-ssh-keys*, so just follow that step).
+
+Now, choose one of your projects, create a new one, or fork an existing project. For example, fork the GitAndPharoTutorial project on Github, from the github web interface. Now, to access it from Pharo, open the Monticello Browser, add a repository of type Remote git repository, and fill the template:
+
+[[[
+MCFileTreeGitRemoteRepository
+	location: 'git@github.com:YourNameOnGithub/GitAndPharoTutorial'
+	name: 'GitAndPharoTutorial'
+	subdirectory: ''
+	branch: ''
+]]]
+
+Press Ok. After a short delay, you will see opening a repository inspector on master@Remote git repository ... GitAndPharoTutorial. You're now set: you can save packages in this repository, and, to send the changes back to the remote repository, just select push. If you want to update from the remote repository, press pull and it will pull the remote changes and merge them with yours.
+
+!!!Multi-user workflow
+
+Start with the centralised workflow. Shows that it works perfectly well when combined with an approach in Pharo which is one person, one package.
+
+Elaborate with the branches, and more complex workflows.
+
+!!!Git, Pharo, and the technology
+
+!!!!FileTree
+
+First, FileTree: the ability to save a package as a set of (mostly) text files, suitable for inclusion in a versionning system: cvs, svn, mercurial, git, bazaar, etc... FileTree is included in Pharo3, so nothing is necessary, apart from adding repositories of type FileTree.
+
+FileTree expects you to do all the versionning by hand, and does not protect you from any mistake in doing so. It also disallow merges in Monticello in most cases, because the history of the package isn't available.
+
+On the bright side, you have complete control over which versionning system you're using and how you handle the versionning.
+
+!!!!GitFileTree
+
+GitFileTree is an adaptation of FileTree to git via command line git. GitFileTree does all one has to usually do when using FileTree over git: committing a package when it has been saved in the repository, cloning a remote repository, push and pull with the remote repository, and view the complete history of the git repository related to each package.
+
+GitFileTree is entirely compatible with FileTree (it uses FileTree for saving packages), which is an important point for Metacello github:// urls.
+
+Both FileTree and GitFileTree are totally agnostic to repositories containing non-Pharo code and data: they concerns themselves only with Pharo packages.
+
+GitFileTree does not work under Windows because there is difficulties to run command line commands under Windows (Pharo OSProcess plugin for Windows is missing).
+
+!!!!Metacello github:// Urls
+
+
+
+!!!!FileSystem-Git
+
+FileSystem-Git is a complete reimplementation of git in Pharo. It is used to save Pharo on github. It's on-disk format is different from FileTree, but not by much (enough to make it unreadable, still).
+
+Is there a way to use it from Monticello?
+
+!!!!LibCGit bindings
+
+Work underway to write LibCGit bindings using NativeBoost. Once done, we would have to integrate it with the above.
+
+!!!!GitFileTree-MergeDriver
+
+Underway, need to explain and package that.
+
+!!!!Git MergeTool
+
+Future, maybe short-term.
+
+

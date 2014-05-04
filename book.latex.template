@@ -40,6 +40,8 @@
         {RenoirST/}
         {Voyage/}
         {Zinc/}
+        {Smacc/}
+        {GitAndPharo/}
 }
 %=================================================================
 \let\wholebook=\relax
