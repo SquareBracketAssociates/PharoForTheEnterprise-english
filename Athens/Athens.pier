@@ -86,7 +86,7 @@ Once Athens will be the default rendering engine in Pharo, the ==drawnOn: aCanva
 
 In essence you got a first feel of Athens. Now let us look at its key abstractions. 
 
-!! Main Archicture Players
+!! Main Architecture Players
 
 Before showing in details the API using examples, we will present the main architecture elements of the Athens architecture: ==Surface==, ==Canvas==, ==Shape==, ==Paint== and ==Transformation==.
 
@@ -138,12 +138,6 @@ The canvas maintains current coordinate system transformations:
 
 
 
-
-
-
-
-
-
 !!! About accessing the Canvas
 
 Athens does not allow you to instantiate a canvas directly, instead you should obtain a ready for use instance as an argument in ==drawDuring:== message sent to an Athens ==surface==:
@@ -177,6 +171,10 @@ rectangle or paths.
 
 A path delineates a contour consisting of a sequence of connected segments. Segments
 are line, quadric Bezier curve, cubic Bezier curve, circular arcs, and elliptical arcs. In addition you can define your own shape.
+
+
+
+
 
 
 
