@@ -84,17 +84,17 @@ Elaborate with the branches, and more complex workflows.
 
 !!!!FileTree
 
-First, FileTree: the ability to save a package as a set of (mostly) text files, suitable for inclusion in a versionning system: cvs, svn, mercurial, git, bazaar, etc... FileTree is included in Pharo3, so nothing is necessary, apart from adding repositories of type FileTree.
+First, FileTree is an extension to Monticello. Instead of saving a package as a binary and a single text file inside a zip archive (the mcz format), FileTree saves a package as a set of (mostly) text files organized in a hierarchy, suitable for inclusion in a versionning system: cvs, svn, mercurial, git, bazaar, etc... FileTree is included in Pharo3, so nothing is necessary, apart from adding repositories of type FileTree. FileTree can be added to Pharo 2.0 and Pharo 1.4, as well as Squeak and Gemstone, which ensures a high level of compatibility.
 
 FileTree expects you to do all the versionning by hand, and does not protect you from any mistake in doing so. It also disallow merges in Monticello in most cases, because the history of the package isn't available.
 
-On the bright side, you have complete control over which versionning system you're using and how you handle the versionning.
+On the bright side, you have complete control over which versionning system you're using and how you handle the versionning. On the bad side, some files used by FileTree look like text files, but they do not behave as such under versionning and cause conflicts on merges: version and json metadata.
 
 !!!!GitFileTree
 
-GitFileTree is an adaptation of FileTree to git via command line git. GitFileTree does all one has to usually do when using FileTree over git: committing a package when it has been saved in the repository, cloning a remote repository, push and pull with the remote repository, and view the complete history of the git repository related to each package.
+GitFileTree is an adaptation of FileTree to git via command line git. GitFileTree does all one has to usually do when using FileTree over git: committing a package when it has been saved in the repository, cloning a remote repository, push and pull with the remote repository, and view the complete history of the git repository related to each package. To cope with the conflicts in FileTree metadata (see below), GitFileTree recreates this metadata out of the git commit history.
 
-GitFileTree is entirely compatible with FileTree (it uses FileTree for saving packages), which is an important point for Metacello github:// urls.
+GitFileTree is entirely compatible with FileTree (it uses FileTree for saving packages), which is an important point for Metacello github:// urls and overall compatibility. It works on Pharo 2.0 and 3.0.
 
 Both FileTree and GitFileTree are totally agnostic to repositories containing non-Pharo code and data: they concerns themselves only with Pharo packages.
 
@@ -102,7 +102,7 @@ GitFileTree does not work under Windows because there is difficulties to run com
 
 !!!!Metacello github:// Urls
 
-
+Metacello github:// urls allow one to distribute software 
 
 !!!!FileSystem-Git
 
@@ -112,14 +112,48 @@ Is there a way to use it from Monticello?
 
 !!!!LibCGit bindings
 
-Work underway to write LibCGit bindings using NativeBoost. Once done, we would have to integrate it with the above.
+Work underway to write LibCGit bindings using NativeBoost. Once done, we would have to integrate it with the above. Of course it is usable on platforms which have NativeBoost support.
 
 !!!!GitFileTree-MergeDriver
 
 Underway, need to explain and package that.
 
+The GitFileTree-MergeDriver ensures that when git merges problematic FileTree metadata, it delegates the merge to a command which understand those files and execute a proper merge, as if it was done by Monticello itself.
+
+For example, with git, merging a branch (called aBranch) to master with a simple repository composed of one package gives us the following output:
+
+[[[
+$ git merge aBranch
+Auto-merging SmaCC-Tutorial.package/monticello.meta/version
+CONFLICT (content): Merge conflict in SmaCC-Tutorial.package/monticello.meta/version
+Auto-merging SmaCC-Tutorial.package/CalculatorParser.class/methodProperties.json
+CONFLICT (content): Merge conflict in SmaCC-Tutorial.package/CalculatorParser.class/methodProperties.json
+Auto-merging SmaCC-Tutorial.package/ASTFunctionNode.class/methodProperties.json
+CONFLICT (add/add): Merge conflict in SmaCC-Tutorial.package/ASTFunctionNode.class/methodProperties.json
+Auto-merging SmaCC-Tutorial.package/ASTFunctionNode.class/instance/compositeTokenVariables.st
+CONFLICT (add/add): Merge conflict in SmaCC-Tutorial.package/ASTFunctionNode.class/instance/compositeTokenVariables.st
+Auto-merging SmaCC-Tutorial.package/ASTExpressionNode.class/methodProperties.json
+CONFLICT (content): Merge conflict in SmaCC-Tutorial.package/ASTExpressionNode.class/methodProperties.json
+Automatic merge failed; fix conflicts and then commit the result.
+]]]
+
+This generates 5 conflicts, out of which 4 relates to FileTree metadata: one version file and three methodProperties.json.
+
+Now, with the GitFileTree-MergeDriver, the same merge gives the following output:
+
+[[[
+$ git merge aBranch
+Auto-merging SmaCC-Tutorial.package/monticello.meta/version
+Auto-merging SmaCC-Tutorial.package/CalculatorParser.class/methodProperties.json
+Auto-merging SmaCC-Tutorial.package/ASTFunctionNode.class/methodProperties.json
+Auto-merging SmaCC-Tutorial.package/ASTFunctionNode.class/instance/compositeTokenVariables.st
+CONFLICT (add/add): Merge conflict in SmaCC-Tutorial.package/ASTFunctionNode.class/instance/compositeTokenVariables.st
+Auto-merging SmaCC-Tutorial.package/ASTExpressionNode.class/methodProperties.json
+Automatic merge failed; fix conflicts and then commit the result.
+]]]
+
+We now have one conflict left, a .st file, which can be resolved the usual way by git. For example, a solution is to run git merge-tool to solve the conflict (that is commit a correct compositeTokenVariables.st).
+
 !!!!Git MergeTool
 
-Future, maybe short-term.
-
-
+The final step in Git and Pharo integration will be to have a Git merge tool implemented in Pharo.
