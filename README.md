@@ -1,4 +1,4 @@
-Pharo for the Enterprise (english version)
+Pharo for the Enterprise (english version) [![Build Status](https://ci.inria.fr/pharo-contribution/buildStatus/icon?job=PharoForTheEnterprise)](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/)
 ==========================================
 
 An experiment of writing a book with the Pier syntax using plain-text editors.
