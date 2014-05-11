@@ -1,53 +1,41 @@
-Pharo for the Enterprise (english version) [![Build Status](https://ci.inria.fr/pharo-contribution/buildStatus/icon?job=PharoForTheEnterprise)](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/)
-==========================================
+Pillar Book Skeleton [![Build Status](https://ci.inria.fr/pharo-contribution/buildStatus/icon?job=PharoForTheEnterprise)](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/) [![Build Status](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english.svg?branch=master)](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english)
+====================
 
 An experiment of writing a book with the Pier syntax using plain-text editors.
 
 This book is continuously built on an [Inria Jenkins server](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/).
 
-The [engine used](http://www.smalltalkhub.com/#!/~DamienCassou/Pier-Gutemberg) to build PDF and HTML outputs is hosted on
-SmalltalkHub.
 
-There is an [Emacs plugin](https://github.com/DamienCassou/pier-cl) to help you write Pier file within Emacs.
+How to write a book
+-------------------
 
-How to
-======
+This book is written in Pillar markup. If you are not familiar with it please check the [pillar-documentation](https://github.com/pillar-markup/pillar-documentation).
 
-You first have to download this project
+###Generating the book
 
-```bash
-# if you have commit access:
-git clone git@github.com:SquareBracketAssociates/PharoForTheEnterprise-english.git
-# if you don't
-git clone git://github.com/SquareBracketAssociates/PharoForTheEnterprise-english.git
-```
+First of all you have to run `./download.sh` to obtain the Pillar executable that does all the job.
 
-Then you must download the Pharo VM and image
+To generate your book execute `./compile.sh`. If you want to generate only one chapter, pass the file's path to the script: `./compile.sh Example/Example.pillar`. If you have `pdflatex` installed and available in your system's `PATH`, the script will also generate pdf files.
 
-```bash
-./download.sh
-```
+###Adding a chapter
 
-Finally, to build the book
+To add a chapter create a directory for it (named, e.g., `Example`) and put there a `.pillar` file (named, e.g., `Example.pillar`) which will contain the chapter itself. Put images in the `figures` subdirectory of the new chapter directory.
 
-```bash
-./compile.sh
-```
+Add your chapter to:
 
-The `compile.sh` script will only compile the files that are included
-from the `pillar-conf.ston` file. If you write a new chapter, don't
-forget to reference it in this file to have it compiled.
+* `pillar.conf` in the `inputFiles` array as: `"Example/Example.pillar"`, and
+* `_support/templates/book.latex.template` in `\graphicspath` as `{Example/}`
 
-Figures
-=======
+###Caveats
 
-If you include figures in your chapter, please pay attention to the following:
+* You must neither use spaces nor underscores (`_`) in file names.
 
-- you must neither use spaces nor underscores (`_`) in the file names ;
-- you must put the figures in a sub directory called `figures` in the chapter's directory ;
-- you must add your chapter to the list of chapters in the `book.latex.template` file (below the `\graphicspath` line).
+Tools
+-----
 
-Sample
-======
+There are mods/bundles/packages for text editors, that provide improvements for pillar files editing:
 
-Download and check a [Sample.pier file](https://github.com/DamienCassou/pier-cl/blob/master/Sample.pier), [Sample.pier.html file](https://github.com/DamienCassou/pier-cl/blob/master/Sample.pier.html?raw=true), or a [Sample.pier.pdf file](https://github.com/DamienCassou/pier-cl/blob/master/Sample.pier.pdf?raw=true).
+* Emacs: [pillar-mode](https://github.com/pillar-markup/pillar-mode)
+* Vim: [vim-pillar](https://github.com/cdlm/vim-pillar)
+* TextMate: [Pillar.tmbundle](https://github.com/pillar-markup/Pillar.tmbundle)
+* ATOM: [language-pillar](https://github.com/pillar-markup/language-pillar)
