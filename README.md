@@ -1,4 +1,4 @@
-Pillar Book Skeleton [![Build Status](https://ci.inria.fr/pharo-contribution/buildStatus/icon?job=PharoForTheEnterprise)](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/) [![Build Status](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english.svg?branch=master)](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english)
+Pharo for the Enterprise (english version) [![Build Status](https://ci.inria.fr/pharo-contribution/buildStatus/icon?job=PharoForTheEnterprise)](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/) [![Build Status](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english.svg?branch=master)](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english)
 ====================
 
 An experiment of writing a book with the Pier syntax using plain-text editors.
