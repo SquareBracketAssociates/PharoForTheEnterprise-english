@@ -72,18 +72,18 @@ MCFileTreeGitRemoteRepository
 	branch: ''
 ]]]
 
-Press Ok. After a short delay, you will see opening a repository inspector on master@Remote git repository ... GitAndPharoTutorial. You're set: you can save packages in this repository, and, to send the changes back to the remote repository, just select ==push==. If you want to update from the remote repository, press ==pull== and it will pull the remote changes and merge them with yours.
+Press Ok. After a short delay, you will see opening a repository inspector on master@Remote git repository ... GitAndPharoTutorial. You're set: you can save packages in this repository, and, to send the changes back to the remote repository, just select ==Push==. If you want to update from the remote repository, press ==Pull== and it will pull the remote changes and merge them with yours.
 
 Now you can explore all the versions available in the repository. To change to another branch, you need to 
 
 !!! Working with FileTree
 
-Explaining the same workflow, with FileTree.
+FileTree is the default module for exporting Monticello packages to a standard file hierarchy and, by this operation, allowing a version control system to handle the files. We will now describe the process of working with FileTree and Git for the same workflow as above.
 
-Cloning the GitAndPharoTutorial from github. In the command line, use git clone with an ssh or an https url.
+The first step is to clone GitAndPharoTutorial from github, expecting you to have registered in github as explained above. In the command line, use git clone with an ssh or an https url.
 
 [[[
-$ git clone ...
+$ git clone git@github.com:/ThierryGoubier/GitAndPharoTutorial
 ]]]
 
 Create a FileTree repository from Monticello:
@@ -154,7 +154,29 @@ $ git pull
 
 !!! Merge
 
-Explain merging, using the sample repository.
+--- Explain merging, using the sample repository.
+
+Merging is a key operation in a version control system and is one of the reasons to use Git with Pharo: to have Git record merge operations. We will restart with a clean version of the GitAndPharoTutorial:
+
+- With GitFileTree, add a remote git repository with the following data:
+
+[[[
+MCFileTreeGitRemoteRepository
+	location: 'git@github.com:ThierryGoubier/GitAndPharoTutorial'
+	name: 'GitAndPharoMerge'
+	subdirectory: ''
+	branch: ''
+]]]
+
+- With FileTree, clone the GitAndPharoTutorial repository in a new folder with:
+
+[[[
+$ git clone git@github.com:/ThierryGoubier/GitAndPharoTutorial GitAndPharoMerge
+]]]
+
+and add a FileTree repository on the GitAndPharoMerge folder.
+
+
 
 !!! Multi-user workflow
 
