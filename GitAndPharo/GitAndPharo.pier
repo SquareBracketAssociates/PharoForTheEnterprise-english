@@ -2,7 +2,7 @@
 
 This chapter is about how to integrate Pharo with Git, the distributed version control system. Integration with not only git, but possibly others: mercurial, svn, cvs, etc... We will consider that both git and Pharo are working on the target system.
 
-!!!A simple git and pharo workflow
+!!!A simple Git and Pharo workflow
 
 If you are working on a Linux or a Mac system, a first way to explore git and Pharo is the following:
 
@@ -56,7 +56,7 @@ nothing to commit, working directory clean
 
 You can see that everything has been properly committed. And you recognise the "master" branch, which is visible in the repository inspector title.
 
-Your git workflow is ready! Now you can explore by saving more versions of your package and see how the repository keeps logging the relevant commits and show you the full history in the Repository browser.
+Your git workflow is ready! You can explore by saving more versions of your package and see how the repository keeps logging the relevant commits and show you the full history in the Repository browser.
 
 Now, the interest of git is that it is a distributed version control system, in which you can cooperate with others and store your code in a remote repository. Remote repositories may be set up via internet centralised services (such as *github>http://github.com* and *bitbucket>http://bitbucket.com*) or via your organisation internal servers running software such as gitosis.
 
@@ -72,9 +72,113 @@ MCFileTreeGitRemoteRepository
 	branch: ''
 ]]]
 
-Press Ok. After a short delay, you will see opening a repository inspector on master@Remote git repository ... GitAndPharoTutorial. You're now set: you can save packages in this repository, and, to send the changes back to the remote repository, just select push. If you want to update from the remote repository, press pull and it will pull the remote changes and merge them with yours.
+Press Ok. After a short delay, you will see opening a repository inspector on master@Remote git repository ... GitAndPharoTutorial. You're set: you can save packages in this repository, and, to send the changes back to the remote repository, just select ==Push==. If you want to update from the remote repository, press ==Pull== and it will pull the remote changes and merge them with yours.
 
-!!!Multi-user workflow
+Now you can explore all the versions available in the repository. To change to another branch, you need to 
+
+!!! Working with FileTree
+
+FileTree is the default module for exporting Monticello packages to a standard file hierarchy and, by this operation, allowing a version control system to handle the files. We will now describe the process of working with FileTree and Git for the same workflow as above.
+
+The first step is to clone GitAndPharoTutorial from github, expecting you to have registered in github as explained above. In the command line, use git clone with an ssh or an https url.
+
+[[[
+$ git clone git@github.com:/ThierryGoubier/GitAndPharoTutorial
+]]]
+
+Create a FileTree repository from Monticello:
+
+--- add a screenshot of the dialog box.
+
+Modify and save the package inside Pharo into the repository. Open the repository: in that window note that only the latest version of the package is shown and that no history is available.
+
+--- add a screenshot of the repository.
+
+Drop to git command line to study the state of the repository.
+
+[[[
+$ git status
+]]]
+
+Note that nothing has been committed. Now you have to commit by hand to save the package with git.
+
+[[[
+$ git add ...
+$ git commit
+]]]
+
+Now, a few things we have to be aware: got back to Pharo, save the package two times. Then drop back to the command line inside the git repository and commit. Do a git log: you will see that out of the two version saved, only one (the last one) has been recorded. Note well the consequence: the version exist in the Monticello history, but not in the git history: temporarily, it may be recovered from your package cache and allow you to do a merge in Monticello... once not anymore in the cache, the version is definitely lost as well as probably your ability to do a merge over that version.
+
+Second issue: go back to Pharo, remove a method from a class in the package. Save the package. Go back to the command line and commit. Reload the package from the repository: you will notice that the method is back. This is caused by the fact git does not automatically remove files, and keep them. Note the git commit -a, the git add -A, commands doing the necessary remove.
+
+[[[
+$ git commit -a 
+]]]
+
+Recover a specific version with FileTree is a bit more involved. Drop to the git command line, checkout a specific commit.
+
+[[[
+$ git checkout b988b3a
+Note: checking out 'b988b3a'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b new_branch_name
+
+HEAD is now at b988b3a... Added BorderedMorph
+]]]
+
+Return in Pharo, open the repository or refresh a repository window. Note that the version number for the package is:
+
+--- Screenshot
+
+You can study the difference between the two versions. Before doing anything however, you need to go back to the command line and reset back to the master branch otherwise your saves will be done in a detached state.
+
+[[[
+$ git checkout master
+Previous HEAD position was b988b3a... Added BorderedMorph
+Switched to branch 'master'
+]]]
+
+Now, to update or push new changes, you use the relevant git commands. remember that unless you have cloned the GitAndPharoTutorial under your git account, you don't have the right to push.
+
+[[[
+$ git push
+$ git pull
+]]]
+
+!!! Merge
+
+--- Explain merging, using the sample repository.
+
+Merging is a key operation in a version control system and is one of the reasons to use Git with Pharo: to have Git record merge operations. We will restart with a clean version of the GitAndPharoTutorial:
+
+- With GitFileTree, add a remote git repository with the following data:
+
+[[[
+MCFileTreeGitRemoteRepository
+	location: 'git@github.com:ThierryGoubier/GitAndPharoTutorial'
+	name: 'GitAndPharoMerge'
+	subdirectory: ''
+	branch: ''
+]]]
+
+- With FileTree, clone the GitAndPharoTutorial repository in a new folder with:
+
+[[[
+$ git clone git@github.com:/ThierryGoubier/GitAndPharoTutorial GitAndPharoMerge
+]]]
+
+and add a FileTree repository on the GitAndPharoMerge folder.
+
+
+
+!!! Multi-user workflow
 
 Start with the centralised workflow. Shows that it works perfectly well when combined with an approach in Pharo which is one person, one package.
 
@@ -156,4 +260,5 @@ We now have one conflict left, a .st file, which can be resolved the usual way b
 
 !!!!Git MergeTool
 
-The final step in Git and Pharo integration will be to have a Git merge tool implemented in Pharo.
+The final step in Git and Pharo integration will be to have a Git merge tool implemented in Pharo. Such a tool already exist for the tode project.
+
