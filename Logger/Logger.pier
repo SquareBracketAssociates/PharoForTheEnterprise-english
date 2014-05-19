@@ -91,7 +91,7 @@ SystemLogger core is composed about 3 classes: ==Log==, ==SystemLogger== and ==L
 
 In addition, ==LogLevel== encapsulates the logic of defining a level. A logLevel represents a level of severity in log messages. There are default log levels which can be used via class methods such as ==critical==, ==error==, ==warning==, ==information==, ==debug== and ==trace==.
 
-+Core classes>file://figures/LogCore.png|width=50|label=logCore+
++Core classes>file://figures/logCore.png|width=50|label=logCore+
 
 
 
