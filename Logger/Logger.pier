@@ -211,7 +211,7 @@ create a textual trace in the Transcript as in the old days.
 The package already defines it. Now we will simply explain some key aspects of the solution. ==StringStreamLogger== is a special logger. It is a logger that emits formatted strings into a stream. It subclasses the class ==FormattingFormatter== and add the notion of stream as show in Figure *logExtension*.
 
 
-+A first extension>file://figures/LogExtension.png|width=50|label=logExtension+
++A first extension>file://figures/logExtension.png|width=50|label=logExtension+
 
 
 [[[
