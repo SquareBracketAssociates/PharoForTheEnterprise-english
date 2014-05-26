@@ -27,10 +27,10 @@ following expression.
 
 [[[
 Gofer new
-  repository: 'http://ss3.gemstone.com/ss/StoryBoard';
-  package: 'StoryBoard';
-  load.
-]]]
+    url: 'http://ss3.gemstone.com/ss/StoryBoard';
+    package: 'ConfigurationOfStoryBoard';
+    load.
+(Smalltalk at: #ConfigurationOfStoryBoard) project bleedingEdge load]]]
 
 In the following sections, we will develop a complete sample application.
 
