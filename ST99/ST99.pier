@@ -385,6 +385,8 @@ Going one step further: Now that you have a way to calculate both, Present Value
 That is which discount rate make the Net Present Value equal to zero. This concept, in finance is called the Internal Rate of Return (IRR) and it's a very important one. Some hints, you can use the Newton-Raphson method (which implies using mathematical derivates) or some sort of guessing algorithm using upper and lower bands.
 
 
+
+
 % Local Variables:
 % eval: (flyspell-mode -1)
 % End:
