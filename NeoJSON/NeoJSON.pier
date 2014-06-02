@@ -1,0 +1,38 @@
+
+
+
+
+
+!!Emitting null values
+
+When mapping my objects with NeoJSONWriter, it is not writing the properties whose values are null.
+
+[[[
+	NeoJSONPropertyMapping>>#writeObject: anObject on: jsonMapWriter
+	| value |
+	value := getter value: anObject.
+	value 
+		ifNotNil: [ jsonMapWriter writeKey: propertyName value: value as: valueSchema ] 
+]]]
+
+It is a good default (saves space, and cpu cycles). But in there are cases where the consumer of the JSON objects expect the objects to have all the attributes previously defined.
+
+NeoJSON is cool and it supports this behavior. Set the writeNil: to true as follows and you are done.
+
+[[[
+
+ String streamContents: [ :stream |
+    (NeoJSONWriter on: stream) 
+      writeNil: true;
+      mapAllInstVarsFor: Point;
+      nextPut: Point new.
+]]]
+which will give you:
+[[[
+  {"x":null,"y":null}
+]]]
+instead of:
+
+[[[
+  {}
+]]]
