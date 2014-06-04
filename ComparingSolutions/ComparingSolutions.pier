@@ -15,7 +15,7 @@ The main idea of this chapter is that you (the reader) can easily use Graph-ET a
 
 To understand how you can work with the ODE package, let's look at the example with ''Adams-Bashforth'' second order method.
 
-@@comment@@ May be you should give one example of an ODE and an example of 
+@@comment May be you should give one example of an ODE and an example of 
 
 Let's start. First of all you need to understand how this method works.  The Adams–Bashforth methods are multistep explicit methods. Numerical methods for ordinary differential equations approximate solutions to initial value problems of the form
  ''x' = f( t,x )'',  ''x( t@@0@@ ) = x@@0@@''. 
@@ -32,8 +32,8 @@ Multistep methods use information from the previous ''s'' steps to calculate the
 
 Now, we have the code, which does all previous steps, so if you are not interested, you can skip it.
 
-@@comment: may be you should split the methods with an initialize phase
-@@comment: I simplified the code. If you want I can do a code review of Math-ODE
+@@comment may be you should split the methods with an initialize phase
+@@comment I simplified the code. If you want I can do a code review of Math-ODE
 
 
 Fig *FigAB2Example* shows a typical test case for an Adams-Bashforth solver.
@@ -164,7 +164,7 @@ Gofer new
 (Smalltalk at: #ConfigurationOfSMark) load	
 ]]]
 
-@@we can use the configuration form to load. To verify
+@@note we can use the configuration form to load. To verify
 
 [[[
 Gofer new
