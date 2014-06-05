@@ -278,7 +278,7 @@ MyFirstWebApp>>handlePostRequest: request
   ^ ZnResponse redirect: #image
 ]]]
 
-Our standard response when something is wrong will be to return a Bad Request (code 400). We define this behaviour to a local variable so that we can reuse it multiple times over. The first test makes sure there actually is an entity in the POST request and that it is of the correct type. Next we handle the case when there is no file part. Finally, we make sure the file part is actually an image (JPEG, PNG or GIF) by matching with the wildcard image/* mime type.
+Our standard response when something is wrong will be to return a Bad Request (code 400). We define this behaviour to a local variable so that we can reuse it multiple times over. The first test makes sure there actually is an entity in the POST request and that it is of the correct type. Next we handle the case when there is no file part. Finally, we make sure the file part is actually an image (JPEG, PNG or GIF) by matching with the wildcard ==image/*== mime type.
 
 If you are curious, set a breakpoint in the method and inspect the request object of an actual request. You can learn an awful lot from looking at live objects.
 
@@ -455,11 +455,11 @@ If all is well, you now have a package called ==MyFirstWebApp== containing two c
 
 But our code currently only lives in our development image. Let's change that and move our code to a source code repository. For this we first have to define a Monticello package. Click on the package name in the first column of the browser and select the option 'Create an MC package'. Use the same name.
 
-@@pic: Creating a monticello package@@
+@@todo Creating a monticello packag
 
 Pharo uses distributed source code management. Your code can live on your local file system, or it can live on a server. The main place for storing Pharo code is on SmalltalkHub http://www.smalltalkhub.com. Go over there and create yourself a new account. Once you have an account, create and register a new project called =='MyFirstWebApp'==. You can leave the public option checked, it means that you and others can download the code without credentials. Go to the project's page.
 
-@@pic: MyFirstWebApp’s project page on SmalltalkHub@@
+@@todo MyFirstWebApp’s project page on SmalltalkHub
 
 On this page, select and copy the Monticello registration template (make sure to copy the whole contents, including the username and password parts). Now go back to Pharo and add a repository for your package (right-click on the package name, select Open...  Add a repository).
 
@@ -477,7 +477,7 @@ Now before accepting, fill in your user(name) and password (between the single q
 Open the Monticello Browser to see what we have done. Find your package in the first column and your repository in the second one.
 
 
-@@The Monticello Browser looking at our package and repository
+@@todo The Monticello Browser looking at our package and repository
 
 There should be a asterisk (==*==) in front of your package name, indicating that the package is dirty, that it has uncommitted changes. If not, force a change computation by clicking 'Changes' button. You should get a browser showing all the changes that you made. Since this is the first version, all your changes are additions.
 
@@ -563,9 +563,7 @@ For this guide, we will be using Digital Ocean. The entry level server there, wh
 
 !!!First part of the Create Droplet form
 
-A server instance is called a Droplet. Click the ‘Create Droplet ’ button and fill in the form. Pick a hostname, select the smallest size, pick a region close to you. As operating system image, we’ll be using a 32-bit Ubuntu
-http://zn.stfx.eu/zn/build-and-deploy-1st-webapp/ Page 33 of 43Building and deploying your first web app with Pharo 16/9/13 11:14 AM
-Linux, version 13.04 x32. You can optionally use an SSH key pair to log in - it is a good idea, see How to Use SSH Keys with DigitalOcean Droplets - just skip this option for now if you are uncomfortable with it, it is not necessary for this tutorial. Finally click the ‘Create Droplet’ button.
+A server instance is called a Droplet. Click the ‘Create Droplet ’ button and fill in the form. Pick a hostname, select the smallest size, pick a region close to you. As operating system image, we’ll be using a 32-bit Ubuntu Linux, version 13.04 x32. You can optionally use an SSH key pair to log in - it is a good idea, see How to Use SSH Keys with DigitalOcean Droplets - just skip this option for now if you are uncomfortable with it, it is not necessary for this tutorial. Finally click the ‘Create Droplet’ button.
 
 
 !!! Second part of the Create Droplet form
@@ -579,13 +577,13 @@ The important step now is to get SSH command line access to your new server, pre
   $ ssh root@82.196.12.54
 ]]]
 
-Your server is freshly installed and includes only the most essential core packages. Now we have to install Pharo on it. One easy way to do this is using the functionality offered by http://get.pharo.org. The following command will install a fresh Pharo 2.0 image together with all other files needed.
+Your server is freshly installed and includes only the most essential core packages. Now we have to install Pharo on it. One easy way to do this is using the functionality offered by *http://get.pharo.org*. The following command will install a fresh Pharo 2.0 image together with all other files needed.
 
 [[[
   # curl get.pharo.org/20+vm | bash
 ]]]
 
-Make sure the VM+image combination works by asking for the image version.
+Make sure the VM\+image combination works by asking for the image version.
 
 
 [[[
@@ -593,13 +591,13 @@ Make sure the VM+image combination works by asking for the image version.
 [version] 2.0 #20611
 ]]]
 
-Let’s quickly test the stock HTTP server that comes with Pharo, like we did in the third section of this guide.
+Let's quickly test the stock HTTP server that comes with Pharo, like we did in the third section of this guide.
 
 [[[
 # ./pharo Pharo.image eval --no-quit 'ZnServer startDefaultOn: 8080'
 ]]]
 
-This command will block. Now access your new HTTP server at http://82.196.12.54:8080 after substituting your own IP address of course. You should see the Zinc HTTP Components welcome page. If this works, you can press ctrl-C in the terminal to end our test.
+This command will block. Now access your new HTTP server at *http://82.196.12.54:8080* after substituting your own IP address of course. You should see the Zinc HTTP Components welcome page. If this works, you can press ctrl-C in the terminal to end our test.
 
 !! Deploying for production
 
@@ -645,7 +643,7 @@ ZnServer defaultOn: 8080.
 ZnServer default start.
 ]]]
 
-We added a little twist here: we changed the default root (/) handler to redirect to our new /image web app. Test the startup script like this
+We added a little twist here: we changed the default root (==/==) handler to redirect to our new ==/image== web app. Test the startup script like this
 
 [[[
 # ./pharo myfirstwebapp.image run.st
@@ -663,7 +661,7 @@ We added a little twist here: we changed the default root (/) handler to redirec
   2013-07-10 11:47:12 909356 I Wrote a ZnResponse(200 OK image/png 18778B)
 ]]]
 
-Surf to the correct IP address and port to test you application. Note that /welcome, /help and /image are still available too. Type ctrl-c to kill the server again. Now it is time to put the server in background, running for real.
+Surf to the correct IP address and port to test you application. Note that ==/welcome==, ==/help== and ==/image== are still available too. Type ctrl-c to kill the server again. Now it is time to put the server in background, running for real.
 
 [[[
 # nohup ./pharo myfirstwebapp.image run.st &
@@ -677,7 +675,7 @@ Add an extra section at the bottom of the main page that shows a miniature versi
 !!!Hint 1
 You can scale a form object into another one using just one message taking a single argument. You can use the same classes that we used for parsing as a tool to generate PNG, JPEG or GIF images given a form.
 
-When you are done, save your code as a new version. Then update your configuration with a new, stable version. Finally, go to the server, update your image based on the configuration and restart the running vm+image.
+When you are done, save your code as a new version. Then update your configuration with a new, stable version. Finally, go to the server, update your image based on the configuration and restart the running vm\+image.
 
 !!!Hint 2
 Change the #html method referring to a new variant, ==/image?previous=true==, for the second image. Adjust ==handleGetRequest:== to look for that attribute.
@@ -785,7 +783,7 @@ Congratulations: you have now built and deployed your first web app with Pharo. 
 This guide was an introduction to writing web applications using Pharo, touching on the fundamentals of HTTP. Like we mentioned in the introduction, there are a couple of high level frameworks that offer more extensive support for writing web applications. The three most important ones are Seaside, AIDAweb and Iliad.
 
 !!Listing
-Here is the full code listing of the web app. You can also find the code, including the tests and the Metacello configuration, checked in to SmalltalkHub in my MyFirstWebApp project. A similar example is also included in Zinc HTTP Components itself, under the name ZnImageExampleDelegate[Tests].
+Here is the full code listing of the web app. You can also find the code, including the tests and the Metacello configuration, checked in to SmalltalkHub in my MyFirstWebApp project. A similar example is also included in Zinc HTTP Components itself, under the name ==ZnImageExampleDelegate==[Tests].
 
 [[[
 Object subclass: #MyFirstWebApp
