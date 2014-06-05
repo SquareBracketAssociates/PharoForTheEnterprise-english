@@ -31,7 +31,7 @@
         {MetacelloIntro/}
         {NativeBoost/}
         {NeoCSV/}
-		{NeoJSON/}
+	{NeoJSON/}
         {ParseTreeRewriter/}
         {Reddit/}
         {NeoCSV/}
@@ -42,6 +42,7 @@
         {RenoirST/}
         {Voyage/}
         {Zinc/}
+        {WebApp/}
         {Smacc/}
         {GitAndPharo/}
 }
