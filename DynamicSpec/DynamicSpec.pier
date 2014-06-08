@@ -162,7 +162,7 @@ The editor needs to know what fields need to be created. On the class side of th
 we return an array of symbols representing the fields. This will do for the example, for a real
 application with differnt kinds of fields Magritte descriptions are much more suitable.
 
-[[[label=partyFields|caption=Array of feilds|language=Smalltalk 
+[[[label=partyFields|caption=Array of fields|language=Smalltalk 
 DOParty class >>fields
 	^self subclassResponsibility 
 	
@@ -371,7 +371,7 @@ to know that it should handle doubleClicks, and then call a partyeditor
 DOPartiesList>>initializePresenter 
 +	list handlesDoubleClick: true. 
 +	list doubleClickAction: [ |party edit| 
-+	 party := list selectedItem. 
-+	 edit := (DOPartyEditor on:  party class) openDialogWithSpec. 
-+	 self editParty: party in: edit] 
++		party := list selectedItem. 
++		edit := (DOPartyEditor on:  party class) openDialogWithSpec. 
++		self editParty: party in: edit] 
 ]]]
