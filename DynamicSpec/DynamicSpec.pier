@@ -123,7 +123,7 @@ DynamicComposableModel subclass: #DOPartyEditor
 	category: 'Domain-Parties'
 ]]]
 When we instantiate this editor, we'll tell it on what kind of party it operates and store that in the
-==partyClass==. On the instance side we add accessors and on the class side we use that in a constructor.
+ ==partyClass==. On the instance side we add accessors and on the class side we use that in a constructor.
 A ==DynamicComposableModel== has a complex initialization proces, so we use a separate ==basicNew==
 and ==initialize== to set the ==partyClass== early enough.
 [[[label=kindOfParty|caption=The class needs to know what kind of party to edit|language=Smalltalk 
@@ -181,21 +181,20 @@ They are then laid out in one column, given some default values and added in foc
 DOPartyEditor>>initializeWidgets
 	|models|
 	models := OrderedCollection new.
-	partyClass fields do: [ :field | models add: field; add: #TextInputFieldModel  ].
+	partyClass fields do: [ :field | models add: field; add: #TextInputFieldModel ].
 	self instantiateModels: models.
 	
 	layout := SpecLayout composed
 		newColumn: [ :col |
 			partyClass fields do: [ :field | 
 				col add: field height: self class inputTextHeight]];
-		yourself .
+		yourself.
 		
 	 self widgets keysAndValuesDo:  [ :key :value |
 		value autoAccept: true;
 			entryCompletion:nil;
 			ghostText: key.
-		self focusOrder add: value] .
-
+		self focusOrder add: value] 
 ]]]
 
 The last thing needed is to calculate how large the window should be. It is going to be used 
@@ -206,13 +205,12 @@ DOPartyEditor>>initialExtent
 	^ 300@(self class inputTextHeight*(3+partyClass fields size))
 ]]]
 
-Now we can test the editor with ==(DOPartyEditor on: DOCompany) openDialogWithSpec== and
-==(DOPartyEditor on: DOPerson) openDialogWithSpec==
+Now we can test the editor with ==(DOPartyEditor on: DOCompany) openDialogWithSpec== and ==(DOPartyEditor on: DOPerson) openDialogWithSpec==
 
 !!! The address book
 
 We can now make the address book with a search field and buttons to add persons and companies.
-Add a class
+Add a class ==DOPartiesList==
 
 [[[label=partiesList|caption=Create a class to show the list of parties|language=Smalltalk 
 ComposableModel subclass: #DOPartiesList
@@ -254,9 +252,11 @@ DOPartiesList>>initializeWidgets
 		add: addPerson;
 		add: addCompany;
 		add: list.
-		
-DOPartiesList class >>defaultSpec
-	<spec: #default>>
+]]]
+
+[[[label=partiesListWidgets|caption=The widgets for the parties list|language=Smalltalk 	
+DOPartiesList class>>defaultSpec
+	<spec: #default>
 		
 	^SpecLayout composed
 		newColumn: [ :col |
@@ -269,11 +269,8 @@ DOPartiesList class >>defaultSpec
 		yourself
 ]]]
 
-When the user clicks on the ok button of the party editor, we need to create an instance of the right
-subclass, read the field values out of the editor and assign them to the attributes of the new instance.
-We do that using meta-programming (==perform:== and ==perform:with:==). 
-Then we add the instance to the model and need to refresh the list. Add a method setting the okAction
-block of the editor. 
+When the user clicks on the ok button of the party editor, we need to create an instance of the right subclass, read the field values out of the editor and assign them to the attributes of the new instance. We do that using meta-programming (==perform:== and ==perform:with:==). 
+Then we add the instance to the model and need to refresh the list. Add a method setting the ==okAction== block of the editor. 
 
 [[[label=addAParty|caption=Adding a party|language=Smalltalk 
 DOPartyList>>addPartyBlockIn: anEditor
@@ -315,7 +312,9 @@ DOPartyList>>list
 DOPartyList>>search
 	^search
 ]]]
+
 protocol
+
 [[[label=partiesListProtocol|caption=Protocol|language=Smalltalk 
 DOPartyList>>resetSelection
 	list resetSelection 
@@ -324,6 +323,7 @@ DOPartyList>>title
 	^ 'Parties'
 ]]]
 and protocol-events
+
 [[[label=partiesListProtocolEvents|caption=Protocol events|language=Smalltalk 
 DOPartyList>>whenAddCompanyClicked: aBlock 
 	addCompany whenActionPerformedDo: aBlock
@@ -338,9 +338,7 @@ DOPartyList>>whenSelectedItemChanged: aBlock
 This can be tested with ==DOPartiesList new openWithSpec==
 
 !!! Editing Parties
-A next step is the editing of existing instances. 
-In the DOPartiesList, we need to use a NewListModel instead of the ListModel, 
-as that understands doubleClick actions. 
+A next step is the editing of existing instances. In the ==DOPartiesList==, we need to use a ==NewListModel== instead of the ==ListModel==, as that understands doubleClick actions. 
 
 [[[label=editingChanges|caption=Replace list by newlist|language=Smalltalk 
 DOPartiesList>>initializeWidgets 
@@ -348,7 +346,7 @@ DOPartiesList>>initializeWidgets
 +	list := self instantiate: NewListModel. 
 ]]]
 
-To edit a party, we modify addPartyBlockIn: anEditor to create editParty:in:. 
+To edit a party, we modify ==addPartyBlockIn: anEditor== to create ==editParty:in:==. 
 We set the data values and the title. In the okAction we don't have to add the party. 
 
 [[[label=editAParty|caption=Edit instead of add|language=Smalltalk 
