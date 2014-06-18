@@ -403,7 +403,7 @@ MyFirstWebAppTests>>testMainPage
 In ==testMainPage== we do a request for the main page, /image, and assert that the request is successful and contains HTML. Make sure the test is green by running it from the system browser (click the round icon in front of the method name in the fourth pane).
 
 
-@@puc@@
+@@todo puc
 
 Let's try to write a test for the actual raw image being served.
 
