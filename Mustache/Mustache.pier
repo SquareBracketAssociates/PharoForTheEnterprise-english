@@ -146,10 +146,10 @@ prints the output
 
 The dictionary given as partials: argument is supposed to be a dictionary that contains MustacheTemplates itself. A dictionary of strings will do as well because the strings are converted internally.
 
-!! how about json?
+!! How about json?
 
 Json is really easy to apply to the templates. You should install the NeoJSON package. 
-After that it is just
+After that it is just as simple as the following example: 
 
 [[[
 'I can use {{name}} easily with {{format}}' asMustacheTemplate 
