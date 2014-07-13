@@ -23,7 +23,7 @@ MCHttpRepository
 
 !! How to use Mustache?
 
-Mustache takes two arguments as input: (1) a template and (2) a context object (which is a list of bindings) and called a hash in Mustache jargon.
+Mustache takes two arguments as input: (1) a template and (2) a context object (which is a list of bindings) called a hash in Mustache jargon.
 
 A simple Mustache template looks like this (taken literally from the Mustache documentation available at *http://mustache.github.io/mustache.5.html*):
 
@@ -35,7 +35,7 @@ Well, ${{taxed_value}}, after taxes.
 {{/in_ca}}'.
 ]]]
 
-Given a context object with some contents
+Given a context object with some bindings
 
 [[[
 context := {
@@ -45,7 +45,7 @@ context := {
   'in_ca' -> true } asDictionary
 ]]]
 
-We execute the template
+We execute the template. 
 
 [[[
 (MustacheTemplate on: templateString) value: context
@@ -72,7 +72,7 @@ As context object we can use Dictionaries and Objects. Dictionaries need to have
 
 !! Sections
 
-Sections render blocks of text one or more times based on the value of the key in the current context. A section is delimited by a pound hash sign and slash. The pound sign begins it and the slash sign ends it. That is, =={{#number}}== begins a "number" section while {{/number}} ends it.
+Sections render blocks of text one or more times based on the value of the key in the current context. We present such behavior in the following sections. A section is delimited by a pound hash sign and slash. The pound sign begins it and the slash sign ends it. That is, =={{#number}}== begins a "number" section while {{/number}} ends it.
 
 [[[
 templateString := '{{#number}}
@@ -80,7 +80,7 @@ templateString := '{{#number}}
 {{/number}}'
 ]]]
 
-!! Unbound variable or false
+!! Unbound, empty or false variable
 
 When a variable defining a section is set, the section is activated. 
 For example, here the =='number'== is bound to true and the =='Shown too'== text is shown.
@@ -156,35 +156,52 @@ context := { 'number2' -> '' } asDictionary.
 ]]]
 
 
-!! Working with lists
+!! Working with non-empty lists
 
-We can use collections to make loop constructs in templates. The pounds and and slash characters are delimiting the beginning and the end of a section.
+We can use collections to make loop constructs in templates. 
 
+If the section key exists and has a non-false value, the text between the pound and slash will be rendered and displayed one or more times.
+
+When the value is a non-empty collection, the text in the block will be displayed once for each item in the list. The context of the block will be set to the current item for each iteration. In this way we can loop over collections.
 
 [[[
-templateString := 'A list of numbers
+| templateString context |
+templateString := 'Shown.
+{{#number}}
+  Shown too!
+{{/number}}'.
+context := { 'number' -> #( 1 2 3) } asDictionary.
+(MustacheTemplate on: templateString) value: context 
+ 'Shown.
+
+  Shown too!
+
+  Shown too!
+
+  Shown too!
+'
+]]]
+
+Now we can iterate
+
+[[[
+| templateString context |
+templateString :=  'A {{ label }} list of numbers
 {{# list }}
 Number: {{ number }}
 {{/ list }}'.
-]]]
-
-A context object with content
-
-[[[
-{
-   'label' -> 'fine.
+context := {
+   'label' -> 'fine'.
    'list' -> { 
       { 'number' -> 1 } asDictionary.
       { 'number' -> 2 } asDictionary.
     }
-} asDictionary
-]]]
+} asDictionary.
+(MustacheTemplate on: templateString) value: context  
+ 'A fine list of numbers
 
-gives us the output
-
-[[[
-'A list of numbers
 Number: 1
+
 Number: 2
 '
 ]]]
@@ -211,7 +228,7 @@ By default if a template uses a variable that is not defined in a context, it...
 
 !! And Blocks as well
 
-We can use blocks in context objects. They will be evaluated at the time the template is filled out.
+We can use blocks in context objects. They are evaluated at the time the template is filled out.
 
 [[[
 'The alphabet: {{ alphabet }}' asMustacheTemplate 
@@ -223,6 +240,20 @@ prints
 [[[
 The alphabet: abcdefghijklmnopqrstuvwxyz
 ]]]
+
+This other example shows that we can access the value of a section. 
+
+[[[
+| template result |
+template := MustacheTemplate on: '{{#wrapped}} {{name}} is awesome {{/wrapped}}'.
+result := template value: { 
+		'name' -> 'Willy'.
+		'wrapped' -> [ :render | '<b>',  render value, '</b>' ]  } asDictionary  .
+result
+
+'<b> Willy is awesome </b>'.
+]]]	
+
 
 
 !! Partial templates
