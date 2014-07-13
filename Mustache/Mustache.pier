@@ -1,6 +1,6 @@
 !Mustache Templates for Pharo
 
-Norbert Hartl developed a Mustache package for Pharo.   Mustache is a popular templating engine that is supported in many programming languages *http://mustache.github.io*. This chapter is an introduction to this package and a mini tutorial to get started with Mustache. It is based on the original blog written by Norbert.
+Norbert Hartl developed a Mustache package for Pharo.   Mustache is a popular templating engine that is supported in many programming languages *http://mustache.github.io*. This chapter is an introduction to this package and a mini tutorial to get started with Mustache. It is based on the original blog written by Norbert and we extended it to offer a larger covering of the Mustache features.
 
 The syntax of Mustache is small and covers a wide range of use cases. Mustache is simple and versatile. You can use it for many usages. We will show how Mustache is used in Pillar the system used to generate this book. Although it was designed to be a templating engine for HTML pages it is useful in different areas.
 
@@ -69,9 +69,97 @@ Well, $6000.0, after taxes.
 
 As context object we can use Dictionaries and Objects. Dictionaries need to have a key that is used in the template and Objects need a selector with the same name. In this chapter we use Dictionaries because they are easier to illustrate with.
 
+
+!! Sections
+
+Sections render blocks of text one or more times based on the value of the key in the current context. A section is delimited by a pound hash sign and slash. The pound sign begins it and the slash sign ends it. That is, =={{#number}}== begins a "number" section while {{/number}} ends it.
+
+[[[
+templateString := '{{#number}}
+  Never shown!
+{{/number}}'
+]]]
+
+!! Unbound variable or false
+
+When a variable defining a section is set, the section is activated. 
+For example, here the =='number'== is bound to true and the =='Shown too'== text is shown.
+There are some special cases where the section is not activated: when the variable is missing, when its value is set to false, or an empty list (or string). The following examples illustrated such behavior. 
+
+[[[| templateString context |
+templateString := 'Shown.
+{{#number}}
+  Shown too!
+{{/number}}'.
+context := { 'number' -> true } asDictionary.
+(MustacheTemplate on: templateString) value: context 
+ 'Shown.
+
+  Shown too!
+'
+]]]
+
+The same happens when number is bound to another value such as 2.
+
+[[[
+| templateString context |
+templateString := 'Shown.
+{{#number}}
+  Shown too!
+{{/number}}'.
+context := { 'number' -> 2 } asDictionary.
+(MustacheTemplate on: templateString) value: context 
+
+ 'Shown.
+
+  Shown too!
+'
+]]]
+
+Now when the variable is bound to false, the section is not activated.
+
+[[[
+| templateString context |
+templateString := 'Shown.
+{{#number}}
+  Shown too!
+{{/number}}'.
+context := { 'number' -> false } asDictionary.
+(MustacheTemplate on: templateString) value: context 
+ 'Shown.
+'
+]]]
+
+Similarly when the binding is an empty string or an empty collection.
+[[[
+| templateString context |
+templateString := 'Shown.
+{{#number}}
+  Shown too!
+{{/number}}'.
+context := { 'number' -> '' } asDictionary.
+(MustacheTemplate on: templateString) value: context 
+ 'Shown.
+'
+]]]
+
+[[[
+| templateString context |
+templateString := 'Shown.
+{{#number}}
+  Shown too!
+{{/number}}'.
+context := { 'number2' -> '' } asDictionary.
+(MustacheTemplate on: templateString) value: context 
+ 'Shown.
+'
+]]]
+
+
 !! Working with lists
 
-We can use collections to make loop constructs in templates
+We can use collections to make loop constructs in templates. The pounds and and slash characters are delimiting the beginning and the end of a section.
+
 
 [[[
 templateString := 'A list of numbers
@@ -100,6 +188,25 @@ Number: 1
 Number: 2
 '
 ]]]
+
+
+
+
+
+!! UnescapedToken 
+
+
+
+
+
+[[[
+| template result |
+template := MustacheTemplate on: 'This is a test for {{& name }}.'.
+result := template value: { 'name' -> '&' } asDictionary .
+result = 'This is a test for &.'.
+]]]
+
+By default if a template uses a variable that is not defined in a context, it....
 
 
 !! And Blocks as well
