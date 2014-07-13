@@ -1,6 +1,8 @@
 !Mustache Templates for Pharo
 
-Norbert Hartl developed a Mustache package for Pharo. This chapter describes it. Mustache is a popular templating engine that is supported in many programming languages. The syntax is small and covers a wide range of use cases. Maybe I should say that I didn’t find something I can’t do with it so far. Although it was designed to be a templating engine for HTML pages it is useful in different areas.
+Norbert Hartl developed a Mustache package for Pharo.   Mustache is a popular templating engine that is supported in many programming languages *http://mustache.github.io*. This chapter is an introduction to this package and a mini tutorial to get started with Mustache. It is based on the original blog written by Norbert.
+
+The syntax of Mustache is small and covers a wide range of use cases. Mustache is simple and versatile. You can use it for many usages. We will show how Mustache is used in Pillar the system used to generate this book. Although it was designed to be a templating engine for HTML pages it is useful in different areas.
 
 
 !! Getting Started
@@ -21,7 +23,9 @@ MCHttpRepository
 
 !! How to use Mustache?
 
-A simple Mustache template looks like this (taken from the documentation):
+Mustache takes two arguments as input: (1) a template and (2) a context object (which is a list of bindings) and called a hash in Mustache jargon.
+
+A simple Mustache template looks like this (taken literally from the Mustache documentation available at *http://mustache.github.io/mustache.5.html*):
 
 [[[
 templateString := 'Hello {{ name }}
@@ -31,7 +35,7 @@ Well, ${{taxed_value}}, after taxes.
 {{/in_ca}}'.
 ]]]
 
-Given a context object with content
+Given a context object with some contents
 
 [[[
 context := {
@@ -41,7 +45,7 @@ context := {
   'in_ca' -> true } asDictionary
 ]]]
 
-we execute the template
+We execute the template
 
 [[[
 (MustacheTemplate on: templateString) value: context
@@ -53,15 +57,15 @@ or
 templateString asMustacheTemplate value: context
 ]]]
 
-We get the following output
+We get the following output: 
 
 [[[
-Hello Chris
+'Hello Chris
 You have just won $10000!
-Well, $6000.0, after taxes.
-]]]
 
-Note: You’ll get a lot more newlines and whitespaces than the string shown here. It is not clear to me what the rules are for condensing whitespace. The will be changed in an upcoming version of mustache
+Well, $6000.0, after taxes.
+'
+]]]
 
 As context object we can use Dictionaries and Objects. Dictionaries need to have a key that is used in the template and Objects need a selector with the same name. In this chapter we use Dictionaries because they are easier to illustrate with.
 
@@ -157,6 +161,29 @@ After that it is just as simple as the following example:
 ]]]
 Copy that to pharo workspace and execute to see the result.
 
+
+!! Example
+
+Here is a schematic way how Mustache is used by pillar.
+
+[[[
+pillarString := '! Some text
+
+-item1
+-item2'.
+
+pillarDocument := PRDocumentParser parse: pillarString.
+
+htmlString := PRHTMLWriter write: pillarDocument .
+
+'main.template.html' asFileReference mustacheTemplateDuring: [ :template|
+
+'result.html' asFileReference writeStreamDo: [ :outStream |
+
+    outStream nextPutAll: (template value: { 'contents' -> htmlString
+} asDictionary)
+     ]]
+]]]
 
 !! Templates made easy
 
