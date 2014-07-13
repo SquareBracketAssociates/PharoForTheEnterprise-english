@@ -254,6 +254,38 @@ result
 '<b> Willy is awesome </b>'.
 ]]]	
 
+!! Example of Menu Generation 
+
+[[[
+	| template result |
+	template := MustacheTemplate on: '<ul>
+	{{#entries}}<li class="menuEntry{{#active}} active{{/active}}">{{label}}</li>
+	{{/entries}}
+</ul>' .
+	result := template 
+		value: { 'entries' -> {   
+			{ 'label' -> 'first' } asDictionary. 
+			{ 'label' -> 'second' . 'active' -> true } asDictionary.
+			{ 'label' -> 'third' } asDictionary } } asDictionary.
+	self assert: result = '<ul>
+	<li class="menuEntry">first</li>
+	<li class="menuEntry active">second</li>
+	<li class="menuEntry">third</li>
+	
+</ul>'
+]]]
+
+!! Inverted Sections
+An inverted section begins with a caret and ends with a slash. That is =={{^list}} begins a "list" inverted section while {{/list}} ends it. While sections are used to render text one or more times based on the value of the key, inverted sections may render text once based on the inverse value of the key. That is, they will be rendered if the key doesn't exist, is false, or is an empty collection.
+
+[[[
+MustacheTemplate on: 'list{{^ list }} is {{/ list}}displayed'.
+result := template value: { 
+		'list' -> false
+	} asDictionary.
+result 
+'list is displayed'
+]]]
 
 
 !! Partial templates
