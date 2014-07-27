@@ -72,15 +72,25 @@ SoundPlayer stopPlayerProcess.
 SoundPlayer Startup
 ]]]
 
+A little tip before we go any further on the sound rendering. Default reverb is added to the sound played. Under certain conditions can lead to a certain softness in rendering but in our case this discovery can also distort what we hear.
+
+To disable rendering with reverb run the command
+
+[[[
+SoundPlayer stopReverb
+]]]
+
+Or restart if you prefer with
+
+[[[
+SoundPlayer startReverb
+]]]
 
 
 
+!!FM synthesis basis by example
 
-
-
-!!Basis of FM Synthesis
-
-Maintenant que nous nous sommes assurés que le son était fonctionnel,  nous allons découvrir comment celui-ci est généré. Prenons le code de la méthode qui définit l'instrument ==organ1==:
+Now that we have verified that the sound system is functional, we will discover how it is generated. Consider the method that defines the instrument ==organ1==:
 
 [[[
 FMSound class>>organ1
@@ -93,35 +103,35 @@ FMSound class>>organ1
                               points: { 0@0 . 60@1.0 . 110@0.8 . 200@1.0 . 250@0.0} 
                               loopStart: 2 loopEnd: 4).
 	sound setPitch: 440.0 duration: 1.0 loudness: 0.5.
-        ^ snd
+	^ snd
 ]]]
 
+Let's look at this method:
 
-Etudions cette méthode:
-
-Tout d'abord, elle crée une nouvelle instance de la classe ==FMSound==.
+First, it creates a new instance of the class ==FMSound== using the message ==new== as follows:
 
 [[[
-sound := self new.
+	sound: = self new.
 ]]]
 
-Elle définit ensuite un ensemble de points afin de créer une enveloppe de volume. Pour chaque point la première donnée exprime une durée en milliseconde, la seconde un volume exprimé de 0 à 1 (1 étant égal à 100% du volume).
- 
+
+It then defines a set of points to create a volume envelope. For each point in the first term expresses a given millisecond, a second volume expressed from 0 to 1 (1 being 100% of the volume).
+
 [[[
 sound addEnvelope: (VolumeEnvelope
                       points: { 0@0 . 60@1.0 . 110@0.8 . 200@1.0 . 250@0.0}
                       loopStart: 2 loopEnd: 4).
 ]]]
 
-Nous remarquons qu'une enveloppe se caractérise d'après un ensemble de points et d'une boucle. La méthode associée est ==points:loopStart:loopEnd:==. Une boucle peut aussi bien utiliser l'ensemble des points définis ou 1 seul.
+We note that an envelopg is characterized by a set of points and a loop. The associated method is ==points:loopStart:loopEnd: ==. A loop may as well use all the defined point or 1 alone.
 
-Par exemple ici on ajoute au son une enveloppe avec une boucle allant des indices 2 à 4 (l'indice 1 correspondant la première valeur du tableau).
-La séquence suivante est jouée pour des valeurs oscillant entre 0.8 et 1. Le volume du son semble vibrer.
+
+For example here is added to the envelope with a loop indices from 2-4 (1 being the index value of the first table). The following sequence is performed for varying between 0.8 and 1 values. Sound volume seems to vibrate.
 [[[
-60@1.0 . 110@0.8 . 200@1.0
+60@1.0. 110@0.8. 200@1.0
 ]]]
 
-Si nous avions voulu maintenir le volume à un certain niveau, nous aurions écris l'enveloppe comme ceci
+If we want to keep the volume at a certain level, we would write the envelope like this
 
 [[[
 sound addEnvelope: (VolumeEnvelope
@@ -136,6 +146,16 @@ Finalement, la méthode retourne le son avec comme paramètre la note (ici expri
 [[[
 ^ sound setPitch: 440.0 duration: 1.0 loudness: 0.5
 ]]]
+
+
+The sound ends with the value ==250@0.0== and a loop now the volume to 0 throughout its duration.
+
+Finally, the method returns the sound with the note as a parameter (here expressed in Hz, see table *frequence*), the second term and an overall volume of the note. This volume is then modulated by the envelope is defined.
+
+[[[
+ ^ Sound SetPitch: 440.0 duration: 1.0 loudness: 0.5
+]]]
+
 
 @frequence
 
