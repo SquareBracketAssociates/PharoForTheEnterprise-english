@@ -177,43 +177,38 @@ Finally, the method returns the sound with the note as a parameter (here express
 
 !!How to play your own sound?
 
-Nous allons vous montrer comment nous allons créer notre propre son. 
-Commençons par jouer un ==LA== de la manière suivante:
+We'll show you how we will create our own sound.
+Start by playing a ==A== follows:
 
 [[[
 (FMSound new setPitch: 440 duration: 1.0 loudness: 1) play
 ]]]
 
-Le son est joué à une fréquence de 440 Hz pendant 1 seconde avec un volume maximum.
 
-La classe ==FMSound== permet la génération de sons sinusoïdaux. Ça donne un son assez doux et régulier. La figure *sinusoide* ci dessous montre à quoi ressemble la courbe.
+The sound is played at a frequency of 440 Hz for 1 second with a maximum volume.
+The class ==FMSound== provides generation of sine tones. It gives a fairly smooth and even sound. Figure*sinusoide* below shows how the curve looks like.
 
 +Sinusoïde produite>file://figures/sin.png|width=75|label=sinusoide+
 
-Une chose à savoir, est qu'au lieu de définir une note par sa fréquence nous pouvons l'écrire dans sa notation anglaise. Le tableau ""*notation*"" va nous indiquer les correspondances pour plus de facilité. Par exemple, le LA est représenté dans la notation anglaise par un 'a'. Pour obtenir le LA de la quatrième octave nous demandons a4.
 
-Le ==LA== de tout à l'heure peut s'écrire maintenant sous cette forme
+One thing to know is that instead of defining a note by its frequency we can write in the English notation. Table @frequence   shows that an A at octave 4 has a frequence of 440Hz. 
+
+Therefore to produce an A we can now write it as the following:
 
 [[[
 (FMSound new setPitch: 'a4' duration: 1.0 loudness: 1) play
 ]]]
 
-@notation
-
-|!|Anglais|C|C#|D|D#|E|F|F#|G|G#|A|A#|H
-|!|Français|Do|Do#|Re|Re#|Mi|Fa|Fa#|Sol|Sol#|La|La#|Si
-
-Le ==SOL#==  par exemple s'écrit
+We can also generate other notes.
 
 [[[
 (FMSound new setPitch: 'g#4' duration: 1.0 loudness: 1) play
 ]]]
 
-@@comment encore une fois passer une chaine ou un nombre est horrible. cela serait bien de faire le menage dans ce code. - XM: Tu verrais quoi à la place ? deux interfaces differentes et commune qui accepte les deux. setPitchForFrequence: aNumber setPitchForNote: setPitch
 
 !! Playing several sounds in sequence
 
-Jouer un son c'est bien, mais en jouer deux c'est mieux. Pour cela nous avons à notre disposition une classe nommée ==SequentialSound==. Comme son nom l'indique nous allons pouvoir jouer les sons de manière séquentielle.
+Playing a sound is good, but two is even better. For that we have at our disposal a class named ==SequentialSound==. As the name suggests we can play sounds in sequence.
 
 [[[
 | seq |
@@ -224,53 +219,55 @@ seq add: (FMSound new setPitch: 'g#4' duration:0.5 loudness: 1).
 seq play.
 ]]]
 
-Si nous écoutons les sons générés, nous pouvons percevoir un petit clap entre chaque transitions de notes. Afin d'éviter cela nous allons appliquer une enveloppe de volume sur chacune des notes. Ceci est fait comme suit:
- 
+If we listen to the sounds generated, we can perceive a small clap transitions between each note. To avoid this we will apply a volume envelope on each note. This is done as follows:
+
 [[[
 points := { 0@0 . 10@1 . 400@0.4 . 500@0}.
 ]]]
 
-La note jouée est à son maximum au début puis repasse progressivement à 0 au bout de 500ms. L'enveloppe étant définie sur une durée égale à la durée de la note la transition se fait plus naturellement et sonne mieux à l'oreille.
+The played note is at its maximum at the beginning and then gradually returns to 0 after 500ms. The envelope is defined for a period equal to the duration of the note transition occurs naturally and sounds better to the ear.
 
-@@todo enveloppe qui fait quoi? est ce correct ce que j'ai ecrit et pourquoi 0 pour le premier? Oui ca me paraît correcte. Le zéro correspond au début du son. On est alors au maximum du volume. Par contre je n'ai jamais fais le test de ne pas définir le 0. Peut être est on déjà à 1 ? a creuser.
 
-Voyons ce que donne notre code précédent avec une enveloppe de volume
+See what gives our previous code with a volume envelope
 
 [[[
 | seq snd1 snd2 snd3 points |
-"Declaration des sons"
+"Sounds creation"
 seq := SequentialSound new.
 snd1 := FMSound new.
 snd2 := FMSound new.
 snd3 := FMSound new.
 
-"Creation du volume pour les instruments"
+"Volume creation"
 points := { 0@0 . 10@1 . 400@0.4 . 500@0}.
 
-"Generation des notes"
+"Generation of notes"
 snd1 setPitch: 'g#4' duration:0.5 loudness: 1.
 snd2 setPitch: 'a3' duration:0.5 loudness: 1.
 snd3 setPitch: 'g#4' duration:0.5 loudness: 1.
 
-"Application de l'enveloppe aux sons"
+"Application  of envelope to sounds"
 snd1 addEnvelope: (VolumeEnvelope points: points loopStart: 4  loopEnd: 4).
 snd2 addEnvelope: (VolumeEnvelope points: points loopStart: 4  loopEnd: 4).
 snd3 addEnvelope: (VolumeEnvelope points: points loopStart: 4  loopEnd: 4).
 
-"Les sons les uns a la suite des autres"
 seq add: snd1.
 seq add: snd2.
 seq add: snd3.
 
-"On joue le tout"
+"Playing"
 seq play.
 ]]]
 
-La séquence est maintenant plus agréable à écouter.
+The sequence is now more pleasant to listen to.
+
+
 
 !!Playing several sounds simultaneously 
 
-Jouer des sons en séquence c'est bien mais pas encore suffisant pour donner une âme à notre production. Pour cela nous allons utiliser La classe ==MixedSound==. Elle va littéralement mixer plusieurs sons en même temps.
+Play sounds in sequence but it is still not enough to give a soul to our production. For this we will use class ==MixedSound==.
+It will literally mixing several sounds at the same time.
+
 
 [[[
 | mix snd1 snd2 points |
@@ -278,14 +275,11 @@ mix := MixedSound new.
 snd1 := FMSound new.
 snd2 := FMSound new.
 
-"Creation du volume pour les instruments"
 points := { 0@0 . 10@1 . 400@0.4 . 500@0}.
 
-"Generation des notes"
 snd1 setPitch: 'a4' duration:1 loudness: 1.
 snd2 setPitch: 'a3' duration:1 loudness: 1.
 
-"Application de l'enveloppe aux sons"
 snd1 addEnvelope: (VolumeEnvelope points: points loopStart: 4  loopEnd: 4).
 snd2 addEnvelope: (VolumeEnvelope points: points loopStart: 4  loopEnd: 4).
 
@@ -294,28 +288,29 @@ mix add: snd1 pan: 0; add: snd2 pan: 1.
 mix play.
 ]]]
 
-Modifions un peu les valeurs de l'attaque à l'aide de la méthode ==setPitch:duration:loudness:== pour obtenir des notes différentes et nous familiariser avec les méthodes. Les enveloppes de volume modifient la courbe du son au cours du temps et peuvent être utilisées pour obtenir des effets particuliers.
 
-Par exemple si nous voulions rajouter un effet d'écho à notre son il faudrait modifier les points de l'enveloppe de volume par
+Let's modify some values of the attack using the method ==setPitch: duration: loudness:== for different notes and familiarize ourselves with the messages. The volume change of the envelope curve of the sound over time and can be used to obtain special effects.
+
+For example if we wanted to add an echo effect to our sound should change the points of the envelope volume
 
 [[[
 points := { 0@1 . 100@0.6  . 200@0 . 300@0.2 . 400@0.1 . 500@0 }.
 ]]]
 
-et la déclaration des enveloppes par
+and envelope definitions
+
 
 [[[
 snd1 addEnvelope: (VolumeEnvelope points: points loopStart: 6  loopEnd: 6).
 snd2 addEnvelope: (VolumeEnvelope points: points loopStart: 6  loopEnd: 6).
 ]]]
 
-Dans notre exemple nous avons également utiliser le message ==pan:== qui va positionner le son en stéréo. Une valeur de ==0== pour gauche et ==1== pour droite. Une valeur de ==0.5== place le son au milieu.
+In our example we also use the message  ==pan:== that will position the sound in stereo. ==0== for left and ==1== for right. A value of  ==0.5== places the sound in the middle.
 
-Nous allons réutiliser l'exemple plus haut et lui rajouter de la stéréo.
-
+We will reuse the example above and add stereo to it.
 [[[
 | mix seq1 seq2 seq3 snd1 snd2 snd3 points rest rest2 |
-"Declaration des sons"
+
 mix := MixedSound new.
 rest := RestSound new.
 rest2 := RestSound new.
@@ -326,67 +321,60 @@ snd1 := FMSound new.
 snd2 := FMSound new. 
 snd3 := FMSound new.
 
-"Creation du volume pour les instruments"
 points := { 0@1 . 400@0.4 . 500@0}.
 
-"Generation des notes"
 snd1 setPitch: 'g#4' duration:0.5 loudness: 1.
 snd2 setPitch: 'a3' duration:0.5 loudness: 1.
 snd3 setPitch: 'g#4' duration:0.5 loudness: 1.
 rest duration: 0.5.
 rest2 duration: 0.5.
 
-"Application de l'enveloppe aux sons"
 snd1 addEnvelope: (VolumeEnvelope points: points loopStart: 3  loopEnd: 3).
 snd2 addEnvelope: (VolumeEnvelope points: points loopStart: 3  loopEnd: 3).
 snd3 addEnvelope: (VolumeEnvelope points: points loopStart: 3  loopEnd: 3).
 
-"Les sons les uns a la suite des autres"
 seq1 add: snd1.
 seq2 add: rest; add: snd2.
 seq3 add: rest; add: rest2; add: snd3.
 
-mix add: seq1 pan:0.
-mix add: seq2 pan:0.5.
-mix add: seq3 pan:1.
-"On joue le tout"
+mix add: seq1 pan: 0.
+mix add: seq2 pan: 0.5.
+mix add: seq3 pan: 1.
+
 mix play.
 ]]]
 
-Dans ce nouvel exemple nous avons introduit une nouvelle classe de son ==RestSound== pour créer un silence.
-Elle ne possède qu'un seul message ==duration:== exprimé en seconde générant un son plus ou moins long.
+In this new example, we introduced a new class of its ==RestSound== to create a silence.
+It has only one message ==duration:== expressed in seconds.
 
-La méthode ==SequentialSound== possède une limitation. Regardons l'exemple suivant pour voir ce qu'il se passe
+The class ==SequentialSound==  has a limitation. Look at the following example to see what happens
+
 
 [[[
 | seq snd1 snd2 snd3 |
-"Declaration des sons"
 seq := SequentialSound new.
 snd1 := FMSound new.
 snd2 := FMSound new.
 snd3 := FMSound new.
 
-"Generation des notes"
 snd1 setPitch: 'g#4' duration:0.5 loudness: 1.
 snd2 setPitch: 'a3' duration:0.5 loudness: 1.
 snd3 setPitch: 'g#4' duration:0.5 loudness: 1.
 
-"Les sons les uns a la suite des autres"
-"Le resultat ne va pas etre celui attendu"
 seq add: snd1.
 seq add: snd2.
 seq add: snd3.
 seq add: snd2.
 
-"On joue le tout"
 seq play.
 ]]]
 
-Normalement nous devrions entendre 4 sons joués à la suite, or il n'y en a que 3. Visiblement nous ne pouvons pas réutiliser un son déjà déclaré. Cette méthode n'est pas adaptée pour ce que nous souhaitons faire. Pour cela il existe une autre classe qui va répondre à notre besoin: ==QueueSound== 
+Normally we shauld hear 4 sounds played in sequence, or there are only 3. Obviously we can not reuse the already used. This approache is not suitable for what we want to do. For this there is another class that will meet our needs: ==QueueSound==
 
-Remplaçons la ligne ==seq := SequentialSound== par ==seq := QueueSound== et écoutons de nouveau notre exemple. Nous entendons bien nos 4 sons. Le tour est joué !
+Replace the line ==seq := SequentialSound == by == seq := QueueSound == and listen again our example. We listen well our 4 sounds. Voila!
 
-!!Envelops
+
+!!Envelopes
 
 Nous avons introduit une première enveloppe qui agit sur le volume d'un son. Il y en a une autre qui change la note ou plutôt sa fréquence pendant qu'elle est jouée, c'est ce qu'on appelle l'attaque de la note, le pitch en anglais.
 De la même manière que pour le volume nous allons définir un ensemble de points qui indiqueront le moment du changement de la fréquence du son. Plus la valeur est haute, plus la note sera haute. Si on indique un chiffre négatif, la note descendra en dessous de la note de départ. Nous définissons donc une enveloppe mais cette fois-ci une enveloppe d'attaque en utilisant la classe ==PitchEnvelope==.
