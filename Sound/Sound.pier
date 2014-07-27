@@ -1,74 +1,82 @@
 !An Introduction To Sound
 
-In this chapter we will present an uncommon facet of Pharo: sound synthesis. Pharo offers a nice library to create and play various sounds.
-As soon as we need to put some sound in an application one think either to mp3 or sampled sounds. In Pharo we get several tools and libraries to create from scratch synthetised sounds as well as to play samples. We will show how we can do that with a couple of lines of code. 
+In this chapter we will present an uncommon facet of Pharo: sound synthesis. Pharo offers a nice library to create and play various sounds. As soon as we need to put some sound in an application one think either to mp3 or sampled sounds. In Pharo we get several tools and libraries to create from scratch synthetized sounds as well as to play samples. We will show how we can do that with a couple of lines of code. This version is an english translation of an original french version. The author thank Kilon for his first traduction of this chapter.
 
 
 !! Getting Started
 
-Tout d'abord récupérer et installer la dernière version 30 de Pharo à l'adresse: http://www.pharo.org/.
-Le plus simple restant d'exécuter le script de téléchargement qui suit dans un shell. 
+!!! Getting Pharo
+
+First we need to get and install the latest version 30 Pharo at: http://www.pharo.org/. The easiest remaining to run the script download the following in a shell.
 
 [[[
-curl get.pharo.org/30+vmLatest | bash 
+curl get.pharo.org/30 vmLatest + | bash
 ]]]
 
-ou si curl n'est pas disponible: 
+or curl if not available:
 
 [[[
-wget -O- get.pharo.org/30+vmLatest | bash
+wget-O-get.pharo.org/30 vmLatest + | bash
 ]]]
 
-D'autres scripts de téléchargement sont disponibles à l'adresse http://get.pharo.org. 
+Other scripts are available for download at http://get.pharo.org. The GUI starts with ==/.pharo-ui pharo.image==
 
-Une fois obtenue vous devez charger le package PharoSound en utilisant 
-- soit le configurationBrowser (comme le montre la Figure *configurationBrowser*) qui se trouve dans le menu Tools. Entrer ==Sound== dans la zone de texte pour sélectionner le package, puis presser le bouton 'Install Stable Version'.
-+Configuration browser: un gestionnaire de packages>file://figures/configurationBrowser.pdf|width=50|label=configurationBrowser+
-- soit Gofer le gestionnaire de packages:
+!!! Loading Sound
 
+Once Pharo installed, you must download the package PharoSound using: 
+- either the ConfigurationBrowser  (as shown in Figure *configurationBrowser*) which is found in the Tools menu. Enter ==Sound== in the text box to select the package, then press the 'Install Stable Version' button.
+
++Configuration browser: a package manager>file://figures/configurationBrowser.pdf|width=50|label=configurationBrowser+
+
+- either Gofer the package manager:
 [[[
 Gofer new
-	smalltalkhubUser: 'PharoExtras' project: 'Sound';
+	smalltalkhubUser 'PharoExtras' project 'Sound';
 	package: 'ConfigurationOfPharoSound';
 	load.
 (#ConfigurationOfPharoSound asClass project version: #stable) load
 ]]]
 
 
-!!! Checking
+!!! Setup verification
 
-Avant de se familiariser avec les différentes méthodes utiles, nous allons nous assurer que notre environnement puisse jouer un son convenablement. Pour cela on va ouvrir un workspace (depuis le menu Tools) et évaluer la ligne de code suivante en sélectionnant l'expression puis en utilisant l'item 'Do it' du menu. Nous vous expliquerons par la suite ce dont il s'agit. Notez que dans un workspace pour exécuter une ligne il suffit d'y positionner le curseur de la souris et de presser alt-d (cela équivaut à sélectionner la ligne et utiliser le menu). Pour sélectionner un bloc d'instructions rapidement placez la souris au tout début ou à la fin du bloc et cliquez, cela a pour effet de tout sélectionner. 
+We now will verify that our environment can play a sound properly. To do this simply open a workspace (from the Tools menu) and evaluate the following line of code by selecting the expression and then using the item 'Do it' menu. We will explain later what it is. Note that in a workspace to run a line it is enough to move the mouse cursor and pressing alt-d (this is equivalent to select the line and use the menu). To select a block of instructions quickly position the mouse at the beginning or at the end of the block and click, this has the effect of selecting all.
 
 [[[
 FMSound organ1 play.
 ]]]
 
-Si aucun son n'est produit vous pouvez vérifier ces premiers points: 
+If you have sound you can skip the next paragraph, if not here are some ways to get sound working.
+
+
 
 +Settings>file://figures/SoundSetting.pdf|width=50|label=setting+
 
--Le volume sonore de votre OS n'est pas correctement ajusté ou en mode muet
--Vérifier que le son est permis dans votre image Pharo. Pour cela ouvrez le Setting Browser depuis le menu Tools, tapez sound dans la barre et cliquez sur le radio bouton. Vous devez obtenir un système proche de l'image montrée par la figure *setting*.
+- Enable sound in Pharo. Check that the sound setting is enabled in your Pharo. To set it, open the Settings Browser from the Tools menu. Then type ==sound==  in the bar and click the radio buttons to get close to the image shown in Figure *setting*.
 
--Le plugin sonore n'est pas installé (Linux).
+- The volume of your system is too low or muted
+- Pulseaudio is enabled (on virtually all current distributions)
 
-@@todo Indiquer la marche à suivre ou une page internet l'indiquant ?
-@@todo Aussi mais il faut que cela fonctionne je vais ouvrir un bug
+By default the Linux archive does not carry a pulseaudio plugin, only using Alsa plugin is possible. We will disable the sound server temporarily. It should not be restarted automatically when we stop.
 
-#Télécharger la dernière version de *Squeak 4.4>http://ftp.squeak.org/4.4/Squeak-4.4-All-in-One.zip*
-#Décompresser l'archive dans le répertoire de votre choix.
-#Copier le fichier se trouvant dans ==Contents/Linux-i686/lib/squeak/4.4.7-2357/so.vm-sound-pulse== dans ==bin/vm-sound-pulse==.
-#Changer les droits du plugins avec ==chmod +x bin/vm-sound-pulse==.
 
-@@comment est-ce que sous les autres OS le son est actif d'origine ?
-@@todo cela depend de l'image et pas des OS. Maintenant le plugin sound sur linux n'est plus a jour et on va le fixer.
+# Create ==/homefile/[user]/.pulse/client.conf== if there is no
+# Add parameter ==autospawn = no==
+# Delete the current process with the command ==pulseaudio -k== with your user account. To restart when you want, run the command ==pulseaudio -D==.
 
--Le processus sonore interne ne fonctionne plus. Il faut l'arrêter puis le relancer en évaluant les expressions suivantes:
+
+- Restart internal sound player process. It may also happen that the noise process no longer works. You can use the following commands to reset
 
 [[[
 SoundPlayer stopPlayerProcess.
-SoundPlayer startUp
+SoundPlayer Startup
 ]]]
+
+
+
+
+
+
 
 !!Basis of FM Synthesis
 
