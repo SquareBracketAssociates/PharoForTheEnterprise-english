@@ -376,8 +376,9 @@ Replace the line ==seq := SequentialSound == by == seq := QueueSound == and list
 
 !!Envelopes
 
-Nous avons introduit une première enveloppe qui agit sur le volume d'un son. Il y en a une autre qui change la note ou plutôt sa fréquence pendant qu'elle est jouée, c'est ce qu'on appelle l'attaque de la note, le pitch en anglais.
-De la même manière que pour le volume nous allons définir un ensemble de points qui indiqueront le moment du changement de la fréquence du son. Plus la valeur est haute, plus la note sera haute. Si on indique un chiffre négatif, la note descendra en dessous de la note de départ. Nous définissons donc une enveloppe mais cette fois-ci une enveloppe d'attaque en utilisant la classe ==PitchEnvelope==.
+We introduced a first envelope which acts on the volume of a sound. There is another that changes the note or rather its frequency as it is played. This is called the attack of the note, the pitch in English.
+
+In the same way as for the volume we will define a set of points which indicates the time of change of the sound frequency. The higher the value, the higher the rating will be high. If a negative number is indicated, the rating drops below the starting note. We define an envelope but this time using the class ==PitchEnvelope==.
 
 [[[
 | snd p |
@@ -387,7 +388,8 @@ snd addEnvelope: (PitchEnvelope points: p loopStart: 7  loopEnd:7).
 (snd setPitch: 'a4' duration: 2 loudness: 0.5) play.
 ]]]
 
-La transition entre les différentes fréquences se fait en douceur et sans cassures. Nous allons rajouter à cela une enveloppe de volume pour produire un son plus intéressant.
+
+The transition between different frequencies is smooth and without cracks. We will add to this a volume envelope to produce a more interesting sound .
 
 [[[
 | snd p p2 |
@@ -399,56 +401,49 @@ snd addEnvelope: (VolumeEnvelope points: p2 loopStart: 7  loopEnd: 7).
 (snd setPitch: 'a4' duration: 2 loudness: 0.5) play.
 ]]]
 
-Le volume est dans notre exemple très variable, l'ensemble des points ont été définis manuellement. Imaginons maintenant que nous voulions le réduire progressivement jusqu'à 0. Nous aurions à définir un certains nombre de points afin pour produire une courbe décroissante. C'est faisable, fastidieux et surtout la courbe ne produirait pas l'effet souhaité.
-Au lieu de la définir points par points nous allons utiliser une méthode appelée ==exponentialDecay:== de la classe ==VolumeEnvelope== pour le volume ou la classe ==PitchEnvelope== pour le pitch. La courbe sera de type exponentielle partant du volume le plus élevé pour arriver en douceur à 0.
 
-La définition du volume devient alors ceci:
+The volume varies a lot in our example because all the points have been set manually. Now imagine that we wanted to gradually reduce to 0. We would have to define a number of points to produce a decreasing curve. It is doable, but it is tedious and the curve may not produce the desired effect. Instead of this manual approach, we will use a message called  ==exponentialDecay:== of ==VolumeEnvelope==  for the volume or class ==PitchEnvelope==  for the pitch. The curve exponentially starts with the highest volume and arrive smoothly to 0.
+
+The definition of volume becomes this:
 
 [[[
 snd addEnvelope: (VolumeEnvelope exponentialDecay: 0.9).
 ]]]
 
-La valeur doit être impérativement plus grande que 0 et plus petite que 1. Pour connaître l'ensemble des points générés il suffit de faire un ""clic droit/Print it"" sur la ligne de code suivante
+The value must be strictly greater than 0 and smaller than 1. To know the points generated just select the following expression  and select the print it menu item. 
 
 [[[
 (VolumeEnvelope exponentialDecay: 0.2) points.
 ]]]
 
-Nous obtenons le résultat suivant
+We get the following result
 
 [[[
 {(0@0.0). (10@1.0). (20@0.2). (30@0.04000000000000001). (50@0.0)}
 ]]]
 
-Plus la valeur est grande plus le nombre de valeurs sera important.
-
-Nous pouvons visualiser à quoi ressemble notre enveloppe en ouvrant le morph ==EnvelopeEditorMorph== comme ceci
+The higher the value, the greater the number of values​is important. We can visualize what it is like our shell by opening the  ==EnvelopeEditorMorph== like this: 
 
 [[[
 EnvelopeEditorMorph new openInWorld
 ]]]
 
-Sélectionnez l'ensemble de la ligne et faites ""clic droit/Do it"". Une fenêtre apparaît comme celle présentée en figure *EnvelopeEditorMorph*.
 
-+Editeur d'enveloppe>file://figures/envelopeEditorMorph.png|width=75|label=EnvelopeEditorMorph+
+Select the entire line and do "right/Do it click." A window appears as shown in Figure  *EnvelopeEditorMorph*.
 
-Vous pouvez l'agrandir en la sélectionnant avec ""shit + clic droit"" puis en déplaçant l'ancre en bas à droite de la fenêtre comme sur la figure *EnvelopeEditorMorphAnchor*
++Envolpe Editor>file://figures/envelopeEditorMorph.png|width=75|label=EnvelopeEditorMorph+
 
-+Ancre>file://figures/envelopeEditorMorphAnchor.png|width=75|label=EnvelopeEditorMorphAnchor+
+You can enlarge it by selecting it with ""shit + right click"" then moving the anchor at the bottom right of the window as shown in Figure *EnvelopeEditorMorphAnchor*
 
-Le morph expose les courbes de l'instrument et nous permet de les modifier en déplaçant les points le composant. Vous pouvez passer d'une courbe à l'autre soit en la sélectionnant directement dans la fenêtre, soit en la choisissant dans le menu ==editing== en bas à gauche du morph.
++Anchor>file://figures/envelopeEditorMorphAnchor.png|width=75|label=EnvelopeEditorMorphAnchor+
 
-En abscisse nous avons le temps en millisecondes. L'ordonnée se modifie en fonction de la courbe choisie. Nous avons également 3 délimitations représentées par les axes verticaux de couleur orange. Les deux plus à gauche sont utilisées pour la boucle lorsque la note est tenue, ce sont les paramètres ==loopStart:loopEnd:==. La plus à droite c'est lorsque la note est relâchée. Nous pouvons également les déplacer en fonction de nos besoins en utilisant les triangles orange au dessus de la courbe des abscisses. A noter qu'il n'est pas possible d'avoir sur le morph une boucle d'une durée inférieur à 50ms, comme il n'est pas possible d'avoir une valeur de début de boucle différente de la valeur de fin. Ce qui paraît logique si nous souhaitons obtenir une boucle harmonieuse.
 
-Pour rajouter un point sur une partie de la courbe il suffit de cliquer sur les petits triangles verts pour faire apparaître le point correspondant. Ce point peut être ensuite déplacer pour être positionné à la valeur souhaitée.
-@@todo peut on supprimer un point une fois qu'il a été créé ? en même temps vu que le morph est là uniquement pour tester, est ce vraiment utile ?
+ The Editor exposes the curves of the instrument and allows us to change the points. You can switch from one curve to the other is by selecting directly in the window, or by selecting it from the menu ==editing== at the bottom left of the editor.
 
-Je vous invite à tester toutes ces possibilités et à écouter le résultat obtenu grâce au clavier de piano disponible.
-@@todo Il faudra rajouter dans le morph d'autres timbres ou du moins faire en sorte qu'il n'y ait pas d'erreur si on veut en sélectionner un autre. A essayer de rajouter en correction.
+In abscissa we have the time in milliseconds. The ordinate is modified in accordance with the selected curve. We also have 3 boundaries represented by the vertical orange axes. The two on the left are used for loop when the note is held, are the parameters ==loopStart:loopEnd:==. Rightmost is when the note is released. We can also move according to our needs using the orange triangles above the curve abscissa. Note that it is not possible with the editor to have a loop of less than 50ms duration, as it is not possible to have a loop start value different from the value end. Which makes sense if we want to get a smooth loop.
 
-Les enveloppes viennent compléter nos connaissances sur la génération du son. Nous savons donc jouer un son, plusieurs sons les uns après les autres ou encore plusieurs joués en même temps.
+To add a point on a portion of the curve just click on the little green triangles to display the corresponding point. This point can then move to be positioned at the desired value. We invite you to test all these possibilities and listen to the result obtained with the piano keyboard available. Envelopes complement our knowledge on the generation of sound. So we know play a sound, more sounds one after the other or several played simultaneously.
 
-Nous avons entre nos mains pratiquement tous les outils pour écrire notre première mélodie, que disons-nous, notre première super production !
 
 !!Playing a melody
 
