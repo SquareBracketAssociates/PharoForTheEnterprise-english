@@ -60,12 +60,12 @@ If you have sound you can skip the next paragraph, if not here are some ways to 
 By default the Linux archive does not carry a pulseaudio plugin, only using Alsa plugin is possible. We will disable the sound server temporarily. It should not be restarted automatically when we stop.
 
 
-# Create ==/homefile/[user]/.pulse/client.conf== if there is no
+# Create the file ==/home/[user]/.pulse/client.conf== if it does not exist
 # Add parameter ==autospawn = no==
 # Delete the current process with the command ==pulseaudio -k== with your user account. To restart when you want, run the command ==pulseaudio -D==.
 
 
-- Restart internal sound player process. It may also happen that the noise process no longer works. You can use the following commands to reset
+- Restart internal sound player process. It may also happen that the sound process no longer works. You can use the following commands to reset
 
 [[[
 SoundPlayer stopPlayerProcess.
@@ -115,7 +115,7 @@ First, it creates a new instance of the class ==FMSound== using the message ==ne
 ]]]
 
 
-It then defines a set of points to create a volume envelope. For each point in the first term expresses a given millisecond, a second volume expressed from 0 to 1 (1 being 100% of the volume).
+It then defines a set of points to create a volume envelope. For each point the first data expresses a duration in milliseconds, follows a given volume expressed from 0 to 1 (1 being equal to 100% of volume).
 
 [[[
 sound addEnvelope: (VolumeEnvelope
@@ -123,10 +123,10 @@ sound addEnvelope: (VolumeEnvelope
                       loopStart: 2 loopEnd: 4).
 ]]]
 
-We note that an envelopg is characterized by a set of points and a loop. The associated method is ==points:loopStart:loopEnd: ==. A loop may as well use all the defined point or 1 alone.
+We note that an envelopg is characterized by a set of points and a loop. The associated method is ==points:loopStart:loopEnd: ==. A loop can either use the set of points defined or only 1.
 
 
-For example here is added to the envelope with a loop indices from 2-4 (1 being the index value of the first table). The following sequence is performed for varying between 0.8 and 1 values. Sound volume seems to vibrate.
+For example by adding to an envelope with its loop indices ranging 2-4 (1 being the index value of the first table). The following sequence is performed for varying between 0.8 and 1 values. Sound volume seems to vibrate.
 [[[
 60@1.0. 110@0.8. 200@1.0
 ]]]
@@ -139,23 +139,13 @@ sound addEnvelope: (VolumeEnvelope
                       loopStart: 5 loopEnd: 5).
 ]]]
 
-Le son se termine avec la valeur ==250@0.0== et une boucle maintenant le volume à 0 pendant toute sa durée.
+The sound ends with the value == == 250@0.0 and a loop now the volume to 0 throughout its duration.
 
-Finalement, la méthode retourne le son avec comme paramètre la note (ici exprimée en Hz, voir tableau ""*frequence*""), la durée en seconde et un volume global de la note. Ce volume sera ensuite modulé grâce à l'enveloppe qui est définie.
+Finally, the method returns the sound with the note as a parameter (here expressed in Hz, see table "" * frequency * ""), the duratin in second and an overall volume of the note. This volume is then modulated by the envelope is defined.
 
 [[[
 ^ sound setPitch: 440.0 duration: 1.0 loudness: 0.5
 ]]]
-
-
-The sound ends with the value ==250@0.0== and a loop now the volume to 0 throughout its duration.
-
-Finally, the method returns the sound with the note as a parameter (here expressed in Hz, see table *frequence*), the second term and an overall volume of the note. This volume is then modulated by the envelope is defined.
-
-[[[
- ^ Sound SetPitch: 440.0 duration: 1.0 loudness: 0.5
-]]]
-
 
 @frequence
 
@@ -186,12 +176,11 @@ Start by playing a ==A== follows:
 
 
 The sound is played at a frequency of 440 Hz for 1 second with a maximum volume.
-The class ==FMSound== provides generation of sine tones. It gives a fairly smooth and even sound. Figure*sinusoide* below shows how the curve looks like.
+The class ==FMSound== provides generation of sine tones. It gives a fairly smooth and even sound. Figure *sinusoid* below shows how the curve looks like.
 
-+Sinusoïde produite>file://figures/sin.png|width=75|label=sinusoide+
++Sinusoid>file://figures/sin.png|width=75|label=sinusoide+
 
-
-One thing to know is that instead of defining a note by its frequency we can write in the English notation. Table @frequence   shows that an A at octave 4 has a frequence of 440Hz. 
+One thing to know is that instead of defining a note by its frequency we can write in the English notation. Table @frequence shows that an A at octave 4 has a frequence of 440Hz. 
 
 Therefore to produce an A we can now write it as the following:
 
@@ -206,7 +195,7 @@ We can also generate other notes.
 ]]]
 
 
-!! Playing several sounds in sequence
+!!Playing several sounds in sequence
 
 Playing a sound is good, but two is even better. For that we have at our disposal a class named ==SequentialSound==. As the name suggests we can play sounds in sequence.
 
