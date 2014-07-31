@@ -3,9 +3,9 @@
 In this chapter we will present an uncommon facet of Pharo: sound synthesis. Pharo offers a nice library to create and play various sounds. As soon as we need to put some sound in an application one think either to mp3 or sampled sounds. In Pharo we get several tools and libraries to create from scratch synthetized sounds as well as to play samples. We will show how we can do that with a couple of lines of code. This version is an english translation of an original french version. The author thank Kilon for his first traduction of this chapter.
 
 
-!! Getting Started
+!!Getting Started
 
-!!! Getting Pharo
+!!!Getting Pharo
 
 First we need to get and install the latest version 30 Pharo at: http://www.pharo.org/. The easiest remaining to run the script download the following in a shell.
 
@@ -21,7 +21,7 @@ wget-O-get.pharo.org/30 vmLatest + | bash
 
 Other scripts are available for download at http://get.pharo.org. The GUI starts with ==/.pharo-ui pharo.image==
 
-!!! Loading Sound
+!!!Loading Sound
 
 Once Pharo installed, you must download the package PharoSound using: 
 - either the ConfigurationBrowser  (as shown in Figure *configurationBrowser*) which is found in the Tools menu. Enter ==Sound== in the text box to select the package, then press the 'Install Stable Version' button.
@@ -38,7 +38,7 @@ Gofer new
 ]]]
 
 
-!!! Setup verification
+!!!Setup verification
 
 We now will verify that our environment can play a sound properly. To do this simply open a workspace (from the Tools menu) and evaluate the following line of code by selecting the expression and then using the item 'Do it' menu. We will explain later what it is. Note that in a workspace to run a line it is enough to move the mouse cursor and pressing alt-d (this is equivalent to select the line and use the menu). To select a block of instructions quickly position the mouse at the beginning or at the end of the block and click, this has the effect of selecting all.
 
@@ -358,7 +358,7 @@ seq add: snd2.
 seq play.
 ]]]
 
-Normally we shauld hear 4 sounds played in sequence, or there are only 3. Obviously we can not reuse the already used. This approache is not suitable for what we want to do. For this there is another class that will meet our needs: ==QueueSound==
+Normally we should hear 4 sounds played in sequence, or there are only 3. Obviously we can not reuse the already used. This approache is not suitable for what we want to do. For this there is another class that will meet our needs: ==QueueSound==
 
 Replace the line ==seq := SequentialSound == by == seq := QueueSound == and listen again our example. We listen well our 4 sounds. Voila!
 
@@ -457,7 +457,7 @@ We will write our first song with an air should remember good memories to all th
 
 
 
-!!! New element definition
+!!!New element definition
 
 Start by defining a new instrument. In order not to complicate our exercise, we will use the ==FMSound== class in which we will define some new methods. Note that to be cleaner and more modular, we should define our own package and classes.
 
@@ -665,7 +665,7 @@ mix add: q1 pan: 0 volume: 0.100;
 mix play.
 ]]]
 
-!! Conclusion
+!!Conclusion
 We showed you a small part of Pharo opportunities for the creation and manipulation of sounds. We hope that you will experiment and have fun with Pharo.
 
 
