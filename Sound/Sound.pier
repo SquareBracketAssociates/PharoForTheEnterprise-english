@@ -365,9 +365,9 @@ Replace the line ==seq := SequentialSound == by == seq := QueueSound == and list
 
 !!Envelopes
 
-We introduced a first envelope which acts on the volume of a sound. There is another that changes the note or rather its frequency as it is played. This is called the attack of the note, the pitch in English.
+We introduced a first envelope which acts on the volume of a sound. There is another that changes the note or rather its frequency as it is played. This is called the pitch in English.
 
-In the same way as for the volume we will define a set of points which indicates the time of change of the sound frequency. The higher the value, the higher the rating will be high. If a negative number is indicated, the rating drops below the starting note. We define an envelope but this time using the class ==PitchEnvelope==.
+In the same way as for the volume we will define a set of points which indicates the time of change of the sound frequency. The higher the value, the higher the note will be. If a negative number is indicated, the rating drops below the starting note. We define an envelope but this time using the class ==PitchEnvelope==.
 
 [[[
 | snd p |
@@ -411,7 +411,7 @@ We get the following result
 {(0@0.0). (10@1.0). (20@0.2). (30@0.04000000000000001). (50@0.0)}
 ]]]
 
-The higher the value, the greater the number of values is. We can visualize what it is like our shell by opening the ==EnvelopeEditorMorph== like this: 
+The higher the value, the greater the number of values is. We can visualize what envelope looks like by opening the ==EnvelopeEditorMorph== like this: 
 
 
 [[[
@@ -419,7 +419,7 @@ EnvelopeEditorMorph new openInWorld
 ]]]
 
 
-Select the entire line and do "rightDo it click". A window appears as shown in Figure  *EnvelopeEditorMorph*.
+Select the entire line and do ""right click/Do it"". A window appears as shown in Figure  *EnvelopeEditorMorph*.
 
 +Envelope Editor>file://figures/envelopeEditorMorph.png|width=75|label=EnvelopeEditorMorph+
 
