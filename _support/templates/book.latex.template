@@ -31,7 +31,8 @@
         {MetacelloIntro/}
         {NativeBoost/}
         {NeoCSV/}
-	{NeoJSON/}
+		{NeoJSON/}
+		{Sound/}
         {ParseTreeRewriter/}
         {Reddit/}
         {NeoCSV/}
