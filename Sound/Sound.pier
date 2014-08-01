@@ -433,7 +433,7 @@ You can enlarge it by selecting it with ""shift and right click"" then moving th
 In abscissa we have the time in milliseconds. The ordinate is modified in accordance with the selected curve. We also have 3 boundaries represented by the vertical orange axes. The two on the left are used for loop when the note is held, are the parameters ==loopStart:loopEnd:==. We can also move according to our needs using the orange triangles above the curve abscissa. Note that it is not possible with the editor to have a loop of less than 50ms duration, as it is not possible to have a loop start value different from the value end. This makes sense if we want to get a smooth loop.
 
 
-To add a point on a portion of the curve just click on the little green triangles to display the corresponding point. This point can then be positioned at the desired value. We invite you to test all these possibilities and listen to the result obtained with the piano keyboard available. Envelopes complement our knowledge on the generation of sound. So we know play a sound, more sounds one after the other or several played simultaneously.
+To add a point on a portion of the curve just click on the little green triangles to display the corresponding point. This point can then be positioned at the desired value. We invite you to test all these possibilities and listen to the result obtained with the piano keyboard available. Envelopes complement our knowledge on the generation of sound. So we know play a sound, several sounds one after the other or several played simultaneously.
 
 !!Playing a melody
 
@@ -446,7 +446,7 @@ FMSound bachFugue play
 The music is composed of a sequence of notes. We now know how to write such a sequence but for an entire melody is not suitable. It is necessary to do otherwise. We will describe all the notes in a table. The format is ==(note length volume)==.
 
 
- The note can be written in its literal form or with its frequency in hertz. The duration is expressed in milliseconds. The volume meanwhile is a value between 0 and 1000. Than 1000 sound may be caused to saturate but can be useful in some cases to give an effect. Here is an example of declaring a sequence
+ The note can be written in its literal form or with its frequency in hertz. The duration is expressed in milliseconds. The volume meanwhile is a value between 0 and 1000. A value higher than 1000 may saturate the sound. It can be can be useful in some cases to give an effect. Here is an example of declaring a sequence
 
 [[[
 notes := #((a3 200 150) (a4 100 150) (g3 150 150))
@@ -457,7 +457,7 @@ We will write our first song with an air should remember good memories to all th
 
 
 
-!!!New element definition
+!!!Define a new instrument
 
 Start by defining a new instrument. In order not to complicate our exercise, we will use the ==FMSound== class in which we will define some new methods. Note that to be cleaner and more modular, we should define our own package and classes.
 
