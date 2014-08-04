@@ -176,9 +176,9 @@ Start by playing a ==A== follows:
 
 
 The sound is played at a frequency of 440 Hz for 1 second with a maximum volume.
-The class ==FMSound== provides generation of sine tones. It gives a fairly smooth and even sound. Figure *sinusoid* below shows how the curve looks like.
+The class ==FMSound== provides generation of sine tones. It gives a fairly smooth and even sound. Figure *sinewave* below shows how the curve looks like.
 
-+Sinusoid>file://figures/sin.png|width=75|label=sinusoide+
++sinewave>file://figures/Sinewave.png|width=75|label=sinewave+
 
 One thing to know is that instead of defining a note by its frequency we can write in the English notation. Table @frequence shows that an A at octave 4 has a frequence of 440Hz. 
 
