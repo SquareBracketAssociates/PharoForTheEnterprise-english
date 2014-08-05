@@ -466,48 +466,42 @@ To define a method we will use a class browser: For this
 - In the left pane, then right-click ==Find Class==
 - Enter in the text box ==FMSound ==, then select it
 
-You should get a browser such as that of FIG *systemBrowser*
+You should get a browser like in figure *systemBrowser*
 
 +System browser: a class navigator>file://figures/SystemBrowser.pdf|width=100|label=systemBrowser+
-
-
-Comme les méthodes que nous définissons sont des méthodes qui créent des instances de ==FMSound== par opposition à des méthodes qui agissent sur des instances de la classe ==FMSound== nous allons les définir sur le coté classe de la classe ==FMSound==. Pour cela:
-
-- cliquez sur le radio bouton 'Class side'
-- à l'aide du menu de la troisième liste en partant de la gauche (liste des protocoles de méthodes - il s'agit de simple classeurs de rangement), ajoutez un protocole nommé par exemple 'new instruments'.
-- sélectionner le nouveau protocole puis ajouter la méthode ==fm1== suivante. Pour ajouter une méthode, tapez le corps de la méthode puis utiliser l'entrée 'Accept' qui compile la méthode. 
 
 As methods that we define are methods that create instances of ==FMSound=== as opposed to methods that operate on instances of the class ==FMSound==, we define them on the class side of ==FMSound==: 
 
 - Click on the radio button 'Class side'
-- Using the menu list in the third from the left (list of protocol methods), add a protocol (Add protocol) named for example 'new instruments'.
-- Select the new protocol and then add the following method == == fm1. To add a method, type the body of the method in the panel provided for this purpose (bottom left) and then use the entry 'Accept' menu (right click) compiles the method and then use the shortcut Alt ==s==.
+- Using the menu in the third list from the left (list of protocol methods), add a protocol (Add protocol) named for example 'new instruments'.
+- Select the new protocol and then add the following method ==fm1==. To add a method, type the body of the method in the panel provided for this purpose (bottom left) and then use the entry 'Accept' menu (right click) compiles the method and then use the shortcut Alt ==s==.
 
 [[[
 fm1
 	| snd |
 	snd := self new.
 	snd addEnvelope: (VolumeEnvelope points: { 0@1 . 300@0 }
-					 				 loopStart: 2
-									 loopEnd: 2).
+		loopStart: 2
+i		loopEnd: 2).
 	snd modulation: 1 ratio: 2.
 	^ snd
 ]]]
 
-You should obtain a situation similar to the one presented in Figure *fm1*
+You should obtain a situation similar to the one presented in figure *fm1*
 
 +System browser sur une méthode de classe>file://figures/fm1.pdf|width=100|label=fm1+
 
 Verify that your new instrument operates by executing ==FMSound fm1 play==
 
 We  define another instrument by copying it to allow you to experiment.
+
 [[[
 fm2
 	| snd |
 	snd := self new.
 	snd addEnvelope: (VolumeEnvelope points: { 0@1 . 300@0 }
-					 				 loopStart: 2
-									 loopEnd: 2).
+		loopStart: 2
+		loopEnd: 2).
 	snd modulation: 1 ratio: 2.
 	^ snd
 ]]]
@@ -515,7 +509,7 @@ fm2
 Now declare the same way the method ==pacman==  to mix all the tracks that will be created using methods  ==pacmanV10:== and ==pacmanV20:==.
 
 [[[
-FMSound class>>pacman
+pacman
 	"comment stating purpose of message"
 
 	^ MixedSound new 
@@ -527,7 +521,7 @@ When you compile the method, Pharo will check that all invoked methods exist. If
 
 The following two methods contain all the notes to be played with the triplet note, duration and volume.
 [[[
-FMSound class>>pacmanV1On: aSound
+pacmanV1On: aSound
 
 	| notes |
 	notes := #(
@@ -547,7 +541,7 @@ The method ==noteSequenceOn:from:== generates a sequence of notes (e.g. Sequenti
 
 
 [[[
-FMSound class>>pacmanV2On: aSound
+pacmanV2On: aSound
 	| notes |
 	notes := #(
         (b1 0.432 500) (b2 0.144 500) (b1 0.432 500) (b2 0.144 500) (c2 0.432 500)
@@ -559,8 +553,6 @@ FMSound class>>pacmanV2On: aSound
 ]]]
 
 If your melody notes use low frequency volume it will be difficult to hear. To remedy to this, increase the volume of notes. Here we increase the volume to 500, unlike the previous melody where we stayed at 150. Now we just have to play the melody: ==FMSound play pacman==.
-
-
 
 !!Playing a sample
 
