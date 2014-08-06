@@ -3,9 +3,9 @@
 In this chapter we will present an uncommon facet of Pharo: sound synthesis. Pharo offers a nice library to create and play various sounds. As soon as we need to put some sound in an application one think either to mp3 or sampled sounds. In Pharo we get several tools and libraries to create from scratch synthetized sounds as well as to play samples. We will show how we can do that with a couple of lines of code. This version is an english translation of an original french version. The author thank Kilon for his first traduction of this chapter.
 
 
-!! Getting Started
+!!Getting Started
 
-!!! Getting Pharo
+!!!Getting Pharo
 
 First we need to get and install the latest version 30 Pharo at: http://www.pharo.org/. The easiest remaining to run the script download the following in a shell.
 
@@ -21,7 +21,7 @@ wget-O-get.pharo.org/30 vmLatest + | bash
 
 Other scripts are available for download at http://get.pharo.org. The GUI starts with ==/.pharo-ui pharo.image==
 
-!!! Loading Sound
+!!!Loading Sound
 
 Once Pharo installed, you must download the package PharoSound using: 
 - either the ConfigurationBrowser  (as shown in Figure *configurationBrowser*) which is found in the Tools menu. Enter ==Sound== in the text box to select the package, then press the 'Install Stable Version' button.
@@ -38,7 +38,7 @@ Gofer new
 ]]]
 
 
-!!! Setup verification
+!!!Setup verification
 
 We now will verify that our environment can play a sound properly. To do this simply open a workspace (from the Tools menu) and evaluate the following line of code by selecting the expression and then using the item 'Do it' menu. We will explain later what it is. Note that in a workspace to run a line it is enough to move the mouse cursor and pressing alt-d (this is equivalent to select the line and use the menu). To select a block of instructions quickly position the mouse at the beginning or at the end of the block and click, this has the effect of selecting all.
 
@@ -60,12 +60,12 @@ If you have sound you can skip the next paragraph, if not here are some ways to 
 By default the Linux archive does not carry a pulseaudio plugin, only using Alsa plugin is possible. We will disable the sound server temporarily. It should not be restarted automatically when we stop.
 
 
-# Create ==/homefile/[user]/.pulse/client.conf== if there is no
+# Create the file ==/home/[user]/.pulse/client.conf== if it does not exist
 # Add parameter ==autospawn = no==
 # Delete the current process with the command ==pulseaudio -k== with your user account. To restart when you want, run the command ==pulseaudio -D==.
 
 
-- Restart internal sound player process. It may also happen that the noise process no longer works. You can use the following commands to reset
+- Restart internal sound player process. It may also happen that the sound process no longer works. You can use the following commands to reset
 
 [[[
 SoundPlayer stopPlayerProcess.
@@ -115,7 +115,7 @@ First, it creates a new instance of the class ==FMSound== using the message ==ne
 ]]]
 
 
-It then defines a set of points to create a volume envelope. For each point in the first term expresses a given millisecond, a second volume expressed from 0 to 1 (1 being 100% of the volume).
+It then defines a set of points to create a volume envelope. For each point the first data expresses a duration in milliseconds, follows a given volume expressed from 0 to 1 (1 being equal to 100% of volume).
 
 [[[
 sound addEnvelope: (VolumeEnvelope
@@ -123,10 +123,10 @@ sound addEnvelope: (VolumeEnvelope
                       loopStart: 2 loopEnd: 4).
 ]]]
 
-We note that an envelopg is characterized by a set of points and a loop. The associated method is ==points:loopStart:loopEnd: ==. A loop may as well use all the defined point or 1 alone.
+We note that an envelopg is characterized by a set of points and a loop. The associated method is ==points:loopStart:loopEnd: ==. A loop can either use the set of points defined or only 1.
 
 
-For example here is added to the envelope with a loop indices from 2-4 (1 being the index value of the first table). The following sequence is performed for varying between 0.8 and 1 values. Sound volume seems to vibrate.
+For example by adding to an envelope with its loop indices ranging 2-4 (1 being the index value of the first table). The following sequence is performed for varying between 0.8 and 1 values. Sound volume seems to vibrate.
 [[[
 60@1.0. 110@0.8. 200@1.0
 ]]]
@@ -139,23 +139,13 @@ sound addEnvelope: (VolumeEnvelope
                       loopStart: 5 loopEnd: 5).
 ]]]
 
-Le son se termine avec la valeur ==250@0.0== et une boucle maintenant le volume à 0 pendant toute sa durée.
+The sound ends with the value == == 250@0.0 and a loop now the volume to 0 throughout its duration.
 
-Finalement, la méthode retourne le son avec comme paramètre la note (ici exprimée en Hz, voir tableau ""*frequence*""), la durée en seconde et un volume global de la note. Ce volume sera ensuite modulé grâce à l'enveloppe qui est définie.
+Finally, the method returns the sound with the note as a parameter (here expressed in Hz, see table "" * frequency * ""), the duratin in second and an overall volume of the note. This volume is then modulated by the envelope is defined.
 
 [[[
 ^ sound setPitch: 440.0 duration: 1.0 loudness: 0.5
 ]]]
-
-
-The sound ends with the value ==250@0.0== and a loop now the volume to 0 throughout its duration.
-
-Finally, the method returns the sound with the note as a parameter (here expressed in Hz, see table *frequence*), the second term and an overall volume of the note. This volume is then modulated by the envelope is defined.
-
-[[[
- ^ Sound SetPitch: 440.0 duration: 1.0 loudness: 0.5
-]]]
-
 
 @frequence
 
@@ -186,12 +176,11 @@ Start by playing a ==A== follows:
 
 
 The sound is played at a frequency of 440 Hz for 1 second with a maximum volume.
-The class ==FMSound== provides generation of sine tones. It gives a fairly smooth and even sound. Figure*sinusoide* below shows how the curve looks like.
+The class ==FMSound== provides generation of sine tones. It gives a fairly smooth and even sound. Figure *sinewave* below shows how the curve looks like.
 
-+Sinusoïde produite>file://figures/sin.png|width=75|label=sinusoide+
++sinewave>file://figures/Sinewave.png|width=75|label=sinewave+
 
-
-One thing to know is that instead of defining a note by its frequency we can write in the English notation. Table @frequence   shows that an A at octave 4 has a frequence of 440Hz. 
+One thing to know is that instead of defining a note by its frequency we can write in the English notation. Table @frequence shows that an A at octave 4 has a frequence of 440Hz. 
 
 Therefore to produce an A we can now write it as the following:
 
@@ -206,7 +195,7 @@ We can also generate other notes.
 ]]]
 
 
-!! Playing several sounds in sequence
+!!Playing several sounds in sequence
 
 Playing a sound is good, but two is even better. For that we have at our disposal a class named ==SequentialSound==. As the name suggests we can play sounds in sequence.
 
@@ -369,16 +358,16 @@ seq add: snd2.
 seq play.
 ]]]
 
-Normally we shauld hear 4 sounds played in sequence, or there are only 3. Obviously we can not reuse the already used. This approache is not suitable for what we want to do. For this there is another class that will meet our needs: ==QueueSound==
+Normally we should hear 4 sounds played in sequence, or there are only 3. Obviously we can not reuse the already used. This approache is not suitable for what we want to do. For this there is another class that will meet our needs: ==QueueSound==
 
 Replace the line ==seq := SequentialSound == by == seq := QueueSound == and listen again our example. We listen well our 4 sounds. Voila!
 
 
 !!Envelopes
 
-We introduced a first envelope which acts on the volume of a sound. There is another that changes the note or rather its frequency as it is played. This is called the attack of the note, the pitch in English.
+We introduced a first envelope which acts on the volume of a sound. There is another that changes the note or rather its frequency as it is played. This is called the pitch in English.
 
-In the same way as for the volume we will define a set of points which indicates the time of change of the sound frequency. The higher the value, the higher the rating will be high. If a negative number is indicated, the rating drops below the starting note. We define an envelope but this time using the class ==PitchEnvelope==.
+In the same way as for the volume we will define a set of points which indicates the time of change of the sound frequency. The higher the value, the higher the note will be. If a negative number is indicated, the rating drops below the starting note. We define an envelope but this time using the class ==PitchEnvelope==.
 
 [[[
 | snd p |
@@ -422,7 +411,7 @@ We get the following result
 {(0@0.0). (10@1.0). (20@0.2). (30@0.04000000000000001). (50@0.0)}
 ]]]
 
-The higher the value, the greater the number of values is. We can visualize what it is like our shell by opening the ==EnvelopeEditorMorph== like this: 
+The higher the value, the greater the number of values is. We can visualize what envelope looks like by opening the ==EnvelopeEditorMorph== like this: 
 
 
 [[[
@@ -430,7 +419,7 @@ EnvelopeEditorMorph new openInWorld
 ]]]
 
 
-Select the entire line and do "rightDo it click". A window appears as shown in Figure  *EnvelopeEditorMorph*.
+Select the entire line and do ""right click/Do it"". A window appears as shown in Figure  *EnvelopeEditorMorph*.
 
 +Envelope Editor>file://figures/envelopeEditorMorph.png|width=75|label=EnvelopeEditorMorph+
 
@@ -444,7 +433,7 @@ You can enlarge it by selecting it with ""shift and right click"" then moving th
 In abscissa we have the time in milliseconds. The ordinate is modified in accordance with the selected curve. We also have 3 boundaries represented by the vertical orange axes. The two on the left are used for loop when the note is held, are the parameters ==loopStart:loopEnd:==. We can also move according to our needs using the orange triangles above the curve abscissa. Note that it is not possible with the editor to have a loop of less than 50ms duration, as it is not possible to have a loop start value different from the value end. This makes sense if we want to get a smooth loop.
 
 
-To add a point on a portion of the curve just click on the little green triangles to display the corresponding point. This point can then be positioned at the desired value. We invite you to test all these possibilities and listen to the result obtained with the piano keyboard available. Envelopes complement our knowledge on the generation of sound. So we know play a sound, more sounds one after the other or several played simultaneously.
+To add a point on a portion of the curve just click on the little green triangles to display the corresponding point. This point can then be positioned at the desired value. We invite you to test all these possibilities and listen to the result obtained with the piano keyboard available. Envelopes complement our knowledge on the generation of sound. So we know play a sound, several sounds one after the other or several played simultaneously.
 
 !!Playing a melody
 
@@ -457,7 +446,7 @@ FMSound bachFugue play
 The music is composed of a sequence of notes. We now know how to write such a sequence but for an entire melody is not suitable. It is necessary to do otherwise. We will describe all the notes in a table. The format is ==(note length volume)==.
 
 
- The note can be written in its literal form or with its frequency in hertz. The duration is expressed in milliseconds. The volume meanwhile is a value between 0 and 1000. Than 1000 sound may be caused to saturate but can be useful in some cases to give an effect. Here is an example of declaring a sequence
+ The note can be written in its literal form or with its frequency in hertz. The duration is expressed in milliseconds. The volume meanwhile is a value between 0 and 1000. A value higher than 1000 may saturate the sound. It can be can be useful in some cases to give an effect. Here is an example of declaring a sequence
 
 [[[
 notes := #((a3 200 150) (a4 100 150) (g3 150 150))
@@ -468,7 +457,7 @@ We will write our first song with an air should remember good memories to all th
 
 
 
-!!! New element definition
+!!!Define a new instrument
 
 Start by defining a new instrument. In order not to complicate our exercise, we will use the ==FMSound== class in which we will define some new methods. Note that to be cleaner and more modular, we should define our own package and classes.
 
@@ -477,48 +466,42 @@ To define a method we will use a class browser: For this
 - In the left pane, then right-click ==Find Class==
 - Enter in the text box ==FMSound ==, then select it
 
-You should get a browser such as that of FIG *systemBrowser*
+You should get a browser like in figure *systemBrowser*
 
 +System browser: a class navigator>file://figures/SystemBrowser.pdf|width=100|label=systemBrowser+
-
-
-Comme les méthodes que nous définissons sont des méthodes qui créent des instances de ==FMSound== par opposition à des méthodes qui agissent sur des instances de la classe ==FMSound== nous allons les définir sur le coté classe de la classe ==FMSound==. Pour cela:
-
-- cliquez sur le radio bouton 'Class side'
-- à l'aide du menu de la troisième liste en partant de la gauche (liste des protocoles de méthodes - il s'agit de simple classeurs de rangement), ajoutez un protocole nommé par exemple 'new instruments'.
-- sélectionner le nouveau protocole puis ajouter la méthode ==fm1== suivante. Pour ajouter une méthode, tapez le corps de la méthode puis utiliser l'entrée 'Accept' qui compile la méthode. 
 
 As methods that we define are methods that create instances of ==FMSound=== as opposed to methods that operate on instances of the class ==FMSound==, we define them on the class side of ==FMSound==: 
 
 - Click on the radio button 'Class side'
-- Using the menu list in the third from the left (list of protocol methods), add a protocol (Add protocol) named for example 'new instruments'.
-- Select the new protocol and then add the following method == == fm1. To add a method, type the body of the method in the panel provided for this purpose (bottom left) and then use the entry 'Accept' menu (right click) compiles the method and then use the shortcut Alt ==s==.
+- Using the menu in the third list from the left (list of protocol methods), add a protocol (Add protocol) named for example 'new instruments'.
+- Select the new protocol and then add the following method ==fm1==. To add a method, type the body of the method in the panel provided for this purpose (bottom left) and then use the entry 'Accept' menu (right click) compiles the method and then use the shortcut Alt ==s==.
 
 [[[
 fm1
 	| snd |
 	snd := self new.
 	snd addEnvelope: (VolumeEnvelope points: { 0@1 . 300@0 }
-					 				 loopStart: 2
-									 loopEnd: 2).
+		loopStart: 2
+i		loopEnd: 2).
 	snd modulation: 1 ratio: 2.
 	^ snd
 ]]]
 
-You should obtain a situation similar to the one presented in Figure *fm1*
+You should obtain a situation similar to the one presented in figure *fm1*
 
 +System browser sur une méthode de classe>file://figures/fm1.pdf|width=100|label=fm1+
 
 Verify that your new instrument operates by executing ==FMSound fm1 play==
 
 We  define another instrument by copying it to allow you to experiment.
+
 [[[
 fm2
 	| snd |
 	snd := self new.
 	snd addEnvelope: (VolumeEnvelope points: { 0@1 . 300@0 }
-					 				 loopStart: 2
-									 loopEnd: 2).
+		loopStart: 2
+		loopEnd: 2).
 	snd modulation: 1 ratio: 2.
 	^ snd
 ]]]
@@ -526,7 +509,7 @@ fm2
 Now declare the same way the method ==pacman==  to mix all the tracks that will be created using methods  ==pacmanV10:== and ==pacmanV20:==.
 
 [[[
-FMSound class>>pacman
+pacman
 	"comment stating purpose of message"
 
 	^ MixedSound new 
@@ -538,7 +521,7 @@ When you compile the method, Pharo will check that all invoked methods exist. If
 
 The following two methods contain all the notes to be played with the triplet note, duration and volume.
 [[[
-FMSound class>>pacmanV1On: aSound
+pacmanV1On: aSound
 
 	| notes |
 	notes := #(
@@ -558,7 +541,7 @@ The method ==noteSequenceOn:from:== generates a sequence of notes (e.g. Sequenti
 
 
 [[[
-FMSound class>>pacmanV2On: aSound
+pacmanV2On: aSound
 	| notes |
 	notes := #(
         (b1 0.432 500) (b2 0.144 500) (b1 0.432 500) (b2 0.144 500) (c2 0.432 500)
@@ -570,8 +553,6 @@ FMSound class>>pacmanV2On: aSound
 ]]]
 
 If your melody notes use low frequency volume it will be difficult to hear. To remedy to this, increase the volume of notes. Here we increase the volume to 500, unlike the previous melody where we stayed at 150. Now we just have to play the melody: ==FMSound play pacman==.
-
-
 
 !!Playing a sample
 
@@ -676,7 +657,7 @@ mix add: q1 pan: 0 volume: 0.100;
 mix play.
 ]]]
 
-!! Conclusion
+!!Conclusion
 We showed you a small part of Pharo opportunities for the creation and manipulation of sounds. We hope that you will experiment and have fun with Pharo.
 
 
