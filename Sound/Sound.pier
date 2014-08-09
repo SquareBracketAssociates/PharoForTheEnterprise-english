@@ -613,7 +613,7 @@ First we will load into memory the different samples are used.
 
 [[[
 | spl spl1 spl2 |
-"Chargement des sons"
+"Loading sounds"
 spl := SampledSound fromWaveFileNamed: '/home/messner/sounds/ocean.wav'.
 spl1 := SampledSound fromWaveFileNamed: '/home/messner/sounds/mouette.wav'.
 spl2 := SampledSound fromWaveFileNamed: '/home/messner/sounds/bateau.wav'.
@@ -631,7 +631,7 @@ SampledSound addLibrarySoundNamed: 'bateau'
 ]]]
 
 
-Now that all sounds are loaded we will play in sequence with the class ==QueueSound==  seen previously. They are played one after the other at the desired frequency.
+Now that all sounds are loaded we will play in sequence with the class ==QueueSound== seen previously. They are played one after the other at the desired frequency.
 
 [[[
 | mix q1 q2 spl1 spl2 spl3 |
@@ -659,14 +659,6 @@ mix play.
 
 !!Conclusion
 We showed you a small part of Pharo opportunities for the creation and manipulation of sounds. We hope that you will experiment and have fun with Pharo.
-
-
-
-
-
- 
-
-
 
 % Local Variables:
 % eval: (flyspell-mode -1)
