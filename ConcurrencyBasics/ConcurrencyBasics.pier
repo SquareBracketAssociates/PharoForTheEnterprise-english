@@ -58,7 +58,7 @@ We can also create a process which is not scheduled (hence suspended) using the 
 [[[
 | pr |
 pr := [ 1 to: 10 do: [ :i |
-  Transcript show: i  printString ; cr ] ] newProcess.
+   i  printString crLog ] ] newProcess.
 pr resume
 ]]]
 
@@ -73,7 +73,7 @@ You can also pass arguments to a process with the message ==newProcessWith: anAr
 | pr |
 pr := [ :max |
   1 to: max do: [ :i |
-    Transcript show: i  printString ; cr ] ] newProcessWith: #(20).
+    i  printString crLog ] ] newProcessWith: #(20).
 pr resume
 ]]]
 
@@ -88,7 +88,8 @@ The basic synchronization mechanism is a semaphore and we will cover this deeply
 
 !!Processor
 
-To schedule processes and so execute them Pharo uses ""ProcessorScheduler"". It's unique instance is stored in global variable ==Processor==. To get the running process, you can execute: ==Processor activeProcess==.
+To schedule processes, Pharo uses a scheduler. It defines the class ==ProcessorScheduler==. The Pharo scheduler is the unique instance of the class ==ProcessorScheduler== and it is stored in the global variable ==Processor==. The scheduler maintains lists of pending processes as well as the currently active one (See Figure *SchedulerSimple*).  To get the running process, you can execute: ==Processor activeProcess==.
+
 
 !!!Process priority
 
@@ -100,7 +101,7 @@ At any time only one process can be executed. First of all, the processes are be
 ] forkAt: Processor userBackgroundPriority
 ]]]
 
-Next table lists all the predefined priorities together with their numerical value and purpouse.
+Next table lists all the predefined priorities together with their numerical value and purpose.
 
 |! Priority |! Name                    |! Purpose
 | 100       | timingPriority           | Used by Processes that are dependent on real time. For example, Delays (see later).
@@ -116,15 +117,15 @@ Next table lists all the predefined priorities together with their numerical val
 The scheduler knows the currently active process as well as the lists of pending processes based on their priority. It maintains an 
 array of linked lists per priority as shown in Figure *SchedulerSimple*. 
 
++The scheduler knows the currently active process as well as the lists of pending processes based on their priority>file://figures/SchedulerSimple.pdf|label=SchedulerSimple+
 
-+The scheduler knows the currently active process as well as the lists of pending processes based on their priority>file://figures/SchedulerSimple.png|label=SchedulerSimple+
+There are simple rules to interrupt and change the process to be run
 
+- Processes with higher priority can interrupt lower priority processes if they have to be executed.
 
-Precesses with higher priority can interrupt lower priority processes if they have to be executed.
+- Processes with the same priority are executed in the same order they were added to scheduled process list.
 
-Processes with the same priority are executed in the same order they were added to scheduled process list.
-
-As mentioned before, a process should use ==Processor yield== to give an opportunity to run for the other processes with the same priority. In this case the process is moved to the end of the list (see below Scheduler's principles).
+- As mentioned before, a process should use ==Processor yield== to give an opportunity to run for the other processes with the same priority. In this case the process is moved to the end of the list to give a chance to execute all the pending processes (see below Scheduler's principles).
 
 
 
@@ -132,21 +133,29 @@ As mentioned before, a process should use ==Processor yield== to give an opportu
 
 
 !! Semaphores
-Often we encounter situations where we need to synchronize processes. For example we want to do two actions in parallel and then after they both are complete continue the execution. For this job ""Semaphore"" is your friend. Each time you send it a ==wait== message the execution stops until Semaphare receives ==signal== message.
+Often we encounter situations where we need to synchronize processes. For example we want to do two actions in parallel and then after they both are complete continue the execution. For this job ""Semaphore"" is your friend. Each time you send it a ==wait== message the execution stops until the semaphare receives ==signal== message.
 
-Consider the next example:
+Consider the following example: We create two process, each one has a job to do
+
 [[[
+| semaphore |
 semaphore := Semaphore new.
 
 [ "Do a first job ..."
-   semaphore signal. ] fork.
+	'Job1' crLog.
+	semaphore signal. ] fork.
 
 [ "Do a second job ..."
-   semaphore signal. ] fork.
+	'Job2' crLog.
+   	semaphore signal. ] fork.
 
 semaphore wait; wait.
-"notify that two jobs have finished"
+	'Job1 and 2 are finished now we can proceed' crLog
+	"Perform following actions now that the two jobs finished"
 ]]]
+
++Controlling that the final action is performed once the two jobs are finished>file://figures/SemaOne.pdf|label=SemaOne+
+
 
 In the end we send two ==wait== messages to the ""semaphore"". This means that execution will stop there until ""semaphore"" will receive ==signal== message two times. This is only possible if two jobs have finished their execution as they do ==semaphore signal== in the end of a block.
 
