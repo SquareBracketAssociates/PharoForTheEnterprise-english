@@ -1,0 +1,78 @@
+!Seamless: A Reflective Middleware for Pharo
+
+ABSTRACT HERE
+
+!!Wait: Reflective What ?
+
+<quote here>
+
+- What is Reflective Middleware - Why do we need it
+- Seamless a descendant of rST
+- Aspires to be what RMI is to Java and when possible to be more
+dynamic - this is afterall Pharo  - thus can be considered to be closer to projets like Java Cajo, OpenCorba etc
+- Refs to everything especially the Fabio Kon paper, OpenCorba PhD \etc
+- Was born to support a research prototype for remote debugging
+- Has since been used on and off internally by some RMoD projects
+
+What makes Seamless different is its focus on two seemingly simple goals:
+
+- Provide abstractions, syntactic carbohydrates and programming facades to make the prototyping of distributed application feel "out-of-the-box" in Pharo. In a nutshell: support Rapid Application Prototyping for your distributed projects.
+- Fine-grained control for folks who want/need (eg on final deployment) to look under the hood and fine-tune their system. Seamless tries to do that by decomposing and reifying every single part of the object distribution process and its policies. 
+
+!!Enough Said: Death to Sockets
+
+<quote here>
+
+- Installation
+- Hallo Transcript !
+
+!! Between Ping-Pong and the REST
+
+- The ping-pong examples
+- Make a diagram with transparent distribution
+on one end REST on the other, explain the
+controversy of transparent distribution (ref to IBM paper)
+- Explain that in terms of proxyfication/serialization
+everything is a subset of transparent distribution (make
+analogy with Turing tarpit)
+- Explain where OpenCorba, RMI are
+- Explain that with Seamless you can be wherever you choose
+on the spectrum, give an all serialized rest example
+
+!!Practice Makes Perfect
+
+- All the examples from the presentation
+
+!!Ok, ok: Make me a Remote Tester
+
+- A simple remote testing application with Seamless
+
+!!Ok, ok: Make me a Distributed Game
+
+- Noury's application with Seamless
+
+!!What's Under the Hood
+
+- diagram from PhD ++ Seamless implementation part
+
+!!How It All Works ?
+
+- explain the different cases of distributing objects
+
+!!Open Issues: Where Do We Go From Here ?
+
+- More Doc/Tests
+- Refactoring to Patterns (TM)
+- Green Threading and UI
+- Exception Handling
+- Distributed-GC
+- Futures
+- Monitoring
+
+!!Acks
+
+
+
+
+
+

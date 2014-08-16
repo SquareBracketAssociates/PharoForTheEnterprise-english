@@ -565,7 +565,7 @@ wget https://github.com/xmessner/PharoSoundTutorial/archive/master.zip
 ]]]
 
 
-Unzip then in the directory of your choice. The folder  ==sounds== contains all digitized sounds we need. You have to adjust the repository directory based on your environment.
+Unzip it in the directory of your choice. The folder  ==sounds== contains all digitized sounds we need. You have to adjust the repository directory based on your environment.
 
 Let us try at first to play a sound from a file in wav format.
 
@@ -578,16 +578,16 @@ The sound is played in background without blocking the rest of our environment. 
 
 If our goal was to design a game, loading the sound directly from the disk at key times could slow animations, making it look unplayable. To avoid these problems sounds can be loaded in memory and played when it will be necessary to gain response time.
 
-Pharo provides us with a sound bank that we can supply according to our needs. To add a sound to this library we use the message ==addLibrarySoundNamed:samples: samplingRate:==.
+Pharo provides us with a sound bank that we can supply according to our needs. To add a sound to this library we use the message ==addLibrarySoundNamed:samples:samplingRate:==.
 
-% In a workspace copy the following code and evaluate it to add the sample in the library
+Copy the following code in a workspace and evaluate it to add the sample in the library
 
 
 [[[
 | spl spl2 |
 spl := SampledSound fromWaveFileNamed: '/home/messner/sounds/guitar.wav'.
 
-"Ajout du son dans la librairie pour le jouer plus tard"
+"Added sound in the library for play later"
 SampledSound addLibrarySoundNamed: 'guitar'
              samples: spl samples
              samplingRate: spl originalSamplingRate.
@@ -603,7 +603,7 @@ spl2 duration: 0.1.
 spl2 play.
 ]]]
 
-We can control the duration and sampling rate. The example above just  play the first second of the sample at a very low frequency. If we increase the samplingRate and duration we can get the complete sample played. 
+We can control the duration and sampling rate. The example above just play the first milliseconds of the sample at a very low frequency. If we increase the samplingRate and duration we can get the complete sample played. 
 
 
 !!A last little effort 
@@ -613,7 +613,7 @@ First we will load into memory the different samples are used.
 
 [[[
 | spl spl1 spl2 |
-"Chargement des sons"
+"Loading sounds"
 spl := SampledSound fromWaveFileNamed: '/home/messner/sounds/ocean.wav'.
 spl1 := SampledSound fromWaveFileNamed: '/home/messner/sounds/mouette.wav'.
 spl2 := SampledSound fromWaveFileNamed: '/home/messner/sounds/bateau.wav'.
@@ -631,7 +631,7 @@ SampledSound addLibrarySoundNamed: 'bateau'
 ]]]
 
 
-Now that all sounds are loaded we will play in sequence with the class ==QueueSound==  seen previously. They are played one after the other at the desired frequency.
+Now that all sounds are loaded we will play in sequence with the class ==QueueSound== seen previously. They are played one after the other at the desired frequency.
 
 [[[
 | mix q1 q2 spl1 spl2 spl3 |
@@ -659,14 +659,6 @@ mix play.
 
 !!Conclusion
 We showed you a small part of Pharo opportunities for the creation and manipulation of sounds. We hope that you will experiment and have fun with Pharo.
-
-
-
-
-
- 
-
-
 
 % Local Variables:
 % eval: (flyspell-mode -1)
