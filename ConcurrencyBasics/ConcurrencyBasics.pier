@@ -1,12 +1,11 @@
 !Concurrent Programming in Pharo
 
-Pharo as any Smalltalk is a sequential language since at one point in time there is only
-one computation carried on. However, it has the ability to run programs concurrently by interleaving their executions. The idea behind Smalltalk was to propose a complete OS and as such a Smalltalk run-time offers the possibility to execute different processes (or threads) that are scheduled by a process scheduler defined within the language.
+Pharo is a sequential language since at one point in time there is only one computation carried on. However, it has the ability to run programs concurrently by interleaving their executions. The idea behind Pharo is to propose a complete OS and as such a Pharo run-time offers the possibility to execute different processes (or threads) that are scheduled by a process scheduler defined within the language.
 
 Pharo's concurrency is "collaborative" and "preemptive". It is preemptive because a process with higher priority can interrupt the current running one. It is collaborative because the current process should explicitly release the control to give a chance to the other processes of the same priority can get executed by the scheduler.
 
 In this chapter we present how processes are created and their lifetime. We present
-semaphores since they are the most basic building blocks to support concurrent programming and the infrastructure to execute concurrent programs. We will show how the process scheduler manages the system. We will present one basic abstraction proposed by:  Semaphore and the critical section.
+semaphores since they are the most basic building blocks to support concurrent programming and the infrastructure to execute concurrent programs. We will show how the process scheduler manages the system. 
 
 In a subsequent chapter we will present the other abstractions: Mutex, Monitor and Delay.
 
@@ -17,7 +16,7 @@ In a subsequent chapter we will present the other abstractions: Mutex, Monitor a
 
 Pharo supports the concurrent execution of multiple programs using independent processes. These processes are lightweight processes as they share a common memory space. Such processes are instances of the class ==Process==. Note that in operating systems, processes have their own memory and communicate via pipes supporting a strong isolation. In Pharo, processes are what is usually called a (green) thread. They have their own execution flow but share the same memory space and use concurrent abstractions such semaphores to synchronize with each other.
 
-Let us start with a simple example. We will explain all the details in subsequent sections. The following code creates two processes using the message ==fork== sent to a block. In each process we enumerate numbers. During each loop step, using the expression ==Processor yield==, the current process stop its execution to give a chance to other processes with the same priority to get executed. At the end of the loop we refresh the ==Transcript==.
+Let us start with a simple example. We will explain all the details in subsequent sections. The following code creates two processes using the message ==fork== sent to a block. In each process we enumerate numbers. During each loop step, using the expression ==Processor yield==, the current process stops its execution to give a chance to other processes with the same priority to get executed. At the end of the loop we refresh the ==Transcript== output.
 
 [[[
 [ 1 to: 10 do: [ :i |
@@ -35,8 +34,10 @@ Figure *TwoInterleavingProcesses* shows the output produced by the execution of 
 
 +Two interleaving processes.>file://figures/TwoInterleavedProcesses.pdf|width=50|label=TwoInterleavingProcesses+
 
+We see that the two programs run in parallel each outputting a number at a time and not producing two numbers in a row.
+
 !! Processes
-A process can be in different states depending on its life-time (created, scheduled, executing, waiting, terminated) as shown on Figure *processStates*. We will look at such states now.
+A process can be in different states depending on its life-time (created, scheduled, executing, waiting, terminated) as shown on Figure *processStates*. We look at such states now.
 
 +Process states>file://figures/processStates.png|label=processStates+
 
@@ -49,10 +50,10 @@ To execute concurrently a program, we write such a program in a block and send t
   Transcript show: i  printString ; cr ] ] fork
 ]]]
 
-This expression creates an instance of the class ==Process==. It is added to the list of scheduled processes of the process scheduler. We say that this process is ==runnable==, it can be potentially executed. It will be executed when the process scheduler will schedule it as the current running process and give it the flow of control. At this moment the block of this process will be executed.
+This expression creates an instance of the class ==Process==. It is added to the list of scheduled processes of the process scheduler (as we will explained later). We say that this process is ==runnable==: it can be potentially executed. It will be executed when the process scheduler will schedule it as the current running process and give it the flow of control. At this moment the block of this process will be executed.
 
 !!! Creating without scheduling a process.
-We can also create a process which is not scheduled using the message ==newProcess==.
+We can also create a process which is not scheduled (hence suspended) using the message ==newProcess==.
 
 [[[
 | pr |
@@ -61,9 +62,9 @@ pr := [ 1 to: 10 do: [ :i |
 pr resume
 ]]]
 
-This creates a process in ==suspended== state, it is not added to the list of the scheduled processes of the process scheduler and so it is not that is not ==runnable==. It can be scheduled sending it the message ==resume==.
+This creates a process in ==suspended== state, it is not added to the list of the scheduled processes of the process scheduler. It is not that is not ==runnable==. It can be scheduled sending it the message ==resume==.
 
-Also ""suspended"" process can be executed immediately by sending it the `run` message.
+Also ""suspended"" process can be executed immediately by sending it the ==run== message.
 
 !!! Passing arguments to a process.
 You can also pass arguments to a process with the message ==newProcessWith: anArray== as follows:
@@ -79,9 +80,11 @@ pr resume
 Note that the elements of the argument array are passed to the corresponding block parameters.
 
 !!! Suspending and terminating a process.
-A process can also be temporarily suspended (i.e., stopped) using the message ==suspend==. A suspended processed can be rescheduled using the message ==resume==.
-Now we can also terminate a process using the message ==terminate==.
-A terminated process cannot be scheduled any more.
+A process can also be temporarily suspended (i.e., stopped) using the message ==suspend==. A suspended processed can be rescheduled using the message ==resume==. Now we can also terminate a process using the message ==terminate==. A terminated process cannot be scheduled any more.
+
+!!! Creating a waiting process.
+As you see on Figure *processStates* a process can be in a waiting state. When you have concurrent processes you need to have way to synchronize them.
+The basic synchronization mechanism is a semaphore and we will cover this deeply in subsequent sections.
 
 !!Processor
 
@@ -89,7 +92,7 @@ To schedule processes and so execute them Pharo uses ""ProcessorScheduler"". It'
 
 !!!Process priority
 
-At any time only one process can be executed. Frist of all the processes are being run according to their priority. This priority can be given to a process with ==priority:== message, or ==forkAt:== message sent to a block. There are couple of priorities predefined and can be accesses by sending specific messages to ==Processor==. For example:
+At any time only one process can be executed. First of all, the processes are being run according to their priority. This priority can be given to a process with ==priority:== message, or ==forkAt:== message sent to a block. There are couple of priorities predefined and can be accessed by sending specific messages to ==Processor==. For example, the following snippet is run at the same priority that background user tasks.
 
 [[[
 [ 1 to: 10 do: [ :i |
@@ -109,14 +112,27 @@ Next table lists all the predefined priorities together with their numerical val
 |  10       | systemBackgroundPriority | Used by system background Processes. Examples are an optimizing compiler or status checker.
 |   1       | systemRockBottomPriority | The lowest possible priority.
 
+
+The scheduler knows the currently active process as well as the lists of pending processes based on their priority. It maintains an 
+array of linked lists per priority as shown in Figure *SchedulerSimple*. 
+
+
++The scheduler knows the currently active process as well as the lists of pending processes based on their priority>file://figures/SchedulerSimple.png|label=SchedulerSimple+
+
+
 Precesses with higher priority can interrupt lower priority processes if they have to be executed.
 
-Processes with the same priority are executed in the same order they were added to scheduled processes list.
+Processes with the same priority are executed in the same order they were added to scheduled process list.
 
-As mentioned before, a process can use ==Processor yield== to give an opportunity to run for the other processes with the same priority. In this case the process is moved to the end of the list.
+As mentioned before, a process should use ==Processor yield== to give an opportunity to run for the other processes with the same priority. In this case the process is moved to the end of the list (see below Scheduler's principles).
+
+
+
+
+
 
 !! Semaphores
-Often we encounter situations where we need to synchronise processes. For example we wanto to do two actions in parallel and then after they both are complete continue the execution. For this job ""Semaphore"" is your friend. Each time you send it a ==wait== message the execution stops until Semaphare receives ==signal== message.
+Often we encounter situations where we need to synchronize processes. For example we want to do two actions in parallel and then after they both are complete continue the execution. For this job ""Semaphore"" is your friend. Each time you send it a ==wait== message the execution stops until Semaphare receives ==signal== message.
 
 Consider the next example:
 [[[
@@ -145,6 +161,13 @@ delay := Delay forSeconds: 5.
   delay wait ] ] fork
 ]]]
 will print a number each 5 seconds.
+
+
+
+
+!! Scheduler's principles
+
+
 
 !! Conclusion
 We presented the key elements of basic concurrent programming in Pharo and some implementation details.
