@@ -46,8 +46,8 @@ A process can be in different states depending on its life-time (created, schedu
 To execute concurrently a program, we write such a program in a block and send to the block the message ==fork==.
 
 [[[
-[ 1 to: 10 do: [ :i |
-  Transcript show: i  printString ; cr ] ] fork
+[ 1 to: 10 do: [ :i | i  printString crLog ] 
+	] fork
 ]]]
 
 This expression creates an instance of the class ==Process==. It is added to the list of scheduled processes of the process scheduler (as we will explained later). We say that this process is ==runnable==: it can be potentially executed. It will be executed when the process scheduler will schedule it as the current running process and give it the flow of control. At this moment the block of this process will be executed.
@@ -86,6 +86,18 @@ A process can also be temporarily suspended (i.e., stopped) using the message ==
 As you see on Figure *processStates* a process can be in a waiting state. When you have concurrent processes you need to have way to synchronize them.
 The basic synchronization mechanism is a semaphore and we will cover this deeply in subsequent sections.
 
+
+!!! Creation API Summary
+
+The process creation API is composed of messages sent to blocks. 
+
+- ==[ ] newProcess== creates a unscheduled process whose code is the receiver bloc. The priority is the one of the active process. 
+- ==[ ] newProcessWith: anArray==  same as above but pass arguments (defined by an array) to the block.
+- ==[ ] fork== creates a new scheduled process. It receives a ==resume== message so it is added to the queue corresponding to its priority. 
+- ==[ ] forkAt:== same as above but with the specification of the priority. 
+
+
+
 !!Processor
 
 To schedule processes, Pharo uses a scheduler. It defines the class ==ProcessorScheduler==. The Pharo scheduler is the unique instance of the class ==ProcessorScheduler== and it is stored in the global variable ==Processor==. The scheduler maintains lists of pending processes as well as the currently active one (See Figure *SchedulerSimple*).  To get the running process, you can execute: ==Processor activeProcess==.
@@ -96,9 +108,8 @@ To schedule processes, Pharo uses a scheduler. It defines the class ==ProcessorS
 At any time only one process can be executed. First of all, the processes are being run according to their priority. This priority can be given to a process with ==priority:== message, or ==forkAt:== message sent to a block. There are couple of priorities predefined and can be accessed by sending specific messages to ==Processor==. For example, the following snippet is run at the same priority that background user tasks.
 
 [[[
-[ 1 to: 10 do: [ :i |
-  Transcript show: i  printString ; cr ]
-] forkAt: Processor userBackgroundPriority
+[ 1 to: 10 do: [ :i | i  printString crLog ]
+	] forkAt: Processor userBackgroundPriority
 ]]]
 
 Next table lists all the predefined priorities together with their numerical value and purpose.
@@ -135,7 +146,8 @@ There are simple rules to interrupt and change the process to be run
 !! Semaphores
 Often we encounter situations where we need to synchronize processes. For example we want to do two actions in parallel and then after they both are complete continue the execution. For this job ""Semaphore"" is your friend. Each time you send it a ==wait== message the execution stops until the semaphare receives ==signal== message.
 
-Consider the following example: We create two process, each one has a job to do
+Consider the following example: We create two processes, each one has a job to do. We do not know when these jobs will be executed. But we want that once both finished, we continue with a third action. 
+So once the jobs are created and scheduled, we send two ==wait== messages to the ""semaphore"". This means that execution will stop there until ""semaphore""  receives the ==signal== message two times. This is only possible if two jobs have finished their execution as they do ==semaphore signal== in the end of a block.
 
 [[[
 | semaphore |
@@ -157,7 +169,72 @@ semaphore wait; wait.
 +Controlling that the final action is performed once the two jobs are finished>file://figures/SemaOne.pdf|label=SemaOne+
 
 
-In the end we send two ==wait== messages to the ""semaphore"". This means that execution will stop there until ""semaphore"" will receive ==signal== message two times. This is only possible if two jobs have finished their execution as they do ==semaphore signal== in the end of a block.
+
+
+!! ShareQueue: a Semaphore Example
+
+
+Une SharedQueue, ou file partagée, est une structure FIFO (First In First Out, le premier élément entré est le premier sorti), dotée de sémaphores de protection contre les accès concurrents. Cette structure est utilisée dans les situations où plusieurs processus fonctionnent simultanément et sont susceptibles d’accéder à cette même structure.
+Sa définition est la suivante :
+
+
+[[[
+	Object subclass: #SharedQueue
+		instanceVariableNames: 'contentsArray readPosition writePosition accessProtect readSynch ' 
+		category: 'Collections-Sequenceable'
+]]]
+
+
+accessProtect est un sémaphore d’exclusion mutuelle pour l’écriture, tandis que readSync est utilisé pour la synchronisation en lecture. Ces variables sont instanciées par la méthode d’initialisation de la façon suivante :
+
+[[[
+	accessProtect := Semaphore forMutualExclusion. 
+	readSynch := Semaphore new
+]]]
+Ces deux sémaphores sont utilisés dans les méthodes d’accès et d’ajouts d’éléments (voir figure 6- 5).
+
+[[[
+SharedQueue>>next
+	| value |
+	readSynch wait.
+	accessProtect
+		critical: [readPosition = writePosition
+				ifTrue: [self error: 'Error in SharedQueue synchronization'.
+					Value := nil]
+				ifFalse: [value := contentsArray at: readPosition.
+					contentsArray at: readPosition put: nil.
+					readPosition := readPosition + 1]].
+	^ value
+]]]
+
+Dans la méthode d’accès, next, le sémaphore de synchronisation en lecture « garde » l’entrée de la méthode (ligne 3). Si un processus envoie le message next alors que la file est vide, il sera suspendu et placé dans la file d’attente du sémaphore readSync par la méthode wait. Seul l’ajout d’un nouvel élément pourra le rendre à nouveau actif. La section critique gérée par le sémaphore accessProtect (lignes 4 à 10) garantit que la portion de code contenue dans le bloc est exécutée sans qu’elle puisse être interrompue par un autre sémaphore, ce qui rendrait l’état de la file inconsistant.
+
+	
+	
+Dans la méthode d’ajout d’un élément, nextPut:, la section critique (lignes 3 à 6) protège l’écriture, après laquelle le sémaphore readSync est « signalé », ce qui rendra actif les processus en attente de données.	
+
+
+[[[
+SharedQueue>>nextPut: value 
+	accessProtect
+		critical: [writePosition > contentsArray size
+				ifTrue: [self makeRoomAtEnd].
+			contentsArray at: writePosition put: value.
+			WritePosition := writePosition + 1].
+			readSynch signal.
+			^ value
+]]]
+
+
+
+
+
+
+
+
+
+
+
 
 !!Delay
 In case you need to pause execution for some time, you can use ""Delay"". Delay can be instantiated and set up by sending ==forSeconds:== or ==forMilliseconds:== to the class and executed by sending it ==wait== message.
@@ -172,11 +249,7 @@ delay := Delay forSeconds: 5.
 will print a number each 5 seconds.
 
 
-
-
 !! Scheduler's principles
-
-
 
 !! Conclusion
 We presented the key elements of basic concurrent programming in Pharo and some implementation details.
