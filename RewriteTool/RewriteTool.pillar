@@ -1,3 +1,64 @@
 ﻿!Rewrite Tool
 
-blfgldf
+The purpose of this chapter is to explain what is Rewrite Tool, why do we need it and how to use it properly.
+Also, to understand better how Rewrite Tool works, general concepts of rewrite engine are described.
+This engine is used by Pharo, to match and transform expressions or methods, which is really powerful and very useful.
+Often we encounter a situation when we want to transform some part of code in a lot of different places into another code.
+For example, if you want to change 
+
+[[[ label=script1\|caption=My script that works\|language=Smalltalk
+    someObject isNil ifTrue: [  ] 
+]]]
+to next code:
+[[[ label=script1\|caption=My script that works\|language=Smalltalk
+    someObject ifNil: [  ]
+]]]
+in each and every method of your package.
+It may take a lot of time and nerves to manage this manually.
+However, you can use rewrite engine to transform all of your methods in the way you want, if only you know how.
+The syntax of rewrite engine is not that straightforward, thus to create specific matching and transforming rules with it you will spend some time.
+Moreover, even if you know engines syntax perfectly, it's very easy to miss a dot somewhere or misspell some part of rewrite expression.
+As you may have guessed, Rewrite Tool helps us to solve such a problem.
+It provides a GUI which allows user to create rewrite rules without knowledge of rewrite engine syntax.
+After rule is created you may apply it to scope that you want: packages, classes, methods.
+First of all, the tool itself is described in general.
+Then, we will take a look at example that will show you Rewrite Tool in work.
+After that, we will go in more details about tool and how it works.
+
+
+!!Introduction
+
+Rewrite Tool includes two parts. First is a rewrite rule builder (just ''"builder"''), which, obviously, lets user create rewrite rules.
+And second part is rewrite rule browser(next as ''"browser"''), in which user can select previously created rule and apply it to specific scope.
+
+!!!Rewrite rule builder
+
+Builder ''(picture 1.1)'' has four panes and three buttons, and each of this items has its own functions. It provides a possibility, with simple GUI, to build rewrite rules dynamically.
+
++Rewrite rule builder>file://ruleBuilder.png|label=ruleBuilder+
+
+""Panes""
+
+-Top left pane, labeled ''"Source expression"'', contains source code of expression (in future maybe method?) which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else.
+-Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part of rewrite rule. You can change match rule either using action-click menu or manually changing the code.
+-Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create transform rule also with options in action-click menu, or just manually typing code.
+-The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, which is in two bottom panes, to a source expression. You should note that this pane is the only one that is not editable.
+
+""Buttons""
+
+-"Undo" is a general undo. It performs an undo action for three editable panes: Source, Match and Transform. Also there are is local undo for each pane separately (DESCRIBED LATER).
+-"Generate rule" button creates new class - a subclass of ''RBTransformationRule'' using information from two bottom panes. After the rule is created using this button, you can apply it to specific scope.
+-"Browse rules" button opens up "Rewrite rule browser", which allows you to browse created rules, and apply them to scope that you want.
+
+!!!Rewrite rule browser
+
+This tool ''(picture 1.2)'' contains all previously created rewrite rules. Also it displays all packages / classes / methods in the image.
+
++Rewrite rule browser>file://ruleBrowser.png|label=ruleBrowser+
+
+You can select a rewrite rule that you want to apply. Then choose a scope of methods, which you want to transform with this rule and click "Apply rule to selected scope" button.
+In order to browse slected rewrite rule, click "Browse selected rule" button. (IN DEVELOPEMENT!)
+
+!!Simple example
+
+
