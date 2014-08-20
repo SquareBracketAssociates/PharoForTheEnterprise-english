@@ -1,4 +1,4 @@
-!Concurrent Programming in Pharo
+![DRAFT-WORKING DOCUMENT] Concurrent Programming in Pharo
 
 Pharo is a sequential language since at one point in time there is only one computation carried on. However, it has the ability to run programs concurrently by interleaving their executions. The idea behind Pharo is to propose a complete OS and as such a Pharo run-time offers the possibility to execute different processes (or threads) that are scheduled by a process scheduler defined within the language.
 
@@ -41,7 +41,7 @@ A process can be in different states depending on its life-time (created, schedu
 
 +Process states>file://figures/processStates.png|label=processStates+
 
-!!!Creating and launching a new process.
+!!!Creating and launching a new process
 
 To execute concurrently a program, we write such a program in a block and send to the block the message ==fork==.
 
@@ -52,7 +52,7 @@ To execute concurrently a program, we write such a program in a block and send t
 
 This expression creates an instance of the class ==Process==. It is added to the list of scheduled processes of the process scheduler (as we will explained later). We say that this process is ==runnable==: it can be potentially executed. It will be executed when the process scheduler will schedule it as the current running process and give it the flow of control. At this moment the block of this process will be executed.
 
-!!! Creating without scheduling a process.
+!!! Creating without scheduling a process
 We can also create a process which is not scheduled (hence suspended) using the message ==newProcess==.
 
 [[[
@@ -66,7 +66,7 @@ This creates a process in ==suspended== state, it is not added to the list of th
 
 Also ""suspended"" process can be executed immediately by sending it the ==run== message.
 
-!!! Passing arguments to a process.
+!!! Passing arguments to a process
 You can also pass arguments to a process with the message ==newProcessWith: anArray== as follows:
 
 [[[
@@ -79,10 +79,10 @@ pr resume
 
 Note that the elements of the argument array are passed to the corresponding block parameters.
 
-!!! Suspending and terminating a process.
+!!! Suspending and terminating a process
 A process can also be temporarily suspended (i.e., stopped) using the message ==suspend==. A suspended processed can be rescheduled using the message ==resume==. Now we can also terminate a process using the message ==terminate==. A terminated process cannot be scheduled any more.
 
-!!! Creating a waiting process.
+!!! Creating a waiting process
 As you see on Figure *processStates* a process can be in a waiting state. When you have concurrent processes you need to have way to synchronize them.
 The basic synchronization mechanism is a semaphore and we will cover this deeply in subsequent sections.
 
@@ -171,6 +171,39 @@ semaphore wait; wait.
 
 
 
+When a resource should be shared between different processes, a semaphore should be used to protect the resources.  
+The process will send a message to your resource. Therefore resource methods should be defined in a way that they send the ==wait== to the semaphore.
+If the number of processes connected to the semaphore is less than the number of authorized 
+
+
+
+
+
+Si le nombre de processus connectés à ce 
+moment au sémaphore est inférieur au nombre de processus qui sont autorisés à se connecter, 
+ce message n’est pas bloquant et le processus peut continuer ses opérations en utilisant la 
+ressource comme il le souhaitait. Dans le cas contraire, le processus est stocké en fin de la 
+file d’attente du sémaphore, et ne sera relancé que lorsque les processus qui le précèdent auront 
+libéré la place.
+
+
+
+
+
+
+
+
+!! We need a simple example
+
+may be a printer and two queues that want to print to it.
+
+printer 
+
+
+
+
+
+
 !! ShareQueue: a Semaphore Example
 
 
@@ -227,11 +260,33 @@ SharedQueue>>nextPut: value
 
 
 
+!! Scheduler's principles
+
+
+Un processus signifie à un sémaphore qu’il libère la ressource en lui envoyant le message signal. 
+Le sémaphore envoie alors un message resume au premier processus en attente de sa file d’attente, 
+ce qui rend ce dernier activable, c’est-à-dire qu’il est ajouté dans la file d’attente du 
+ProcessorScheduler correspondant à sa priorité (voir figure 9-2 ci-après).
 
 
 
 
 
+
++BBB>file://figures/ProcessorStateSchedulerSemaphore.pdf|label=ProcessorStateSchedulerSemaphore+
+
+
+Now we can revisit the different states of a process by looking its interaction with the process scheduler and 
+semaphores as shown in *ProcessorStateScheduler*.
+
+- active: it is currently executed.
+- activable: it is one of the waiting queue of the scheduler.
+- waiting: it is suspendedn on a semaphore. It is the waiting list of a semaphore and it is not yet activable.
+- suspended: if this is the active process it is interrupted and can be reactivated later, else it is removed from the queue 
+of the activable process that it belongs to. 
+
+
++Revisiting the process states>file://figures/ProcessorStateScheduler.pdf|label=ProcessorStateScheduler+
 
 
 
@@ -249,7 +304,7 @@ delay := Delay forSeconds: 5.
 will print a number each 5 seconds.
 
 
-!! Scheduler's principles
+
 
 !! Conclusion
 We presented the key elements of basic concurrent programming in Pharo and some implementation details.
