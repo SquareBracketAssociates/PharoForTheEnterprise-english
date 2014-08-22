@@ -1,0 +1,265 @@
+﻿!Rewrite Tool
+
+The purpose of this chapter is to explain what is Rewrite Tool, why do we need it and how to use it properly.
+Also, to understand better how Rewrite Tool works, general concepts of rewrite engine are described.
+This engine is used by Pharo, to match and transform expressions or methods, which is really powerful and very useful.
+Often we encounter a situation when we want to transform some part of code in a lot of different places into another code.
+For example, if you want to change 
+
+[[[ label = matchExample | language = Smalltalk
+    someObject isNil ifTrue: [ ^ true ] 
+]]]
+to next code:
+[[[ label = transformExample | language = Smalltalk
+    someObject ifNil: [ ^ true ]
+]]]
+in each and every method of your package.
+It may take a lot of time and nerves to manage this manually.
+However, you can use rewrite engine to transform all of your methods in the way you want, if only you know how.
+The syntax of rewrite engine is not that straightforward, thus to create specific matching and transforming rules with it you will spend some time.
+Moreover, even if you know engines syntax perfectly, it's very easy to miss a dot somewhere or misspell some part of rewrite expression.
+As you may have guessed, Rewrite Tool helps us to solve such a problem.
+It provides a GUI which allows user to create rewrite rules without knowledge of rewrite engine syntax.
+After rule is created you may apply it to scope that you want: packages, classes, methods.
+First of all, the tool itself is described in general.
+Then, we will take a look at example that will show you Rewrite Tool in work.
+After that, we will go in more details about tool and how it works.
+
+
+!!Introduction
+
+Rewrite Tool includes two parts. First is a rewrite rule builder (just ''"builder"''), which, obviously, lets user create rewrite rules.
+And second part is rewrite rule browser(next as ''"browser"''), in which user can select previously created rule and apply it to specific scope.
+
+!!!Rewrite rule builder
+
+Builder ''(picture 1.1)'' has four panes and three buttons, and each of this items has its own functions.
+It provides a possibility, with simple GUI, to build rewrite rules dynamically.
+
++Rewrite rule builder>file://ruleBuilder.png|label=ruleBuilder+
+
+""Panes""
+
+-Top left pane, labeled ''"Source expression"'', contains source code of expression (in future maybe method?) which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else.
+-Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part of rewrite rule. You can change match rule either using action-click menu or manually changing the code.
+-Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create transform rule also with options in action-click menu, or just manually typing code.
+-The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, which is in two bottom panes, to a source expression. You should note that this pane is the only one that is not editable.
+
+""Buttons""
+
+-"Undo" is a general undo. It performs an undo action for three editable panes: Source, Match and Transform. Also there are is local undo for each pane separately (DESCRIBED LATER).
+-"Generate rule" button creates new class - a subclass of ''RBTransformationRule'' using information from two bottom panes. After the rule is created using this button, you can apply it to specific scope.
+-"Browse rules" button opens up "Rewrite rule browser", which allows you to browse created rules, and apply them to scope that you want.
+
+!!!Rewrite rule browser
+
+This tool ''(picture 1.2)'' contains all previously created rewrite rules. Also it displays all packages / classes / methods in the image.
+
++Rewrite rule browser>file://ruleBrowser.png|label=ruleBrowser+
+
+You can select a rewrite rule that you want to apply. Then choose a scope of methods, which you want to transform with this rule and click "Apply rule to selected scope" button.
+In order to browse slected rewrite rule, click "Browse selected rule" button. (IN DEVELOPEMENT!)
+
+!!Simple example
+
+Now, back to example: we want to transform
+
+[[[ label = matchExample | language = Smalltalk
+    someObject isNil ifTrue: [ ^ true ] 
+]]]
+
+into:
+
+[[[ label = transformExample | language = Smalltalk
+    someObject ifNil: [ ^ true ]
+]]]
+
+First, you need to input template source code in top left panel of rewrite rule builder. (how to input? IN DEVELOPEMENT!)
+In all panes you get exactly the same code.
+To start with, look at status bar in bottom left panel. Obviously, for now it says "matches", as source code and match rule are equal.
+This status bar will help you to create rule, that will really correspond to source code.
+If it changes to "doesn't match", you probably should use "Undo" button, and rethink your next move.
+As was mentioned earlier, your main playground is bottom left panel.
+Thus, almost all next actions are made in ''"Match rule"'' panel.
+In our example we don't care about ''someObject''.
+It can be ''self'' or maybe just some temporary variable.
+That is why, you have to select ''someObject'' and right click on it, which opens a menu,
+which displays all actions that can be applied to selected object.
+Actually this object is represented as a node of an AST - abstract syntax tree.
+In ''"Rewrite tool"'' each node of AST has its own set of options.
+Read more on abstract syntax tree ''""HERE""''. 
+In this particular case it will contain following options:
+- Ignore
+- Change
+- Abstract variable 
+You need ''"Abstract variable"'', inasmuch it changes ''someObject'' into metavariable.
+This metavariable will match any object for example: ''self'', ''Color'' (classes are objects too), ''someTempVar''.
+After this change we should have:
+
+[[[ label = matchExampleStep1 | language = Smalltalk
+    `variable1 isNil ifTrue: [ ^ true ] 
+]]]
+
+And status bar also has to be unchanged, saying: ''matches''.
+As you may noticed ''"Transform rule"'' panel text also was changed in following way:
+
+[[[ label = transformExampleStep1 | language = Smalltalk
+    `variable1 ifNil: [ ^ true ]
+]]]
+
+It means that in result on the place of ''someObject'' we will get ''someObject''.
+In case, you want to have in result something else, for example ''self'' use an option ''Change'' (or manual typing, but it's not recommended).
+But for now, we don't want that.
+To proceed, select ''isNil'' in ''"Transform rule"'' panel, open a menu.
+The options in this case are different from previous one, as it's not a variable selected, but selector.
+So, click on ''Ignore selector'' option. It will remove ''isNil'' from ''"Transform rule"'' panel.
+Also, ''"Result expression"'' panel was updated:
+
+[[[ label = resultExampleStep1 | language = Smalltalk
+    someObject ifTrue: [ ^ true ]
+]]]
+
+Now let's work with our block: ''[ ^ true ]''.
+Here we have the same situation as we had with ''someObject''.
+Again, we don't care about which block is passed as an argument to ''ifTrue:'' or ''ifNil:''.
+So, we select our block (now working in ''"Match rule"'' panel) and choose an option ''Abstract block''.
+In result it will be changed into ''`@block1''.
+
+Finally, select ''ifTrue:'' in ''"Transform rule"'' panel, and apply ''Change selector'' option from menu.
+Type in recently opened window: ''ifNil:'', and press ''Ok'' button.
+We are done with our task.
+You can see the result of applying rewrite rule to source code in top right panel.
+Now rewrite rule builder looks like in picture 2.1.
+
+[[[ label = resultExampleStep2 | language = Smalltalk
+    someObject ifNil: [ ^ true ]
+]]]
+
+
+
++Rewrite rule builder: simple example>file://simpleExample.png|label=simpleExample+
+
+!!Rewrite Tool in details
+
+In this section each and every part of rewrite tool is described in details.
+There are explained a lot of important ideas.
+Understanding of this ideas is crucial, because it will increase users effectivity, while working with tool.
+
+!!!Menu options
+
+List of all available options (may change):
+- Abstract block
+- Abstract condition
+- Abstract literal
+- Abstract statement
+- Abstract variable
+- As list
+- Recurse into
+- Change
+- Change selector
+- Ignore
+- Ignore selector
+- Undo on node
+
+!!!!""Abstract actions""
+
+Any of abstract action replaces selected object(s) with metavariable that corresponds to selected node of AST.
+
+Next is described what can be matched with the metavariable in each case.
+
+Note: In the end of each metavariable name there is an index, but it is not displayed in the examples below.
+
+''""Abstract block""''
+
+Matches any block.
+
+[[[ label = blockExample | language = Smalltalk
+    [ "a lot of stuff here" ] "replaced with" `@block
+]]]
+
+
+''""Abstract condition""''
+
+Matches any condition.
+
+[[[ label = conditionExample | language = Smalltalk
+    self isNil ifTrue: [ ^ true ] "is replaced with" `@condition ifTrue: [ ^ true ]
+]]]
+
+''""Abstract literal""''
+
+Matches any literal.
+
+[[[ label = literalExample | language = Smalltalk
+    true "is replaced with" `#literal
+    119 "is replaced with" `#literal
+]]]
+
+''""Abstract statement""''
+
+Matches any statement, but not list of statements.
+
+[[[ label = statementExample | language = Smalltalk
+    self isNil ifTrue: [ ^ true ] "is replaced with" `.Statement
+]]]
+
+''""Abstract variable""''
+
+Matches any variable.
+
+[[[ label = variableExample | language = Smalltalk
+    self "is replaced with" `variable
+]]]
+
+!!!!""Other actions""
+
+''""As list""''
+
+Metavariable represented as list matches practically anything.
+
+
+[[[ label = asListExample | language = Smalltalk
+    `variable "is replaced with" `@variable
+]]]
+
+
+''""Recurse into""''
+
+Expression ''`@variable size'' matches ''self size size'' once, where ''`@variable'' is ''self size''.
+But recursive metavariable in expression ''``@variable size'' matches ''self size size'' twice.
+First time ''``@variable'' is ''self size'' and second time it is ''self''.
+
+
+[[[ label = asListExample | language = Smalltalk
+    `@variable "is replaced with" ``@variable
+]]]
+
+
+''""Change""''
+
+Replaces selected node of AST with users input.
+
+''""Change selector""''
+
+Replaces selector of selected node of AST with users input.
+
+''""Ignore""''
+
+Removes selected node of AST.
+
+''""Ignore selector""''
+
+Removes selector of selected node of AST.
+
+''""Undo on node""''
+
+Sets selected node of AST in previous state.
+
+
+[[[ label = undoOnNodeExample | language = Smalltalk
+    self "Abstract variable =>" `variable
+    `variable "Undo on node =>" self
+]]]
+
+!!!Working with rewrite rules
+

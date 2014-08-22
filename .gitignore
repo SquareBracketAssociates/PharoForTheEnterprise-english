@@ -29,3 +29,5 @@ files/
 /package-cache
 /EnterprisePharo.pdf
 /EnterprisePharo.tex
+stderr
+stdout
