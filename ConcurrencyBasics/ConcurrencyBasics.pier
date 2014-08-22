@@ -282,8 +282,7 @@ semaphores as shown in *ProcessorStateScheduler*.
 - active: it is currently executed.
 - activable: it is one of the waiting queue of the scheduler.
 - waiting: it is suspendedn on a semaphore. It is the waiting list of a semaphore and it is not yet activable.
-- suspended: if this is the active process it is interrupted and can be reactivated later, else it is removed from the queue 
-of the activable process that it belongs to. 
+- suspended: if this is the active process it is interrupted and can be reactivated later, else it is removed from the queue of the activable process that it belongs to. 
 
 
 +Revisiting the process states>file://figures/ProcessorStateScheduler.pdf|label=ProcessorStateScheduler+
