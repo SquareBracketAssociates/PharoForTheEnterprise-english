@@ -47,7 +47,8 @@
         {WebApp/}
         {Smacc/}
         {GitAndPharo/}
-	{Seamless/}
+		{RewriteTool/}
+		{Seamless/}
 }
 %=================================================================
 \let\wholebook=\relax
