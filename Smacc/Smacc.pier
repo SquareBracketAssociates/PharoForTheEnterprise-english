@@ -1,8 +1,8 @@
-!!SmaCC: The Smalltalk Compiler-Compiler 
+!SmaCC: The Smalltalk Compiler-Compiler 
 
 This chapter and tutorial was originally written by John Brant and Don Roberts (*SmaCC>http://www.refactory.com/Software/SmaCC*) and adapted to Pharo. This Chapter starts with a walk-through tutorial to demonstrate many of the features of SmaCC, the Smalltalk Compiler Compiler, followed by a detailed description of the features.
 
-!!!SmaCC Tutorial
+!!SmaCC Tutorial
 
 This is a walk-through tutorial to demonstrate some features of SmaCC, the Smalltalk Compiler Compiler, as we incrementally develop a simple calculator. If you haven't already done so, you will first need to load the source.
 
@@ -199,7 +199,7 @@ Once you have compiled the grammar, you will be able to evaluate '3 \+ 4 \* 5 ^ 
 
 If you would like to extend the calculator to create abstract syntax trees, you can keep reading. If you want more information on other SmaCC options, you can visit the directives, scanner, and parser sections.
 
-!!!SmaCC Abstract Syntax Trees
+!!SmaCC Abstract Syntax Trees
 
 SmaCC can generate abstract syntax trees from an annotated grammar. In addition to the node classes to represent the trees, SmaCC also generates a generic visitor for the tree classes.
 
@@ -446,12 +446,12 @@ ASTExpressionEvaluator compile:  'visitNumber: aNumber
 
 Now we can evaluate "ASTExpressionEvaluator new accept: (CalculatorParser parse: 'Add(3,4) \* 12 / 2 ^ (3 - 1) \+ 10')" and get 31.
 
-!!!SmaCC Directives
+!!SmaCC Directives
 
 SmaCC has several directives that can change how the scanner and parser is generated. Each directive begins with a "%" character and the directive keyword. Depending on the directive, there may be a set of arguments. Finally, the directive is terminated with a semicolon character, ";".
 
 
-!!!!Ambiguous Grammars and Precedence
+!!!Ambiguous Grammars and Precedence
 
 SmaCC can handle ambiguous grammars. Given an ambiguous grammar, SmaCC will produce some parser. However, it may not parse correctly. For an LR parser, there are two basic types of ambiguities, reduce/reduce conflicts and shift/reduce conflicts. Reduce/reduce conflicts are bad. SmaCC has no directives to handle them and just picks one of the choices. These conflicts normally require a rewrite of your grammar or switch to GLR parsing.
 
@@ -468,29 +468,29 @@ Additionally, the \%left, \%right, and \%nonassoc directives allow precedence to
 The "\+" and "-" symbols appear on the first line and have the lowest precedence. They are also left-associative so "1 \+ 2 \+3" will be evaluated as "(1 \+ 2) \+ 3". On the next line are the "\*" and "/" symbols. Since they appear on a higher line number, they have higher precedence than the "\+" and "-". Finally, on line three we have the "^" symbol. It has the highest precedence. Combining all the rules allows us to parse "1 \+ 2 \* 3 / 4 ^ 2 ^ 3" as "1 \+ ((2 \* 3) / (4 ^ (2 ^ 3)))".
 
 
-!!!!Start Symbols
+!!!Start Symbols
 
 By default, the left-hand side of the first grammar rule is the start symbol. If you want to multiple start symbols, then you can specify them by using the "\%start" directive followed by the nonterminals that are additional start symbols. This is useful for creating two parsers with two grammars that are similar but slightly different. For example, consider a Smalltalk parser. You can parse methods, and you can parse expressions. These are two different operations, but have very similar grammars. Instead of creating two different parsers for parsing methods and expressions, we can specify one grammar that parses methods and also specify another starting position for parsing expressions. The StParser in the SmaCC Example Parsers package has an example of this. The StParser class>>parseMethod: uses the #startingStateForMethod position to parse methods and the StParser class>>parseExpression: uses the #startingStateForSequenceNode position to parse expressions.
 
 
-!!!!Id Methods
+!!!Id Methods
 
 Internally, the various token types are represented as integers. However, there are times that you need to reference the various token types. For example, in the CScanner and CParser classes, the TYPE_NAME token is identical to the IDENTIFIER token. The IDENTIFIER matching method does a lookup in the type table and if it finds a type definition with the same name as the current IDENTIFIER, it returns the TYPE_NAME token type. To determine what integer this is, the parser was created with an \%id directive for <IDENTIFIER> and <TYPE_NAME>. This generates the IDENTIFIERId and TYPE_NAMEId methods on the scanner. These methods simply return the number representing that token type. See the C sample scanner and parser for an example of how this is used.
 
 
-!!!!Case Insensitive Scanning
+!!!Case Insensitive Scanning
 
 You can specify that the scanner should ignore case differences by using the "\%ignorecase;" directive. If you have a language that is case insensitive and has several keywords, this can be a handy feature to have. For example, if you have "THEN" as a keyword in a case insensitive language, you would need to specify a token for then as "<then> : [tT] [hH] [eE] [nN] ;". This is a pain to enter correctly. When the ignorecase directive is used, SmaCC will automatically convert "THEN" into "[tT][hH][eE][nN]".
 
 
-!!!!GLR Parsing
+!!!GLR Parsing
 
 SmaCC allows you to parse ambiguous grammars using a GLR parser. The "%glr;" directive changes the type of parser that SmaCC generates. Instead of your generated parser being a subclass of SmaCCParser, when you specify the "%glr;" directive, your parser will be a subclass of SmaCCGLRParser.
 
 If you parse a string that has multiple representations, SmaCC will throw a SmaCCAmbiguousResultNotification exception that can be handled by user code. This exception has the potential parses. The value that it is resumed with will be selected as the definitive parse value. If the exception is not handled, then it will pick one as the definitive parse value.
 
 
-!!!!AST Directives
+!!!AST Directives
 
 There are several directives that are used when creating AST's. The "%root" directive is used to specify the root class in the AST hierarchy. The %root directive has a single argument that is the name that will be used to create the root class in the AST. This class will be created as a subclass of SmaCCParseNode. The "%prefix" and "%suffix" directives tell SmaCC the prefix and suffix to add to every AST node's class name. These are automatically added to every AST node including the %root node. For example, the following will create a RBProgramNode class that is a subclass of SmaCCParseNode and is the root of all AST nodes defined by this parser.
 
@@ -508,7 +508,7 @@ By default all nodes created by SmaCC will be direct subclass of your %root clas
 
 Two final AST directives deal with the generated classes' instance variables. One directive allows you to add some unused instance variables to your classes so you can later extend the generated classes to use those variables. To add an instance variable to your class, you can use the %attributes directive. The first argument to the directive is the class name, and the second argument is a list of variable names. For example, we could add a variable named "cachedValue" to our Expression class with the following "%attributes Expression (cachedValue);". The other instance variable directive is "%ignore_variables". When SmaCC creates the AST nodes it automatically creates appropriate #= and #hash methods. By default, these methods use all variables when comparing equality. The %ignore_variables directive allows you to specify certain variables to ignore when comparing. For example, you may wish to ignore parentheses when you compare expressions. If you named your "(" token 'leftParen' and you ")" token 'rightParen', then you can use "%ignore_variables leftParen rightParen;".
 
-!!!SmaCC Scanner
+!!SmaCC Scanner
 
 Scanning takes an input stream of characters and converts that into a stream of tokens. The tokens are then passed on to the parsing phase.
 
@@ -521,7 +521,7 @@ TokenName    :    RegularExpression ;
 TokenName is a valid Smalltalk variable name that is surrounded by <>. For example, "<token>" is a valid TokenName, but "<token name>" is not since "token name" isn't a valid Smalltalk variable name. The RegularExpression is a regular expression that matches a token. It should match one or more characters in the input stream. The colon character, ":", is used to separate the TokenName and the RegularExpression, and the semicolon character, ";", is used to terminate the token specification.
 
 
-!!!!Regular Expression Syntax
+!!!Regular Expression Syntax
 
 While the rules are specified as regular expressions, there are many different syntaxes for regular expressions. We choose a relatively simple syntax that is specified below. If you wish to have a more rich syntax, you can modify the scanner's parser: SmaCCDefinitionScanner & SmaCCDefinitionParser. These classes were created using SmaCC.
 
@@ -581,7 +581,7 @@ While the rules are specified as regular expressions, there are many different s
 Since there are multiple ways to combine expressions, we need precedence rules for their combination. The or operator, "|", has the lowest precedence and the "\*", "?", "\+", and "{,}" operators have the highest precedence. For example, "a | b c \*" matches "a" or "bcccc", but not "accc" or "bcbcbc". If you wish to match "a" or "b" followed by any number of c's, you need to use "(a | b) c \*".
 
 
-!!!!Overlapping Tokens
+!!!Overlapping Tokens
 
 Unlike T-Gen, SmaCC can handle overlapping tokens with any problems. For example, the following is a legal SmaCC scanner definition:
 
@@ -593,28 +593,28 @@ Unlike T-Gen, SmaCC can handle overlapping tokens with any problems. For example
 This definition will match a variable or a single character. A variable can also be a single character [a-zA-Z], so the two tokens overlap. SmaCC handles overlapping tokens by preferring the longest matching token. If multiple tokens match the longest possible token, then the parser uses the first token specified by the grammar unless you override the SmaCCParser>>tryAllTokens method. For example, an "a" could be a <variable> or an <any_character> token, but since <variable> is specified first, SmaCC will use it.
 
 
-!!!!Matching Methods
+!!!Matching Methods
 
 If your scanner has a method name that matches the name of the token, (e.g. whitespace), that method will get called upon a match of that type. The SmaCCScanner superclass already has a default implementation of #whitespace and #comment. These methods ignore those tokens by default. If you want to store comments, then you should override the SmaCCScanner>>comment method.
 
 Matching methods can also be used to handle overlapping token classes. For example, in the C grammar, a type definition is the same as an identifier. The only way that they can be disambiguated is by looking up the name in the type table. In our example C parser, we have an IDENTIFIER method that is used to determine whether the token is really an IDENTIFIER or whether it is a TYPE_NAME.
 
 
-!!!!Unreferenced Tokens
+!!!Unreferenced Tokens
 
 If a token is not referenced from a grammar specification, it will not be included in the generated scanner, unless the token's name is also a name of a method (see previous section). This, coupled with the ability to do substitutions, allows you to have the equivalent of macros within your scanner specification. However, be aware that if you are simply trying to generate a scanner, you will have to make sure that you create a dummy parser specification that references all of the tokens that you want in the final scanner.
 
 
-!!!!Unicode Characters
+!!!Unicode Characters
 
 SmaCC compiles the scanner into a bunch of conditional tests on characters. Normally, it assumes that characters have values between 0 and 255, and it can make some optimizations based on this fact. With the "Allow Unicode Characters" option checked, it will assume that characters have values between 0 and 65535. 
 
-!!!SmaCC Parser
+!!SmaCC Parser
 
 Parsing converts the stream of tokens provided by the scanner into some object. Normally, this object will be a parse tree, but it does not have to be a parse tree. For example, the SmaCC tutorial shows a calculator. This calculator does not produce a parse tree; it produces the result, a number.
 
 
-!!!!Production Rules
+!!!Production Rules
 
 The production rules contains the grammar for the parser. The first production rule is considered to be the starting rule for the parser. Each production rule consists of a non-terminal symbol name followed by a ":" separator which is followed by a list of possible productions separated by vertical bar, "|", and finally terminated by a semicolon, ";".
 
@@ -625,12 +625,12 @@ The Smalltalk code is evaluated whenever that production is matched. If the code
 Inside the Smalltalk code you can refer to the values of each production item by using literal strings. The literal string, '1', refers the to value of the first production item. The values for tokens and keywords will be SmaCCToken objects. The value for all non-terminal symbols will be whatever the Smalltalk code evaluates to for that non-terminal symbol.
 
 
-!!!!Named Symbols
+!!!Named Symbols
 
 When entering the Smalltalk code, you can get the value for a symbol by using the literal strings (e.g., '2'). However, this creates difficulties when modifying a grammar. If you insert some symbol at the beginning of a production, then you will need to modify your Smalltalk code changing all literal string numbers. Instead you can name each symbol in the production and then refer to the name in the Smalltalk code. To name a symbol (non-terminal, token, or keyword), you need to add a quoted variable name after the symbol in the grammar. For example, "MySymbol : Expression 'expr' "\+" <number> 'num' {expr \+ num} ;" creates two named variables. One for the non-terminal Expression and one for the <number> token. These variables are then used in the Smalltalk code.
 
 
-!!!!Error Recovery
+!!!Error Recovery
 
 Normally, when the parser encounters an error, it raises the SmaCCParserError exception and parsing is immediately stopped. However, there are times when you may wish to try to parse more of the input. For example, if you are highlighting code, you do not want to stop highlighting at the first syntax error. Instead you may wish to attempt to recover after the statement separator \-\- the period ".". SmaCC uses the error symbol to specify where error recovery should be attempted. For example, we may have the following rule to specify a list of Smalltalk statements:
 
@@ -646,7 +646,7 @@ Statements : Expression | Statements "." Expression | error "." Expression ;
 
 While the error recovery allows you to proceed parsing after a syntax error, it will not allow you to return a parse tree from the input. Once the input has been parsed with errors, it will raise a non-resumable SmaCCParserError.
 
-!!!SmaCC Transformations
+!!SmaCC Transformations
 
 Once you have generated your AST using SmaCC, you can use SmaCC's built in transformation support. Let's add support for transforming our simple expressions generated from our AST example.
 
@@ -737,3 +737,5 @@ Let's extend our RPN rewriter to support other expressions besides addition. Now
 ]]]
 
 If we transform "(3 \+ 4) \* (5 - 2) ^ 3", we'll get "3 4 \+ 5 2 - 3 ^ \*".
+
+
