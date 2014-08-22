@@ -1,4 +1,4 @@
-!Générer des documents PDF avec Pharo
+! (DRAFT) Générer des documents PDF avec Pharo
 
 Le format PDF d'Adobe est probablement l'un des formats de fichier les plus répandu. Utilisé quotidiennement, il rend quantité de services en permettant la production de documents graphiques, lisibles et échangeables entre pratiquement toutes les plate-formes matérielles ou logicielles existantes. Si vous recevez une facture, suite à un achat sur un site de e-commerce ou si vous téléchargez un rapport, un livre, une thèse ou encore un formulaire administratif, ces fichiers seront fort probablement des documents PDF consultables sur votre ordinateur, votre téléphone ou votre tablette. Sur l'ensemble de ces supports, ils conserveront une apparence identique. Pour les programmeurs, ce format est devenu incontournable et doit faire parti de la trousse à outils de base d'un outil de développement. Pour Pharo, c'est le framework Artefact qui prend en charge la conception et la génération de documents PDF.
 
