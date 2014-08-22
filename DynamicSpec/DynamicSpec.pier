@@ -1,11 +1,12 @@
-!!Parties, a dynamic example
+! Dynamic Spec: Parties, a dynamic example
+
 In an address book we find addresses of both people and organizations. 
 The generalization of both is called a party ('Analysis Patterns', Martin Fowler). 
 In this example we'll make an address book where we can add both persons and companies.
 They will have different attributes.
 We show how to do add them with a dynamic user interface, and minimize duplication.
 
-!!! The party model
+!! The party model
 In the party model, party is a superclass of person and company. 
 Create the abstract superclass ==Party==
 [[[label=createParty|caption=Create the party class|language=Smalltalk 
@@ -113,7 +114,7 @@ DOPartiesModel class >>reset
 	default := nil
 ]]]
 
-!!! A dynamic editor
+!! A dynamic editor
 To edit a single party, we create a subclass of ==DynamicComposableModel==
 
 [[[label=partyEditor|caption=A class to edit one party|language=Smalltalk 
@@ -207,7 +208,7 @@ DOPartyEditor>>initialExtent
 
 Now we can test the editor with ==(DOPartyEditor on: DOCompany) openDialogWithSpec== and ==(DOPartyEditor on: DOPerson) openDialogWithSpec==
 
-!!! The address book
+!! The address book
 
 We can now make the address book with a search field and buttons to add persons and companies.
 Add a class ==DOPartiesList==
@@ -337,7 +338,7 @@ DOPartyList>>whenSelectedItemChanged: aBlock
 ]]]
 This can be tested with ==DOPartiesList new openWithSpec==
 
-!!! Editing Parties
+!! Editing Parties
 A next step is the editing of existing instances. In the ==DOPartiesList==, we need to use a ==NewListModel== instead of the ==ListModel==, as that understands doubleClick actions. 
 
 [[[label=editingChanges|caption=Replace list by newlist|language=Smalltalk 
@@ -373,3 +374,6 @@ DOPartiesList>>initializePresenter
 +		edit := (DOPartyEditor on:  party class) openDialogWithSpec. 
 +		self editParty: party in: edit] 
 ]]]
+
+!! Conclusion
+We show you how to build dynamic widgets with Spec.
