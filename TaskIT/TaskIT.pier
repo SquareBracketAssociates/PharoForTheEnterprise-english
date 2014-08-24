@@ -236,14 +236,11 @@ self assert: future value > aSample.
 
 Note that we don't need to ==start== explicitly the loop runner. It will be started automatically by the ==run:== message.
 
-!!!!Worker runner 
+!!!! The worker runner 
 
 
-A worker is a runner instance of ==TKTWorker==. This runner has a queue (instantiatied ==TKTPriorityQueue== by default), and defines it \#nextTask method (abstract in the ==TKTPersistentRunner==) on that queue of tasks. 
-	 
-A worker runner, instead of talking about \#run: a task, it make you talk about \#scheduleTask: a task. This is for making obvious that your task will not necessary execute next, but it will be executed some time. 
-	
-	
+A worker is a runner instance of ==TKTWorker== that has a queue of tasks to execute. The worker runner will execute its tasks sequencially, according to its queue. To add a task into a worker's queue, we can schedule the task using the ==scheduleTask:== message. The ==spawn== message provides with a shortcut to create and start a new worker.
+
 [[[
 worker := TKTWorker spawn.
 future := worker schedduleTask: [ 2+2 ] asTask.
@@ -251,9 +248,7 @@ self assert: future value = 4.
 worker stop.
 ]]]
 
-	As you can see inside the code example, the worker needs to be stopped. 
-	
-	But the important fact of the worker is shown in the next example: 
+This kind of runner is mean for global system performance. By using workers, we can control the amount of alive processes and how tasks are distributed amongst them. For example, in the following example three tasks are executed in a separate process (which is the same process as it is the same worker), and we can still have a synchronousish style of programming.
 
 [[[
 worker := TKTWorker spawn .
@@ -264,16 +259,11 @@ self assert: (future value + future2 value + future3 value) = 12.
 worker stop.
 ]]]
 
-	The same runner has executed the three tasks. This kind of runner is mean for global system performance.  You can use it as the examples show, that is spawning your own worker, or also you can use it through the ==TKTTaskDispatcher== singleton worker pool.
-	
-
-	
-	
-
+You can create your own worker instances as shown in the examples, or also you can use it through the ==TKTTaskDispatcher== singleton worker pool.
 
 !! Worker pools
 
-	A worker pool is our reification of pool of threads. The idea is to deal with several threads transparently. 
+A worker pool is our reification of pool of threads. The idea is to deal with several threads transparently. 
 
 !!!Task dispatcher 
 	A task dispatcher is a singleton object of the class ==TKTTaskDispatcher==. This object understands the message dispatch: aTask, which put a task in a common shared queue, where available workers will execute it.
