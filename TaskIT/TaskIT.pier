@@ -1,32 +1,30 @@
-! TaskIT
+! TaskIT1
 
-Expressing and managing concurrent computations is indeed a concern of importance to develop applications that scale. A web application may want to use different processes for each of its incoming requests. Or maybe it wants to use a "thread pool" in some cases. In other case, our desktop application may want to send computations to a worker to not block the UI thread.
+Expressing and managing concurrent computations is indeed a concern of importance to develop applications that scale. A web application may want to use different processes for each of its incoming requests. Or maybe it wants to use a "thread pool" in some cases. In other case, our desktop application may want to send computations to a worker to not block the UI thread. TaskIT is a library that eases the usage of processes in Pharo. It provides abstractions to schedule and/or parallelize of the execution of pieces of code.
 
-TaskIT is a library that eases the usage of processes in Pharo. It provides abstractions to schedule and/or parallelize of the execution of pieces of code. In this chapter we will explore these abstractions, guided by examples and code snippets.
+In this chapter we will explore the first version of TaskIT. We will at first familiarize the reader with the TaskIT abstractions, guided by examples and code snippets. At the end of the chapter we will discuss some of TaskIT extension points and possible customizations.
 
 !! Downloading it
 
-A metacello configuration of TaskIT is available in smalltalkhub using the following code.
+A metacello configuration of TaskIT is available in smalltalkhub in TaskIT's repository, and Pharo's Metacello Repository. You can download version 1.0 of TaskIT evaluating the following code.
 
 [[[
-Gofer it 
+Gofer new 
 	smalltalkhubUser: 'sbragagnolo' project: 'TaskIT';
-	configurationOf: 'TaskIT';
-	loadVersion: #bleedingEdge
+	configuration;
+	loadVersion: '1.0'.
 ]]]
+
+This version is also available from Pharo's Configuration Browser.
 
 !!Working with tasks
 
-A task is a first class representation of a piece of code to be executed, the main abstraction inside TaskIT. By reifying a task, TaskIT can paralellize it, start it and/or stop it whenever we want. A task, instance of ==TKTTask==, is created in the following way:
+A task is a first class representation of a piece of code to be executed, the main abstraction inside TaskIT. By reifying a task, TaskIT can paralellize it, start it and/or stop it whenever we want. A task is created from a block with a piece of code to be run. The result of the task's execution will be the result of its block. Additionally, we can specify a priority that will be used to decide the order of execution between it and other tasks. If we do not specify a priority explicitly, the default ==userBackgroundPriority== defined in Pharo's ==ProcessorScheduler== is used. We will discuss about the importance of a task's priority in the task runners' section. A task, instance of ==TKTTask==, is created in the following way:
 
 [[[
 TKTTask for: [ someObject someMessage ].
 TKTTask for: [ someObject someMessage ] at: aPriority.
 ]]]
-
-A normal task contains a block with a piece of code to be run. The result of the task's execution will be the result of its block. 
-
-Additionally, a task contains a priority that will be used to decide the order of execution between other tasks. If we do not specify a priority explicitly, the default ==userBackgroundPriority== defined in Pharo's ==ProcessorScheduler== is used. We will discuss about the importance of a task's priority in the task runners' section.
 
 Alternatively, blocks are extended to provided a nice syntax sugar to create tasks:
 
@@ -35,7 +33,9 @@ Alternatively, blocks are extended to provided a nice syntax sugar to create tas
 [ someObject someMessage ] asTaskAt: aPriority.
 ]]]
 
-!!!Executing a Task
+Tasks created in this way are not yet executed. We will discuss the different strategies for executing such tasks in the following sections.
+
+!!Executing a Task
 
 The most basic way to execute a task is to run it as a one shoot task. A one shoot task is a task that is run in a new Pharo process. The Pharo process is discarded after the task is executed. To shoot a task we need to send it the message ==shootIt==.
 
@@ -77,7 +77,7 @@ future := [ SomeError signal ] shootIt.
 [ future value ] on: SomeError do: [ :error | "We handle the error" ].
 ]]]
 
-A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, opposed to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
+A future can also tell us if the task is already finished or not, by sending it the message ==isValueAvailable==. The ==isValueAvailable== message, opposedly to the ==value== message, will not block the caller's process but return immediately a boolean informing if the task has finished.
 
 [[[
 future := [ 2 + 2 ] shootIt.
@@ -89,7 +89,9 @@ However, waiting synchronously or polling for the task to be finished can be a w
 [[[
 future := [ (Delay forMilliseconds: 100) wait ] shootIt.
 
-future valueTimeoutMilliseconds: 2 ifTimeout: [ "if it times out we execute this block"].
+future
+    valueTimeoutMilliseconds: 2
+    ifTimeout: [ "if it times out we execute this block"].
 
 future valueTimeoutMilliseconds: 2.
 ]]]
@@ -176,7 +178,7 @@ TKTTask >> shootIt
 
 !!! The same process runner
 
-The same process runner is a simple runner that executes a task in the caller process. This runner may come in handy to perform change the way a task runs in a transparent way to the task, since it is polymorphic with the other task runners. A same process runner is reusable, since it holds no state.
+The same process runner is a simple runner that executes a task in the caller process. This runner may come in handy to change the way a task runs in a transparent way, since it is polymorphic with the other task runners. A same process runner is reusable, since it holds no state.
 
 [[[
 runner := TKTSameProcessRunner new.
@@ -191,42 +193,216 @@ TKTTask >> value
 	^ TKTSameProcessRunner new run: self
 ]]]
 
-!!! The looping runner: a first persistent runner
 
 
-!!! Worker task runner
+!!! Persistent runners
+
+A persistent runner is a task runner that persists in time, executing many tasks. Persistent runners are associated to a unique Pharo process and manage its life-cycle. We can control the life-cicle of a persistent task runner with the following messages:
+
+- ""start"" Starts the persistent runner and creates its associated process.
+- ""stop"" Stops the persistent runner and kill its associated process.
+- ""suspend"" Pauses the persistent runner. This can leave a task in the middle of an execution.
+- ""resume"" Resumes a paused execution of the persistent runner.
+- ""waitToFinish"" Will block the caller until the runner has finished to run.
+
+Version 1 of TaskIT presents two flavors of persistent runners: the Looping Runner and the Worker Runner.
+
+
+!!!! The looping runner
+
+A looping runner is a task runner that will execute the same task over and over again iteratively. This runner, instance of ==TKTLoopingRunner==, is configured with the task and the amount of times it has to execute.
+This looping runner will finish and kill its associated process once all its iterations are finished.
+
+[[[
+runner := TKTLoopingRunner new loopTimes: 20; yourself.
+value := 0.
+future := runner run: [ value := value + 1 ] asTask.
+]]]
+
+By default, if no loopTimes are configured, the looping runner will loop infinitely. When using a looping runner, the future will hold always the last value obtained from the task execution.
+
+
+[[[
+runner := TKTLoopingRunner new.
+value := 0.
+future := runner run: [ value := value + 1 ] asTask.
+
+aSample := future value. 
+1 second asDelay wait. 
+
+self assert: future value > aSample. 
+]]]
+
+
+Note that we don't need to ==start== explicitly the loop runner. It will be started automatically by the ==run:== message.
+
+!!!!Worker runner 
+
+
+A worker is a runner instance of ==TKTWorker==. This runner has a queue (instantiatied ==TKTPriorityQueue== by default), and defines it \#nextTask method (abstract in the ==TKTPersistentRunner==) on that queue of tasks. 
+	 
+A worker runner, instead of talking about \#run: a task, it make you talk about \#scheduleTask: a task. This is for making obvious that your task will not necessary execute next, but it will be executed some time. 
+	
+	
+[[[
+worker := TKTWorker spawn.
+future := worker schedduleTask: [ 2+2 ] asTask.
+self assert: future value = 4.
+worker stop.
+]]]
+
+	As you can see inside the code example, the worker needs to be stopped. 
+	
+	But the important fact of the worker is shown in the next example: 
+
+[[[
+worker := TKTWorker spawn .
+future := worker scheduleTask: [ 2+2 ] asTask.
+future2 := worker scheduleTask: [ 3+3 ] asTask.
+future3 := worker scheduleTask: [ 1+1 ] asTask.
+self assert: (future value + future2 value + future3 value) = 12.
+worker stop.
+]]]
+
+	The same runner has executed the three tasks. This kind of runner is mean for global system performance.  You can use it as the examples show, that is spawning your own worker, or also you can use it through the ==TKTTaskDispatcher== singleton worker pool.
+	
+
+	
+	
+
 
 !! Worker pools
 
+	A worker pool is our reification of pool of threads. The idea is to deal with several threads transparently. 
+
+!!!Task dispatcher 
+	A task dispatcher is a singleton object of the class ==TKTTaskDispatcher==. This object understands the message dispatch: aTask, which put a task in a common shared queue, where available workers will execute it.
+[[[
+dispatcher := TKTTaskDispatcher instance. 
+future := dispatcher dispatch: [ 1+1 ] asTask.
+future value = 2
+]]]		
+
+	
+	By default  ==TKTTaskDispatcher== spawn two workers during it initialization (which is lazy). It allows to add more workers to the pool  by hand. 
+	
+[[[
+dispatcher := TKTTaskDispatcher instance. 
+dispatcher addWorker. 
+]]]		
+
+	This code will make a new worker available instantaneusly.
+	
+	This object also allows remove workers
+	
+[[[
+dispatcher := TKTTaskDispatcher instance. 
+removedWorker := dispatcher removeWorker. 
+]]]		
+
+	This message send will fail if there is no workers available to remove. 
+	The removed worker will stop after finish any task it is running, and it will not be available for usage. The last remaining reference to this worker is given as return of the message. 
+	
+	The Task dispatcher is not an automatic pool. Is managed by the user, it interface allows to have a third object that automatize the dynamics of the workers availability. Then, remember that if you remove all the workers, your tasks will remain unexecuted. If you add too much workers, your system will collapse. 
+	
+	
+	There is a fancy way to schedule tasks into this pool of workers
+
+[[[
+future := [ 2 + 2 ] scheduleIt. 
+]]]
+	
+	This code will add the block as a task into the singleton task dispatcher.
+
+
+
+
+
 !!Customizing TaskIT
+
 
 !!!Customizing Tasks
 
-!!!Customizing Task runners	
 
-!!ActIT: A Simple Actor Library on top of TaskIT
+	When you need to customize a task, the most important thing is to mind the main invocation method. 
+	
+[[[  
+runOnRunner: aRunner withFuture: aFuture
+
+	| value |
+	self setUpOnRunner: aRunner withFuture: aFuture.
+	[
+		[
+			value := self executeWithFuture: aFuture. 
+		] on: Error do: [ : exception |
+			^ aRunner deployError: exception intoFuture: aFuture.
+		].
+		aRunner deployValue: value intoFuture: aFuture.
+	] ensure: [
+		self tearDownOnRunner: aRunner withFuture: aFuture.
+		aRunner noteFutureHasFinished: aFuture.
+	].
+]]]
+
+The task execution life cycle is defined here. 
+	
+It has a setup, execution and teardown	 time that is always executed. 
+In this method we also have two important parts the deploy of the result (success or error) and the notification of a future as finished. (The future window is not just the task running, it is all the task execution life time. From the setup to the teardown).
+
+So, if you need a task to setUp resources, or have some cleanup post processing, in the same process line, do not hesitate in subclassing and using this prepared hooks.  
+
+[[[
+TKTSubClassedTask>>#setUpOnRunner: aRunner withFuture: aFuture.
+TKTSubClassedTask>>#tearDownOnRunner: aRunner withFuture: aFuture.
+]]]
+
+By other side, if what you need is to change the execution it self (Maybe the main invocation method is not really suitable for you), remember always to notice the runner about the finishing of an execution, by sending the proper notification inside your overridden method.
+
+[[[
+TKTSubClassedTask>>#runOnRunner: aRunner withFuture: aFuture
+	"..."
+	aRunner noteFutureHasFinished: aFuture.
+	"..."
+]]]
+
+
+
+
+
+%!!!Customizing Task runners
+
+
+
 
 !!Conclusion
+	
+	In this chapter we present TaskIT framework for dealing with common concurrent architecture problems. We covered how to start a create a task from a block, how does that task run into a runner. We covered also futures as way to obtain a value, and to have a gate to synchronise your threads explicitly, and covered lazy results for synchronising your threads implicitly.
 
-!!TODOs
+	Finally we explain also how TaskIT deal with thread pools, explaining how to use it, and the impact in the global system performance.  
 
-- Discuss with Santi: What should be a good behavior if an error occurrs during a callback?
-- Does it make sense to put callbacks on a task (besides or instead putting it on the future)?
-- What about implementing lazy results with proxies (and do just forwarding?)?
-- Lazy result finalize is necesary?
-- ExclusiveVariable finalize is necesary?
-- Lazy result can be cancelled?
-- interruptCurrentTask
 
-	currentTask ifNotNil: [ 
-		currentTask value isProcessFinished ifFalse: [
-			currentTask  priority: 10.
-			workQueue do: currentTask.
-		].
-	].
-- cleanup wtF?
-- por que hay que ejecutar esto en un task?
-self scheduleTask: [ keepRunning set: false ] asTask.
+%!!ActIT: A Simple Actor Library on top of TaskIT
+
+
+
+%!!TODOs
+
+%- Discuss with Santi: What should be a good behavior if an error occurrs during a callback?
+%- Does it make sense to put callbacks on a task (besides or instead putting it on the future)?
+%- What about implementing lazy results with proxies (and do just forwarding?)?
+%- ExclusiveVariable finalize is necesary?
+%- Lazy result can be cancelled?
+%- interruptCurrentTask
+
+%	currentTask ifNotNil: [ 
+%		currentTask value isProcessFinished ifFalse: [
+%			currentTask  priority: 10.
+%			workQueue do: currentTask.
+%		].
+%	].
+%- cleanup wtF?
+%- por que hay que ejecutar esto en un task?
+%self scheduleTask: [ keepRunning set: false ] asTask.
 
 
 % Local Variables:
