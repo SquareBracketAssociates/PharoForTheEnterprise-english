@@ -263,58 +263,37 @@ You can create your own worker instances as shown in the examples, or also you c
 
 !! Worker pools
 
-A worker pool is our reification of pool of threads. The idea is to deal with several threads transparently. 
+A worker pool is our implementation of a threads pool. Its main purpose is to provide with several worker runners and decouple us from the management of threads/processes. Worker pools are built on top of TaskIT, inside the PoolIT package. A worker pool, instance of ==PITWorkersPool==, manages several worker runners. All runners inside a worker pool shared a single task queue. We can schedule a task for execution using the ==dispatch:== message.
 
-!!!Task dispatcher 
-	A task dispatcher is a singleton object of the class ==TKTTaskDispatcher==. This object understands the message dispatch: aTask, which put a task in a common shared queue, where available workers will execute it.
 [[[
-dispatcher := TKTTaskDispatcher instance. 
+dispatcher := PITWorkersPool instance. 
 future := dispatcher dispatch: [ 1+1 ] asTask.
 future value = 2
 ]]]		
 
-	
-	By default  ==TKTTaskDispatcher== spawn two workers during it initialization (which is lazy). It allows to add more workers to the pool  by hand. 
-	
+By default, a worker pool spawns two workers during it initialization (which is lazy). We can add more workers to the pool with the ==addWorker== message and remove them with the ==removeWorker== message.
+
 [[[
-dispatcher := TKTTaskDispatcher instance. 
-dispatcher addWorker. 
+dispatcher := PITWorkersPool instance. 
+dispatcher addWorker.
+dispatcher
+    removeWorker;
+    removeWorker
 ]]]		
 
-	This code will make a new worker available instantaneusly.
-	
-	This object also allows remove workers
-	
-[[[
-dispatcher := TKTTaskDispatcher instance. 
-removedWorker := dispatcher removeWorker. 
-]]]		
+The ==removeWorker== message send will fail if there is no workers available to remove. The removed worker will stop after it finishes any task it is running, and it will not be available for usage any more. The last remaining reference to this worker is given as return of the message.
 
-	This message send will fail if there is no workers available to remove. 
-	The removed worker will stop after finish any task it is running, and it will not be available for usage. The last remaining reference to this worker is given as return of the message. 
-	
-	The Task dispatcher is not an automatic pool. Is managed by the user, it interface allows to have a third object that automatize the dynamics of the workers availability. Then, remember that if you remove all the workers, your tasks will remain unexecuted. If you add too much workers, your system will collapse. 
-	
-	
-	There is a fancy way to schedule tasks into this pool of workers
+Finally, there is a fancy way to schedule tasks into the singleton pool of workers.
 
 [[[
 future := [ 2 + 2 ] scheduleIt. 
 ]]]
-	
-	This code will add the block as a task into the singleton task dispatcher.
-
-
-
-
 
 !!Customizing TaskIT
 
+!!!Custom Tasks
 
-!!!Customizing Tasks
-
-
-	When you need to customize a task, the most important thing is to mind the main invocation method. 
+When you need to customize a task, the most important thing is to mind the main invocation method. 
 	
 [[[  
 runOnRunner: aRunner withFuture: aFuture
@@ -356,19 +335,16 @@ TKTSubClassedTask>>#runOnRunner: aRunner withFuture: aFuture
 ]]]
 
 
-
-
-
-%!!!Customizing Task runners
+!!!Custom Task Runners
 
 
 
 
 !!Conclusion
 	
-	In this chapter we present TaskIT framework for dealing with common concurrent architecture problems. We covered how to start a create a task from a block, how does that task run into a runner. We covered also futures as way to obtain a value, and to have a gate to synchronise your threads explicitly, and covered lazy results for synchronising your threads implicitly.
+In this chapter we present TaskIT framework for dealing with common concurrent architecture problems. We covered how to start a create a task from a block, how does that task run into a runner. We covered also futures as way to obtain a value, and to have a gate to synchronise your threads explicitly, and covered lazy results for synchronising your threads implicitly.
 
-	Finally we explain also how TaskIT deal with thread pools, explaining how to use it, and the impact in the global system performance.  
+Finally we explain also how TaskIT deal with thread pools, explaining how to use it, and the impact in the global system performance.  
 
 
 %!!ActIT: A Simple Actor Library on top of TaskIT
