@@ -1,14 +1,12 @@
-! Beacon: Logging Objects 
-
+! (DRAFT) Beacon: Logging Objects 
 
 
 Logging is a pervasive analysis tool, but most logging systems focus on text. 
 There is a historical reason for this, but we can certainly do better in this century. 
 Particularly in Pharo, where everything is an object, it should follow that logs should be 
 made of objects and that scrolling endlessly through large text files should make room for more
- sensible engineering approaches.
+ sensible engineering approaches. So, how would an object-oriented logging system look like?
 
-So, how would an object-oriented logging system look like?
 
 The SystemLogger proposes a Pharo solution that focuses on objects. 
 The central concept is the Log object which represents a single logging event. 
