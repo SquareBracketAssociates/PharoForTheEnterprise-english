@@ -136,28 +136,7 @@ Print it and you will get: =='No real solution for the equation'==
 
 You can try to find a quadratic equation whose roots are equal and check that the Set has only one element.
 
-!!!!Credits
- Thanks to Damien Cassou, Camille Teruel, Alain Busser, Stephane Ducasse and Ben Coman for their contributions.
 
-
-
-!! About Katas
-Now that you are finished with the previous list of problems you may wonder how to develop even better your skills and we propose you to have a look at katas.
-
-In martial arts, practioners repeat basic or more elaborated movements to fully master them. The agile programming commnity took the idea and propose a list of exercises to practice programming. We provide a list of such Katas that you can use to practice your skills and the best way to do it is with friends during pair-programming sessions. 
-
-- Cashier. This problem is how to represent a simple cashier machine. The simple version is that the machine has a list to handle the prices for bananas, apples and grapefoot. A second version is that now there are special price for example two bananas do not cost  twice the price of a single banana. A third version is should handle reduction like 10\%.
-
-- Tennis score management systems. should write a description
-
-- Rock Paper Scissors. should write a description
-
-- Simple Miners. should write a description
-
-
-Here is a list of resources on the net
-- *http://agilekatas.co.uk*
-- *http://codingdojo.org*
 
 
 
@@ -384,6 +363,29 @@ And get: ==30.202836775830292==. You are now making some money. But hold on, be 
 Going one step further: Now that you have a way to calculate both, Present Value and Net Present Value you can continue to build upon these classes and reuse code. We are now interested in calculating the discount rate that equalizes the investment with the present value of the cash flow.
 That is which discount rate make the Net Present Value equal to zero. This concept, in finance is called the Internal Rate of Return (IRR) and it's a very important one. Some hints, you can use the Newton-Raphson method (which implies using mathematical derivates) or some sort of guessing algorithm using upper and lower bands.
 
+!!!!Credits
+ Thanks to Damien Cassou, Camille Teruel, Alain Busser, Stephane Ducasse and Ben Coman for their contributions.
+
+
+
+!! About Katas
+Now that you are finished with the previous list of problems you may wonder how to develop even better your skills and we propose you to have a look at katas.
+
+In martial arts, practioners repeat basic or more elaborated movements to fully master them. The agile programming commnity took the idea and propose a list of exercises to practice programming. We provide a list of such Katas that you can use to practice your skills and the best way to do it is with friends during pair-programming sessions. 
+
+- Cashier. This problem is how to represent a simple cashier machine. The simple version is that the machine has a list to handle the prices for bananas, apples and grapefoot. A second version is that now there are special price for example two bananas do not cost  twice the price of a single banana. A third version is should handle reduction like 10\%.
+
+- Tennis score management systems. should write a description
+
+- Rock Paper Scissors. should write a description
+
+- Simple Miners. should write a description
+
+
+Here is a list of resources on the net
+- *http://agilekatas.co.uk*
+- *http://codingdojo.org*
+- *http://smalltalkhub.com/#!/~zeroflag/TDD-Kata*
 
 
 
