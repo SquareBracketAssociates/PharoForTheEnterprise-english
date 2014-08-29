@@ -1,19 +1,25 @@
-! Telescope: Building Visualization Simply
+! (Draft) Telescope: Building Visualization Simply
 
 
-In the domain of software analysis, visualization is a powerful tool to understand software systems and algorithms. Software visualization can be used as tool and technique to explore and analyze software systems to uncover hidden dependencies and discover anomalies.
+In the domain of software analysis, visualization is a powerful tool to understand software systems and algorithms. 
+Software visualization can be used as tool and technique to explore and analyze software systems to uncover hidden dependencies and discover anomalies. Roassal is an agile visualization engine which can be used to express powerful visualizations. However, there is a need to provide an abstraction 
+so that the user can express software visualizations and a set of useful recurrent visualization used in software analysis.
 
-Roassal is an agile visualization engine which can be used to express powerful visualizations. However, it would be interesting to provide an abstraction to the user to express software visualizations and a set of useful recurrent visualization used in software analysis.
 
-Description
+!! Telescope in a Nutshell
+Telescope is an engine for efficiently creating meaningful visualizations. It has been developed by Léo Perard with the help of Guillaume Larcheveque and Usman Bhatti. 
+Its purpose is to help the user concentrate on the problem at hand rather than understanding the nitty-gritty of a drawing library. 
+It does so by exposing to the user to a few concepts of the domain of visualization: nodes and their contents, layouts, interactions, and update mechanism. 
+For example, the user does not have to worry about the creation of composite or simple nodes, the engine handles it.
 
-Telescope is an engine for efficiently creating meaningful visualizations. The purpose is to help the user concentrate on the problem at hand rather than understanding the nitty-gritty of a drawing library. It does so by exposing to the user to a few concepts of the domain of visualization: nodes and their contents, layouts, interactions, and update mechanism. For example, the user does not have to worry about the creation of composite or simple nodes, the engine handles it.
+Another purpose of Telescope is to express a set of useful recurrent visualizations. Telescope comes with a built-in set of visualizations: Distribution map and Butterfly 
+are two examples. However, if you do not find an existing visualization which corresponds to your needs, you can create one to suit your needs. Indeed, 
+Telescope provides a rich API to easily create a visualization to a specific purpose.
 
-Another purpose of Telescope is to express a set of useful recurrent visualizations. Telescope comes with a built-in set of visualizations: Distribution map and Butterfly are two examples. However, if you do not find an existing visualization which corresponds to your needs, you can create one to suit your needs. Indeed, Telescope provides a rich API to easily create a visualization to a specific purpose.
+Telescope proceeds as follows: The user provides a description of the visualization and Telescope generates appropriate 
+Roassal code for the user and open up a Roassal window with the visualization.
 
-Telescope proceeds as follows: The user provides a description of the visualization and Telescope generates appropriate Roassal code for the user and open up a Roassal window with the visualization.
-
-! Getting Started
+!! Getting Started
 
 To install Telescope
 
@@ -31,12 +37,13 @@ you can download it from the Jenkins *https://ci.inria.fr/moose/job/Telescope/*
 
 
 
-!How to use Telescope as an end-user
+!!How to use Telescope as an end-user
 
-For this tutorial we shall use the TLButterfly visualization in Telescope. A Butterfly visualization shows incoming connections on the left and outgoing connections on the right for a software entity placed in the middle. To start specifying the visualization, the following three setters can be used on TLButterfly object:
-- #mainEntity:
-- #leftEntities:
-- #rightEntities:
+For this tutorial we shall use the ==TLButterfly== visualization in Telescope. A Butterfly visualization shows incoming connections on the left and outgoing 
+connections on the right for a software entity placed in the middle (see Figure *butterfly-default*). To start specifying the visualization, the following three setters can be used on TLButterfly object:
+- ==mainEntity:==
+- ==leftEntities:==
+- ==rightEntities:==
 
 The left and right entities can be a block or symbol to calculate the links of the main entity to the left and right entities.
 
@@ -49,7 +56,7 @@ visualization := TLButterfly new
 visualization open
 ]]]
 
-+A simple butterfly>file://figures/butterfly-default.pdf|width=50|label=butterfly-default+
++A simple butterfly>file://figures/butterfly-default.png|width=50|label=butterfly-default+
 
 
 This example is the minimum required to get a butterfly visualization. We have our three groups (left, center, right) showing the hierarchical connection for Collection class in Pharo.
@@ -68,8 +75,12 @@ visualization nodeBuilder: nodeBuilder.
 visualization open
 ]]]
 
-We define a nodeBuilder and just set it to the visualization. Now the visualization will use this builder to create our nodes. Note: In fact, each group can have his own node builder (the visualization is a specific group) so it means that if want three different node builders to customize the three groups of the visualization you can.
-=(visualization > left) nodeBuilder: leftNodeBuilder
+We define a nodeBuilder and just set it to the visualization. Now the visualization will use this builder to create our nodes. Note: In fact, each group can have 
+his own node builder (the visualization is a specific group) so it means that if want three different node builders to customize the three groups of the visualization 
+you can.
+[[[
+	(visualization > left) nodeBuilder: leftNodeBuilder
+]]]
 
 The node builder provides a lot of features. Let's begin to change the color of our nodes.
 
@@ -86,7 +97,7 @@ visualization nodeBuilder: nodeBuilder.
 visualization open
 ]]]
 
-+A simple butterfly with different colors>file://figures/butterfly-color-change.pdf|width=50|label=butterfly-color-change+
++A simple butterfly with different colors>file://figures/butterfly-color-change.png|width=50|label=butterfly-color-change+
 
 
 
@@ -113,7 +124,7 @@ visualization open
    
    
    
-+Adding interaction>file://figures/butterfly-interactions.pdf|width=50|label=butterfly-interactions+   
++Adding interaction>file://figures/butterfly-interactions.png|width=50|label=butterfly-interactions+   
 
 
 Now we begin to have a cool visualization! In this example, we saw the three kind of interactions available in Telescope. This first one is a basic interaction, this interaction is purely for the render. Instead of popup, you can have draggable for example. The second one is an interaction already define in Telescope, you just have to set it to the node builder. More default interaction like this will come later. The third one let you create your own interaction. It means you can interact with your specific entities. You have no restriction on the interaction so you can get a great dynamic visualization.
@@ -140,15 +151,15 @@ visualization open
 
 
    
-+Adding interaction>file://figures/butterfly-label.pdf|width=50|label=butterfly-label+   
++Adding interaction>file://figures/butterfly-label.pn|width=50|label=butterfly-label+   
 
 
-So to add the label, it is always the same way to proceed, work on the node builder. The positions available for the label are:
-- #inside
-- #top
-- #bottom
-- #left
-- #right
+So to add the label, it is always the same way to proceed, work on the node builder. The positions available for the label are specified using the following messages:
+- ==inside==
+- ==top==
+- ==bottom==
+- ==left==
+- ==right==
 
 Now the visualization is more understandable.
 
@@ -174,7 +185,7 @@ visualization open
 
 
 
-+Adding interaction>file://figures/butterfly-composite.pdf|width=50|label=butterfly-composite+   
++Adding interaction>file://figures/butterfly-composite.png|width=50|label=butterfly-composite+   
 
 All the customization of the composite nodes are not transmit to the inner nodes. The TLCompositeNodeBuilder has a node builder for the inner nodes, so if you want to customize them, this is always the same way to proceed than before expect you access to the childrenNodeBuilder. Note: If you notice you have a little red ""-"" on the right, it is to collapse the box and hide the inner nodes. Of course you have the ""\+"" to expand.
 
@@ -204,12 +215,12 @@ visualization nodeBuilder: nodeBuilder.
 visualization open
 ]]]
 
-+Adding interaction>file://figures/custom-composite.pdf|width=50|label=custom-composite+   
++Adding interaction>file://figures/custom-composite.png|width=100|label=custom-composite+   
 
 
 Just two messages are specific to the TLCompositeNodeBuilder
-- #childrenLayout:  let you specify the layout that the children should have
-- #expandedByDefault: if you want the inner nodes expanded by default or not.
+- ==childrenLayout:==  let you specify the layout that the children should have
+- ==expandedByDefault:== if you want the inner nodes expanded by default or not.
 
 [[[| visualization nodeBuilder |
 nodeBuilder := TLCompositeNodeBuilder childrenProperty: #dependentClasses.
@@ -277,4 +288,4 @@ visualization open
 ]]]
 
 
-+Adding interaction>file://figures/recursive-composite.pdf|width=50|label=recursive-composite+   
++Adding interaction>file://figures/recursive-composite.png|width=100|label=recursive-composite+   
