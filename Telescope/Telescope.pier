@@ -1,1 +1,280 @@
 ! Telescope: Building Visualization Simply
+
+
+In the domain of software analysis, visualization is a powerful tool to understand software systems and algorithms. Software visualization can be used as tool and technique to explore and analyze software systems to uncover hidden dependencies and discover anomalies.
+
+Roassal is an agile visualization engine which can be used to express powerful visualizations. However, it would be interesting to provide an abstraction to the user to express software visualizations and a set of useful recurrent visualization used in software analysis.
+
+Description
+
+Telescope is an engine for efficiently creating meaningful visualizations. The purpose is to help the user concentrate on the problem at hand rather than understanding the nitty-gritty of a drawing library. It does so by exposing to the user to a few concepts of the domain of visualization: nodes and their contents, layouts, interactions, and update mechanism. For example, the user does not have to worry about the creation of composite or simple nodes, the engine handles it.
+
+Another purpose of Telescope is to express a set of useful recurrent visualizations. Telescope comes with a built-in set of visualizations: Distribution map and Butterfly are two examples. However, if you do not find an existing visualization which corresponds to your needs, you can create one to suit your needs. Indeed, Telescope provides a rich API to easily create a visualization to a specific purpose.
+
+Telescope proceeds as follows: The user provides a description of the visualization and Telescope generates appropriate Roassal code for the user and open up a Roassal window with the visualization.
+
+! Getting Started
+
+To install Telescope
+
+[[[
+Gofer new
+	smalltalkhubUser: 'LeoPerard' project: 'Telescope';
+	configuration;
+	load.
+(Smalltalk at: #ConfigurationOfTelescope) load
+]]]
+
+or 
+
+you can download it from the Jenkins *https://ci.inria.fr/moose/job/Telescope/*
+
+
+
+!How to use Telescope as an end-user
+
+For this tutorial we shall use the TLButterfly visualization in Telescope. A Butterfly visualization shows incoming connections on the left and outgoing connections on the right for a software entity placed in the middle. To start specifying the visualization, the following three setters can be used on TLButterfly object:
+- #mainEntity:
+- #leftEntities:
+- #rightEntities:
+
+The left and right entities can be a block or symbol to calculate the links of the main entity to the left and right entities.
+
+[[[
+| visualization |
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization open
+]]]
+
++A simple butterfly>file://figures/butterfly-default.pdf|width=50|label=butterfly-default+
+
+
+This example is the minimum required to get a butterfly visualization. We have our three groups (left, center, right) showing the hierarchical connection for Collection class in Pharo.
+
+Now we want to customize our nodes because we can not see a lot of things with this visualization. To customize the nodes, we use a node builder, TLNodeBuilder.
+
+
+[[[
+| visualization nodeBuilder |
+nodeBuilder := TLNodeBuilder new.
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+
+We define a nodeBuilder and just set it to the visualization. Now the visualization will use this builder to create our nodes. Note: In fact, each group can have his own node builder (the visualization is a specific group) so it means that if want three different node builders to customize the three groups of the visualization you can.
+=(visualization > left) nodeBuilder: leftNodeBuilder
+
+The node builder provides a lot of features. Let's begin to change the color of our nodes.
+
+
+[[[
+| visualization nodeBuilder |
+nodeBuilder := TLNodeBuilder new.
+nodeBuilder nodeColor: Color brown.
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+
++A simple butterfly with different colors>file://figures/butterfly-color-change.pdf|width=50|label=butterfly-color-change+
+
+
+
+
+This is not a lot but it is to get the idea of how it works. A more interesting feature, the interactions. There are different kind of interactions that you can add to your nodes. For this example, we want our nodes have popup (to see their name), can be inspected, and a interaction specific to our entities, browse the class. Again, we work on the node builder to do this.
+
+[[[
+| visualization nodeBuilder |
+nodeBuilder := TLNodeBuilder new.
+nodeBuilder nodeColor: Color brown.
+nodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+   
+   
+   
++Adding interaction>file://figures/butterfly-interactions.pdf|width=50|label=butterfly-interactions+   
+
+
+Now we begin to have a cool visualization! In this example, we saw the three kind of interactions available in Telescope. This first one is a basic interaction, this interaction is purely for the render. Instead of popup, you can have draggable for example. The second one is an interaction already define in Telescope, you just have to set it to the node builder. More default interaction like this will come later. The third one let you create your own interaction. It means you can interact with your specific entities. You have no restriction on the interaction so you can get a great dynamic visualization.
+
+Ok, so we can see the name of classes with the popup, but a label would be more efficient.
+
+[[[
+| visualization nodeBuilder |
+nodeBuilder := TLNodeBuilder new.
+nodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+nodeBuilder nodeLabel: #name position: #inside.
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+
+
+   
++Adding interaction>file://figures/butterfly-label.pdf|width=50|label=butterfly-label+   
+
+
+So to add the label, it is always the same way to proceed, work on the node builder. The positions available for the label are:
+- #inside
+- #top
+- #bottom
+- #left
+- #right
+
+Now the visualization is more understandable.
+
+To get a visualization more powerful we can use composite nodes. Composite nodes contains other nodes and act like container box in the rendering. To get them, we change the node builder. We use TLCompositeNodeBuilder and we precise a property to calculate the inner nodes. Here, we want the inner nodes are the dependent classes. The API stay the same so you can customize it as we did before.
+
+[[[
+| visualization nodeBuilder |
+nodeBuilder := TLNodeBuilder new.
+nodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+nodeBuilder nodeLabel: #name position: #inside.
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+
+
+
++Adding interaction>file://figures/butterfly-composite.pdf|width=50|label=butterfly-composite+   
+
+All the customization of the composite nodes are not transmit to the inner nodes. The TLCompositeNodeBuilder has a node builder for the inner nodes, so if you want to customize them, this is always the same way to proceed than before expect you access to the childrenNodeBuilder. Note: If you notice you have a little red ""-"" on the right, it is to collapse the box and hide the inner nodes. Of course you have the ""\+"" to expand.
+
+[[[| visualization nodeBuilder |
+nodeBuilder := TLCompositeNodeBuilder childrenProperty: #dependentClasses.
+nodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+nodeBuilder nodeLabel: #name position: #inside.
+nodeBuilder childrenNodeBuilder nodeColor: Color white.
+nodeBuilder childrenNodeBuilder nodeBorderColor: Color black.
+nodeBuilder childrenNodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder childrenNodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder childrenNodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+nodeBuilder childrenNodeBuilder nodeLabel: #name position: #inside.
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+
++Adding interaction>file://figures/custom-composite.pdf|width=50|label=custom-composite+   
+
+
+Just two messages are specific to the TLCompositeNodeBuilder
+- #childrenLayout:  let you specify the layout that the children should have
+- #expandedByDefault: if you want the inner nodes expanded by default or not.
+
+[[[| visualization nodeBuilder |
+nodeBuilder := TLCompositeNodeBuilder childrenProperty: #dependentClasses.
+nodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+nodeBuilder nodeLabel: #name position: #inside.
+nodeBuilder expandedByDefault: false.
+nodeBuilder childrenLayout: RTVerticalLineLayout.
+nodeBuilder childrenNodeBuilder nodeColor: Color white.
+nodeBuilder childrenNodeBuilder nodeBorderColor: Color black.
+nodeBuilder childrenNodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder childrenNodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder childrenNodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+
+
+To finish, we can play with the recursivity of the composite node builders.
+
+[[[
+| visualization nodeBuilder recursiveNodeBuilder |
+recursiveNodeBuilder := TLCompositeNodeBuilder childrenProperty: #dependentClasses.
+recursiveNodeBuilder expandedByDefault: false. "very important if recursive to avoid loop"
+recursiveNodeBuilder nodeColor: Color white.
+recursiveNodeBuilder nodeBorderColor: Color black.
+recursiveNodeBuilder addInteraction: TLNodeBasicInteraction popup.
+recursiveNodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+recursiveNodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+recursiveNodeBuilder nodeLabel: #name position: #inside.
+recursiveNodeBuilder childrenNodeBuilder: recursiveNodeBuilder.
+
+nodeBuilder := TLCompositeNodeBuilder property: #dependentClasses.
+nodeBuilder childrenNodeBuilder: recursiveNodeBuilder.
+nodeBuilder expandedByDefault: false.
+nodeBuilder childrenLayout: RTVerticalLineLayout.
+nodeBuilder addInteraction: TLNodeBasicInteraction popup.
+nodeBuilder addInteraction: (TLInspectAction withMenu: 'Inspect').
+nodeBuilder addInteraction: ((TLCustomAction
+	block: [ :node | node entity browse ]
+	condition: [ :node | node entity isClass ])
+	withMenu: 'Browse...').
+nodeBuilder nodeLabel: #name position: #inside.
+
+visualization := TLButterfly new
+ 	mainEntity: Collection;
+ 	leftEntities: #superclass;
+ 	rightEntities: #subclasses.
+visualization nodeBuilder: nodeBuilder.
+visualization open
+]]]
+
+
++Adding interaction>file://figures/recursive-composite.pdf|width=50|label=recursive-composite+   
