@@ -39,8 +39,7 @@ you can download it from the Jenkins *https://ci.inria.fr/moose/job/Telescope/*
 
 !!How to use Telescope as an end-user
 
-For this tutorial we shall use the ==TLButterfly== visualization in Telescope. A Butterfly visualization shows incoming connections on the left and outgoing 
-connections on the right for a software entity placed in the middle (see Figure *butterfly-default*). To start specifying the visualization, the following three setters can be used on TLButterfly object:
+
 - ==mainEntity:==
 - ==leftEntities:==
 - ==rightEntities:==
@@ -289,3 +288,11 @@ visualization open
 
 
 +Adding interaction>file://figures/recursive-composite.png|width=100|label=recursive-composite+   
+
+
+
+
+
+For this tutorial we shall use the ==TLButterfly== visualization in Telescope. A Butterfly visualization shows incoming connections on the left and outgoing 
+connections on the right for a software entity placed in the middle (see Figure *butterfly-default*). To start specifying the visualization, the following 
+three setters can be used on ==TLButterfly== object:
