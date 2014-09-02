@@ -1,5 +1,8 @@
 ! Reddit.st in 10 elegant classes
 
+(A more recent and up to date version of this nice tutorial is available at: ==https://medium.com/@svenvc/reddit-st-in-10-cool-pharo-classes-1b5327ca0740==)
+
+
 CRUD refers to the Create, read, update and delete operations in persistent storage. The term CRUD applications often refers to simple applications managing simple data and that have to be created fast. Often CRUD development is done with languages such as PHP. In this Chapter we want to show that Smalltalk is a really good alternative and that in addition, your CRUD applications can evolve (which is often the problems of the use of traditional languages). We will show you that it  is perfectly possible to write nice web applications in Pharo and really fast and Reddit.st adds persistency in a relational database, unit tests as well as web application components to the mix.
 
 We will show how to implement a small but non-trivial web application in Smalltalk using Seaside, Glorp and PostgreSQL. Reddit, is web application where users can post interesting links that get voted up or down. The idea is that the 'best' links end up with the most points automatically. Many other websites exist in the area of social bookmarking, like Delicious, Digg and Hacker News.
