@@ -1,0 +1,112 @@
+! Time Formatter
+
+
+
+ZTimestampFormat, an implementation of a textual representation for a timestamp, date or time that can be used for formatting or parsing.
+
+You instanciate ==ZTimestampFormat== by specifying the textual format by example, based on a ==reference== timetamp. 
+Each component of the example representation is numbered from largest to smallest unit:
+	1=year
+	2=month
+	3=dayInMonth
+	4=hour (16 in 24 hour format)
+	5=minute
+	6=second
+as in the ISO representation: 
+	2001-02-03T16:05:06Z which is a Saterday. 
+Example format strings can be found in my class accessing protocol or in the unit tests.
+
+To specifiy a format, you write the reference date so that it matches the representation that you want.
+
+[[[
+(ZTimestampFormat fromString: 'SAT, FEB 03 2001 (16:05:06)')
+	format: ZTimestamp now.
+]]]
+
+We can be used for unabiguous, stricter parsing as well.
+
+[[[
+(ZTimestampFormat fromString: '02/03/01 (16:05:06)')
+	parse: '10/10/10 (12:01:01)'.
+]]]
+
+
+[[[
+| format |
+format := (ZTimestampFormat fromString: '03/02/2001') createDate.
+format parse: '03/09/2014'.
+format format: Date today
+]]]
+
+		
+The list of possible keys and their interpretation #formatSpecifications.
+I can translate month and weekday names to 4 different languages, English, French, German and Dutch.
+I can optionally use a timezone to convert UTC/GMT/Zulu timestamps to local time.
+
+[[[
+(ZTimestampFormat fromString: '02/03/01') format: Date today. => '09/03/14'
+
+(ZTimestampFormat fromString: '03/02/01') format: Date today. => '03/09/14'
+
+(ZTimestampFormat fromString: 'Feb 3, 2001') format: Date today. => 'Sep 3, 2014'
+
+(ZTimestampFormat fromString: '02-FEB-2001') format: Date today. => '09-SEP-2014'
+
+(ZTimestampFormat fromString: 'Saturday, Februari 3 ''01') format: Date today. =>  'Wednesday, September 3 ''14'
+]]]
+
+The reference date is 20010203 which was a Saturday, the recognised elements for dates are:
+
+[[[
+'2001' yearFourDigits
+'01' yearTwoDigits
+'02001'	yearFull
+'02' monthTwoDigits
+'2' month
+'February' monthNameCapitalized
+'february' monthNameLowercased
+'FEBRUARY' monthNameUppercased
+'Feb' monthNameAbbreviatedCapitalized
+'feb' monthNameAbbreviatedLowercased
+'FEB' monthNameAbbreviatedUppercased
+'3' day
+'_3' dayTwoDigitsSpacePadded
+'03' dayTwoDigits
+]]]
+
+[[[
+'YYYY'         yearFourDigits
+'YY'             yearTwoDigits
+'MM'            monthTwoDigits
+'M'            month
+'Month'    monthNameCapitalized
+'month'    monthNameLowercased
+'MONTH'    monthNameUppercased
+'Mth'            monthNameAbbreviatedCapitalized
+'mth'            monthNameAbbreviatedLowercased
+'MTH'            monthNameAbbreviatedUppercased
+'D'            day
+'_D'            dayTwoDigitsSpacePadded
+'DD'            dayTwoDigits
+'h'            hour12
+'hh'            hour12TwoDigits
+'HH'            hour24TwoDigits
+'PM'            daypartUppercased
+'pm'            daypartLowercased
+'m'            minute
+'mm'            minuteTwoDigits
+'s'            second
+'ss'            secondTwoDigits
+'Z'            timeZoneZ
+'+00:00'    timeZone
+'UTC'            timeZoneAbbreviated
+'UTCLong'        timeZoneAbbreviatedLong
+'Weekday'    weekdayNameCapitalized
+'weekday'    weekdayNameLowercased
+'WEEKDAY'    weekdayNameUppercased
+'Wday'            weekdayNameAbbreviatedCapitalized
+'wday'            weekdayNameAbbreviatedLowercased
+'WDAY'            weekdayNameAbbreviatedUppercased
+]]]
+
+See #formatSpecifications, each of those has parse and format methods, like #format:yearTwoDigitsOn: and #parseYearTwoDigitsFrom:
