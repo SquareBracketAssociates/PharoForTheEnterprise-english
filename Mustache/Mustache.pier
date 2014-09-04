@@ -5,17 +5,14 @@ Norbert Hartl developed a Mustache package for Pharo.   Mustache is a popular te
 The syntax of Mustache is small and covers a wide range of use cases. Mustache is simple and versatile. You can use it for many usages. We will show how Mustache is used in Pillar the system used to generate this book. Although it was designed to be a templating engine for HTML pages it is useful in different areas.
 
 
-!! Getting Started
-Mustache is available on smalltalkhub. There is documentation available on how the syntax is to be used. Here are a few examples to show the  messages you have to call in order to make it work.
-
-
+!! Getting started
+Mustache is available on smalltalkhub at the following address. 
 [[[
 MCHttpRepository
 	location: 'http://www.smalltalkhub.com/mc/NorbertHartl/Mustache/main'
 	user: ''
 	password: ''
 ]]]
-
 
 You can load it with the following expression.
 
@@ -26,11 +23,12 @@ Gofer it
 	  loadStable
 ]]]
 
-!! A first Example
+!! A first example
+A Mustache expression takes two arguments as input: 
+(1) a template and (2) a context object (which is a list of bindings) called a hash in Mustache jargon.
 
-Mustache takes two arguments as input: (1) a template and (2) a context object (which is a list of bindings) called a hash in Mustache jargon.
-
-A simple Mustache template looks like this (taken literally from the Mustache documentation available at *http://mustache.github.io/mustache.5.html*):
+A simple Mustache template looks like this (taken literally from the Mustache documentation 
+available at *http://mustache.github.io/mustache.5.html*):
 
 [[[
 templateString := 'Hello {{ name }}
@@ -41,7 +39,9 @@ Well, ${{taxed_value}}, after taxes.
 ]]]
 
 
-The expression =={{}}== delimits a tag inside a template. Here =={{ name }}== represents the variable ==name==. When the template is evaluated, variables are replaced by their values given by a context.  
+The expression =={{}}== delimits a tag or variable inside a template. 
+Here =={{ name }}== represents the variable ==name==. When the template is evaluated with a context, 
+variables are replaced by their values given by a context.  
 
 Given a context object with some bindings as the following one: 
 
@@ -53,15 +53,11 @@ context := {
   'in_ca' -> true } asDictionary
 ]]]
 
-We evaluate the template. 
+We can evaluate a template using the following ways:
 
 [[[
 (MustacheTemplate on: templateString) value: context
-]]]
 
-or
-
-[[[
 templateString asMustacheTemplate value: context
 ]]]
 
@@ -78,9 +74,12 @@ Well, $6000.0, after taxes.
 As context object we can use Dictionaries and Objects. Dictionaries need to have a key that is used in the template and Objects need a selector with the same name. In this chapter we use Dictionaries because they are easier to illustrate with.
 
 !! Tags as Variables
-Tags can be of different types: The first type is Variables. The simplest one is a variable.  A =={{name}}== tag in a basic template tries to find the ==name== key in the current context. If there is no ==name== key, the parent contexts are looked up recursively. If the top context is reached and the ==name== key is still not found, nothing will be rendered. In the following example ==age== is not defined, therefore nothing is printed.
+Tags can be of different types: The first type is ''variable''. The simplest one is a variable.  A =={{name}}== tag in a basic template tries to find the ==name== key in the current context. If there is no ==name== key, the parent contexts are looked up recursively. If the top context is reached and the ==name== key is still not found, nothing will be rendered. In the following example ==age== is not defined, therefore nothing is printed.
 
-All variables are HTML escaped by default. If you want to return unescaped HTML, use the triple mustache expression: =={{{name}}}==. For example =={{{company}}}== will simply print the given html while =={{Company}}== is printing the version where all the character of the inputs are escaped (i.e.,transformed into their html representation).
+All variables are HTML escaped by default. If you want to return unescaped HTML, use the 
+triple mustache expression: ==\{{{name\}}}==. For example ==\{{{company\}}}== will simply 
+print the given html while =={{Company}}== is printing the version where
+ all the characters of the input are escaped (i.e., transformed into their html representation).
 
 [[[
 '* {{name}}
@@ -98,8 +97,11 @@ All variables are HTML escaped by default. If you want to return unescaped HTML,
 * <b>GitHub</b>'
 ]]]
 
-Finally, we can use the ==&== to unescape a variable as in =={{& name}}==. This may be useful when changing delimiters
+Finally, we can use the character ==&== to unescape a variable as in =={{& name}}==. 
+This may be useful when changing delimiters.
 
+
+SD: need an example of the escape
 
 !! Sections
 
@@ -249,9 +251,8 @@ With such behavior we can easily generate menus and list in html.
 {'coolBooks' -> {  
     	 				{ 'name' -> 'Pharo By Example' } asDictionary.
 	 				{ 'name' -> 'Deep Into Pharo' } asDictionary.
-	 				{ 'name' -> 'Fun Wih Pharo' } asDictionary
-	}
-} asDictionary.
+	 				{ 'name' -> 'Fun Wih Pharo' } asDictionary }
+				} asDictionary
 ]]]
 
 This outputs the following
@@ -266,7 +267,7 @@ This outputs the following
 '
 ]]]
 
-!! And Blocks as well
+!! With the power of Blocks
 
 We can use blocks in context objects as well. They are evaluated at the time the template is filled out.
 For example, 
@@ -276,16 +277,13 @@ For example,
    value: { 'alphabet' -> [ Character alphabet ] } asDictionary
 ]]]
 
-prints
+outputs:
 
 [[[
 The alphabet: abcdefghijklmnopqrstuvwxyz
 ]]]
 
-Now there is a much more interesting way of using blocks. With a block
-
-
-This other example shows that we can access the value of a section. 
+Now there is a much more interesting way of using blocks. With a block we can get access to the value of a section and perform some operations on it. This other example shows that we can access the value of a section. 
 
 [[[
 
