@@ -119,6 +119,8 @@ When a variable defining a section is set, the section is activated.
 For example, here the =='number'== is bound to true and the =='Shown too'== text is shown.
 There are some special cases where the section is not activated: when the variable is missing, when its value is set to false, or an empty list (or string). The following examples illustrated such behavior. 
 
+!!!! With the variable set
+
 [[[| templateString context |
 templateString := 'Shown.
 {{#number}}
@@ -149,6 +151,7 @@ context := { 'number' -> 2 } asDictionary.
 '
 ]]]
 
+!!!! With the variable set to false
 Now when the variable is bound to false, the section is not activated.
 
 [[[
@@ -163,7 +166,9 @@ context := { 'number' -> false } asDictionary.
 '
 ]]]
 
-Similarly when the binding is an empty string or an empty collection.
+!!!! With the variable set to an empty string
+
+Similarly when the binding is an empty string or an empty collection, the section is not activated.
 [[[
 | templateString context |
 templateString := 'Shown.
@@ -190,10 +195,7 @@ context := { 'number2' -> '' } asDictionary.
 
 
 !! Working with non-empty lists
-
-We can use collections to create loop constructs in templates. 
-
-If the section key exists and has a non-false value, the text between the pound and slash are rendered and displayed one or more times.
+We can use collections to create loop constructs in templates. If a section key exists and it has a non-false value, the text between the pound and slash are rendered and displayed one or more times (according to the collection element numbers). 
 
 When the value is a non-empty collection, the text in the block is displayed once for each item in the list. The context of the block is set to the current item for each iteration. 
 Here is an example showing that the ''list'' section is evaluated three times since ''list'' binding holds a collection with three elements.
@@ -249,7 +251,7 @@ With such behavior we can easily generate menus and list in html.
      <b>{{name}}</b>
 {{/coolBooks}}' asMustacheTemplate value: 
 {'coolBooks' -> {  
-    	 				{ 'name' -> 'Pharo By Example' } asDictionary.
+    	 			{ 'name' -> 'Pharo By Example' } asDictionary.
 	 				{ 'name' -> 'Deep Into Pharo' } asDictionary.
 	 				{ 'name' -> 'Fun Wih Pharo' } asDictionary }
 				} asDictionary
@@ -258,7 +260,7 @@ With such behavior we can easily generate menus and list in html.
 This outputs the following
 
 [[[
- '
+'
      <b>Pharo By Example</b>
 
      <b>Deep Into Pharo</b>
@@ -283,7 +285,8 @@ outputs:
 The alphabet: abcdefghijklmnopqrstuvwxyz
 ]]]
 
-Now there is a much more interesting way of using blocks. With a block we can get access to the value of a section and perform some operations on it. This other example shows that we can access the value of a section. 
+Now there is a much more interesting way of using blocks. With a block we can get access to the value of a section and perform some operations on it. 
+This other example shows that we can access the value of a section. 
 
 [[[
 
