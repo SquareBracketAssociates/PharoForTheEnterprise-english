@@ -100,8 +100,29 @@ print the given html while =={{Company}}== is printing the version where
 Finally, we can use the character ==&== to unescape a variable as in =={{& name}}==. 
 This may be useful when changing delimiters.
 
+[[[
+'* {{name}}
+* {{age}}
+* {{&company}}
+* {{company}}
+* {{{&company}}}
+* {{{company}}}' asMustacheTemplate value:
+{
+'age' -> 33 .
+ 'name' -> 'Chris' .
+ 'company' -> '<b>GitHub</b>'
+} asDictionary
+]]]
+outputs
 
-SD: need an example of the escape
+[[[
+ '* Chris
+* 
+* <b>GitHub</b>
+* &lt;b&gt;GitHub&lt;/b&gt;
+* 
+* <b>GitHub</b>'
+]]]
 
 !! Sections
 
@@ -196,8 +217,7 @@ context := { 'number2' -> '' } asDictionary.
 
 !! Working with non-empty lists
 We can use collections to create loop constructs in templates. If a section key exists and it has a non-false value, the text between the pound and slash are rendered and displayed one or more times (according to the collection element numbers). 
-
-When the value is a non-empty collection, the text in the block is displayed once for each item in the list. The context of the block is set to the current item for each iteration. 
+Other said, when the value is a non-empty collection, the text in a section is displayed once for each item in the list. The context of the section is set to the current item for each iteration. 
 Here is an example showing that the ''list'' section is evaluated three times since ''list'' binding holds a collection with three elements.
 
 [[[
@@ -257,7 +277,7 @@ With such behavior we can easily generate menus and list in html.
 				} asDictionary
 ]]]
 
-This outputs the following
+This outputs the following HTML snippet.
 
 [[[
 '
@@ -271,8 +291,8 @@ This outputs the following
 
 !! With the power of Blocks
 
-We can use blocks in context objects as well. They are evaluated at the time the template is filled out.
-For example, 
+We can use Pharo blocks in context objects as well. They are evaluated at the time the template is 
+filled out. For example, 
 
 [[[
 'The alphabet: {{ alphabet }}' asMustacheTemplate 
@@ -285,8 +305,11 @@ outputs:
 The alphabet: abcdefghijklmnopqrstuvwxyz
 ]]]
 
-Now there is a much more interesting way of using blocks. With a block we can get access to the value of a section and perform some operations on it. 
-This other example shows that we can access the value of a section. 
+Now there is another interesting way of using blocks. With a block we can get access to the 
+value of a section and perform some operations on it. 
+
+This example shows that we can access the value of a section. Here the block is expecting one argument 
+the value of this argument will be the section with subsituted variables. 
 
 [[[
 
