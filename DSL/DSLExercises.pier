@@ -91,7 +91,7 @@ Execute the test and you should get an error message because the class ==Dice== 
 Another way to create this method is to do it right from the debugger that pops up when a method does not exist. Just click the ==Create== button in the debugger, select the ==Dice== class, and the ==instance creation== protocol. The method first creates an instance, then sends it the message ==faces:==, and returns the instance. You can implement the method right in the debugger.
 
 [[[
-Your code here
+Dice class>>your code here
 ]]]
 
 To implement this method, you will have to send the message ==new== to the class: ==self== is the current class when implementing a class method.
