@@ -96,7 +96,7 @@ DiceTest>>testCreationIsOk
 We define the class method ==faces:== as follows. It creates an instance then send the message ==faces:== to it and returns the instance.
 
 [[[
-Dice>>faces: aNumber
+Dice class>>faces: aNumber
 
 	| instance |
 	instance := self new.
@@ -107,7 +107,7 @@ Dice>>faces: aNumber
 This method is strictly equivalent to the one below. The trick is that ==yourself== is a simple method defined on ==Object== class. ==yourself== returns the receiver of a message and the use of ==;== sends the message to the receiver of the previous message (here ==faces:==), therefore ==yourself== is sent to the object resulting from the execution of the expression ==self new== (which returns a new instance of the class ==Dice==). 
 
 [[[
-Dice>>faces: aNumber
+Dice class>>faces: aNumber
 	
 	^ self new faces: aNumber; yourself
 ]]]
