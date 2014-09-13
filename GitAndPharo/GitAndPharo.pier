@@ -1,9 +1,16 @@
-!!Git And Pharo
+!Git And Pharo
 
-This chapter is about how to integrate Pharo with Git, the distributed version control system. Integration with not only git, but possibly others: mercurial, svn, cvs, etc... We will consider that both git and Pharo are working on the target system. Please refer to the documentation of your system to install git.
+todo Sept 2014: add some pictures and should ask thierry to finish it :)
 
-!!!A simple Git and Pharo workflow
+In the future Pharo sources will be managed with Git. Howvever it takes time to arrive to a solution 
+that be used without too much extra knowledge of Git. Now if you want to take advantage of Git to manage
+your development, this chapter written by Thierry Goubier is about how to integrate Pharo with Git, the distributed 
+version control system. Integration with not only git, but possibly others: mercurial, svn, cvs, etc... 
+We will consider that both git and Pharo are working on the target system. Please refer to the 
+documentation of your system to install git.
 
+
+!! A simple Git and Pharo workflow
 If you are working on a Linux or a Mac system, a first way to explore git and Pharo is the following:
 
 Create a git repository somewhere, in a folder.
@@ -14,7 +21,7 @@ $ cd myProjectRepo
 $ git init
 ]]]
 
-In Pharo, install GitFileTree
+In Pharo, install GitFileTree using the following script.
 
 [[[
 Gofer new
@@ -23,9 +30,13 @@ Gofer new
 	loadStable
 ]]]
 
-Open Monticello. In the Monticello browser, add a repository of type gitfiletree:// with ==+Repository==. In the file dialog which open there, choose your folder above (myProjectRepo). You're done! You can now save your packages into that repository.
+Open Monticello. In the Monticello browser, add a repository of type ==gitfiletree://== using the button ==+Repository==. 
+In the file dialog which open there, choose your folder above (myProjectRepo). You're done! 
+You can now save your packages into that repository.
 
-We will then play with packages in that repository. First, create a package named MyPackage with ==\+Package==. Save it into your gitfiletree repository by selecting the gitfiletree repository added above (don't forget to set the view on packages to ==All==). Then select your gitfiletree reppsitory and open the repository browser with " (Figure *myProjectRepo*) to see it listed. Go back to the command line and run git log.
+We will then play with packages in that repository. First, create a package named ==MyPackage== using the button ==\+Package==. 
+Save it into your gitfiletree repository by selecting the gitfiletree repository added above (don't forget to set the view on packages to ==All==). Then select your gitfiletree reppsitory 
+and open the repository browser with " (Figure *myProjectRepo*) to see it listed. Go back to the command line and run git log.
 
 +Repository browser on myProjectRepo>file://figures/myProjectRepo.png|width=80|label=myProjectRepo+
 
@@ -56,13 +67,21 @@ nothing to commit, working directory clean
 
 You can see that everything has been properly committed. And you recognise the "master" branch, which is visible in the repository inspector title.
 
-Your git workflow is ready! You can explore by saving more versions of your package and see how the repository keeps logging the relevant commits and show you the full history in the Repository browser.
+Your git workflow is ready! You can explore by saving more versions of your package and see how the repository keeps logging 
+the relevant commits and show you the full history in the Repository browser. 
 
-Now, the interest of git is that it is a distributed version control system, in which you can cooperate with others and store your code in a remote repository. Remote repositories may be set up via internet centralised services (such as *github>http://github.com* and *bitbucket>http://bitbucket.com*) or via your organisation internal servers running software such as gitosis.
+!! Working with a remote repository
+Now, the interest of git is that it is a distributed 
+version control system, in which you can cooperate with others and store your code in a remote repository. 
+Remote repositories may be set up via internet centralised services (such as *github>http://github.com* and *bitbucket>http://bitbucket.com*) 
+or via your organisation internal servers running software such as gitosis.
 
-So, how to work out of a remote repository? Let's take as an example *github>http://github.com*. First you need an account on github, and you need to register your ssh key (this is the process which avoids that you type your username and password everytime you do a git command with the remote repository. Github has the documentation for you __*here>https://help.github.com/articles/generating-ssh-keys*__, so just follow that step).
+So, how to work out of a remote repository? Let's take as an example *github>http://github.com*. 
+First you need an account on github, and you need to register your ssh key (this is the process which avoids that you type your username and password everytime you do a git command with the remote repository. Github has the documentation for you __*here>https://help.github.com/articles/generating-ssh-keys*__, so just follow that step).
 
-Then choose one of your projects, create a new one, or fork an existing project. For example, fork the GitAndPharoTutorial project on Github, from the github web interface. To access it from Pharo, open the Monticello Browser, add a repository of type Remote git repository, and fill the template:
+Then choose one of your projects, create a new one, or fork an existing project. For example, fork the ==GitAndPharoTutorial== project 
+on Github, from the github web interface. To access it from Pharo, open the Monticello Browser, 
+add a repository of type Remote git repository, and fill the template:
 
 [[[
 MCFileTreeGitRemoteRepository
@@ -72,9 +91,13 @@ MCFileTreeGitRemoteRepository
 	branch: ''
 ]]]
 
-Press Ok. After a short delay, you will see opening a repository inspector on master@Remote git repository ... GitAndPharoTutorial. You're set: you can save packages in this repository, and, to send the changes back to the remote repository, just select ==Push==. If you want to update from the remote repository, press ==Pull== and it will pull the remote changes and merge them with yours.
+Press Ok. After a short delay, you will see opening a repository inspector on ==master@Remote git repository ... GitAndPharoTutorial==. 
+You're set: you can save packages in this repository, and, to send the changes back to the remote repository, just select ==Push==. 
+If you want to update from the remote repository, press ==Pull== and it will pull the remote changes and merge them with yours.
 
-You can now explore all the versions available in the repository. To change to another branch, you need to go back to the command line, go inside the directory where your Pharo image is running from, and find there the GitAndPharoTutorial/ subdirectory. Inside, you can list all branches and select one, here the branch issue_1:
+You can now explore all the versions available in the repository. To change to another branch, you need to go back to the 
+command line, go inside the directory where your Pharo image is running from, and find there the GitAndPharoTutorial/ subdirectory. 
+Inside, you can list all branches and select one, here the branch issue_1:
 
 [[[
 $ git branch -a
@@ -91,7 +114,9 @@ Switched to a new branch 'issue_1'
 
 Go back to Pharo and press refresh to see the repository inspector updates itself.
 
-Note that, with git, the first checkout was done carefully so that we would create a local branch called "issue_1", and set that branch so that it would match the remote branch (defined on the github server) called origin/issue_1. Once the branch has been created (by default, master is setup in this way), to change to it we just need to use git checkout:
+Note that, with git, the first checkout was done carefully so that we would create a local branch called "issue_1", 
+and set that branch so that it would match the remote branch (defined on the github server) called origin/issue_1. 
+Once the branch has been created (by default, master is setup in this way), to change to it we just need to use git checkout:
 
 [[[
 $ git checkout master
@@ -102,23 +127,32 @@ Switched to branch 'issue_1'
 Your branch is up-to-date with 'origin/issue_1'.
 ]]]
 
-This is just a very short introduction to git. Git has a lot of documentation and may be setup in many different ways. We recommand reading on-line material and books if you want to know more about Git, but we will keep explaining a bit more of Git as we go through this chapter.
+This is just a very short introduction to git. Git has a lot of documentation and may be setup in many different ways. 
+We recommand reading on-line material and books if you want to know more about Git, but we will keep explaining a bit 
+more of Git as we go through this chapter.
 
-!!! Working with FileTree
+!! Working with FileTree
 
-FileTree is the default module for exporting Monticello packages to a standard file hierarchy and, by this operation, allowing a version control system to handle the files. We will now describe the process of working with FileTree and Git for the same workflow as above.
+FileTree is the default module for exporting Monticello packages to a standard file hierarchy and, by this operation, 
+allowing a version control system to handle the files. We will now describe the process of working with FileTree and Git 
+for the same workflow as above.
 
-The first step is to clone GitAndPharoTutorial from github, expecting you to have registered in github as explained above, and forked in github the GitAndPharoTutorial as well. In the command line, use git clone with an ssh or an https url.
+The first step is to clone GitAndPharoTutorial from github, expecting you to have registered in github as explained above, 
+and forked in github the GitAndPharoTutorial as well. In the command line, use ==git clone== with an ssh or an https url.
 
 [[[
 $ git clone git@github.com:/YourUserName/GitAndPharoTutorial
 ]]]
 
-Create a FileTree repository from Monticello. Open Monticello, add a repository of type FileTree with ==\+Repository== and select the GitAndPharoTutorial/ directory created by the git clone above. You should get the following view, noting that, contrary to gitfiletree above, you have no reference to the branch and no history.
+Create a FileTree repository from Monticello. Open Monticello, add a repository of type FileTree using the button ==\+Repository== 
+and select the GitAndPharoTutorial/ directory created by the git clone above. You should get the following view, 
+noting that, contrary to gitfiletree above, you have no reference to the branch and no history.
 
 --- Add a screenshot of the repository
 
-Modify and save the package inside Pharo into the repository (adding a space to one of the methods and saving it should be enough modifications). Open the repository: in that window note that only the latest version of the package is shown and that no history is available.
+Modify and save the package inside Pharo into the repository (adding a space to one of the methods and 
+saving it should be enough modifications). Open the repository: in that window note that only the latest version of the 
+package is shown and that no history is available.
 
 Drop to git command line to study the state of the repository.
 
@@ -178,11 +212,12 @@ $ git push
 $ git pull
 ]]]
 
-!!! Merge
+!! Merge
 
 --- Explain merging, using the sample repository.
 
-Merging is a key operation in a version control system and is one of the reasons to use Git with Pharo: to have Git record merge operations. We will restart with a clean version of the GitAndPharoTutorial:
+Merging is a key operation in a version control system and is one of the reasons to use Git with Pharo: to have Git record merge 
+operations. We will restart with a clean version of the GitAndPharoTutorial:
 
 - With GitFileTree, add a remote git repository with the following data:
 
@@ -204,7 +239,8 @@ and add a FileTree repository on the GitAndPharoMerge folder.
 
 
 
-!!! Multi-user workflow
+!! Multi-user workflow
+-- from then on these are notes.
 
 Start with the centralised workflow. Shows that it works perfectly well when combined with an approach in Pharo which is one person, one package.
 
@@ -284,7 +320,7 @@ Automatic merge failed; fix conflicts and then commit the result.
 
 We now have one conflict left, a .st file, which can be resolved the usual way by git. For example, a solution is to run git merge-tool to solve the conflict (that is commit a correct compositeTokenVariables.st).
 
-!!!!Git MergeTool
+!!Git MergeTool
 
 The final step in Git and Pharo integration will be to have a Git merge tool implemented in Pharo. Such a tool already exist for the tode project.
 
