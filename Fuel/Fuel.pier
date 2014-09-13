@@ -1,6 +1,15 @@
 !Fuel
 
-Serializing objects is an important domain since objects should be stored and reloaded on different environments. There is a plethora of frameworks to serialize objects based on recursive parsing of the object graphs. However such approaches are often too slow. The work presented here is based on the idea that objects are much more times loaded than stored, therefore it is worth to spend time while storing in order to have faster loading and user experience. We present an implementation of a pickle format that is based on clustering similar objects. Fuel is a fast open-source general-purpose object serialization framework.
+
+Serializing objects is an important domain since objects should be stored and reloaded on different environments. 
+There is a plethora of frameworks to serialize objects based on recursive parsing of the object graphs. However such approaches 
+are often too slow. The work presented here is based on the idea that objects are much more times loaded than stored, therefore 
+it is worth to spend time while storing in order to have faster loading and user experience. We present an implementation of a 
+pickle format that is based on clustering similar objects. Fuel is a fast open-source general-purpose object serialization framework
+developed by M. Martinez-Peck, M. Dias with the great help of M. Leske.
+
+todo: stef should do a pass.
+todo: compare with the web site.
 
 !! General Information
 
@@ -20,16 +29,16 @@ Serializing objects is an important domain since objects should be stored and re
 
 !!! Features
 
-- Is a fast, concrete, general-purpose and flexible binary serializer.
-- Object-Oriented design.
-- No special VM-support needed.
-- Modular (clear division in packages).
-- Can serialize/materialize not only plain objects but also classes, traits, methods, closures, contexts, packages, etc.
-- Support for global references.
-- Very customizable: ignore certain instance variables, substitute objects by others, pre and post serialization and materialization actions, etc.
-- Supports class rename and class reshape.
-- Good test coverage (almost 600 unit tests).
-- Large suite of benchmarks.
+Fuel is a fast, concrete, general-purpose and flexible binary serializer.
+- It has an object-oriented design.
+- It does not need special VM-support.
+- It is modularly packaged.
+- It can serialize/materialize not only plain objects but also classes, traits, methods, closures, contexts, packages, etc.
+- It supports global references.
+- It is very customizable: you ignore certain instance variables, substitute objects by others, define pre and post serialization and materialization actions, etc.
+- It supports class rename and class reshape.
+
+Finally Fuel has good test coverage (almost 600 unit tests) and a large suite of benchmarks.
 
 !!! Development
 
