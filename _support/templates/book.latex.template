@@ -28,6 +28,7 @@
         {Installation/}
         {KeyMapping/}
         {Lint/}
+		{Localization/}
         {MetacelloIntro/}
         {NativeBoost/}
         {NeoCSV/}
