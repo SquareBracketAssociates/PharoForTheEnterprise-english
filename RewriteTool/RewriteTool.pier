@@ -1,8 +1,8 @@
 ﻿!Rewrite Tool
 
 The purpose of this chapter is to explain what is Rewrite Tool, why do we need it and how to use it properly.
-Also, to understand better how Rewrite Tool works, general concepts of rewrite engine are described.
-This engine is used by Pharo, to match and transform expressions or methods, which is really powerful and very useful.
+Also, to understand better how Rewrite Tool works. Inasmuch it uses rewrite engine, its general concepts are described.
+This engine, which is really powerful and very useful, is used by Pharo to match and transform expressions or methods.
 Often we encounter a situation when we want to transform some part of code in a lot of different places into another code.
 For example, if you want to change 
 
@@ -16,12 +16,13 @@ to next code:
 in each and every method of your package.
 It may take a lot of time and nerves to manage this manually.
 However, you can use rewrite engine to transform all of your methods in the way you want, if only you know how.
-The syntax of rewrite engine is not that straightforward, thus to create specific matching and transforming rules with it you will spend some time.
+The syntax of rewrite engine is not that straightforward, thus to create specific matching and transforming rules with it you will have to spend some time.
 Moreover, even if you know engines syntax perfectly, it's very easy to miss a dot somewhere or misspell some part of rewrite expression.
 As you may have guessed, Rewrite Tool helps us to solve such a problem.
 It provides a GUI which allows user to create rewrite rules without knowledge of rewrite engine syntax.
-After rule is created you may apply it to scope that you want: packages, classes, methods.
-First of all, the tool itself is described in general.
+After rule is created you may simply apply it to scope that you want: packages, classes, methods.
+
+In this chapter, first of all, the tool itself is described in general.
 Then, we will take a look at example that will show you Rewrite Tool in work.
 After that, we will go in more details about tool and how it works.
 
@@ -33,10 +34,8 @@ And second part is rewrite rule browser(next as ''"browser"''), in which user ca
 
 !!!Rewrite rule builder
 
-Builder ''(picture 1.1)'' has four panes and three buttons, and each of this items has its own functions.
+Builder has four panes and three buttons, and each of this items has its own functions.
 It provides a possibility, with simple GUI, to build rewrite rules dynamically.
-
-+Rewrite rule builder>file://ruleBuilder.png|label=ruleBuilder+
 
 ""Panes""
 
@@ -53,12 +52,10 @@ It provides a possibility, with simple GUI, to build rewrite rules dynamically.
 
 !!!Rewrite rule browser
 
-This tool ''(picture 1.2)'' contains all previously created rewrite rules. Also it displays all packages / classes / methods in the image.
+This tool contains all previously created rewrite rules in most left pane. Also it displays all packages / classes / protocols / methods that are present in the current image.
 
-+Rewrite rule browser>file://ruleBrowser.png|label=ruleBrowser+
-
-You can select a rewrite rule that you want to apply. Then choose a scope of methods, which you want to transform with this rule and click "Apply rule to selected scope" button.
-In order to browse slected rewrite rule, click "Browse selected rule" button. (IN DEVELOPEMENT!)
+You can select a rewrite rule that you want to apply. Then choose a scope, which you want to be transformed with this rule and click "Apply rule to selected scope" button.
+In order to browse slected rewrite rule class, click "Browse selected rule" button.
 
 !!Simple example
 
@@ -74,13 +71,13 @@ into:
     someObject ifNil: [ ^ true ]
 ]]]
 
-First, you need to input template source code in top left panel of rewrite rule builder. (how to input? IN DEVELOPEMENT!)
+First, you need to input template source code in top left pane of rewrite rule builder. ''(how to input? - "IN DEVELOPEMENT!")''
 In all panes you get exactly the same code.
-To start with, look at status bar in bottom left panel. Obviously, for now it says "matches", as source code and match rule are equal.
+To start with, look at status bar in bottom left pane. Obviously, for now it says "matches", as source code and match rule are equal.
 This status bar will help you to create rule, that will really correspond to source code.
 If it changes to "doesn't match", you probably should use "Undo" button, and rethink your next move.
-As was mentioned earlier, your main playground is bottom left panel.
-Thus, almost all next actions are made in ''"Match rule"'' panel.
+As was mentioned earlier, your main playground is bottom left pane.
+Thus, almost all next actions are made in ''"Match rule"'' pane.
 In our example we don't care about ''someObject''.
 It can be ''self'' or maybe just some temporary variable.
 That is why, you have to select ''someObject'' and right click on it, which opens a menu,
@@ -101,19 +98,19 @@ After this change we should have:
 ]]]
 
 And status bar also has to be unchanged, saying: ''matches''.
-As you may noticed ''"Transform rule"'' panel text also was changed in following way:
+As you may noticed ''"Transform rule"'' pane text also was changed in following way:
 
 [[[ label = transformExampleStep1 | language = Smalltalk
     `variable1 ifNil: [ ^ true ]
 ]]]
 
 It means that in result on the place of ''someObject'' we will get ''someObject''.
-In case, you want to have in result something else, for example ''self'' use an option ''Change'' (or manual typing, but it's not recommended).
+In case, you want to have in result something else, for example ''self'' use an option ''Change'' (or manually type it, but it's not recommended).
 But for now, we don't want that.
-To proceed, select ''isNil'' in ''"Transform rule"'' panel, open a menu.
+To proceed, select ''isNil'' in ''"Transform rule"'' pane, open a menu.
 The options in this case are different from previous one, as it's not a variable selected, but selector.
-So, click on ''Ignore selector'' option. It will remove ''isNil'' from ''"Transform rule"'' panel.
-Also, ''"Result expression"'' panel was updated:
+So, click on ''Ignore selector'' option. It will remove ''isNil'' from ''"Transform rule"'' pane.
+Also, ''"Result expression"'' pane was updated:
 
 [[[ label = resultExampleStep1 | language = Smalltalk
     someObject ifTrue: [ ^ true ]
@@ -122,22 +119,17 @@ Also, ''"Result expression"'' panel was updated:
 Now let's work with our block: ''[ ^ true ]''.
 Here we have the same situation as we had with ''someObject''.
 Again, we don't care about which block is passed as an argument to ''ifTrue:'' or ''ifNil:''.
-So, we select our block (now working in ''"Match rule"'' panel) and choose an option ''Abstract block''.
+So, we select our block (now working in ''"Match rule"'' pane) and choose an option ''Abstract block''.
 In result it will be changed into ''`@block1''.
 
-Finally, select ''ifTrue:'' in ''"Transform rule"'' panel, and apply ''Change selector'' option from menu.
+Finally, select ''ifTrue:'' in ''"Transform rule"'' pane, and apply ''Change selector'' option from menu.
 Type in recently opened window: ''ifNil:'', and press ''Ok'' button.
 We are done with our task.
-You can see the result of applying rewrite rule to source code in top right panel.
-Now rewrite rule builder looks like in picture 2.1.
+You can see the result of applying rewrite rule to source code in top right pane.
 
 [[[ label = resultExampleStep2 | language = Smalltalk
     someObject ifNil: [ ^ true ]
 ]]]
-
-
-
-+Rewrite rule builder: simple example>file://simpleExample.png|label=simpleExample+
 
 !!Rewrite Tool in details
 
@@ -147,7 +139,7 @@ Understanding of this ideas is crucial, because it will increase users effectivi
 
 !!!Menu options
 
-List of all available options (may change):
+List of all available options (may be changed):
 - Abstract block
 - Abstract condition
 - Abstract literal
@@ -263,3 +255,92 @@ Sets selected node of AST in previous state.
 
 !!!Working with rewrite rules
 
+This section provides useful tips about working in rewrite rule builder.
+It will help you to understand the mechanics of building rule with ''Rewrite tool''.
+
+!!!!""Equal nodes""
+
+First thing worth mentioning is that any action, except ''Ignore'' actions, applied in ''Match rule'' pane,
+also applies to all same object in ''Match rule'' pane and ''Transform rule'' pane.
+If it is applied in ''Transform rule'' pane, only objects in it are transformed, but not in ''Match rule'' pane.
+When I say "same object", it means equal nodes of AST.
+Example:
+
+[[[ label = tipsExample1 | language = Smalltalk
+    "Code below is useless - just an example"
+
+    "Match rule pane:"
+    self children do: [ :each | each check ].
+    self ifNotNil: [ self children last remove ].
+    ^ self size
+    
+    "Transform rule pane:"
+    self children do: [ :each | each check ].
+    self ifNotNil: [ self children last remove ].
+    ^ super size
+]]]
+
+Select ''self'' in ''Match rule'' pane and apply ''Abstract variable'' action.
+You will, see the next result:
+
+[[[ label = tipsExample2 | language = Smalltalk
+    "Code below is useless - just an example"
+
+    "Match rule pane:"
+    `variable1 children do: [ :each | each check ].
+    `variable1 ifNotNil: [ `variable1 children last remove ].
+    ^ `variable1 size
+    
+    "Transform rule pane:"
+    `variable1 children do: [ :each | each check ].
+    `variable1 ifNotNil: [ `variable1 children last remove ].
+    ^ super size
+]]]
+Create new metavariable
+
+!!!!""Non-existing metavariables""
+
+Another thing, that you shuld know is that you can't create new metavariable in ''Transform rule'' pane,
+if it's not created in ''Match rule'' pane.
+Meaning, that you are not able to apply, for example, ''Abstract block'' action in ''Transform rule'' pane,
+if there is no metavariable in ''Match rule'' pane.
+If there is one, system will suggest you to choose name from existing metavariables.
+Let's take previous example:
+
+[[[ label = tipsExample1 | language = Smalltalk
+    "Code below is useless - just an example"
+
+    "Match rule pane:"
+    self children do: [ :each | each check ].
+    self ifNotNil: [ self children last remove ].
+    ^ self size
+    
+    "Transform rule pane:"
+    self children do: [ :each | each check ].
+    self ifNotNil: [ self children last remove ].
+    ^ super size
+]]]
+
+In case you select ''super'' in ''Transform rule'' pane and apply ''Abstract variable'' action, an error will be raised.
+But if you previously done this process in ''Match rule'' pane with ''self'' variable,
+it's possible now to create metavariables in ''Transform rule'' pane.
+If you now select ''super'' in  ''Transform rule'' pane and apply ''Abstract variable'' action window will be displayed.
+With other actions like ''Abstract literal'', ''Abstract condition'' etc. happens exactly the same thing.
+
+!!!!""Manual editing""
+
+One more important thing is that creating rewrite rules with manual editing, instead of action click menu options, is not recommended.
+First of all, you will not have general ''Undo'' as well as ''Undo on node'' options available.
+Moreover you may make mistake in rewrite engine syntax.
+And also, it is possible to get errors from, for example, creating non-existing metavariables.
+To sum up, rewrite rule builder allows you to edit rules, but do it only if really necessary.
+
+"IN DEVELOPEMENT!"
+
+!!!Details of rewrite rule browser
+
+[[[ label = nothing | language = Smalltalk
+    "Nothing here for now"
+]]]
+
+"IN DEVELOPEMENT!"
