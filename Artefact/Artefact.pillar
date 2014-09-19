@@ -13,34 +13,33 @@ Artifact is an innovative PDF framework. In Arteface a PDF document is described
 Such elements have then the opportunity to be reused in the same document but also in several documents. These elements can be as simple as a text or an image but also be a complex component with an advanced behavior and a special appearance. Artifact proposes default elements such as paragraphs or tables to quickly generate reports. The strength of these elements is that they are independent of each other. The order in which you position them in the document does not affect their appearance. Unlike many PDF frameworks that exploit the notion of stream in the definition of styles (blue text will be followed by another blue text in the absence of a directive in a different style), Artifact considers every element includes its own sheet style. If an attribute is not defined in the element, Artefact then uses a style sheet by default set at the document level.
 
 
-This autonomy of  elements and style management are a strong feature of Artefact. They make it easy to generate a document and quickly customize for a particular operation. Efficiency, productivity and scalability guided the design of the framework. 
+This autonomy of elements and style management are a strong feature of Artefact. They make it easy to generate a document and quickly customize for a particular operation. Efficiency, productivity and scalability guided the design of the framework. 
 
 !!!Concepts, characteristisc and limits
 
+After more than a year of development, the concepts used in Artifact are now stable and Artefact is already used by companies using Pharo. Yet this is still a young frameworks. For this reason, it is important to list its current features and to know its limitations.
 
-Concepts used in Artifact are stable and Artefact is already used by companies using Pharo. Yet this is still a young frameworks. For this reason, it is important to list its current features and to know its limitations.
+- Artifact supportsthe definition of a PDF document and its contents.
+- It can specify meta information such as title or author. 
+- It manages display options when opening a document in a compatible player with this feature.
+- It supports compressed PDF document generation.
+
+Each page of a PDF document can have its own particular format and orientation. By default, Artefact supports a set of common formats (A3, A4, ebook...). It can easily be extended for specific needs. Page location is determined not when it is created but when it is added to a document. Each page is independent and this allows one to generate documents with variable architecture.
+
+On each page, Artefact places simple or complex elements. A complex element is generally defined using simple elements or other complex elements. Each element is independent and is positioned relative to the upper left corner of a page. Artifact provides greyscale management and colors defined by the RGB (each color component is represented by one byte) model. Character fonts are those imposed by the PDF but Artifact does not support true type fonts (TTF) specification. You can insert images into a PDF document but only the JPEG format is currently supported. Artifact does not support the definition of interactive input fields, integrating JavaScript or safety aspects of PDF such as certificates. Of course, these specifications are subject to change as and when changes in the framework. Artifact has a simple architecture that facilitates scalability and new features. 
+
+!!Getting started in 10 minutes
+
+You already program in Pharo and you want to generate PDF documents. This section will show you how to do it
+in less than 10 min. 
+
+First you should load the framework. The good news is that there is no need for native libraries. Artefact is written entirely in Pharo. Whatever your execution platform (Microsoft Windows, Mac OS X, Linux, Android, IOS, etc.), Artefact will be available and usable.
 
 
 
-Artifact provides the definition of a PDF document, it can define meta information such as the title or the author. It manages the display options when opening the document in a compatible player with this feature and it supports compressed PDF document generation.
+!!!Installing  Artefact
 
-
-
-Chaque page d'un document PDF peut se voir attribuer un format et une orientation particulière. Artefact propose par défaut un ensemble de formats de documents couvrant les besoins courants et il vous est possible de l'étendre pour des usages particuliers.  Une page obtient sa position définitive dans un document qu'à partir du moment ou elle a été ajoutée au document. Chaque page est autonome et cela permet donc de générer des documents à architecture variable. 
-
-Sur chaque page, Artefact dispose des éléments simples ou complexes. Un élément complexe est généralement défini à l'aide des éléments simples ou  d'autres éléments complexes. Chaque élément est indépendant et se positionne par rapport au coin supérieur gauche d'une page. Artefact offre une gestion des niveaux de gris ou l'utilisation de couleurs définies selon le modèle RVB (chaque composante de la couleur est représentée par un octet). Les fontes de caractères sont celles imposées par la spécification PDF mais Artefact ne supporte pas les fontes true type (TTF). Il est possible d'insérer des images dans un document PDF mais seul le format JPEG est actuellement géré. Artefact ne gère pas la définition de champs interactifs de saisie, l'intégration de code Javascript ou encore les aspects sécurités de PDF tels que les certificats.
-
-Bien évidemment, ces spécification sont susceptibles d'évoluer au fur et à mesure des évolutions du framework. Artefact possède une architecture simple facilitant l'extensibilité et le support de nouvelles fonctionnalités. Restez connecté, le meilleur reste à venir.
-
-!!Prise en main d'Artefact en 10 minutes
-Vous programmez en Pharo et vous voulez générer des documents PDF dans votre application. Vous ne savez pas comment faire ? Ne soyez pas inquiet, dans quelques minutes, vous aurez produit votre premier document PDF. 
-
-Tout d'abord, il vous faut ajouter le framework Artefact à votre environnement de travail Pharo. La bonne nouvelle est qu'aucune librairie native n'est nécessaire pour faire fonctionner Artefact. Celui ci est écrit entièrement en Pharo. Quelque soit votre plateforme d'exécution (Microsoft Windows, Mac OS X, Linux, Android, IOS, etc.), Artefact sera disponible et utilisable.
-
-!!!Installation du projet Artefact
-Le projet Artefact est disponible sur le site web de dépot SmalltalkHub. Pour installer Artefact, executez les expressions suivantes: 
-
-La configuration déclenche le téléchargement d'Artefact ainsi que celui du projet Unit destiné à la manipulation des différentes unités de mesure. Par défaut, la version récupérée sera une version stable (#stable) destinée à la mise en production.   
+Artefact is hosted on SmalltalkHub (*http://smalltalkhub.com/#!/~RMoD/Artefact*). To install Artefact, execute the following expressions: 
 
 [[[
 Gofer new
@@ -51,26 +50,39 @@ Gofer new
 ConfigurationOfArtefact load
 ]]]
 
+Loading the configuration automatically load projets such as the Unit framework (which supports the definition of different measure units. By default the configuration loads the stable version that is prodcution ready.
 
-Vous pouvez maintenant parcourir les principaux paquets et classes composant Artefact. Le paquet Artefact-Demos contient de nombreux exemples d'utilisation et permet une prise en main en douceur du framework. Le paquet Artefact contient les éléments principaux tels que les documents, les pages ou encore les feuilles de styles mais également une documentation électronique accessible via le Help Browser. Dans Artefact-Elements-Basic et Artefact-Elements-Composites, vous trouvez les différents composants (texte, formes géométriques, images, etc) proposés de base par le framework. Les fontes sont définies dans le paquet Artefact-Fonts et les formats de documents (A4, A3, ebook, etc.) dans le paquet Artefact-Formats.
 
 
-!!! First Demoes
-The best way to start with Artefact is to look at Artefact-Demos package and to run each ==PDFDemos== class methods.
+Once loaded, you can rowse the main packages and classes. 
+- The ==Artifact-Demos== package contains many examples of the use and allows smooth handling of the framework. 
+- The ==Artifact== package contains the main elements such as documents, pages or style sheets but also 
+electronic documentation accessible via the Help Browser. 
+- In ==Elements-Basic Artifact== and ==Artifact-Elements-Composites==, you find the components (text, geometric shapes, images, etc.) offered by the basic framework. 
+- The fonts are defined in the package ==Artifact-Fonts== and document formats (A4, A3, ebook, etc.) in the package ==Artifact-Formats==.
 
-By default each generation result is written in the default pharo directory but you can define your own in the ==demoPath== method
 
-example:
+!!! Executing the first demoes
+
+The best way to start with Artefact is to look at ==Artefact-Demos== package and to run each ==PDFDemos== class methods.
+
+If you want to run all demos, just execute the following expression: ==PDFDemos runAllDemos==
+
+By default each generation results is written in the default Pharo directory but you can define your own in 
+the ==demoPath== method example:
+
 [[[
 PDFDemos>>demoPath
   ^ '/Users/pharo/pdf/'
 ]]]
-If you want to run all demos, just execute: ==PDFDemos runAllDemos==
 
 
+!!!Finally "Hello World!"
 
-!!!"Hello World!"
-Vous allez maintenant créer votre premier document PDF, le plus simple qui soit, un texte sur une page. Pour cela, vous devez définir une instance d'un document PDF contenant une page, sur laquelle vous positionnerez un composant texte.
+
+You will now create your first simplest PDF document, which is a text on a page. To do this, you must define an 
+instance of a PDF document containing a page where you will position a text component.
+
 
 [[[
 PDFDocument new 
