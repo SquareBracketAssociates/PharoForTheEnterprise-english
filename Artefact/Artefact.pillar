@@ -73,12 +73,11 @@ the ==demoPath== method example:
 
 [[[
 PDFDemos>>demoPath
-  ^ '/Users/pharo/pdf/'
+   ^ '/Users/pharo/pdf/'
 ]]]
 
 
 !!!Finally "Hello World!"
-
 
 You will now create your first simplest PDF document, which is a text on a page. To do this, you must define an 
 instance of a PDF document containing a page where you will position a text component.
@@ -86,20 +85,22 @@ instance of a PDF document containing a page where you will position a text comp
 
 [[[
 PDFDocument new 
-	exportTo: 'helloworld.pdf' asFileReference writeStream
+   exportTo: 'helloworld.pdf' asFileReference writeStream
 ]]]
 
-Une fois l'instance de PDFDocument créée, celle ci est exportée à l'aide d'un flot vers un fichier nommé ==helloworld.pdf==. Par défaut, le document PDF produit est placé dans le répertoire de Pharo. L'ouverture de ce fichier à l'aide d'un lecteur PDF indique que le document est vide. C'est un résultat normal puisque vous n'avez pas encore défini et ajouté une page au contenu du document.
+Once the instance of ==PDFDocument== is created, it is exported using a stream to a file named ==helloworld.pdf==.  By default, the produced PDF document is placed in the directory of Pharo. If you open the file, it is empty. This is  normal since you have not yet defined and added any content to the document.
 
-Enrichissons le code précédent en ajoutant un page au document.
+Let us enrich the previous example and add a page to the document.
 
 [[[
 PDFDocument new 
-	add: PDFPage new; 
-	exportTo: 'helloworld.pdf' asFileReference writeStream
+    add: PDFPage new; 
+    exportTo: 'helloworld.pdf' asFileReference writeStream
 ]]]
 
-L'ouverture de ce fichier donne un résultat différent puisque votre document contient maintenant une page vierge. Artefact suit la philosophie "Convention over configuration". Seuls les paramètres spécifiques doivent être définis. Ainsi, par défaut, Artefact a attribué un format A4 à votre document, fixé l'orientation en portrait et initialisé les méta informations avec des valeurs par défaut.
+Now if you open the file the result is different since the docyment contains an empty white page. 
+
+Artefact suit la philosophie "Convention over configuration". Seuls les paramètres spécifiques doivent être définis. Ainsi, par défaut, Artefact a attribué un format A4 à votre document, fixé l'orientation en portrait et initialisé les méta informations avec des valeurs par défaut.
 
 Nous terminons notre premier document en ajoutant un composant texte sur la page.
 
