@@ -1,18 +1,30 @@
-! Générer des documents PDF avec Artefact
+! Generat PDF documents with Artefact
 
-Le format PDF d'Adobe est probablement l'un des formats de documents electroniques le plus répandu. Utilisé quotidiennement, il rend quantité de services en permettant la production de documents graphiques, lisibles et échangeables entre pratiquement toutes les plate-formes matérielles ou logicielles existantes. Si vous recevez une facture, suite à un achat sur un site de e-commerce ou si vous téléchargez un rapport, un livre, une thèse ou encore un formulaire administratif, ces fichiers seront fort probablement des documents PDF consultables sur votre ordinateur, votre téléphone ou votre tablette. Sur l'ensemble de ces supports, ils conserveront une apparence identique. Pour les programmeurs, ce format est devenu incontournable et générer du PDF fait partie de la trousse à outils de base d'un outil de développement. Pour Pharo, c'est le framework Artefact qui prend en charge la conception et la génération de documents PDF. Artefact est développé par O. Auverlot et G. Larcheveque.
+The Adobe PDF format is probably one of the most widespread electronic document formats. Used daily, it is the basis for the production of graphical, readable and exchangeable documents. If you receive a bill, follow a purchase on a web site, if you download a report, a book, or an administrative form, these files will likely PDF documents. For programmers, supporting this format has become a must. Generating PDF is part of the toolkit. 
+In Pharo, Artifact is an innovative framework that supports the design and generation of PDF documents. 
+Artifact is developed by O. and G. Auverlot Larcheveque.
 
-!!Aux sources du projet
 
-Artefact est un framework PDF original. Il base la définition d'un document PDF sur une description objet. Pour lui, l'intégralité des éléments composant un fichier PDF se résume à une arborescence d'objets. Le document est un objet contenant d'autres objets correspondant à des pages. Sur chacune des pages, les éléments imprimables ou non visibles sont également des objets. Ceux ci ont ainsi la possibilité d'être réutilisés dans un même document mais aussi dans plusieurs documents. Ces éléments peuvent être aussi simple qu'un texte ou une image mais également, être un composant complexe doté d'un comportement évolué et d'une apparence particulière. Artefact propose ainsi par défaut des éléments tels que des paragraphes ou encore des tableaux permettant de générer rapidement des rapports. La force de ces éléments est qu'ils sont indépendants les uns des autres. L'ordre dans lequel vous les positionnez dans le document n'influe pas sur leur apparence. Contrairement à de nombreux frameworks PDF qui exploitent une notion de flux dans la définition des styles (un texte bleu sera suivi d'un autre texte bleu en l'absence d'une directive de style différente), Artefact considère que chaque élément intègre une feuille de style qui lui est propre. Si un attribut n'est pas défini dans l'élément, Artefact exploite alors une feuille de style par défaut définie au niveau du document.
 
-Cette autonomie des éléments et cette gestion des styles sont une caractéristique forte d'Artefact. Elles permettent de générer facilement un document et de le personnaliser rapidement pour une exploitation particulière. Efficacité, productivité et extensibilité ont été les mots clés qui ont guidé la conception du framework.
 
-!!Concept, caractéristiques et limitations
+!!Overvier of Artifact 
 
-Les concepts d'Artefact sont maintenant stabilisés et il est déjà utilisé dans le monde professionnel par des entreprises utilisant Pharo. Pourtant, c'est encore un frameworks jeune. Pour cette raison, il est important d'énumérer ses fonctionnalités actuelles et de connaître ses limitations.
+Artifact is an innovative PDF framework. In Arteface a PDF document is described by objects. All the components of a PDF document are represented as a tree of objects. The document is an object containing other objects corresponding to pages. On each page, printable or non-visible items are also objects. 
+Such elements have then the opportunity to be reused in the same document but also in several documents. These elements can be as simple as a text or an image but also be a complex component with an advanced behavior and a special appearance. Artifact proposes default elements such as paragraphs or tables to quickly generate reports. The strength of these elements is that they are independent of each other. The order in which you position them in the document does not affect their appearance. Unlike many PDF frameworks that exploit the notion of stream in the definition of styles (blue text will be followed by another blue text in the absence of a directive in a different style), Artifact considers every element includes its own sheet style. If an attribute is not defined in the element, Artefact then uses a style sheet by default set at the document level.
 
-Artefact offre la définition d'un document PDF, permet de définir des meta informations telles que le titre ou encore l'auteur, gère les options d'affichage lors de l'ouverture du document dans un lecteur compatible avec cette fonctionnalité et sait générer des documents PDF compressés.
+
+This autonomy of  elements and style management are a strong feature of Artefact. They make it easy to generate a document and quickly customize for a particular operation. Efficiency, productivity and scalability guided the design of the framework. 
+
+!!!Concepts, characteristisc and limits
+
+
+Concepts used in Artifact are stable and Artefact is already used by companies using Pharo. Yet this is still a young frameworks. For this reason, it is important to list its current features and to know its limitations.
+
+
+
+Artifact provides the definition of a PDF document, it can define meta information such as the title or the author. It manages the display options when opening the document in a compatible player with this feature and it supports compressed PDF document generation.
+
+
 
 Chaque page d'un document PDF peut se voir attribuer un format et une orientation particulière. Artefact propose par défaut un ensemble de formats de documents couvrant les besoins courants et il vous est possible de l'étendre pour des usages particuliers.  Une page obtient sa position définitive dans un document qu'à partir du moment ou elle a été ajoutée au document. Chaque page est autonome et cela permet donc de générer des documents à architecture variable. 
 
