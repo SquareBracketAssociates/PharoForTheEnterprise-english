@@ -528,7 +528,7 @@ La classe ==PDFFont== propose deux messages extrémement pratiques lors de la cr
 	(PDFCourierFont size: 20 pt) getStringWidth: 'hello'
 ]]]
 
-Le message =getIdealFontSizeForTheString:width:== retourne la taille optimale de la fonte utilisée en fonction de la largeur voulue. 
+Le message ==getIdealFontSizeForTheString:width:== retourne la taille optimale de la fonte utilisée en fonction de la largeur voulue. 
 L'exemple suivant détermine la taille nécessaire d'une fonte Courier si l'on désire que le texte "hello" ait une largeur de 15 cm:
 
 [[[
