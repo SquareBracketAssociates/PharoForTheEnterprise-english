@@ -122,18 +122,20 @@ default size.
 This first example introduced some basic concepts and shows how simple it is to produce a
 PDF document with Pharo. 
 
-The following Sections go deeper in Artefact. 
+The following Sections go deeper in Artefact. We will show you how to define more complex documents.
 
-Dans la suite de ce chapitre, nous allons approfondir vos connaissances sur le framework Artefact e
-t vous permettre de créer des documents PDF complexes.
 
-!!Définir un document
+!!Document Definition
 
-Artefact représente un document PDF à l'aide de l'objet PDFDocument. Cet objet est un conteneur destiné à recevoir des pages. C'est l'ordre dans lequel ces pages sont ajoutées qui définit l'organisation des données au sein de l'objet ==PDFDocument== et non pas l'ordre dans lequel les pages sont créées. Ce mode de fonctionnement vous permet donc de générer des documents dont le contenu sera dans un premier temps dynamiquement produit puis organisé dans un second temps. L'objet ==PDFDocument== dispose également d'options avancées portant sur le format du document, la gestion de la compression, l'ouverture dans le lecteur PDF ou encore la définition de méta informations.
+Artifact represents PDF documents as objects instances of the class ==PDFDocument==. An instance of ==PDFDocument== is a container for receiving pages. 
+This is the order in which these pages are added which defines the organization of data within the object ==PDFDocument== and not the order in which the pages are created. 
 
-!!!!Ajouter des pages
+This mode of operation allows you to generate documents whose contents can be dynamically generated and organized in a second time. A PDFDocument also supports advanced options such as the document size, management of compression, the opening in the PDF reader and the definition of meta information.
 
-Pour ajouter des pages dans un document, vous disposez d'un message nommée ==add:== qui ajoute la page à la suite de celles déjà présentes dans le document. Le fonctionnement est proche d'une pile FIFO (First In First Out). Lors de la génération du document, Artefact parcoure la liste des pages en partant de la plus anciennement ajoutée jusqu'à la dernière. Le script suivant définit un document d'une seule page vide.
+
+!!!!Page Addition 
+
+To add pages in a document, you have a message ==add:==: it adds a page after those already present in the document. The operation is like a FIFO (First In First Out) stack. When generating the document, Artifact traverses the list of pages starting from the earliest added to the last. The following script defines a document from a single blank page.
 
 [[[
 PDFDocument new 
@@ -141,17 +143,15 @@ PDFDocument new
 	exportTo: 'EmptyPage.pdf' asFileReference writeStream
 ]]]
 
+!!!! Document Properties
 
- 
-!!!!Spécifier les propriétés du documents
-
-Un document PDF peut être configuré pour choisir le format utilisé et gérer la compression.
+A PDFDocument can be configured to select the format and compression used. 
 
 !!!!!Format et orientation du document
 
-Par défaut, un document est généré en respectant le format A4 mais celui ci n'est pas le seul disponible dans Artefact. Dans le paquet Artefact-Formats, une liste de formats a été définie et couvre de nombreux besoins. Vous pouvez ainsi produire des documents en A3 (==PDFA3Format==), au format Letter (==PDFLetterFormat==) mais aussi dans un format adapté aux liseuses électroniques (==PDFEbookFormat==). Si vous avez besoin d'un format particulier, il vous suffit de le définir. Un format est simplement exprimé par la valeur de retour du message ==defaultSize==.
+By default, a document is generated in A4 format but this is not the only one available in Artifact. The Package Artifact-Formats contains a list of predefined formats and it covers many needs. You can produce documents in A3 (==PDFA3Format==), letter size (==PDFLetterFormat==) but also in a format suitable for e-readers (==PDFEbookFormat==). If you need a particular size, you can define it. A format is simply expressed by the returned value of the message ==defaultSize==.
 
-L'objet ==PDFDocument== accepte le message ==format:== permettant de spécifier le format de toutes les pages du document. Pour chaque page, cette valeur sera prise par défaut si aucun format particulier n'est défini à son propre format. L'exemple suivant génère un document utilisant le format A3:
+A ==PDFDocument== accepts the message ==format:== to specify the format of all pages of the document. For each page, this value will be the default if not redefined otherwise. Each page can specify a different format. The following example creates a document using A3:
 
 [[[
 PDFDocument new 
@@ -160,9 +160,10 @@ PDFDocument new
 	exportTo: 'A3.pdf' asFileReference writeStream
 ]]]
 
-Ces formats sont également utilisés pour spécifier l'orientation des pages en choisissant entre le mode portrait ou le mode paysage. Les deux méthodes sont ==setPortrait== et ==setLandscape==.
 
-L'exemple suivant génère un document dans lequel les pages sont au format A3 et orientées en mode paysage.
+Formats are also responsible of page orientation. There are two alternatives portrait or landscape. Two messages of the class ==PDFFormat== sets the associate orientation ==setPortrait== and ==setLandscape==.
+
+The following example generates a document whose pages are in A# format and landscape orientation.
 
 [[[
 PDFDocument new 
@@ -171,13 +172,16 @@ PDFDocument new
 	exportTo: 'A3landscape.pdf' asFileReference writeStream
 ]]]
 
-La sélection par défaut du mode paysage n'exclut pas la possibilité pour une page particulière d'être orientée en mode portrait. Artefact supporte parfaitement des pages de différents formats et de différentes orientations au sein d'un seul et même document.
+Note that setting the default landscape mode for a document does not exclude the possibility for a particular page to be oriented in portrait mode. Artifact fully supports pages of different sizes and different orientations within a single document.
 
-!!!!!Gestion de la compression
+
+!!!!!Compression 
 
 Le format PDF permet de comprimer les données et c'est une bonne chose. Un document PDF peut contenir d'importants volumes de données dont la présentation graphique doit être décrite avec précision. Afin de réduire au maximum le poids des documents générés, Artefact applique par défaut un algorithme de compression. Si par curiosité, vous voulez désactiver cette option et analyser les données produites, vous disposez de la méthode ==uncompressed== qui désactive la compression.
 
 L'exemple suivant génère un fichier PDF non compressé:
+
+The following example generates an uncompressed PDF document: 
 
 [[[
 PDFDocument new 
@@ -186,7 +190,7 @@ PDFDocument new
 	exportTo: 'uncompressed.pdf' asFileReference writeStream
 ]]]
 
-Une autre message, nommé ==compressed==, réactive la compression si celle ci a été préalablement désactivée.
+Another message, named ==compressed==, sets the compression. 
 
 !!!!!Contrôler l'ouverture du document
 
