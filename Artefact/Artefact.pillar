@@ -100,9 +100,10 @@ PDFDocument new
 
 Now if you open the file the result is different since the docyment contains an empty white page. 
 
-Artefact suit la philosophie "Convention over configuration". Seuls les paramètres spécifiques doivent être définis. Ainsi, par défaut, Artefact a attribué un format A4 à votre document, fixé l'orientation en portrait et initialisé les méta informations avec des valeurs par défaut.
 
-Nous terminons notre premier document en ajoutant un composant texte sur la page.
+With Artefact you should only define specific parameter. By default Artefact sets parameters to the most
+commonly used ones. For example the format is set to A4, page orientation to portrait, ect.
+So let us add a first text component to our page. 
 
 [[[
 PDFDocument new add: 
@@ -111,11 +112,20 @@ PDFDocument new add:
 	exportTo: 'helloworld.pdf' asFileReference writeStream
 ]]]
 
-Pour contenir le texte, nous avons besoin d'un composant de type ==PDFTextElement== que nous ajoutons sur la page. Nous définissons ensuite sa position à l'aide du message ==from:==. L'utilisation du framework Unit autorise l'utilisation d'unités métriques tels que les millimètres (mm), les centimètres (cm) ou encore les pouces (inch). Ces coordonnées sont définies à partir de l'angle supérieur gauche de la page. 
+To place the text we create a component of type  ==PDFTextElement==. We add it to the page and 
+define its position using the message ==from:==. Note that we can specify dimensions using several 
+units such as  millimeters (mm), centineters (cm) or inches (inch). Such coordinates are defined 
+from the left superior corner of the page. As we said previously, Artefact uses a set of values by 
+default to get compact code. Text is then by default written in black using Helvetica and with a 
+default size.
 
-Artefact utilise un ensemble de valeurs par défaut afin de réduire au maximum le nombre de lignes de code nécessaires à la production d'un document. Le texte est donc écrit en noir, utilise une fonte (Helvetica) et une taille par défaut.
+This first example introduced some basic concepts and shows how simple it is to produce a
+PDF document with Pharo. 
 
-Ce premier exemple a permis d'introduire les concepts de bases d'Artefact et a démontré la facilité avec laquelle il vous est possible de générer un document PDF à partir de Pharo. Dans la suite de ce chapitre, nous allons approfondir vos connaissances sur le framework Artefact et vous permettre de créer des documents PDF complexes.
+The following Sections go deeper in Artefact. 
+
+Dans la suite de ce chapitre, nous allons approfondir vos connaissances sur le framework Artefact e
+t vous permettre de créer des documents PDF complexes.
 
 !!Définir un document
 
@@ -553,12 +563,13 @@ La classe ==PDFFont== propose deux messages extrémement pratiques lors de la cr
 	(PDFCourierFont size: 20 pt) getStringWidth: 'hello'
 ]]]
 
-Le message =getIdealFontSizeForTheString:width:== retourne la taille optimale de la fonte utilisée en fonction de la largeur voulue. 
+Le message ==getIdealFontSizeForTheString:width:== retourne la taille optimale de la fonte utilisée en fonction de la largeur voulue. 
 L'exemple suivant détermine la taille nécessaire d'une fonte Courier si l'on désire que le texte "hello" ait une largeur de 15 cm:
 
 [[[
 	(PDFCourierFont new) getIdealFontSizeForTheString: 'hello' width: 15 cm
 ]]]
+
 
 !!!!Dots
 
