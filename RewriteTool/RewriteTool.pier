@@ -26,6 +26,17 @@ In this chapter, first of all, the tool itself is described in general.
 Then, we will take a look at example that will show you Rewrite Tool in work.
 After that, we will go in more details about tool and how it works.
 
+!! Getting started
+
+[[[
+MCHttpRepository
+	location: 'http://smalltalkhub.com/mc/MarkRizun/RewriteTool/main'
+	user: ''
+	password: ''
+	
+()
+]]]
+
 
 !!Introduction
 
