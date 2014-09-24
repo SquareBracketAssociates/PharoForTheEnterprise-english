@@ -177,9 +177,7 @@ Note that setting the default landscape mode for a document does not exclude the
 
 !!!!!Compression 
 
-Le format PDF permet de comprimer les données et c'est une bonne chose. Un document PDF peut contenir d'importants volumes de données dont la présentation graphique doit être décrite avec précision. Afin de réduire au maximum le poids des documents générés, Artefact applique par défaut un algorithme de compression. Si par curiosité, vous voulez désactiver cette option et analyser les données produites, vous disposez de la méthode ==uncompressed== qui désactive la compression.
-
-L'exemple suivant génère un fichier PDF non compressé:
+The PDF format allows you to compress the data and that's a good thing. A PDF document can contain large amounts of data. To to minimize the weight of generated documents Artifact defaults to a compression algorithm.  If you need to disable this option and analyze data, you should use the ==uncompressed== message that disables compression. 
 
 The following example generates an uncompressed PDF document: 
 
@@ -192,40 +190,44 @@ PDFDocument new
 
 Another message, named ==compressed==, sets the compression. 
 
-!!!!!Contrôler l'ouverture du document
+!!!!! Controling Document Opening 
 
-Le lecteur Adobe Acrobat supporte différents modes d'affichage à l'ouverture d'un document PDF. Le mode sélectionné est renseigné directement dans le document PDF. Artefact permet de spécifier les différentes directives d'affichage à destination du lecteur PDF. Notez que si votre lecteur PDF n'est pas compatible avec ces options, elles seront ignorées.
 
-Les directives fixant le mode d'affichage à l'ouverture d'un document PDF sont réparties en deux catégories: celles fixant la dimension des pages (==fullPage==, ==fullWidth==, ==real== et ==zoom:==) et celles fixant l'organisation des pages sur l'écran (==singlePage==, ==twoPages== et ==continuousPages==). Ces différentes méthodes s'appliquent directement à  une instance de l'objet ==PDFDocument==.
+Adobe Acrobat reader supports various display modes when opening a PDF document. The selected mode is defined directly into the PDF document. 
+Note that if your PDF reader is not compatible with these options, they will be ignored.
 
-Avec ==fullPage==, chaque page du document occupe l'intégralité de l'espace d'affichage disponible. Avec ==fullWidth==, l'affichage est optimisé en fonction de la largeur des pages. Avec ==real==, l'affichage respecte les dimensions fixées dans le document PDF.
-L'exemple suivant génère un document qui occupera tout l'espace d'affichage disponible:
+Display mode properties are divided in two categories: those determining the size of the pages using messages ==fullPage==, ==fullWidth==, ==real== and ==zoom: == and those related to the page organization on the screen ==singlepage==, ==twoPages== and ==continuousPages==. These messsages should be sent directly to an ==PDFDocument== instance. 
+
+With ==ullPage==, each page of the document occupies the entire display space. With ==fullWidth==, the display is optimized to page width. With ==real==, the display meets the dimensions specified in the PDF document. 
+
+The following example creates a document that will occupy all available display space:
+
 
 [[[
 pdfdoc := PDFDocument new fullPage.
 ]]]
-
-Avec le message ==zoom:==, vous fixez un rapport d'agrandissement exprimé en pourcentage. L'exemple suivant applique un zoom de 400% à l'ouverture du document:
+ With the message ==zoom:==, you can define a zoming ratio expressed in percentage. The following example defines that the document should be opened with zoom of four times. 
 
 [[[
 pdfdoc := PDFDocument new zoom: 400. 
 ]]]
 
-Vous pouvez également choisir d'afficher les pages une par une (==singlePage==), deux par deux (==twoPages==) ou les unes à la suite des autres (==continousPages==) comme dans l'exemple suivant:
+You can also choose to dislay a single page  (==singlePage==), page two by two (==twoPages==) or one after the other (==continousPages==) as in the following example: 
 
 [[[
 pdfdoc := PDFDocument new continousPages. 
 ]]]
 
-Ces différentes messages sont également utilisables conjointement. L'exemple suivant demande l'affichage du document avec un zoom de 200% et un affichage continu des pages:
+Theses messages can be combined as shown in the following example:
 
 [[[
 pdfdoc := PDFDocument new zoom: 200; continuousPages.
 ]]]
 
-Ces différentes options sont pratiques mais n'oubliez pas que leur fonctionnement dépend des capacités du lecteur PDF que vous utilisez.
+Such options can be handy but do not forget that their behavior depend on the PDF reader the user of your document will use.
 
-!!!!Renseigner les méta informations
+
+!!!!Setting meta information
 
 Chaque document PDF contient un ensemble d'informations sur ses origines. Ces données ne sont pas à négliger, en particulier si votre document est destiné à alimenter une solution de type GED (Gestion Electronique de Documents) ou fait parti d'un workflow éditorial. Grâce à ces informations, il est possible de faire des recherches parmi un ensemble de documents PDF et de sélectionner par exemple, ceux écrits par un auteur précis ou encore ceux pour lesquels certains mots clés ont été spécifiés.
 
