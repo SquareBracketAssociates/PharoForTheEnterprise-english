@@ -206,7 +206,7 @@ The following example creates a document that will occupy all available display 
 [[[
 pdfdoc := PDFDocument new fullPage.
 ]]]
- With the message ==zoom:==, you can define a zoming ratio expressed in percentage. The following example defines that the document should be opened with zoom of four times. 
+With the message ==zoom:==, you can define a zoming ratio expressed in percentage. The following example defines that the document should be opened with zoom of four times. 
 
 [[[
 pdfdoc := PDFDocument new zoom: 400. 
@@ -229,11 +229,17 @@ Such options can be handy but do not forget that their behavior depend on the PD
 
 !!!!Setting meta information
 
-Chaque document PDF contient un ensemble d'informations sur ses origines. Ces données ne sont pas à négliger, en particulier si votre document est destiné à alimenter une solution de type GED (Gestion Electronique de Documents) ou fait parti d'un workflow éditorial. Grâce à ces informations, il est possible de faire des recherches parmi un ensemble de documents PDF et de sélectionner par exemple, ceux écrits par un auteur précis ou encore ceux pour lesquels certains mots clés ont été spécifiés.
+Each PDF document contains a set of information about its origins. 
+These data are not to be overlooked, especially if your document is intended to contribute to an EDM (Electronic Document Management) 
+or is part of an editorial workflow. With this information it is possible to search among a set of PDF documents and select for example, 
+those written by a particular author or those for which certain keywords have been specified.
 
-Artefact implémente ces informations à l'aide de l'objet PDFMetaData. A chaque nouvelle instance de PDFDocument, une instance de PDFMetaData est associée et est accessible via la variable d'instance metaData. Par défaut, le producteur est fixé à 'Artefact' pour renseigner la nature du logiciel utilisé pour générer le fichier PDF. Vous pouvez indiquer le titre du document, un sujet ou un court résumé, préciser le nom du ou des auteurs, fixer une liste de mots clés et enfin définir le créateur du document.
 
-L'exemple suivant génére un nouveau document et renseigne ses méta informations:
+Artifact implements this information by using an instance of class ==PDFMetaData==. 
+To each  instance of ==PDFDocument==, an instance of ==PDFMetaData== is associated. This instance is accessible using the message ==metaData==.
+By default, the producer is set to 'Artifact'. You can specify the document title, subject or a short summary, the name of the author, a list of keywords and the document creator. 
+
+The following example generates a new document and its meta data information:
 
 [[[
 pdfdoc := PDFDocument new.
@@ -247,29 +253,35 @@ pdfdoc metaData
 ]]]
 
 
-!!Pages, formats et modèles
+!!Pages, formats and models
 
-Les pages sont les supports d'écriture et de dessin présents dans vos documents PDF. Une page a une dimension, une orientation et une position au sein du document PDF. Une page peut être construite à partir d'un modèle qui fournit un fond de page sur lequel est déposé le contenu.
+Pages are the supports for writing and drawing in your PDF documents. 
+A page defines a page size, orientation and position within a PDF document. 
+A page can be built from a model that provides an overlay on which is deposited the page contents.
 
-!!!Création des pages
-
-Une page est représentée par une instance de l'objet ==PDFPage==. La façon la plus simple de construire une nouvelle page est donc:
+!!! Page creation 
+A page is represented by an instance of the class ==PDFPage==. 
+Creating is a page is simple done sending the message ==new== to the class.
 
 [[[
 	page := PDFPage new.
 ]]]
 
-A ce stade, vous pouvez écrire et dessiner sur la page à l'aide des composants graphiques fournis par Artefact. Une fois le contenu de la page défini, il vous faut ajouter la page dans le document PDF. Une page est ajoutée à l'aide du message  ==add:== à la suite des pages déjà présentes dans le document.
+Sending the message ==add:== to a document with a page, will add the page at the end of the already added pages.
 
 [[[
 	pdfdoc := PDFDocument new.
 	page := PDFPage new.
 	pdfdoc add: page.
 ]]]
-  
-Par défaut, une page adopte les dimensions et l'orientation du document. Si votre document PDF est en A4 paysage, toutes les pages ajoutées utiliseront ces paramètres. Artefact permet d'attribuer à chaque page des dimensions et une orientation spécifiques. Vous pouvez ainsi mélanger dans un même document des pages ayant des caractèristiques différentes. Certaines seront en portrait, d'autres en paysage. D'autres seront en A3 alors que le document sera en A4. 
 
-Pour cela, chaque instance de ==PDFPage== sait répondre au message ==format:== qui reçoit une instance de ==PDFFormat==. L'exemple qui suit génère un document de deux pages. La première utilise le format par défaut du document, la seconde est en A4 paysage.
+By default, a page takes the dimensions and orientation of its document. 
+If your PDF document is A4 landscape, all pages added will use these settings. 
+Artifact can assign to each page specific dimensions and orientation. 
+You can mix in one document with pages with different characteristics. 
+
+For this, each instance of ==PDFPage== knows how to answer the message ==format:== with an instance of ==PDFFormat==. 
+The following example creates a two-pages document. The first uses the default format of the document, the second is in A4 landscape.
 
 [[[
 	pdfdoc := PDFDocument new.
@@ -279,7 +291,7 @@ Pour cela, chaque instance de ==PDFPage== sait répondre au message ==format:== 
 ]]]
 
 
-!!!Modèle
+!!! Template
 
 Un modèle (==PDFTemplate==) hérite de la classe ==PDFPage==. Il s'agit d'une page ayant un contenu prédéfini et constituant le fond de page sur lequel vous écrivez ou dessinez. Un fond de page peut être constitué par un entête de lettre, un haut et un bas de page pour un rapport, une surface délimitée pour des travaux de mise en page. Le paquet Artefact-Templates propose deux exemples de modèles pour produire la pochette d'un disque compact ou d'un DVD. Le code suivant produit une page A4 sur laquelle sont dessinés les contours d'une pochette d'un CD.
 
