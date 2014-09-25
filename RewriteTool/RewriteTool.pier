@@ -66,6 +66,8 @@ And second part is rewrite rule browser(next as ''"browser"''), in which user ca
 Builder has four panes and three buttons, and each of this items has its own functions.
 It provides a possibility, with simple GUI, to build rewrite rules dynamically.
 
++Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=Rewrite rule builder+
+
 ""Panes""
 
 -Top left pane, labeled ''"Source expression"'', contains source code of expression (in future maybe method?) which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else.
@@ -85,6 +87,8 @@ This tool contains all previously created rewrite rules in most left pane. Also 
 
 You can select a rewrite rule that you want to apply. Then choose a scope, which you want to be transformed with this rule and click "Apply rule to selected scope" button.
 In order to browse slected rewrite rule class, click "Browse selected rule" button.
+
++Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=Rewrite rule browser+
 
 !!Simple example
 
@@ -165,6 +169,8 @@ You can see the result of applying rewrite rule to source code in top right pane
 In this section each and every part of rewrite tool is described in details.
 There are explained a lot of important ideas.
 Understanding of this ideas is crucial, because it will increase users effectivity, while working with tool.
+
++Simple example>file://figures/simpleExample.png|label=Simple example+
 
 !!!Menu options
 
