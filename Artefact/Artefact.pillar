@@ -293,7 +293,11 @@ The following example creates a two-pages document. The first uses the default f
 
 !!! Template
 
-Un modèle (==PDFTemplate==) hérite de la classe ==PDFPage==. Il s'agit d'une page ayant un contenu prédéfini et constituant le fond de page sur lequel vous écrivez ou dessinez. Un fond de page peut être constitué par un entête de lettre, un haut et un bas de page pour un rapport, une surface délimitée pour des travaux de mise en page. Le paquet Artefact-Templates propose deux exemples de modèles pour produire la pochette d'un disque compact ou d'un DVD. Le code suivant produit une page A4 sur laquelle sont dessinés les contours d'une pochette d'un CD.
+A template (instance of class ==PDFTemplate==) inherits from the class ==PDFPage==. 
+Il s'agit d'une page ayant un contenu prédéfini et constituant le fond de page sur lequel vous écrivez ou dessinez.
+Un fond de page peut être constitué par un entête de lettre, un haut et un bas de page pour un rapport, une surface délimitée pour des 
+travaux de mise en page. Le paquet Artefact-Templates propose deux exemples de modèles pour produire la pochette d'un disque compact ou d'un DVD.
+ Le code suivant produit une page A4 sur laquelle sont dessinés les contours d'une pochette d'un CD.
 
 [[[
 	pdfdoc := PDFDocument new.
