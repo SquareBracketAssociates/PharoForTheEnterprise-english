@@ -1,0 +1,415 @@
+! Block Translators - parsing magic
+
+!! Introduction
+
+I have to admit I do love parsers, BNF grammars and similar stuff.
+I don't really understand all this stuff in detail but I love working with it.
+After being exposed to lex/yacc in a previous life I simply loved using *T-Gen>http://wiki.squeak.org/squeak/1419*, *SmallCC>http://www.refactoryworkers.com/SmaCC.html*  from within Smalltalk and now finally settled with *PetitParser>http://pharobooks.gforge.inria.fr/PharoByExampleTwo-Eng/latest/PetitParser.pdf*.
+
+All these parser generators are great if you need to parse a given textual input.
+In some cases however this is complete overkill.
+Especially if you need to (dynamically) translate a Smalltalk expression into something "different".
+
+Translating Smalltalk expressions into "something different" is exactly the usecase for what I call "Block Translators".
+
+!! Block Translators
+
+During this Blog Entry I'll develop a simple Parser/Translator which is able to translate Smalltalk expressions like ==(customer joinDate year is: Date today year)== into an equivalent SQL-like Expression like ==(YEAR(customers.joinDate) = 2014)==.
+Please note that this Translator will neither be complete in terms of operations nor neatly refactored like you would expect for production code. But it should be able to show the general idea how to create ''translators'' which translate a Smalltalk expression into something different.
+
+!! Smalltalk collection messages as SQL Expression
+
+Smalltalk's collection messages like ==#do:==, ==#select:== or ==#detect:ifNone== are IMHO one of the biggest features of the class library.
+Most SQL libraries for Smalltalk also include the feature to express SQL expressions as Smalltalk code. So something like this ...
+
+[[[language=Smalltalk
+(
+	(customer surname is: 'Schneider') or: (customer surname is: 'Mueller')
+) and: (
+	(customer bonusPoints gt: customer joinDate year) or: (customer joinDate year is: Date today year)
+)
+]]]
+
+... should be translated into something SQL-like like this:
+
+[[[
+(((customers.surname = 'Schneider') | (customers.surname = 'Mueller')) & ((customers.bonusPoints > YEAR(customers.joinDate)) | (YEAR(customers.joinDate) = 2014)))
+]]]
+
+One way would be to hook into the Smalltalk compiler and build the SQL-like expression from the AST.
+Another would be to ignore the Smalltalk side completely and parse Strings via a Parsers into those expressions (again using graphs/ASTs).
+But in some cases a simpler approach with "Message Recording" objects is more than sufficient.
+
+!! Blocks as Parsers/Translators
+
+Let's start with the block from above. What happens if we call ==#value:== with an arbitrary value? Let's try ==nil== for now:
+[[[language=Smalltalk
+| selectBlock |
+selectBlock := [ :customer | 
+((customer surname is: 'Schneider') or: (customer surname is: 'Mueller'))
+	and: ((customer bonusPoints gt: customer joinDate year) or: (customer joinDate year is: Date today year)) ].
+expression := selectBlock value: nil.	"Inspect-it"
+]]]
+
+If we execute this snippet we'll get an error message ==MessageNotUnderstood: UndefinedObject>>surname==.
+And it's clear why: Executing the block binds ==nil== to ==customer==.
+And the first message sent to ==customer== is ==#surname==.
+This of course raises an error because ==UndefinedObject== does not understand ==#surname==.
+
+But what happens if we use another object (let's call it a ==SQLTable==) instead?
+This ==SQLTable== does understand ==#surname== and responds with something useful - a ==SQLColumn== named accordingly in this case.
+If we keep up resolving to "useful" objects we'll end up with a graph of objects expressing the original expression!
+
+The "hard" parsing work is done by the Smalltalk compiler itself.
+Our job is only to record any (useful) message sent to our objects and respond with other useful objects to continue the proccess.
+Once we're finished we can then use this graph of objects to create our "translated" language.
+
+!! SQL Translator
+
+@@note The following code snippets should be enough to build some working code (Copy&Paste from the blog should work). If you want to see the complete code you can find it here: *BlockParsers on SmalltalkHub>http://www.smalltalkhub.com/#!/~UdoSchneider/BlockParser*.
+
+!!! SQL tables
+
+We'll add bits and pieces of code along with the blog entry.
+Always just enough to hit the next Debugger.
+This will give us enough clues about how to proceed:
+The first class we need to create is ==SQLTable== to bind to the ==customer== Variable.
+Make it a subclass of ==SQLComponent==.
+It also needs to store the table name in an instance variable:
+[[[language=Smalltalk
+Object subclass: #SQLComponent
+	instanceVariableNames: ''
+	classVariableNames: ''
+	category: 'BlockParser-SQL'
+
+SQLComponent subclass: #SQLTable
+	instanceVariableNames: 'name'
+	classVariableNames: ''
+	category: 'BlockParser-SQL'
+]]]
+
+Add (instance creation) methods to set the table name:
+
+[[[
+SQLTable class>>#named: aString
+	^ self new
+		setName: aString;
+		yourself
+
+SQLTable>>#setName: aString
+	name := aString
+]]]
+
+Try our new class and call the block with it:
+
+[[[
+| selectBlock table |
+selectBlock := [ :customer | 
+((customer surname is: 'Schneider') or: (customer surname is: 'Mueller'))
+	and: ((customer bonusPoints gt: customer joinDate year) or: (customer joinDate year is: Date today year)) ].
+table := SQLTable named: 'customers'.
+selectBlock value: table.	"Inspect-it"
+]]]
+
+Executing this snippet will result in an error because (again) ==#surname== is not understood:
++Wallback: MessageNotUnderstood: SQLTable\>\>surname>file://figures/MessageNotUnderstood-SQLTable-surname.png+
+
+If ==customer== in the block is an ==SQLTable==  instance (or to be more specific a table row) then the semantic meaning of ==customer surname== is to get its `surname` property - or to stick with SQL to get a column with that name.
+
+!!! SQL columns
+
+To make things easier we'll intercept each unary message sent to a ==SQLTable== instance and return an ==SQLColumn== instance which knows its originating table and its name.
+Because columns can participate in relations we'll create an ==SQLColumn== class as subclass of ==SQLTerm`==:
+
+[[[language=Smalltalk
+SQLComponent subclass: #SQLTerm
+	instanceVariableNames: ''
+	classVariableNames: ''
+	category: 'BlockParser-SQL'
+
+SQLTerm subclass: #SQLColumn
+	instanceVariableNames: 'table name'
+	classVariableNames: ''
+	category: 'BlockParser-SQL'
+]]]
+
+We also add methods to set the owning table and name:
+
+[[[
+SQLColumn class>>#table: aSQLTable name: aString
+	^ self new
+		setTable: aSQLTable name: aString;
+		yourself
+
+SQLColumn>>#setTable: aSQLTable name: aString
+	table := aSQLTable.
+	name := aString
+]]]
+
+We also need to add behaviour to ==SQLTable== to return an ==SQLColumn== instance when it recieves an unknown unary message.
+So we'll add that behavior do ==#doesNotUnderstand==:
+
+[[[language=Smalltalk
+SQLTable>>#doesNotUnderstand: aMessage
+	| selector |
+	selector := aMessage selector.
+	selector isUnary
+		ifTrue: [ ^ SQLColumn table: self name: selector asString ].
+	^ super doesNotUnderstand: aMessage
+]]]
+
+@@note In a "real" implementation you might want to check the selector name. If its a known column name (you have the schema? Don't you?) you'd return the column. Otherwise forward ==#doesNotUnderstand:== to ==super==.
+
+!!! Boolean Operators
+
+Next try: Let's see how far we get now.
++Wallback; `MessageNotUnderstood: SQLExpression\>\>or:>file://figures/MessageNotUnderstood-SQLExpression-or.png+
+
+We'll get an Error message ==MessageNotUnderstood: SQLExpression>>or:==. So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:==. 
+
+[[[language=Smalltalk
+SQLTerm>>or: anObject
+	^ SQLExpression left: self operand: #| right: anObject
+
+SQLTerm>>#and: anObject
+	^ SQLExpression left: self operand: #& right: anObject
+]]]
+
+@@note Our implementation does not use regular blocks as arguments. You can use blocks in your implementation though. Just be warned that the compiler/VM might inline sends of ==#and:==, ==#or:== ... if the argument is a block!
+
+@@note Logical ==#not== is not an expression - not an operator "between" to terms. It's an Operator applied to ''one term''. So it's best expressed as a ''function''!
+
+!!! SQL functions
+
+Running the code snippet complains about an ==SQLColumn== instance not understanding ==#year==. 
+Semantically I'd say that something like ==tableName columnName year== is like calling a function: ==YEAR(tableName.column)==.
+
+So every unary message sent to an ==SQLTerm== should result in a ==SQLFunction== wrapping it:
+
+[[[language=Smalltalk
+SQLTerm subclass: #SQLFunction
+	instanceVariableNames: 'name term'
+	classVariableNames: ''
+	category: 'BlockParser-SQL'
+
+SQLFunction class>>#name: aString term: anSQLTerm
+	^ self new
+		setName: aString term: anSQLTerm;
+		yourself
+
+SQLFunction>>#setName: aString term: anSQLTerm
+	name := aString.
+	term := anSQLTerm
+]]]
+
+We'll also implement ==SQLTerm>>#doesNotUnderstand:== to return ==SQLFunction==s.
+
+[[[language=Smalltalk
+SQLTerm>>#doesNotUnderstand: aMessage
+	| selector |
+	selector := aMessage selector.
+	selector isUnary
+		ifTrue: [ ^ SQLFunction name: selector asString asUppercase term: self ].
+	^ super doesNotUnderstand: aMessage
+]]]
+
+@@note ==#doesNotUnderstand:== is the quick and dirty solution here. If you have a limited number of functions you can also implement them as methods directly.
+
+!!! Comparisons
+
+And again:
+
++Wallback; `MessageNotUnderstood: SQLExpression\>\>gt:>file://figures/MessageNotUnderstood-SQLColumn-gt.png+
+
+We'll get an Error message ==MessageNotUnderstood: SQLExpression>>gt:==.
+So the next method we need is greater than.
+We'll implement these using similar to ==SQLTerm>>#is:==:
+
+[[[language=Smalltalk
+SQLTerm>>#gt: anObject
+	^ SQLExpression left: self operand: #> right: anObject
+
+SQLTerm>>#gte: anObject
+	^ SQLExpression left: self operand: #>= right: anObject
+
+SQLTerm>>#lt: anObject
+	^ SQLExpression left: self operand: #< right: anObject
+
+SQLTerm>>#lte: anObject
+	^ SQLExpression left: self operand: #<= right: anObject
+]]]
+
+!!! DONE! (1st half ...)
+
+We made it!
+Our expression parses!
+Inspecting the result of our snippet in the inspector shows a nice graph of objects which we'll use in the next step to create the SQL String.
+
++Parsed ==SQLExpression==: Look Ma! Without any grammar!>file://figures/SQLExpression.png+
+
+!! SQL Generator
+
+Now that we have a nice graph of objects let's try to create the SQL string from it:
+Implement the messages ==#sqlString== and ==#printSqlOn:== in ==SQLComponent== which should be implemented by all subclasses:
+
+[[[language=Smalltalk
+SQLComponent>#sqlString
+	^ String streamContents: [ :stream | self printSqlOn: stream ]
+	
+SQLComponent>#printSqlOn: aStream
+	^ self subclassResponsibility
+]]]
+
+Now let's try our "implement until next error" approach again using the following code:
+
+[[[language=Smalltalk
+| selectBlock table expression |
+selectBlock := [ :customer | 
+((customer surname is: 'Schneider') or: (customer surname is: 'Mueller'))
+	and: ((customer bonusPoints gt: customer joinDate year) or: (customer joinDate year is: Date today year)) ].
+table := SQLTable named: 'customers'.
+expression := selectBlock value: table.	"Inspect-it"
+expression sqlString	"Inspect-It"
+]]]
+
+We'll get an error ==SubclassResponsibility: SQLExpression had the subclass responsibility to implement #printSqlOn:==:
++==SubclassResponsibility: SQLExpression had the subclass responsibility to implement #printSqlOn:==>file://figures/SubclassResponsibility-SQLExpression-had-the-subclass-responsibility-to-implement-printSqlOn.png+
+
+''So Pharo is telling us ""exactly"" what to do next''.
+From now on we'll simply implement ==#printSqlOn:== in all the classes until we finally get the string without error.
+
+[[[language=Smalltalk
+SQLExpression>>#printSqlOn: aStream
+	aStream nextPut: $(.
+	left printSqlOn: aStream.
+	aStream
+		space;
+		nextPutAll: operand;
+		space.
+	right printSqlOn: aStream.
+	aStream nextPut: $)
+]]]
+
+As you can see we simply output the information either directly or by delegating ==#printSqlOn:== to child nodes.
+
+[[[language=Smalltalk
+SQLColumn>>#printSqlOn: aStream
+	table printSqlOn: aStream.
+	aStream
+		nextPut: $.;
+		nextPutAll: name
+]]]
+
+[[[language=Smalltalk
+SQLTable>>#printSqlOn: aStream
+	aStream nextPutAll: name
+]]]
+
+[[[language=Smalltalk
+SQLConstant>>#printSqlOn: aStream
+	aStream print: value
+]]]
+
+[[[language=Smalltalk
+SQLFunction>>#printSqlOn: aStream
+	aStream
+		nextPutAll: name;
+		nextPut: $(.
+	term printSqlOn: aStream.
+	aStream nextPut: $)
+]]]
+
+!! Done
+
+Finally our translator works and yields
+
+[[[language=Smalltalk
+(((customers.surname = 'Schneider') | (customers.surname = 'Mueller')) | ((customers.bonusPoints > YEAR(customers.joinDate)) | (YEAR(customers.joinDate) = 2014)))
+]]]
+
+Cool, eh?
+
+!! Summary
+I hope I was able to show you (in an understandable way?) how to use "Block Parsers/Translators" to parse Smalltalk expressions and translate them into something "different".
+I know that this example is neither comprehensive nor production ready.
+In a production setup you'd have to think a lot more about different subclasses e.g. for constants, functions ... even if it's "just" for printing constants correctly. But the skeleton should be the same.
+
+!! Limitations/Notes
+
+!!! Method names
+
+Overriding some methods (esp. ==#===) is a pretty bad idea.
+I agree that ==customer name = 'Schneider'== is easier to read and write than ==customer name is: 'Schneider'== - but trust me.
+Overriding ==#=== with different semantics is a sure recipe for disaster!
+
+You should also be careful with "==Boolean==-ish" methods like ==#and:==, ==#or:==, ==#ifTrue:==.
+These methods are sometimes inlined by the compiler and you'll get warnings about one of the operands being a non-==Boolean==.
+
+!!! Order of expressions
+
+The whole approach bases on the idea of intercepting messages sent ''to'' an object (to be able to respond with "another" intercepting object).
+So make sure that in each and every expression the objects you put into the block (or derivates thereof) are always the recieving objects (left side in operations).
+Everything else will fail.
+
+Two expressions might be semantically identical/equal in Smalltalk yet yield different results when used with Block Parsers. E.g.:
+
+[[[language=Smalltalk
+table := SQLTable named: 'customers'.
+	
+"Both blocks are semantically equal in Smalltalk ..."
+block1 := [ :customer | customer age > 23 ].
+block2 := [ :customer | 23 > customer age ].
+
+"But not when used to parse!"
+String streamContents: [ :stream | (block1 value: table) printSqlOn: stream ].  '(customers.age > 23)' .
+String streamContents: [ :stream | (block2 value: table) printSqlOn: stream ]. "Error: SQLColumn(Object)>>doesNotUnderstand: #adaptToNumber:andSend:"
+]]]
+
+!!! Expressions only! ... mostly ...
+
+This approach does work fine if you want to translate an expression - even a compound one.
+Expressions (e.g. for filtering) are traditionally used for Collection messages like ==#select:==.
+So something like this works fine (note the temporal variables):
+
+[[[language=Smalltalk
+| selectBlock table expression |
+selectBlock := [ :customer | 
+	| surname joinDate |
+	surname := customer surname.
+	joinDate := customer joinDate.
+	((surname is: 'Schneider') or: (surname is: 'Mueller'))
+		and: ((customer bonusPoints gt: joinDate year) or: (joinDate year is: Date today year)) ].
+table := SQLTable named: 'customers'.
+expression := selectBlock value: table.	"Inspect-it"
+expression sqlString	"Inspect-It"
+]]]
+
+Something like this won't work (as expected?):
+
+[[[language=Smalltalk
+| selectBlock table expression |
+selectBlock := [ :customer | 
+	| surname |
+	surname := customer surname.
+	surname is: 'Schneider'.
+	surname is: 'Mueller' ].
+table := SQLTable named: 'customers'.
+expression := selectBlock value: table.	"Inspect-it"
+expression sqlString	"Inspect-It" " (customers.surname = 'Mueller')'"
+]]]
+
+Only the expression for the second use ==surname is: 'Mueller'== is returned an can be translated.
+You can of course use a builder in the background and record "new" expressions - i.e. if the initial object passed in receives a message.
+But that's not 100% safe - especially if you didn't refactor all temp variables.
+
+But if you stick to expressions in Blocks (although it also works fine for expressions in methods!) it's more likely to not hit that limitation.
+
+!!! Priort Art
+
+By no means did I invent this stuff! ... that's at least what I think.
+Based on frameworks I worked with and some feedback I got I'm aware of at least two places, where this approach has been used before:
+
+- *GLORP>http://glorpwiki.wikispaces.com/home*
+- *ReStore>http://www.solutionsoft.co.uk/restore/manual/querying1.htm*
+
+AFAIK both frameworks use a similar approach to create SQL queries from Smalltalk blocks.

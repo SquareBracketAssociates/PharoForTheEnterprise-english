@@ -51,6 +51,7 @@
         {GitAndPharo/}
 		{RewriteTool/}
 		{Seamless/}
+        {BlockTranslators/}
 }
 %=================================================================
 \let\wholebook=\relax
