@@ -1,16 +1,18 @@
 !(DRAFT) Block Translators - parsing magic
 
-!! Introduction
+!!Introduction
 
-I have to admit I do love parsers, BNF grammars and similar stuff.
-I don't really understand all this stuff in detail but I love working with it.
-After being exposed to lex/yacc in a previous life I simply loved using *T-Gen>http://wiki.squeak.org/squeak/1419*, *SmallCC>http://www.refactoryworkers.com/SmaCC.html*  from within Smalltalk and now finally settled with *PetitParser>http://pharobooks.gforge.inria.fr/PharoByExampleTwo-Eng/latest/PetitParser.pdf*.
+If you need to parse expressions in Pharo you have the choice between a few parser frameworks. E.g.:
 
-All these parser generators are great if you need to parse a given textual input.
+-*T-Gen>http://wiki.squeak.org/squeak/1419*
+-*SmallCC>http://www.refactoryworkers.com/SmaCC.html* 
+-*PetitParser>http://pharobooks.gforge.inria.fr/PharoByExampleTwo-Eng/latest/PetitParser.pdf*
+
+All these parser generators are great if you need to parse a given ''textual input'' (a string).
 In some cases however this is complete overkill.
-Especially if you need to (dynamically) translate a Smalltalk expression into something "different".
+Especially if you need to (dynamically) translate a ''Smalltalk expression'' into something "different".
 
-Translating Smalltalk expressions into "something different" is exactly the usecase for what I call "Block Translators".
+Translating Smalltalk expressions into "something different" is exactly the usecase "Block Translators" described in this chapter.
 
 !! Block Translators
 
