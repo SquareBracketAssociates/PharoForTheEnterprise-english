@@ -121,10 +121,10 @@ If ==customer== in the block is an ==SQLTable==  instance (or to be more specifi
 
 !!! SQL columns
 
-To make things easier we'll intercept each unary message sent to a ==SQLTable== instance and return an ==SQLColumn== instance which knows its originating table and its name.
-Because columns can participate in relations we'll create an ==SQLColumn== class as subclass of ==SQLTerm`==:
+Because columns can participate in relations we'll create an ==SQLColumn== class as subclass of ==SQLTerm== (Figure *scriptSQLColumn*).
+We also add methods to set the owning ==table== and ==name==:
 
-[[[language=Smalltalk
+[[[language=Smalltalk|caption=Defintion of ==SQLColumn==|label=scriptSQLColumn
 SQLComponent subclass: #SQLTerm
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -134,11 +134,7 @@ SQLTerm subclass: #SQLColumn
 	instanceVariableNames: 'table name'
 	classVariableNames: ''
 	category: 'BlockParser-SQL'
-]]]
 
-We also add methods to set the owning table and name:
-
-[[[
 SQLColumn class>>#table: aSQLTable name: aString
 	^ self new
 		setTable: aSQLTable name: aString;
@@ -149,10 +145,12 @@ SQLColumn>>#setTable: aSQLTable name: aString
 	name := aString
 ]]]
 
-We also need to add behaviour to ==SQLTable== to return an ==SQLColumn== instance when it recieves an unknown unary message.
-So we'll add that behavior do ==#doesNotUnderstand==:
 
-[[[language=Smalltalk
+We also need to add behaviour to ==SQLTable== to return an ==SQLColumn== instance when it recieves an unknown unary message.
+To make things easier we'll intercept each unary message sent to a ==SQLTable== instance and return an ==SQLColumn== instance which knows its originating table and its name.
+So we'll add that behavior do ==#doesNotUnderstand== (Figure *scriptMNUSQLTable*):
+
+[[[language=Smalltalk|caption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptMNUSQLTable
 SQLTable>>#doesNotUnderstand: aMessage
 	| selector |
 	selector := aMessage selector.
@@ -163,12 +161,14 @@ SQLTable>>#doesNotUnderstand: aMessage
 
 @@note In a "real" implementation you might want to check the selector name. If its a known column name (you have the schema? Don't you?) you'd return the column. Otherwise forward ==#doesNotUnderstand:== to ==super==.
 
+Let's see how far we get now:
+We'll get an Error message ==MessageNotUnderstood: SQLExpression>>or:== (Figure *figMNUor*).
+
++Wallback; `MessageNotUnderstood: SQLExpression\>\>or:>file://figures/MessageNotUnderstood-SQLExpression-or.png|label=figMNUor+
+
 !!! Boolean Operators
 
-Next try: Let's see how far we get now.
-+Wallback; `MessageNotUnderstood: SQLExpression\>\>or:>file://figures/MessageNotUnderstood-SQLExpression-or.png+
-
-We'll get an Error message ==MessageNotUnderstood: SQLExpression>>or:==. So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:==. 
+So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:==. 
 
 [[[language=Smalltalk
 SQLTerm>>or: anObject
