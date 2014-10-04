@@ -236,23 +236,16 @@ Especially in our case because we'd change the semantics of the message.
 We won't return a ==Boolean== any longer - we'll return something different!
 Overwriting ==#=== to answer a non-==Boolean== leads to ''interesting'' effects down the line ... you have been warned ...
 
-
-
-
-
-
-
-
-!!! Boolean Operators
-
 Let's see how far we get now:
 We'll get an Error message ==MessageNotUnderstood: SQLExpression>>or:== (Figure *figMNUor*).
 
 +Wallback; ==MessageNotUnderstood: SQLExpression\>\>or:==>file://figures/MessageNotUnderstood-SQLExpression-or.png|label=figMNUor+
 
-==SQLTerm==s can be combined using Boolean Operators. So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:==. 
+!!!Boolean Operators
 
-[[[language=Smalltalkcaption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptMNUSQLTable
+==SQLTerm==s can be combined using Boolean Operators. So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:== (Script *scriptSQLTermBoolean*). 
+
+[[[language=Smalltalkcaption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptSQLTermBoolean
 SQLTerm>>or: anObject
 	^ SQLExpression left: self operand: #| right: anObject
 
@@ -260,7 +253,9 @@ SQLTerm>>#and: anObject
 	^ SQLExpression left: self operand: #& right: anObject
 ]]]
 
-@@note Our implementation does not use regular blocks as arguments. You can use blocks in your implementation though. Just be warned that the compiler/VM might inline sends of ==#and:==, ==#or:== ... if the argument is a block!
+Our implementation does not use regular blocks as arguments.
+You can use blocks in your implementation though.
+Just be warned that the compiler/VM might inline sends of ==#and:==, ==#or:== if the argument is a block!
 
 @@note Logical ==#not== is not an expression - not an operator "between" to terms. It's an Operator applied to ''one term''. So it's best expressed as a ''function''!
 
