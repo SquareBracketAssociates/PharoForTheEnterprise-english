@@ -147,9 +147,9 @@ SQLColumn>>#setTable: aSQLTable name: aString
 
 We also need to add behaviour to ==SQLTable== to return an ==SQLColumn== instance when it recieves an unknown unary message.
 To make things easier we'll intercept each unary message sent to a ==SQLTable== instance and return an ==SQLColumn== instance which knows its originating table and its name.
-So we'll add that behavior do ==#doesNotUnderstand== (Figure *scriptMNUSQLTable*):
+So we'll add that behavior do ==#doesNotUnderstand== (Figure *scriptDNUSQLTable*):
 
-[[[language=Smalltalk|caption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptMNUSQLTable
+[[[language=Smalltalk|caption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptDNUSQLTable
 SQLTable>>#doesNotUnderstand: aMessage
 	| selector |
 	selector := aMessage selector.
@@ -245,7 +245,7 @@ We'll get an Error message ==MessageNotUnderstood: SQLExpression>>or:== (Figure 
 
 ==SQLTerm==s can be combined using Boolean Operators. So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:== (Script *scriptSQLTermBoolean*). 
 
-[[[language=Smalltalkcaption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptSQLTermBoolean
+[[[language=Smalltalk|caption=Defintion of Boolean operators in ==SQLTerm==|label=scriptSQLTermBoolean
 SQLTerm>>or: anObject
 	^ SQLExpression left: self operand: #| right: anObject
 
@@ -259,14 +259,16 @@ Just be warned that the compiler/VM might inline sends of ==#and:==, ==#or:== if
 
 @@note Logical ==#not== is not an expression - not an operator "between" to terms. It's an Operator applied to ''one term''. So it's best expressed as a ''function''!
 
-!!! SQL functions
-
-Running the code snippet complains about an ==SQLColumn== instance not understanding ==#year==. 
+Running the code snippet complains about an ==SQLColumn== instance not understanding ==#year== (Figure *figSQLColumnYear*). 
 Semantically I'd say that something like ==tableName columnName year== is like calling a function: ==YEAR(tableName.column)==.
 
-So every unary message sent to an ==SQLTerm== should result in a ==SQLFunction== wrapping it:
++Wallback; ==MessageNotUnderstood: SQLColumn\>\>year==>file://figures/MessageNotUnderstood-SQLColumn-year.png|label=figSQLColumnYear+
 
-[[[language=Smalltalk
+!!!SQL functions
+
+Every unary message sent to an ==SQLTerm== should result in a ==SQLFunction== wrapping it (Scripe *scriptSQLFunction*):
+
+[[[language=Smalltalkcaption=Defintion of ==SQLTerm==|label=scriptSQLFunction
 SQLTerm subclass: #SQLFunction
 	instanceVariableNames: 'name term'
 	classVariableNames: ''
@@ -284,7 +286,7 @@ SQLFunction>>#setName: aString term: anSQLTerm
 
 We'll also implement ==SQLTerm>>#doesNotUnderstand:== to return ==SQLFunction==s.
 
-[[[language=Smalltalk
+[[[language=Smalltalk|caption=Defintion of ==SQLTerm>>#doesNotUnderstand:==|label=scriptDNUSQLTerm
 SQLTerm>>#doesNotUnderstand: aMessage
 	| selector |
 	selector := aMessage selector.
@@ -293,7 +295,8 @@ SQLTerm>>#doesNotUnderstand: aMessage
 	^ super doesNotUnderstand: aMessage
 ]]]
 
-@@note ==#doesNotUnderstand:== is the quick and dirty solution here. If you have a limited number of functions you can also implement them as methods directly.
+==#doesNotUnderstand:== is the quick and dirty solution here.
+If you have a limited number of functions you can also implement them as methods directly.
 
 !!! Comparisons
 
