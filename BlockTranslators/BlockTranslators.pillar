@@ -409,24 +409,24 @@ In a production setup you'd have to think a lot more about different subclasses 
 
 !!Limitations/Notes
 
-!!! Method names
+!!!Method names
 
 Overriding some methods (esp. ==#===) is a pretty bad idea.
-I agree that ==customer name = 'Schneider'== is easier to read and write than ==customer name is: 'Schneider'== - but trust me.
-Overriding ==#=== with different semantics is a sure recipe for disaster!
+Of course ==customer name = 'Schneider'== is easier to read and write than ==customer name is: 'Schneider'==.
+ButoOverriding ==#=== with different semantics is a sure recipe for disaster!
 
 You should also be careful with "==Boolean==-ish" methods like ==#and:==, ==#or:==, ==#ifTrue:==.
 These methods are sometimes inlined by the compiler and you'll get warnings about one of the operands being a non-==Boolean==.
 
-!!! Order of expressions
+!!!Order of expressions
 
 The whole approach bases on the idea of intercepting messages sent ''to'' an object (to be able to respond with "another" intercepting object).
 So make sure that in each and every expression the objects you put into the block (or derivates thereof) are always the recieving objects (left side in operations).
 Everything else will fail.
 
-Two expressions might be semantically identical/equal in Smalltalk yet yield different results when used with Block Parsers. E.g.:
+Two expressions might be semantically identical/equal in Smalltalk yet yield different results when used with Block Parsers (Figure *scriptExpressionOrder*).
 
-[[[language=Smalltalk
+[[[language=Smalltalk|caption=Order of Expressions: Different semantics Smalltalk/Parsed Expression|label=scriptExpressionOrder
 table := SQLTable named: 'customers'.
 	
 "Both blocks are semantically equal in Smalltalk ..."
@@ -438,13 +438,20 @@ String streamContents: [ :stream | (block1 value: table) printSqlOn: stream ].  
 String streamContents: [ :stream | (block2 value: table) printSqlOn: stream ]. "Error: SQLColumn(Object)>>doesNotUnderstand: #adaptToNumber:andSend:"
 ]]]
 
-!!! Expressions only! ... mostly ...
+!!!Expressions only! ... mostly ...
 
 This approach does work fine if you want to translate an expression - even a compound one.
 Expressions (e.g. for filtering) are traditionally used for Collection messages like ==#select:==.
-So something like this works fine (note the temporal variables):
+Expressions with temporal variables (Script *scriptTempVars*) do work.
 
-[[[language=Smalltalk
+Expressions with multiple statement (Script *scriptMultipleStatements*) do not!
+Only the expression for the second use ==surname is: 'Mueller'== is returned an can be translated.
+You can of course use a builder in the background and record "new" expressions - i.e. if the initial object passed in receives a message.
+But that's not completely safe - especially if you didn't refactor all temp variables.
+
+But if you stick to expressions in Blocks (although it also works fine for expressions in methods!) it's more likely to not hit that limitation.
+
+[[[language=Smalltalk|label=scriptTempVars|caption=Temporal variables in expressions
 | selectBlock table expression |
 selectBlock := [ :customer | 
 	| surname joinDate |
@@ -457,9 +464,7 @@ expression := selectBlock value: table.	"Inspect-it"
 expression sqlString	"Inspect-It"
 ]]]
 
-Something like this won't work (as expected?):
-
-[[[language=Smalltalk
+[[[language=Smalltalk|label=scriptMultipleStatements|caption=Multiple statements in expressions
 | selectBlock table expression |
 selectBlock := [ :customer | 
 	| surname |
@@ -471,18 +476,11 @@ expression := selectBlock value: table.	"Inspect-it"
 expression sqlString	"Inspect-It" " (customers.surname = 'Mueller')'"
 ]]]
 
-Only the expression for the second use ==surname is: 'Mueller'== is returned an can be translated.
-You can of course use a builder in the background and record "new" expressions - i.e. if the initial object passed in receives a message.
-But that's not 100% safe - especially if you didn't refactor all temp variables.
+!!! Prior Art
 
-But if you stick to expressions in Blocks (although it also works fine for expressions in methods!) it's more likely to not hit that limitation.
-
-!!! Priort Art
-
-By no means did I invent this stuff! ... that's at least what I think.
-Based on frameworks I worked with and some feedback I got I'm aware of at least two places, where this approach has been used before:
+The method presented in thie chapter is nothing "new".
+At least two frameworks are/were using are similar approach to create SQL query strings from Smalltalk blocks.
 
 - *GLORP>http://glorpwiki.wikispaces.com/home*
 - *ReStore>http://www.solutionsoft.co.uk/restore/manual/querying1.htm*
 
-AFAIK both frameworks use a similar approach to create SQL queries from Smalltalk blocks.
