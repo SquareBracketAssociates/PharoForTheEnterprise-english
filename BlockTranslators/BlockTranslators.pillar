@@ -330,12 +330,13 @@ Inspecting the result of our snippet in the inspector shows a nice graph of obje
 
 +Graph of  ==SQLExpression==>file://figures/SQLExpressionGraph.png|label=figSQLExpressionGraph+
 
-!! SQL Generator
+!!SQL Generator
 
 Now that we have a nice graph (Figure *figSQLExpressionGraph*) of objects let's try to create the SQL string from it:
-Implement the messages ==#sqlString== and ==#printSqlOn:== in ==SQLComponent== which should be implemented by all subclasses:
+Implement the messages ==#sqlString== and ==#printSqlOn:== in ==SQLComponent== (Script *scriptSQLComponentsqlString*).
+==#printSqlOn:== is a subclass responsibility and should be implemented by all subclasses:
 
-[[[language=Smalltalk
+[[[language=Smalltalk|caption=Defintion of ==SQLComponent>#sqlString== and ==SQLComponent>#printSqlOn:==|label=scriptSQLComponentsqlString
 SQLComponent>#sqlString
 	^ String streamContents: [ :stream | self printSqlOn: stream ]
 	
@@ -343,9 +344,9 @@ SQLComponent>#printSqlOn: aStream
 	^ self subclassResponsibility
 ]]]
 
-Now let's try our "implement until next error" approach again using the following code:
+Now let's try our "implement until next error" approach again using the next Workspace code (Script *scriptDoIt3*).
 
-[[[language=Smalltalk
+[[[|label=scriptDoIt3|caption=Workspace to create SQL String
 | selectBlock table expression |
 selectBlock := [ :customer | 
 ((customer surname is: 'Schneider') or: (customer surname is: 'Mueller'))
@@ -355,13 +356,15 @@ expression := selectBlock value: table.	"Inspect-it"
 expression sqlString	"Inspect-It"
 ]]]
 
-We'll get an error ==SubclassResponsibility: SQLExpression had the subclass responsibility to implement #printSqlOn:==:
-+==SubclassResponsibility: SQLExpression had the subclass responsibility to implement #printSqlOn:==>file://figures/SubclassResponsibility-SQLExpression-had-the-subclass-responsibility-to-implement-printSqlOn.png+
+We'll get an error ==SubclassResponsibility: SQLExpression had the subclass responsibility to implement #printSqlOn:== (Figure *figMNUPrintSqlOn*):
+
++==SubclassResponsibility: SQLExpression had the subclass responsibility to implement #printSqlOn:==>file://figures/SubclassResponsibility-SQLExpression-had-the-subclass-responsibility-to-implement-printSqlOn.png|label=figMNUPrintSqlOn+
 
 ''So Pharo is telling us ""exactly"" what to do next''.
-From now on we'll simply implement ==#printSqlOn:== in all the classes until we finally get the string without error.
+From now on we'll simply implement ==#printSqlOn:== in all the classes until we finally get the string without error (Script *scriptPrintSqlOn*).
+As you can see we simply output the information either directly or by delegating ==#printSqlOn:== to child nodes.
 
-[[[language=Smalltalk
+[[[language=Smalltalk|caption=Defintion of ==#printSqlOn:==|label=scriptPrintSqlOn
 SQLExpression>>#printSqlOn: aStream
 	aStream nextPut: $(.
 	left printSqlOn: aStream.
@@ -371,29 +374,19 @@ SQLExpression>>#printSqlOn: aStream
 		space.
 	right printSqlOn: aStream.
 	aStream nextPut: $)
-]]]
 
-As you can see we simply output the information either directly or by delegating ==#printSqlOn:== to child nodes.
-
-[[[language=Smalltalk
 SQLColumn>>#printSqlOn: aStream
 	table printSqlOn: aStream.
 	aStream
 		nextPut: $.;
 		nextPutAll: name
-]]]
 
-[[[language=Smalltalk
 SQLTable>>#printSqlOn: aStream
 	aStream nextPutAll: name
-]]]
 
-[[[language=Smalltalk
 SQLConstant>>#printSqlOn: aStream
 	aStream print: value
-]]]
 
-[[[language=Smalltalk
 SQLFunction>>#printSqlOn: aStream
 	aStream
 		nextPutAll: name;
@@ -402,15 +395,11 @@ SQLFunction>>#printSqlOn: aStream
 	aStream nextPut: $)
 ]]]
 
-!! Done
+Finally our translator works and yields the expected result (Script *scriptFinalSQLString*).
 
-Finally our translator works and yields
-
-[[[language=Smalltalk
+[[[language=SQL|caption=Final SQL String|label=scriptFinalSQLString
 (((customers.surname = 'Schneider') | (customers.surname = 'Mueller')) | ((customers.bonusPoints > YEAR(customers.joinDate)) | (YEAR(customers.joinDate) = 2014)))
 ]]]
-
-Cool, eh?
 
 !! Summary
 I hope I was able to show you (in an understandable way?) how to use "Block Parsers/Translators" to parse Smalltalk expressions and translate them into something "different".
