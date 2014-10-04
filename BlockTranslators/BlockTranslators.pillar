@@ -55,7 +55,7 @@ selectBlock := [ :customer |
 expression := selectBlock value: nil.	"Inspect-it"
 ]]]
 
-If we execute the script *scriptDoIt1* we'll get an error message ==MessageNotUnderstood: UndefinedObject>>surname== (Figure *figMNUSurname*).
+If we execute the Script *scriptDoIt1* we'll get an error message ==MessageNotUnderstood: UndefinedObject>>surname== (Figure *figMNUSurname*).
 And it's clear why: Executing the block binds ==nil== to ==customer==.
 And the first message sent to ==customer== is ==#surname==.
 This of course raises an error because ==nil== (an ==UndefinedObject==) does not understand ==#surname==.
@@ -72,15 +72,18 @@ Once we're finished we can then use this graph of objects to create our "transla
 
 !!SQL Translator
 
-!!! SQL tables
+!!!SQL tables
 
-We'll add bits and pieces of code along with the blog entry.
+We'll add bits and pieces of code along the chapter.
 Always just enough to hit the next Debugger.
 This will give us enough clues about how to proceed:
+
 The first class we need to create is ==SQLTable== to bind to the ==customer== Variable.
 Make it a subclass of ==SQLComponent==.
-It also needs to store the table name in an instance variable:
-[[[language=Smalltalk
+It also needs to store the table name in an instance variable.
+So we need to add instance creation methods to set the ==name== of the table (Script *scriptSQLTable*).
+
+[[[language=Smalltalk|caption=Defintion of ==SQLTable==|label=scriptSQLTable
 Object subclass: #SQLComponent
 	instanceVariableNames: ''
 	classVariableNames: ''
@@ -90,11 +93,7 @@ SQLComponent subclass: #SQLTable
 	instanceVariableNames: 'name'
 	classVariableNames: ''
 	category: 'BlockParser-SQL'
-]]]
 
-Add (instance creation) methods to set the table name:
-
-[[[
 SQLTable class>>#named: aString
 	^ self new
 		setName: aString;
@@ -104,9 +103,9 @@ SQLTable>>#setName: aString
 	name := aString
 ]]]
 
-Try our new class and call the block with it:
+Try the new class and call the block with it (Script *scriptDoIt2*):
 
-[[[
+[[[language=Smalltalk|label=scriptDoIt2|caption=Workspace with a ==SQLTable==
 | selectBlock table |
 selectBlock := [ :customer | 
 ((customer surname is: 'Schneider') or: (customer surname is: 'Mueller'))
@@ -115,9 +114,9 @@ table := SQLTable named: 'customers'.
 selectBlock value: table.	"Inspect-it"
 ]]]
 
-Executing this snippet will result in an error because (again) ==#surname== is not understood:
 +Wallback: MessageNotUnderstood: SQLTable\>\>surname>file://figures/MessageNotUnderstood-SQLTable-surname.png|label=figMNUSurname+
 
+Executing this snippet will result in an error because (again) ==#surname== is not understood (Figure *figMNUSurname*):
 If ==customer== in the block is an ==SQLTable==  instance (or to be more specific a table row) then the semantic meaning of ==customer surname== is to get its `surname` property - or to stick with SQL to get a column with that name.
 
 !!! SQL columns
