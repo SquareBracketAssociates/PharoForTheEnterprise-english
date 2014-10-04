@@ -168,9 +168,9 @@ We'll get an Error message ==MessageNotUnderstood: SQLExpression>>or:== (Figure 
 
 !!! Boolean Operators
 
-So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:==. 
+==SQLTerm==s can be combined using Boolean Operators. So let's implement ==SQLTerm>>#or:== and ==SQLTerm>>#and:==. 
 
-[[[language=Smalltalk
+[[[language=Smalltalkcaption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptMNUSQLTable
 SQLTerm>>or: anObject
 	^ SQLExpression left: self operand: #| right: anObject
 
