@@ -13,11 +13,12 @@ In some cases however this is complete overkill.
 Especially if you need to (dynamically) translate a ''Smalltalk expression'' into something "different".
 
 Translating Smalltalk expressions into "something different" is exactly the usecase "Block Translators" described in this chapter.
+During this chapter we'll develop a simple Translator which is able to translate Smalltalk expressions like ==(customer joinDate year is: Date today year)== into an equivalent SQL-like Expression like ==(YEAR(customers.joinDate) = 2014)==.
+We'll be guided by the debugger.
+I.e. will implement just enough code to address the current issue in the Debugger.
+So it's run, debug, implement, repeat.
 
-!! Block Translators
-
-During this Blog Entry I'll develop a simple Parser/Translator which is able to translate Smalltalk expressions like ==(customer joinDate year is: Date today year)== into an equivalent SQL-like Expression like ==(YEAR(customers.joinDate) = 2014)==.
-Please note that this Translator will neither be complete in terms of operations nor neatly refactored like you would expect for production code. But it should be able to show the general idea how to create ''translators'' which translate a Smalltalk expression into something different.
+@@note The Translator will neither be complete in terms of operations nor neatly refactored like you would expect for production code. But it should be able to show the general idea how to create Translators which convert a Smalltalk expression into something different.
 
 !! Smalltalk collection messages as SQL Expression
 
