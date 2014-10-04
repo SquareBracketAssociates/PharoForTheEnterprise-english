@@ -20,12 +20,12 @@ So it's run, debug, implement, repeat.
 
 @@note The Translator will neither be complete in terms of operations nor neatly refactored like you would expect for production code. But it should be able to show the general idea how to create Translators which convert a Smalltalk expression into something different.
 
-!! Smalltalk collection messages as SQL Expression
+!!Smalltalk collection messages as SQL Expression
 
-Smalltalk's collection messages like ==#do:==, ==#select:== or ==#detect:ifNone== are IMHO one of the biggest features of the class library.
-Most SQL libraries for Smalltalk also include the feature to express SQL expressions as Smalltalk code. So something like this ...
+Smalltalk's collection messages like ==#do:==, ==#select:== or ==#detect:ifNone== are one of the best features of the class library.
+Most SQL/ORM Frameworks for Smalltalk include a feature to express SQL expressions as Smalltalk code. So something like script *scriptSampleSmalltalk* should be translated into something like script *scriptSampleSQL*.
 
-[[[language=Smalltalk
+[[[language=Smalltalk|label=scriptSampleSmalltalk|caption=Sample SQL query in Smalltalk
 (
 	(customer surname is: 'Schneider') or: (customer surname is: 'Mueller')
 ) and: (
@@ -33,9 +33,7 @@ Most SQL libraries for Smalltalk also include the feature to express SQL express
 )
 ]]]
 
-... should be translated into something SQL-like like this:
-
-[[[
+[[[language=SQL|label=scriptSampleSQL|caption=Sample SQL query string
 (((customers.surname = 'Schneider') | (customers.surname = 'Mueller')) & ((customers.bonusPoints > YEAR(customers.joinDate)) | (YEAR(customers.joinDate) = 2014)))
 ]]]
 
@@ -45,8 +43,11 @@ But in some cases a simpler approach with "Message Recording" objects is more th
 
 !! Blocks as Parsers/Translators
 
-Let's start with the block from above. What happens if we call ==#value:== with an arbitrary value? Let's try ==nil== for now:
-[[[language=Smalltalk
+Let's start with the previous expression from above.
+What happens if we wrap it into a select Block (i.e. for a ==s#elect:== message or similar) and call ==#value:== with an arbitrary value?
+Let's try ==nil== for now.
+
+[[[language=Smalltalk|label=scriptDoIt1|caption=Workspace with ==nil==
 | selectBlock |
 selectBlock := [ :customer | 
 ((customer surname is: 'Schneider') or: (customer surname is: 'Mueller'))
@@ -54,22 +55,22 @@ selectBlock := [ :customer |
 expression := selectBlock value: nil.	"Inspect-it"
 ]]]
 
-If we execute this snippet we'll get an error message ==MessageNotUnderstood: UndefinedObject>>surname==.
+If we execute the script *scriptDoIt1* we'll get an error message ==MessageNotUnderstood: UndefinedObject>>surname== (Figure *figMNUSurname*).
 And it's clear why: Executing the block binds ==nil== to ==customer==.
 And the first message sent to ==customer== is ==#surname==.
-This of course raises an error because ==UndefinedObject== does not understand ==#surname==.
+This of course raises an error because ==nil== (an ==UndefinedObject==) does not understand ==#surname==.
 
-But what happens if we use another object (let's call it a ==SQLTable==) instead?
-This ==SQLTable== does understand ==#surname== and responds with something useful - a ==SQLColumn== named accordingly in this case.
+But what would happen if we use another object (let's call it a ==SQLTable==) instead?
+This ==SQLTable== would understand ==#surname== and respond with something useful - i.e. a ==SQLColumn== named accordingly in this case.
 If we keep up resolving to "useful" objects we'll end up with a graph of objects expressing the original expression!
 
 The "hard" parsing work is done by the Smalltalk compiler itself.
-Our job is only to record any (useful) message sent to our objects and respond with other useful objects to continue the proccess.
+Our job is only to record any (useful) message sent to our Translator objects and respond with other useful objects to continue the proccess until everything is parsed.
 Once we're finished we can then use this graph of objects to create our "translated" language.
 
-!! SQL Translator
+@@note The following code snippets should be enough to build some working code (Copy&Paste should work). If you want to see the complete code you can find it in the BlockParsers project under *http://www.smalltalkhub.com/#!/~UdoSchneider/BlockParser*.
 
-@@note The following code snippets should be enough to build some working code (Copy&Paste from the blog should work). If you want to see the complete code you can find it here: *BlockParsers on SmalltalkHub>http://www.smalltalkhub.com/#!/~UdoSchneider/BlockParser*.
+!!SQL Translator
 
 !!! SQL tables
 
@@ -115,7 +116,7 @@ selectBlock value: table.	"Inspect-it"
 ]]]
 
 Executing this snippet will result in an error because (again) ==#surname== is not understood:
-+Wallback: MessageNotUnderstood: SQLTable\>\>surname>file://figures/MessageNotUnderstood-SQLTable-surname.png+
++Wallback: MessageNotUnderstood: SQLTable\>\>surname>file://figures/MessageNotUnderstood-SQLTable-surname.png|label=figMNUSurname+
 
 If ==customer== in the block is an ==SQLTable==  instance (or to be more specific a table row) then the semantic meaning of ==customer surname== is to get its `surname` property - or to stick with SQL to get a column with that name.
 
