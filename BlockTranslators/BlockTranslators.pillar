@@ -18,7 +18,8 @@ We'll be guided by the debugger.
 I.e. will implement just enough code to address the current issue in the Debugger.
 So it's run, debug, implement, repeat.
 
-@@note The Translator will neither be complete in terms of operations nor neatly refactored like you would expect for production code. But it should be able to show the general idea how to create Translators which convert a Smalltalk expression into something different.
+The Translator will neither be complete in terms of operations nor neatly refactored like you would expect for production code.
+But it should be able to show the general idea how to create Translators which convert a Smalltalk expression into something different.
 
 !!Smalltalk collection messages as SQL Expression
 
@@ -68,7 +69,8 @@ The "hard" parsing work is done by the Smalltalk compiler itself.
 Our job is only to record any (useful) message sent to our Translator objects and respond with other useful objects to continue the proccess until everything is parsed.
 Once we're finished we can then use this graph of objects to create our "translated" language.
 
-@@note The following code snippets should be enough to build some working code (Copy&Paste should work). If you want to see the complete code you can find it in the BlockParsers project under *http://www.smalltalkhub.com/#!/~UdoSchneider/BlockParser*.
+The following code snippets should be enough to build some working code (Copy&Paste should work).
+If you want to see the complete code you can find it in the BlockParsers project under *http://www.smalltalkhub.com/#!/~UdoSchneider/BlockParser*.
 
 !!SQL Translator
 
@@ -158,7 +160,9 @@ SQLTable>>#doesNotUnderstand: aMessage
 	^ super doesNotUnderstand: aMessage
 ]]]
 
-@@note In a "real" implementation you might want to check the selector name. If its a known column name (you have the schema? Don't you?) you'd return the column. Otherwise forward ==#doesNotUnderstand:== to ==super== (Figure *figMNUis*).
+In a "real" implementation you might want to check the selector name.
+If its a known column name (you have the schema? Don't you?) you'd return the column.
+Otherwise forward ==#doesNotUnderstand:== to ==super== (Figure *figMNUis*).
 
 Running the snippet now yields an "==SQLColumn(Object)>>doesNotUnderstand: #is:==" error (Figure *figMNUis*).
 ==#is:== is an equality check.
@@ -257,7 +261,9 @@ Our implementation does not use regular blocks as arguments.
 You can use blocks in your implementation though.
 Just be warned that the compiler/VM might inline sends of ==#and:==, ==#or:== if the argument is a block!
 
-@@note Logical ==#not== is not an expression - not an operator "between" to terms. It's an Operator applied to ''one term''. So it's best expressed as a ''function''!
+Logical ==#not== is not an expression - not an operator "between" to terms.
+It's an Operator applied to ''one term''.
+So it's best expressed as a ''function''!
 
 Running the code snippet complains about an ==SQLColumn== instance not understanding ==#year== (Figure *figSQLColumnYear*). 
 Semantically I'd say that something like ==tableName columnName year== is like calling a function: ==YEAR(tableName.column)==.
