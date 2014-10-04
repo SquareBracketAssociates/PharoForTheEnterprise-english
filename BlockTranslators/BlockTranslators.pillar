@@ -298,17 +298,16 @@ SQLTerm>>#doesNotUnderstand: aMessage
 ==#doesNotUnderstand:== is the quick and dirty solution here.
 If you have a limited number of functions you can also implement them as methods directly.
 
-!!! Comparisons
-
-And again:
-
-+Wallback; `MessageNotUnderstood: SQLExpression\>\>gt:>file://figures/MessageNotUnderstood-SQLColumn-gt.png+
-
-We'll get an Error message ==MessageNotUnderstood: SQLExpression>>gt:==.
+Running the script we now get an Error message ==MessageNotUnderstood: SQLExpression>>gt:== (Figure *figMNUgt*).
 So the next method we need is greater than.
-We'll implement these using similar to ==SQLTerm>>#is:==:
 
-[[[language=Smalltalk
++Wallback; ==MessageNotUnderstood: SQLExpression\>\>gt:==>file://figures/MessageNotUnderstood-SQLColumn-gt.png|label=figMNUgt+
+
+!!!Comparisons
+
+We'll implement these using similar to ==SQLTerm>>#is:== (Script *scriptSQLTermComparisons*):
+
+[[[language=Smalltalk|caption=Defintion of Comparisons in ==SQLTerm==|label=scriptSQLTermComparisons
 SQLTerm>>#gt: anObject
 	^ SQLExpression left: self operand: #> right: anObject
 
@@ -322,17 +321,18 @@ SQLTerm>>#lte: anObject
 	^ SQLExpression left: self operand: #<= right: anObject
 ]]]
 
-!!! DONE! (1st half ...)
-
+Executing the expressions again raises no Error.
 We made it!
-Our expression parses!
+The expression parses (Figure *figSQLExpressionInspector*)!
 Inspecting the result of our snippet in the inspector shows a nice graph of objects which we'll use in the next step to create the SQL String.
 
-+Parsed ==SQLExpression==: Look Ma! Without any grammar!>file://figures/SQLExpression.png+
++Parsed ==SQLExpression== in Inspector>file://figures/SQLExpression.png|label=figSQLExpressionInspector+
+
++Graph of  ==SQLExpression==>file://figures/SQLExpressionGraph.png|label=figSQLExpressionGraph+
 
 !! SQL Generator
 
-Now that we have a nice graph of objects let's try to create the SQL string from it:
+Now that we have a nice graph (Figure *figSQLExpressionGraph*) of objects let's try to create the SQL string from it:
 Implement the messages ==#sqlString== and ==#printSqlOn:== in ==SQLComponent== which should be implemented by all subclasses:
 
 [[[language=Smalltalk
