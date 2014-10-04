@@ -401,12 +401,13 @@ Finally our translator works and yields the expected result (Script *scriptFinal
 (((customers.surname = 'Schneider') | (customers.surname = 'Mueller')) | ((customers.bonusPoints > YEAR(customers.joinDate)) | (YEAR(customers.joinDate) = 2014)))
 ]]]
 
-!! Summary
-I hope I was able to show you (in an understandable way?) how to use "Block Parsers/Translators" to parse Smalltalk expressions and translate them into something "different".
-I know that this example is neither comprehensive nor production ready.
+!!Summary
+
+Hopefully this chapter was able to show you (in an understandable way?) how to use "Block Parsers/Translators" to parse Smalltalk expressions and translate them into something "different".
+This example is neither comprehensive nor production ready.
 In a production setup you'd have to think a lot more about different subclasses e.g. for constants, functions ... even if it's "just" for printing constants correctly. But the skeleton should be the same.
 
-!! Limitations/Notes
+!!Limitations/Notes
 
 !!! Method names
 
