@@ -12,7 +12,7 @@ All these parser generators are great if you need to parse a given ''textual inp
 In some cases however this is complete overkill.
 Especially if you need to (dynamically) translate a ''Smalltalk expression'' into something "different".
 
-Translating Smalltalk expressions into "something different" is exactly the usecase "Block Translators" described in this chapter.
+Translating Smalltalk expressions into "something different" is exactly the usecase for "Block Translators" described in this chapter.
 During this chapter we'll develop a simple Translator which is able to translate Smalltalk expressions like ==(customer joinDate year is: Date today year)== into an equivalent SQL-like Expression like ==(YEAR(customers.joinDate) = 2014)==.
 We'll be guided by the debugger.
 I.e. will implement just enough code to address the current issue in the Debugger.
@@ -39,13 +39,13 @@ Most SQL/ORM Frameworks for Smalltalk include a feature to express SQL expressio
 ]]]
 
 One way would be to hook into the Smalltalk compiler and build the SQL-like expression from the AST.
-Another would be to ignore the Smalltalk side completely and parse Strings via a Parsers into those expressions (again using graphs/ASTs).
+Another would be to ignore the Smalltalk side completely and parse Strings via a Parser into those expressions (again using graphs/ASTs).
 But in some cases a simpler approach with "Message Recording" objects is more than sufficient.
 
 !! Blocks as Parsers/Translators
 
 Let's start with the previous expression from above.
-What happens if we wrap it into a select Block (i.e. for a ==s#elect:== message or similar) and call ==#value:== with an arbitrary value?
+What happens if we wrap it into a "select Block" (i.e. for a ==#select:== message or similar) and call ==#value:== with an arbitrary value?
 Let's try ==nil== for now.
 
 [[[language=Smalltalk|label=scriptDoIt1|caption=Workspace with ==nil==
@@ -119,11 +119,11 @@ selectBlock value: table.	"Inspect-it"
 +Wallback: MessageNotUnderstood: SQLTable\>\>surname>file://figures/MessageNotUnderstood-SQLTable-surname.png|label=figMNUSurname+
 
 Executing this snippet will result in an error because (again) ==#surname== is not understood (Figure *figMNUSurname*):
-If ==customer== in the block is an ==SQLTable==  instance (or to be more specific a table row) then the semantic meaning of ==customer surname== is to get its `surname` property - or to stick with SQL to get a column with that name.
+If ==customer== in the block is an ==SQLTable==  instance (or to be more specific a table row) then the semantic meaning of ==customer surname== is to get its `surname` property - or to stick with SQL; to get a column with that name.
 
 !!! SQL columns
 
-Because columns can participate in relations we'll create an ==SQLColumn== class as subclass of ==SQLTerm== (Figure *scriptSQLColumn*).
+Because columns can participate in relations we'll create an ==SQLColumn== class as subclass of ==SQLTerm== (Script *scriptSQLColumn*).
 We also add methods to set the owning ==table== and ==name==:
 
 [[[language=Smalltalk|caption=Defintion of ==SQLColumn==|label=scriptSQLColumn
@@ -149,7 +149,7 @@ SQLColumn>>#setTable: aSQLTable name: aString
 
 We also need to add behaviour to ==SQLTable== to return an ==SQLColumn== instance when it recieves an unknown unary message.
 To make things easier we'll intercept each unary message sent to a ==SQLTable== instance and return an ==SQLColumn== instance which knows its originating table and its name.
-So we'll add that behavior do ==#doesNotUnderstand== (Figure *scriptDNUSQLTable*):
+So we'll add that behavior do ==#doesNotUnderstand== (Script *scriptDNUSQLTable*):
 
 [[[language=Smalltalk|caption=Defintion of ==SQLTable>>#doesNotUnderstand:==|label=scriptDNUSQLTable
 SQLTable>>#doesNotUnderstand: aMessage
@@ -243,7 +243,7 @@ Overwriting ==#=== to answer a non-==Boolean== leads to ''interesting'' effects 
 Let's see how far we get now:
 We'll get an Error message ==MessageNotUnderstood: SQLExpression>>or:== (Figure *figMNUor*).
 
-+Wallback; ==MessageNotUnderstood: SQLExpression\>\>or:==>file://figures/MessageNotUnderstood-SQLExpression-or.png|label=figMNUor+
++Wallback: ==MessageNotUnderstood: SQLExpression\>\>or:==>file://figures/MessageNotUnderstood-SQLExpression-or.png|label=figMNUor+
 
 !!!Boolean Operators
 
@@ -268,7 +268,7 @@ So it's best expressed as a ''function''!
 Running the code snippet complains about an ==SQLColumn== instance not understanding ==#year== (Figure *figSQLColumnYear*). 
 Semantically I'd say that something like ==tableName columnName year== is like calling a function: ==YEAR(tableName.column)==.
 
-+Wallback; ==MessageNotUnderstood: SQLColumn\>\>year==>file://figures/MessageNotUnderstood-SQLColumn-year.png|label=figSQLColumnYear+
++Wallback: ==MessageNotUnderstood: SQLColumn\>\>year==>file://figures/MessageNotUnderstood-SQLColumn-year.png|label=figSQLColumnYear+
 
 !!!SQL functions
 
@@ -307,7 +307,7 @@ If you have a limited number of functions you can also implement them as methods
 Running the script we now get an Error message ==MessageNotUnderstood: SQLExpression>>gt:== (Figure *figMNUgt*).
 So the next method we need is greater than.
 
-+Wallback; ==MessageNotUnderstood: SQLExpression\>\>gt:==>file://figures/MessageNotUnderstood-SQLColumn-gt.png|label=figMNUgt+
++Wallback: ==MessageNotUnderstood: SQLExpression\>\>gt:==>file://figures/MessageNotUnderstood-SQLColumn-gt.png|label=figMNUgt+
 
 !!!Comparisons
 
@@ -430,7 +430,7 @@ The whole approach bases on the idea of intercepting messages sent ''to'' an obj
 So make sure that in each and every expression the objects you put into the block (or derivates thereof) are always the recieving objects (left side in operations).
 Everything else will fail.
 
-Two expressions might be semantically identical/equal in Smalltalk yet yield different results when used with Block Parsers (Figure *scriptExpressionOrder*).
+Two expressions might be semantically identical/equal in Smalltalk yet yield different results when used with Block Parsers (Script *scriptExpressionOrder*).
 
 [[[language=Smalltalk|caption=Order of Expressions: Different semantics Smalltalk/Parsed Expression|label=scriptExpressionOrder
 table := SQLTable named: 'customers'.
