@@ -1,1 +1,1 @@
-..\Pharo.exe Pharo.image pillar export --to="HTML by chapter" --baseDirectory="C:\Mark\Pharo3.0\PharoForTheEnterprise-english" RewriteTool\RewriteTool.pillar
+..\Pharo.exe Pharo.image pillar export --to="HTML by chapter" --baseDirectory="C:\Mark\Pharo3.0\PharoForTheEnterprise-english" RewriteTool\RewriteTool.pier

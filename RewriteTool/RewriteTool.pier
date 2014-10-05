@@ -58,8 +58,8 @@ ConfigurationOfRewriteTool loadDevelopment
 
 !!Introduction
 
-Rewrite Tool includes two parts. First is a rewrite rule builder (just ''"builder"''), which, obviously, lets user create rewrite rules.
-And second part is rewrite rule browser(next as ''"browser"''), in which user can select previously created rule and apply it to specific scope.
+Rewrite Tool includes two parts. First is a rewrite rule builder (in the rest of this chapter it is referenced as ''Builder''), which, obviously, lets user create (build) rewrite rules.
+And second part is rewrite rule browser(next as ''"Browser"''), in which user can select previously created rule and apply it to specific scope.
 
 !!!Rewrite rule builder
 
@@ -70,10 +70,10 @@ It provides a possibility, with simple GUI, to build rewrite rules dynamically.
 
 ""Panes""
 
--Top left pane, labeled ''"Source expression"'', contains source code of expression (in future maybe method?) which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else.
--Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part of rewrite rule. You can change match rule either using action-click menu or manually changing the code.
--Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create transform rule also with options in action-click menu, or just manually typing code.
--The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, which is in two bottom panes, to a source expression. You should note that this pane is the only one that is not editable.
+-Top left pane, labeled ''"Source expression"'', contains source code of expression (in future maybe method?) which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as ''Source pane''.
+-Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part of rewrite rule. You can change match rule either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
+-Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create transform rule also with options in action-click menu, or just manually typing code. Similar to previous one it's called in rest of chapter ''Transform pane''
+-The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, which is in two bottom panes, to a source expression. You should note that this pane is the only one that is not editable, so it's read only. Later, this pane is referenced as ''Result pane''
 
 ""Buttons""
 
@@ -90,7 +90,12 @@ In order to browse slected rewrite rule class, click "Browse selected rule" butt
 
 +Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=Rewrite rule browser+
 
-!!Simple example
+!!Examples
+
+In this part you can find useful examples, that will help you to understand how to create your own rule using Builder.
+Following examples are meant to teach you basics of using Builder.
+
+!!!First example
 
 Now, back to example: we want to transform
 
@@ -104,25 +109,25 @@ into:
     someObject ifNil: [ ^ true ]
 ]]]
 
-First, you need to input template source code in top left pane of rewrite rule builder. ''(how to input? - "IN DEVELOPEMENT!")''
+First, you need to input template source code in Source pane of Builder. ''(how to input? - "IN DEVELOPEMENT!")''
 In all panes you get exactly the same code.
-To start with, look at status bar in bottom left pane. Obviously, for now it says "matches", as source code and match rule are equal.
+To start with, look at status bar in Match pane. Obviously, for now it says "matches", as source code and match rule are equal.
 This status bar will help you to create rule, that will really correspond to source code.
 If it changes to "doesn't match", you probably should use "Undo" button, and rethink your next move.
-As was mentioned earlier, your main playground is bottom left pane.
-Thus, almost all next actions are made in ''"Match rule"'' pane.
+As was mentioned earlier, your main playground is Match pane.
+Thus, almost all next actions are made in this pane, and also in Transform pane.
 In our example we don't care about ''someObject''.
 It can be ''self'' or maybe just some temporary variable.
 That is why, you have to select ''someObject'' and right click on it, which opens a menu,
 which displays all actions that can be applied to selected object.
 Actually this object is represented as a node of an AST - abstract syntax tree.
-In ''"Rewrite tool"'' each node of AST has its own set of options.
+In Builder each node of AST has its own set of options.
 Read more on abstract syntax tree ''""HERE""''. 
 In this particular case it will contain following options:
 - Ignore
 - Change
 - Abstract variable 
-You need ''"Abstract variable"'', inasmuch it changes ''someObject'' into metavariable.
+You need ''"Abstract variable"'', inasmuch it changes ''someObject'' into metavariable. You can read more about metavariables and rewrite engine ''""HERE""''.
 This metavariable will match any object for example: ''self'', ''Color'' (classes are objects too), ''someTempVar''.
 After this change we should have:
 
@@ -131,19 +136,19 @@ After this change we should have:
 ]]]
 
 And status bar also has to be unchanged, saying: ''matches''.
-As you may noticed ''"Transform rule"'' pane text also was changed in following way:
+As you may noticed Transform pane text also was changed in following way:
 
 [[[ label = transformExampleStep1 | language = Smalltalk
     `variable1 ifNil: [ ^ true ]
 ]]]
 
 It means that in result on the place of ''someObject'' we will get ''someObject''.
-In case, you want to have in result something else, for example ''self'' use an option ''Change'' (or manually type it, but it's not recommended).
+In case, you want to have in result something else, for example ''self'' use an option ''Change'' on a `variable1 in Transform pane (or manually type it, but it's not recommended).
 But for now, we don't want that.
-To proceed, select ''isNil'' in ''"Transform rule"'' pane, open a menu.
+To proceed, select ''isNil'' in Transform pane, open a menu.
 The options in this case are different from previous one, as it's not a variable selected, but selector.
-So, click on ''Ignore selector'' option. It will remove ''isNil'' from ''"Transform rule"'' pane.
-Also, ''"Result expression"'' pane was updated:
+So, click on ''Ignore selector'' option. It will remove ''isNil'' from Transform pane.
+Also, Result pane was updated:
 
 [[[ label = resultExampleStep1 | language = Smalltalk
     someObject ifTrue: [ ^ true ]
@@ -152,17 +157,25 @@ Also, ''"Result expression"'' pane was updated:
 Now let's work with our block: ''[ ^ true ]''.
 Here we have the same situation as we had with ''someObject''.
 Again, we don't care about which block is passed as an argument to ''ifTrue:'' or ''ifNil:''.
-So, we select our block (now working in ''"Match rule"'' pane) and choose an option ''Abstract block''.
+So, we select our block (now working in Match pane) and choose an option ''Abstract block''.
 In result it will be changed into ''`@block1''.
 
-Finally, select ''ifTrue:'' in ''"Transform rule"'' pane, and apply ''Change selector'' option from menu.
+Finally, select ''ifTrue:'' in Transform pane, and apply ''Change selector'' option from menu.
 Type in recently opened window: ''ifNil:'', and press ''Ok'' button.
 We are done with our task.
-You can see the result of applying rewrite rule to source code in top right pane.
+You can see the result of applying rewrite rule to source code in Result pane.
 
 [[[ label = resultExampleStep2 | language = Smalltalk
     someObject ifNil: [ ^ true ]
 ]]]
+
+!!!Second example
+
+This example is a little bit more complex than the previous one.
+If you did not understand something in example with ''isNil ifTrue:[ ... ]'' into ''ifNil[ ... ]'', please go back to it to be sure you know the basics.
+
+This time we are going to create a rule for ...
+
 
 !!Rewrite Tool in details
 
