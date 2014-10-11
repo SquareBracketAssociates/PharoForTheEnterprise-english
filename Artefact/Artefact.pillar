@@ -7,7 +7,7 @@ Artifact is developed by O. and G. Auverlot Larcheveque.
 
 !!Overview of Artifact 
 
-Artifact is an innovative PDF framework. In Arteface a PDF document is described by objects. All the components of a PDF document are represented as a tree of objects. The document is an object containing other objects corresponding to pages. On each page, printable or non-visible items are also objects. 
+Artifact is an innovative PDF framework. In Artefact a PDF document is described by objects. All the components of a PDF document are represented as a tree of objects. The document is an object containing other objects corresponding to pages. On each page, printable or non-visible items are also objects. 
 Such elements have then the opportunity to be reused in the same document but also in several documents. These elements can be as simple as a text or an image but also be a complex component with an advanced behavior and a special appearance. Artifact proposes default elements such as paragraphs or tables to quickly generate reports. The strength of these elements is that they are independent of each other. The order in which you position them in the document does not affect their appearance. Unlike many PDF frameworks that exploit the notion of stream in the definition of styles (blue text will be followed by another blue text in the absence of a directive in a different style), Artifact considers every element includes its own sheet style. If an attribute is not defined in the element, Artefact then uses a style sheet by default set at the document level.
 
 
@@ -505,24 +505,27 @@ The component ==PDFDoubleArrowElement== draws two arrows at both extremities.
 	PDFDoubleArrowElement from: 10mm@80mm to: 100mm@150mm
 ]]]
 
-!!!!Créer des rapports
+!!!!Report creation
 
-Les composants héritant de ==PDFDatatable== sont la parfaite illustration de la puissance et du confort apporté par les éléments composites d'Artefact. Avec ces tables de données, il vous est possible de générer rapidement des rapports et de les personnaliser selon vos besoins. 
+Components inheriting from ==PDFDatatable== are the perfect illustration of the power and comfort 
+provided by the composite elements of Artefact. With these data tables, you can quickly generate reports and customize them to your needs.
 
-Avec la classe ==PDFDatatableElement==, vous définissez un rapport ayant des dimensions précises sur la page et portant sur un jeu de données. Ces données sont organisées de manière tabulaire: un tableau représentant le rapport, contient un certain nombre d'autres tableaux, représentant chacun une ligne du rapport.
+With class ==PDFDatatableElement== you define a report with specific dimensions on the page and on a data set. 
+These data are organized in a  tabular manner: a report contains a number of other tables, each representing a line of the report.
 
 [[[
 	PDFDataTableElement new
 		data: #(
-			#('Smith' 'Peter' 43) 
-			#('Jones' 'Mickael' 25) 
-			#('washington' 'robert' 30)
-		);
-		from: 10 mm @ 20 mm;
-		dimension: 150 mm @ 60 mm
+				#('Smith' 'Peter' 43) 
+				#('Jones' 'Mickael' 25) 
+				#('washington' 'robert' 30) );
+		from: 10mm @ 20mm;
+		dimension: 150mm @ 60mm
 ]]]
 
-La classe ==PDFDataTableWithColumnsCaptionElement== apportent une nouvelle variable d'instance nommée captions dont le contenu est un tableau. Cette variable permet de définir les titres de chaque colonne de votre rapport. Il est important de noter que le nombre de titres de colonne doit être le même que le nombre de colonnes et que chaque ligne doit comporter le même nombre de colonnes.
+The class ==PDFDataTableWithColumnsCaptionElement== extend the table behavior to support captions 
+whose content is an array. The message ==captions== specifies the titles of each column of your report. 
+It is important to note that the number of column headings should be the same as the number of columns and each line must have the same number of columns.
 
 [[[
 	PDFDataTableWithColumnsCaptionElement new
@@ -536,11 +539,19 @@ La classe ==PDFDataTableWithColumnsCaptionElement== apportent une nouvelle varia
 		dimension: 150 mm @ 60 mm
 ]]]
 
-Artefact propose également la classe ==PDFDataTableWithRowsCaptionElement== qui est une variante de ==PDFDataTableWithColumnsCaptionElement==. Son comportement est différent puisque la propriété captions est utilisée pour donner un titre à chaque ligne. Dans ce cas de figure, le tableau contenu dans la propriété caption doit avoir un nombre d'éléments égal au nombre de lignes du tableau.
+Finally Artifact also provides the class ==PDFDataTableWithRowsCaptionElement== which is a variant of 
+==PDFDataTableWithColumnsCaptionElement==. Its behavior is different since the caption is used to give a title to each line. 
+In this case, the table in the caption property must have a number of elements equal to the number of table rows.
 
-Les rapports mettent souvent en évidence l'une ou l'autre information afin de faciliter leur lecture. Artefact dispose d'un mécanisme de déclencheur défini par le message ==customizationBlock:== et activé à chaque dessin d'une cellule. Cette méthode reçoit quatre paramètres qui sont la cellule en cours de dessin, la position horizontale et verticale de la cellule dans le tableau et la donnée présente dans la cellule. A l'aide d'un bloc de code, il vous est alors possible de modifier son aspect ou de déclencher un traitement particulier.
 
-La liste des personnes qui illustre cette partie contient l'age de chaque individu. L'exemple qui suit utilise le message ==customizationBlock:== pour remplacer l'age d'une personne par le texte "Older than 30" si cet individu a plus de trente ans. Le code exécuté ne prend en compte que la troisième cellule de chaque ligne et en excluant le titre de chaque colonne. Si l'age est supérieur à trente, la variable d'instance text de la cellule en cours de dessin est modifiée:
+Artifact offers a triggering mechanism defined by the message ==customizationBlock:==. The associated block is activated for the drawing of a cell. 
+This block takes four parameters that are the cell being drawn, the vertical and horizontal position of the cell in the table and the data presented in the cell. 
+Using a block of code, it is then possible to change the appearance of the table or to trigger special treatment.
+
+
+The following example uses the message ==customizationBlock:== to replace the age of a person by the text =='Older than 30'== if the person is older than 
+thirty year old. The executed code only takes into account that the third cell of each line and excluding the title of each column. 
+If the age is greater than thirty, the instance variable ==text== of the cell is amended.
 
 [[[
 	(PDFDataTableWithColumnsCaptionElement new
@@ -559,7 +570,9 @@ La liste des personnes qui illustre cette partie contient l'age de chaque indivi
 		])
 ]]]
 
-Les éléments composites d'Artefact apportent beaucoup de souplesse à la création de documents PDF. Bien évidemment, ceux fournis par défaut ne couvrent pas tous les besoins et il vous sera probablement nécessaire de créer vos propres composants.
+Composite elements bring a lot of flexibility to PDF document creation. 
+Obviously, the default ones do not cover all needs and you will most likely need to create your own components. We suggest to study 
+the existing ones to see how to proceed.
 
 !!Stylesheet for the newbies
 
@@ -583,28 +596,30 @@ Then, at any upper level (document, page, etc), you can express the specific tit
 
 The message ==>== gives access to the style attribute of ==PDFStyleSheet==. Here we specify the title attribute of the document. 
 
-!!!Les éléments manipulables avec une feuille de style
+!!!Stylesheet elements
+Defining a stylesheet allows one to specify attributes specific presentation for a set of elements.
 
-La définition d'une feuille de style permet de spécifier des attributs de présentation particuliers pour un ensemble d'élements. 
 !!!!Fonts
 	
 Artefact supports integrated PDF fonts (==PDFCourierFont==, ==PDFHelveticaFont==, ==PDFSymbolFont==, ==PDFTimesFont== and ==PDFZapfdingbatsFont==). 
-These fonts are available in any PDF viewer. A PDFFont object supports the basic style: bold and italic.
+These fonts are available in any PDF viewer. A ==PDFFont== instance supports the basic styles ==bold== and ==italic==.
 
 [[[
 	PDFText from: 10mm@15mm text: 'My title' font: ((PDFTimesFont size: 24 pt) bold).
 ]]]
 
-La classe ==PDFFont== propose deux messages extrémement pratiques lors de la création d'un document. Avec le message ==getStringWidth:==, vous
- obtenez la largeur d'une chaîne de caractères calculée en fonction des attributs de la fonte utilisée. L'exemple suivant retourne la largeur 
- de la chaine =="hello"== avec une fonte Courier mesurant 20 points:
+The class ==PDFFont== offers two extremely useful messages when creating a document: ==getStringWidth:== and ==getIdealFontSizeForTheString:width:==.
+
+With the message ==getStringWidth:== you get the width of a string calculated based on the attributes of the font used. 
+The following example returns the width pof the chain == "hello" == in Courier measuring 20 points:
+ 
 
 [[[
 	(PDFCourierFont size: 20 pt) getStringWidth: 'hello'
 ]]]
 
-Le message ==getIdealFontSizeForTheString:width:== retourne la taille optimale de la fonte utilisée en fonction de la largeur voulue. 
-L'exemple suivant détermine la taille nécessaire d'une fonte Courier si l'on désire que le texte "hello" ait une largeur de 15 cm:
+The message  ==getIdealFontSizeForTheString:width:== returns the optimal size for the used fonte based on the wished width.
+The following example determines the size mandatory for a Courier  font to display the 'Hello' text whose width should be 15 cm:
 
 [[[
 	(PDFCourierFont new) getIdealFontSizeForTheString: 'hello' width: 15 cm
@@ -623,27 +638,27 @@ All the geometric shapes can use a dotted style. It is defined by a PDFDotted ob
 				space: 3 mm)).
 ]]]
 
-!!!!Couleurs et niveaux de gris
+!!!!Color and shades of gray
 
-Les couleurs et les niveaux de gris sont représentés par la classe ==PDFColor==. Pour définir une couleur, Artefact utilise le mode RGB basé 
-sur le mélange de rouge, de vert et de bleu. La proportion dans le mélange de chacune de ces couleurs est exprimée à l'aide d'une valeur 
-entre 0 et 255. Un noir profond correspond donc au triplé (0,0,0) , la couleur rouge à (255,0,0), la couleur verte à (0,255,0), la couleur 
-bleu à (0,0,255) et le blanc à (255,255,255).
+
+Colors and shades of gray are represented by the class ==PDFColor==. To define a color, Artifact uses a traditional RGB schema. 
+The proportion of each color is expressed using a value from 0 to 255. A deep black corresponds to the triple (0,0,0), the red color (255,0,0), green color (0,255,0), color 
+blue (0,0,255) and white (255,255,255).
 
 [[[
-	PDFColor r:255 g: 128 b: 64
+	PDFColor r: 255 g: 128 b: 64
 ]]]
 
-Les niveaux de gris sont exprimés sur une seule valeur allant de 0 à 255. Plus cette valeur est basse, plus le niveau de gris s'assombrit. 
-Une valeur égale à 0 correspond donc à du blanc alors que la valeur 255 équivaut à du noir.
+Grayscales are expressed with a single value ranging from 0 to 255  -- the higher this value is, the higher the gray darkens. 
+A value of 0 corresponds to white, while the value of 255 is equivalent to black.
 
 [[[
 	PDFColor greyLevel: 128
 ]]]
 
-Pour spécifier la couleur ou le niveau de gris utilisé, vous diposez des méthodes ==drawcolor:==, ==fillColor:== et ==textColor:== qui 
-gèrent respectivement la couleur de dessin, la couleur de remplissage et la couleur du texte. L'exemple qui suit dessine un rectangle 
-dont la bordure sera en bleu et le contenu en rouge:
+To specify the color or grayscale used, you get the messages ==drawcolor==, ==fillColor:==, and ==textColor:== that 
+respectively manage the drawing color, fill color and text color. The following example draws a rectangle 
+whose border will be blue and the red content:
 
 [[[
 	PDFRectElement new
@@ -653,7 +668,7 @@ dont la bordure sera en bleu et le contenu en rouge:
 		drawColor: (PDFColor r: 0 g: 0 b: 255).
 ]]]
 
-Cet autre exemple produit un texte écrit en bleu:
+This other example produced a text written in blue. 
 
 [[[
 	PDFTextElement new
@@ -662,50 +677,54 @@ Cet autre exemple produit un texte écrit en bleu:
 		text: 'A text in blue';
 ]]]
 
-!!!!Epaisseur des tracés
+!!!!Drawing thichness 
 	
-L'épaisseur de dessin d'une ligne, d'un segment ou d'une bordure, est controlée par le message ==thickness:==
+The thickness of a line, a segment, or a border, is controlled by the message ==thickness:==
 
 [[[
 	(PDFRectElement from: 10 mm @ 10 mm dimension: 50 mm @ 50 mm)
 		thickness:  2 mm
 ]]]
 
-!!!!Alignement
+!!!!Alignment
 
-L'alignement du texte est géré à l'aide de la classe PDFAlignment. Un texte peut être aligné à gauche, au centre ou à droite. 
-Les messages sont ==left==, ==center== et ==right==. L'exemple qui suit génère un texte aligné à droite:
-
+Text alignment is managed using the ==PDFAlignment== class. Text can be aligned left, center or right. 
+Messages are ==left==, ==center== and ==right==. The following example creates a right-aligned text:
 [[[
 	(PDFFormattedTextElement from: 0 mm @ 0 mm dimension: 100 mm @ 10 mm)
 		alignment: (PDFAlignment right);
 		text: 'At right!'
 ]]]
 
-!!!Généraliser un style 
+!!!Abstracting a style 
 
 
-!!!!Changer le style par défaut du document
+!!!!Default document style 
 
-Le document embarque une feuille de styles dont les propriétés s'appliquent sur tout élément ne spécifiant pas ses propres propriétés. 
-Par exemple, si vous créez un ==PDFTextElement== sans définir une fonte et une couleur de texte, ce seront les couleurs de texte et de 
-fonte du document qui seront appliquées. De plus, cette feuille de style est systématiquement remplie par Artefact avec des valeurs par défaut. 
-C'est pourquoi vous n'avez pas eu à préciser des valeurs de style lors de votre précédente découverte des éléments.
+A document is associated to a default stylesheet whose properties are applied to any element that does not specify its own properties. 
+You can access this stylesheet using the message ==styleSheet==. 
+For example, if you create a ==PDFTextElement== without setting a font and text color, it will be the color of text and 
+the fonts of the document that will be used. 
 
-Pour changer ces valeurs de style du document, il vous suffit de modifier les propriétés de sa feuille de style de la façon suivante:
+In addition, this stylesheet is always filled up by Artefact with defaults. That's why you did not have to specify values of style in the previous examples. 
+To change the values of the default style, you simply change the properties of the stylesheet as follows:
 
 [[[
 	myDocument := PDFDocument new.
-	myDocument styleSheet textColor: (PDFColor r: 0 g: 100 b: 200);
+	myDocument styleSheet 
+			textColor: (PDFColor r: 0 g: 100 b: 200);
 			font: (PDFHelveticaFont size: 32pt) italic.
 ]]]
 
-!!!!Appliquer un style sur un ensemble d'éléments
+In fact Artefact styles form a tree of styles. Each sub style points to another one and the root of style is the default one.
+This way properties can be customized and reuse default behavior when needed. 
 
-Souvent vous avez envie d'appliquer un style sur un ensemble d'éléments mais pas sur tous les éléments d'un document. Artefact vous permet de 
-définir un style et de le nommer afin de pouvoir ensuite, déclarer les éléments devant respecter ce style personnalisé.
+!!!!Stylesheet application
+Often you want to apply a style to a set of elements but not to all the elements of a document. Artifact allows you to 
+define a style and name it. Then you will be able to define with elements should follow this custom style. 
 
-Par exemple, si vous désirez que certains éléments de texte soit des citations, vous pouvez définir le style ==#quote== comme suit:
+For example, that you want to use a certain font and style for some text element or quotes, you can define a style named ==#quote== as follows:
+
 
 [[[
 	myDocument := PDFDocument new.
@@ -714,10 +733,8 @@ Par exemple, si vous désirez que certains éléments de texte soit des citation
 		font: (PDFCourierFont size: 8pt) italic.
 ]]]
 
-Ainsi, le style des citations est maintenant associé au symbole ==#quote==. Ce style est ici défini en tant que sous-style de celui du document 
-afin de s'appliquer sur tous les éléments de style #quote du document. 
-
-Ensuite, il nous reste plus qu'à attribuer le style #quote aux éléments qui sont des citations.
+Thus, this style is defined here as the sub-document style and it will be applied to all elements of that use the ==#quote==t style. 
+In the following example we assign the ==#quote== style to a text using the message ==style:==.
 
 [[[
 	(PDFTextElement from: 5cm @ 5cm)
@@ -725,10 +742,12 @@ Ensuite, il nous reste plus qu'à attribuer le style #quote aux éléments qui s
 		style: #quote
 ]]]
 
-Dans l'exemple ci-desssus, nous n'avons qu'un seul niveau de style. Cependant, Artefact gère autant de niveaux de styles que vous le souhaiter. 
-Ce comportement est indispensable dans le cadre des éléments composites dans lesquels l'imbrication des éléments impose l'imbrication des styles.
 
-Dans l'exemple ci-dessous, nous créons une table de données avec un titre à chaque colonne.
+In the above example, we only have one level of styles. However, Artefact supports as many levels as you like. 
+This behavior is an essential as part of the composite elements in which the nesting of the elements imposes nesting of their styles.
+
+
+In the example below, we create a data table with a title for each column.
 
 [[[
 	(PDFDataTableWithColumnsCaptionElement from: 10 mm @ 20 mm dimension: 190 mm @ 60 mm)
@@ -741,12 +760,13 @@ Dans l'exemple ci-dessous, nous créons une table de données avec un titre à c
 		yourself).
 ]]]
 
-L'apparence de cette table suit les spécifications du style #dataTableWithColoredCaption.
+The appearance of the table follows the specifications of style ==#dataTableWithColoredCaption==.
 
-  ==Artefact>>PDFDataTableWithColumnsCaptionElement== est un élément composite fourni par Artefact. Cet élément défini le style de ses sous-éléments 
-  ==#caption== et ==#cell==, respectivement associés aux titres et aux cellules. 
-Par imbrication des styles, nous pouvons suivre l'imbrication des éléments et donc définir les styles des cellules uniquement dans le 
-contexte ==#dataTableWithColoredCaption==:
+ ==PDFDataTableWithColumnsCaptionElement==  is a composite element. This element defines the style of its sub-elements 
+using  ==#cell== and =#caption=, respectively associated with captions and cells. By using the style specialisation based 
+on style nesting, it is then possible a style uniquely for the cells in the conecte of the style for their container here ==#dataTableWithColoredCaption==:
+The expression ==pdfdoc styleSheet > #dataTableWithColoredCaption > #caption== access the caption style of the ==#dataTableWithColoredCaption== style
+and the example customize it. 
 
 [[[
 	pdfdoc := PDFDocument new.
@@ -757,10 +777,10 @@ contexte ==#dataTableWithColoredCaption==:
 	pdfdoc styleSheet > #dataTableWithColoredCaption > #cell alignment: PDFAlignment right.
 ]]]
 
-Ici on voit que l'on peut modifier les attributs imbriqués d'un element: On change l'alignement d'une cellule dans la table par une séquence de ==>==.
-L'usage du mécanisme de gestion des styles apporte beaucoup de souplesse pour la production d'un document. Il permet de séparer l'aspect présentation 
-de la définition des composants. Cette distinction entre le fond et la forme permet à l'utilisateur de créer facilement ses propres composants, 
-tout aussi personnalisables que ceux fournis avec Artefact.
+Here we see that we can change a nested element attributes: We change the alignment of a cell in the table by a sequence ==>==. 
+Style management brings a lot of flexibility for the production of a document. It separates the presentation appearance from
+the component definition. This distinction between structure and presentation allows users to easily create their own components 
+just as customizable as those provided with Artifact.
 
 !!Create your own PDF composite elements
 
@@ -771,7 +791,7 @@ from ==PDFCompositeText==. Elsewhere, your component must be a subclass of ==PDF
 In this tutorial, we will create a clock, which is basically a circle and two arrows. This element will be 
 drawn depending on the provided time and properties (size, colors, thickness).
 
-!!!Create the clock
+!!!Clock creation
 
 First create the class of your element:
 [[[
