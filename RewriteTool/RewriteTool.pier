@@ -169,12 +169,90 @@ You can see the result of applying rewrite rule to source code in Result pane.
     someObject ifNil: [ ^ true ]
 ]]]
 
+You can click on ''Generate rule'' button to automatically generate a class for your new rule.
+Than click on ''Browse rules'' button, and you will see that your new class is in Browser.
+
+...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...
+
 !!!Second example
 
-This example is a little bit more complex than the previous one.
 If you did not understand something in example with ''isNil ifTrue:[ ... ]'' into ''ifNil[ ... ]'', please go back to it to be sure you know the basics.
 
-This time we are going to create a rule for ...
+This time we are going to recreate one of rules that already exists in Critic Browser.
+Its class is called RBMinMaxRule.
+It has a method initialize, where all rules are initialized
+There you can see that RBMinMaxRule has many rules that are similar to each other, thus we will take a look only at one of them.
+Suppose, we have something like this:
+
+[[[ label = secondExample1 | language = Smalltalk
+    temp := a < b
+	ifTrue: [ a ]
+	ifFalse: [ b ]
+]]]
+
+where ''temp'' is a temporary variable.
+Also objects ''a'' and ''b'' are comparable, let's say they are just integers.
+This piece of code does simple assignment of bigger number (''a'' or ''b'') to temporary variable ''temp''.
+But it's written in a bad way.
+We can do something simpler and more beautiful:
+
+[[[ label = secondExample2 | language = Smalltalk
+    temp := a max: b
+]]]
+
+Now it looks good, and other person can easily understand what this code does.
+In order, to create a rule that will do a transformation as presented before, obviously, we will use our Builder.
+First of all, input this code:
+
+[[[ label = secondExample3 | language = Smalltalk
+    temp := a < b
+	ifTrue: [ a ]
+	ifFalse: [ b ]
+]]]
+
+into Source and Match panes.
+And this code:
+
+[[[ label = secondExample4 | language = Smalltalk
+    temp := a max: b
+]]]
+
+into Transform pane.
+Now choose ''temp'' in Match pane and do ''Abstract variable'' on it.
+Than do the same thing with ''a'' and ''b''.
+What you get after previous actions in Mathc panel is:
+
+[[[ label = secondExample5 | language = Smalltalk
+    `variable1 := `variable2 < `variable3
+	ifTrue: [ `variable2 ]
+	ifFalse: [ `variable3 ]
+]]]
+
+and in Transform panel:
+
+[[[ label = secondExample6 | language = Smalltalk
+    `variable1 := `variable2 max: `variable3
+]]]
+
+Looks good. If you want to match and transform only expressions where ''a'' and ''b'' are simple variables it is enough.
+But if you need something more complex, for example, ''a'' is some expressions that does calculations and than returns a result, you will have to do next.
+Choose ''`variable2'' and do ''As list'' on it. Than on ''`@variable2'' do ''Recurse into'', as a result in Match panel you get:
+
+[[[ label = secondExample7 | language = Smalltalk
+    `variable1 := ``@variable2 < `variable3
+	ifTrue: [ ``@variable2 ]
+	ifFalse: [ `variable3 ]
+]]]
+
+and in Transform panel:
+
+[[[ label = secondExample8 | language = Smalltalk
+    `variable1 := ``@variable2 max: `variable3
+]]]
+
+If it's necessary, you can do exactly the same thing with ''b''.
+After few simple actions we got the result which we expected.
+To use this rule, first generate class using ''Generate rule'' button, and ...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...
 
 
 !!Rewrite Tool in details
