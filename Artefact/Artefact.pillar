@@ -1,13 +1,11 @@
-! Generat PDF documents with Artefact
+! Generate PDF documents with Artefact
 
 The Adobe PDF format is probably one of the most widespread electronic document formats. Used daily, it is the basis for the production of graphical, readable and exchangeable documents. If you receive a bill, follow a purchase on a web site, if you download a report, a book, or an administrative form, these files will likely PDF documents. For programmers, supporting this format has become a must. Generating PDF is part of the toolkit. 
 In Pharo, Artifact is an innovative framework that supports the design and generation of PDF documents. 
 Artifact is developed by O. and G. Auverlot Larcheveque.
 
 
-
-
-!!Overvier of Artifact 
+!!Overview of Artifact 
 
 Artifact is an innovative PDF framework. In Arteface a PDF document is described by objects. All the components of a PDF document are represented as a tree of objects. The document is an object containing other objects corresponding to pages. On each page, printable or non-visible items are also objects. 
 Such elements have then the opportunity to be reused in the same document but also in several documents. These elements can be as simple as a text or an image but also be a complex component with an advanced behavior and a special appearance. Artifact proposes default elements such as paragraphs or tables to quickly generate reports. The strength of these elements is that they are independent of each other. The order in which you position them in the document does not affect their appearance. Unlike many PDF frameworks that exploit the notion of stream in the definition of styles (blue text will be followed by another blue text in the absence of a directive in a different style), Artifact considers every element includes its own sheet style. If an attribute is not defined in the element, Artefact then uses a style sheet by default set at the document level.
@@ -15,7 +13,7 @@ Such elements have then the opportunity to be reused in the same document but al
 
 This autonomy of elements and style management are a strong feature of Artefact. They make it easy to generate a document and quickly customize for a particular operation. Efficiency, productivity and scalability guided the design of the framework. 
 
-!!!Concepts, characteristisc and limits
+!!!Concepts, key aspects and limits
 
 After more than a year of development, the concepts used in Artifact are now stable and Artefact is already used by companies using Pharo. Yet this is still a young frameworks. For this reason, it is important to list its current features and to know its limitations.
 
@@ -102,8 +100,7 @@ Now if you open the file the result is different since the docyment contains an 
 
 
 With Artefact you should only define specific parameter. By default Artefact sets parameters to the most
-commonly used ones. For example the format is set to A4, page orientation to portrait, ect.
-So let us add a first text component to our page. 
+commonly used ones. For example the format is set to A4, page orientation to portrait, ect. So let us add a first text component to our page. 
 
 [[[
 PDFDocument new add: 
@@ -425,11 +422,9 @@ Class ==PDFRectElement== represents a rectangle. Two messages are proposed: ==fr
 The class ==PDFPolygonElement== draws polygons. To define a polygon, we set the start point and a series of points using the message ==from:points:==. 
 
 [[[  
-	PDFPolygonElement from: 10mm@10mm points: {
-		30mm@30mm. 
-		15mm@40mm. 
-		5mm@20mm
-	}
+	PDFPolygonElement 
+		from: 10mm@10mm 
+		points: { 30mm@30mm . 15mm@40mm . 5mm@20mm }
 ]]]
 
 Circles are defined with the class  ==PDFCircleElement== and the message ==center:radius:==. 
@@ -441,19 +436,17 @@ Circles are defined with the class  ==PDFCircleElement== and the message ==cente
 Bezier curves are represented by the class ==PDFBezierCurveElement== and defined using the message ==from:points==.
 
 [[[
-	PDFBezierCurveElement from: 10 mm @ 50 mm points:{
-		0 mm @ 0 mm.
-		100 mm @ 20 mm.
-		150 mm @ 0 mm.
-		50 mm @ 50 mm
-	}
+	PDFBezierCurveElement 
+		from: 10mm@50mm 
+		points:{ 0mm@0mm. 100mm@20mm. 150mm@0mm. 50mm@50mm }
 ]]]
 
 
 Images in JPEG format can be inserted in a document. The class  ==PDFJpegElement== can be instantiated using the class messages ==fromStream:== and ==from:dimension:fromStream:==. The messages  ==width== et ==height== sets the size of an image respecting its original ratio. 
 
 The following example generates a PDF document with one page.
- L'exemple qui suit génère un document PDF contenant une page. Sur celle-ci, une image est positionnée en deux endroits différents. Dans le premier cas, l'image mesure 80mm de largeur sur 30mm de hauteur. Dans le second cas, la largeur est fixée à 80mm et la hauteur est automatiquement calculée pour ne pas déformer l'image.
+This page contains one image placed at two different locations. In the first case, the image is 80mm width and 30mm height.
+In the second case, the width is 80mm and the height is automatically computed keeping the original image ratio.
 
 [[[
 	| pdf page |
@@ -474,27 +467,42 @@ The following example generates a PDF document with one page.
 	pdf exportTo: (FileStream forceNewFileNamed: '/home/enterprise/image.pdf')
 ]]]
 
+The basic components implement extremely simple operations such as placing text on a page or drawing a line. 
+They are the essential building blocks of high-level components that we present now.
 
-Les composants élémentaires réalisent des opérations graphiques extrémement simples tel que placer un texte sur une page ou dessiner une ligne. Ils constituent les briques essentielles pour la constitution des composants de haut niveau.
+!!! High-level components
 
-!!!Les composants de haut niveau
+Artifact comes with a rich set of high-level components, grouped in the package Artifact-Elements-Composites. 
+These components are the result of the assembly of single components and other high-level components. 
+These elements are used to create layouts and complex contents with minimal coding and strong reuse. 
+These components can be used in several different applications and materials. 
+They cover three areas: management of text, drawing arrows and reporting.
 
-Artefact est livré avec un ensemble de composants riches, regroupés dans le paquet Artefact-Elements-Composites. Ces composants sont le résultat de l'assemblage de composants simples et d'autres composants de haut niveau. Ces éléments permettent de créer des mises en page et des contenus complexes avec un minimum de code et avec un fort niveau de factorisation. Ces composants peuvent ainsi être utilisés dans différents documents et par plusieurs applications. Les éléments fournis de base couvrent trois domaines: la gestion du texte, le dessin de flêches et la création de rapports.
 
-!!!!Gestion avancée des blocs de texte
+!!!!Advanced text
 
-Jusqu'ici, vous n'avez utilisé que la classe ==PDFTextElement== pour placer un texte sur une page. Ce composant est limité en terme de fonctionnalité puisqu'il ne gère que la position sur le support. Pour vous aider, Artefact propose trois composants de haut niveau qui supportent des fonctionnalités avancées.
+So far you have used the class ==PDFTextElement== to place text on a page. 
+This component is limited in terms of functionality since it only handles the position on the page. 
+To help, Artefact offers three high-level components that support advanced features: PDFFormatedTextElement, PDFCellElement
+and PDFParagrapElement.
 
-Le composant ==PDFFormatedTextElement== est très proche de ==PDFTextElement== mais apporte en plus la gestion de l'alignement (à gauche, au centre, à droite). Un composant ==PDFCellElement== est un ==PDFFormatedTextElement== pouvant être doté d'une bordure. Enfin, un PDFParagrapElement permet l'insertion d'un paragraphe de texte et gère automatiquement la rupture en fin de ligne.
 
-!!!!Dessiner des fléches
+The component ==PDFFormatedTextElement== is similar to ==PDFTextElement== but brings 
+over managing the alignment (left, center, right). A component ==PDFCellElement== is  
+a ==PDFFormatedTextElement== with a border. Finally, a ==PDFParagraphElement== 
+allows the insertion of a paragraph of text and automatically manages the break at the end of the lines.
 
-Les flèches sont très utiles pour générer des schémas à l'aide d'Artefact. Le composant ==PDFArrowElement== dessine une flèche pour laquelle la pointe se situe à sa terminaison. Le composant ==PDFDoubleArrowElement== dessine deux pointes: une est au départ de la flèche, l'autre à sa terminaison.
+
+!!!!Drawing arrows
+
+Arrows are very useful for generating sketches and diagrams. 
+The component ==PDFArrowElement== draws an arrow with a tip at its termination. 
+The component ==PDFDoubleArrowElement== draws two arrows at both extremities.
 
 [[[
-	PDFArrowElement from: 10 mm @ 10 mm to:  100 mm @ 30 mm
+	PDFArrowElement from: 10mm@10mm to: 100mm@30mm
 
-	PDFDoubleArrowElement from: 10 mm @ 80 mm to:  100 mm @ 150 mm
+	PDFDoubleArrowElement from: 10mm@80mm to: 100mm@150mm
 ]]]
 
 !!!!Créer des rapports
