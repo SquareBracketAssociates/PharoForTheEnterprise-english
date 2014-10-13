@@ -28,28 +28,23 @@ After that, we will go in more details about tool and how it works.
 
 !! Getting started
 
+To begin, you need to retrieve the RewriteTool which is a part of PharoExtra on
+Smalltalkhub. In order to do this, add and configure  the repository in your
+Monticello browser as following:
+
 [[[
 MCHttpRepository
-	location: 'http://smalltalkhub.com/mc/MarkRizun/RewriteTool/main'
+	location: 'http://smalltalkhub.com/mc/PharoExtras/RewriteTool/main'
 	user: ''
 	password: ''
-	
-()
 ]]]
+
+If you are more comfortable with Gofer, an alternative way to retrieve and load
+the RewriteTool is to enter the following code:
 
 [[[
 Gofer new
-  url: 'http://smalltalkhub.com/mc/MarkRizun/RewriteTool/main';
-  package: 'ConfigurationOfRewriteTool';
-  load.
-(Smalltalk at: #ConfigurationOfRewriteTool) loadDevelopment
-]]]
-
-better
-
-[[[
-Gofer new
-  url: 'http://smalltalkhub.com/mc/MarkRizun/RewriteTool/main';
+  url: 'http://smalltalkhub.com/mc/PharoExtras/RewriteTool/main'
   configuration;
   load.
 ConfigurationOfRewriteTool loadDevelopment
