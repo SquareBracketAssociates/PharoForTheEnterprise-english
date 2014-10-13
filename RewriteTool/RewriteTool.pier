@@ -74,14 +74,19 @@ possibility, with simple GUI, to build rewrite rules dynamically.
 
 ""Panes""
 
+''TODO: rename panes labels when it will be done in the software''
+
 -Top left pane, labeled ''"Source expression"'', contains source code of expression which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as ''Source pane''.
--Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part of rewrite rule. You can change match rule either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
--Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create transform rule also with options in action-click menu, or just manually typing code. Similar to previous one it's called in rest of chapter ''Transform pane''
--The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, which is in two bottom panes, to a source expression. You should note that this pane is the only one that is not editable, so it's read only. Later, this pane is referenced as ''Result pane''
+
+-Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part — the pattern — of rewrite rule. You can change the pattern either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
+
+-Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create the action of the transformation rule also with options in action-click menu, or just manually typing code. Similar to previous one it's called in rest of chapter ''Transform pane''.
+
+-The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, composed of the two bottom panes, to a source expression. You should note that this pane is the only one that is not editable, so it's read only. Later, this pane is referenced as ''Result pane''.
 
 ""Buttons""
 
--"Undo" is a general undo. It performs an undo action for three editable panes: Source, Match and Transform. Also there are is local undo for each pane separately (DESCRIBED LATER).
+-''TODO: this part is not clear''. "Undo" is a general undo. It performs an undo action for three editable panes: Source, Match and Transform. Also there is local undo for each pane separately (''DESCRIBED LATER'').
 -"Generate rule" button creates new class - a subclass of ''RBTransformationRule'' using information from two bottom panes. After the rule is created using this button, you can apply it to specific scope.
 -"Browse rules" button opens up "Rewrite rule browser", which allows you to browse created rules, and apply them to scope that you want.
 
@@ -93,7 +98,9 @@ workspace:
 RewriteRuleBrowser new openWithSpec.
 ]]]
 
-The browser is shown figure *rewriteRuleBrowser*. This tool contains all previously created rewrite rules in most left pane. Also it displays all packages / classes / protocols / methods that are present in the current image.
+The browser is shown figure *rewriteRuleBrowser*. This tool contains all
+previously created rewrite rules in most left pane. Also it displays all
+packages, classes, protocols and methods that are present in the current image.
 
 You can select a rewrite rule that you want to apply. Then choose a scope, which you want to be transformed with this rule and click "Apply rule to selected scope" button.
 In order to browse slected rewrite rule class, click "Browse selected rule" button.
@@ -119,8 +126,13 @@ into:
     someObject ifNil: [ ^ true ]
 ]]]
 
-First, you need to input template source code in Source pane of Builder. ''(how to input? - "IN DEVELOPEMENT!")''
-In all panes you get exactly the same code.
+First, you need to input template source code in Source pane of Builder. If you
+launched the builder with the line given previously, the input code the one of
+our example. In all panes you get exactly the same code. If you want to create
+your own rewrite rule, just type or copy-paste the code on which you would like
+to apply a transformation in the Source pane. Be sure to save any changes in
+the pane in order to have the right result.
+
 To start with, look at status bar in Match pane. Obviously, for now it says "matches", as source code and match rule are equal.
 This status bar will help you to create rule, that will really correspond to source code.
 If it changes to "doesn't match", you probably should use "Undo" button, and rethink your next move.
