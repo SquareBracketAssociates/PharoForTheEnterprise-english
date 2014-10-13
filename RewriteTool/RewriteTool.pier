@@ -58,14 +58,23 @@ And second part is rewrite rule browser(next as ''"Browser"''), in which user ca
 
 !!!Rewrite rule builder
 
-Builder has four panes and three buttons, and each of this items has its own functions.
-It provides a possibility, with simple GUI, to build rewrite rules dynamically.
 
-+Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=Rewrite rule builder+
+The builder can be launched by typing the following code in your Pharo
+workspace:
+
+[[[
+RewriteRuleBuilder new openWithSpec.
+]]]
+
+As illustrated in figure *rewriteRuleBuilder*, builder has four panes and three
+buttons, and each of this items has its own functions.  It provides a
+possibility, with simple GUI, to build rewrite rules dynamically.
+
++Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=rewriteRuleBuilder+
 
 ""Panes""
 
--Top left pane, labeled ''"Source expression"'', contains source code of expression (in future maybe method?) which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as ''Source pane''.
+-Top left pane, labeled ''"Source expression"'', contains source code of expression which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as ''Source pane''.
 -Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part of rewrite rule. You can change match rule either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
 -Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create transform rule also with options in action-click menu, or just manually typing code. Similar to previous one it's called in rest of chapter ''Transform pane''
 -The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, which is in two bottom panes, to a source expression. You should note that this pane is the only one that is not editable, so it's read only. Later, this pane is referenced as ''Result pane''
@@ -78,12 +87,18 @@ It provides a possibility, with simple GUI, to build rewrite rules dynamically.
 
 !!!Rewrite rule browser
 
-This tool contains all previously created rewrite rules in most left pane. Also it displays all packages / classes / protocols / methods that are present in the current image.
+The browser can be launched by typing the following code in your Pharo
+workspace:
+[[[
+RewriteRuleBrowser new openWithSpec.
+]]]
+
+The browser is shown figure *rewriteRuleBrowser*. This tool contains all previously created rewrite rules in most left pane. Also it displays all packages / classes / protocols / methods that are present in the current image.
 
 You can select a rewrite rule that you want to apply. Then choose a scope, which you want to be transformed with this rule and click "Apply rule to selected scope" button.
 In order to browse slected rewrite rule class, click "Browse selected rule" button.
 
-+Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=Rewrite rule browser+
++Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=rewriteRuleBrowser+
 
 !!Examples
 
