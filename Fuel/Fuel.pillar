@@ -1,18 +1,22 @@
 ! Serializing Complex Objects as a Breeze with Fuel
 
 Serializing objects is an important domain since objects should be stored and reloaded on different environments. 
-There is a plethora of frameworks to serialize objects based on recursive parsing of the object graphs. However such approaches 
-are often too slow. Fuel, the framework presented here,  is based on the idea that objects are much more times loaded than stored, therefore 
-it is worth to spend time while storing to have faster loading and user experience. 
+There is a plethora of frameworks to serialize objects based on recursive parsing of the object graphs. Some are textual such as XML, JSON, STON. We will present STON and JSON 
+in other chapters of this book. However such approaches are often too slow.  Fuel, the framework presented here, is a fast open-source general-purpose binary object serialization framework
+developed by M. Martinez-Peck, M. Dias and M. Leske. It is robust and used in many industrial cases. 
+
+Fuel  is based on the idea that objects are much more times loaded than stored, therefore it is worth to spend time while storing to have faster loading and user experience. 
 Fuel is in fact one of the fastest object loader and a really fast object saver. In addition Fuel can serialize nearly any object: in fact all the objects
 except processes (yes with Fuel you can even serialize a full execution stack and reload it). Fuel is based on a pickle format (that is similar objects are 
-clustered together to load faster). Fuel is a fast open-source general-purpose binary object serialization framework
-developed by M. Martinez-Peck, M. Dias and M. Leske. It is robust and used in many industrial cases. 
+clustered together to load faster).
 
 
 !! General Information
 
 before going into details we present the goals, features and give general information about Fuel. 
+Fuel has been developed and maintained over the years but the following people: Martin Dias - tinchodias (at) gmail (dot) com (Developer),
+Mariano Martinez Peck - marianopeck (at) gmail (dot) com (developer),  Max Leske (developer), Pavel Krivanek (developer), Tristan Bourgois (past developer)
+and Stéphane Ducasse (promotor and financer). We want to thank Eliot Miranda for the pickle implementation of VisualWorks parcels that show us that it was a good approach to follow. 
 
 !!!Goals
 
@@ -47,15 +51,7 @@ Finally Fuel has good test coverage (almost 600 unit tests) and a large suite of
 - Fuel's source code is stored at *http://ss3.gemstone.com/ss/Fuel.html*.
 - Fuel is built automatically at *http://ci.inria.fr/pharo-contribution/job/Fuel/*.
 
-Fuel has been developed and maintained over the years but the following people
-- Martin Dias - tinchodias (at) gmail (dot) com (Developer)
-- Mariano Martinez Peck - marianopeck (at) gmail (dot) com (Developer)
-- Max Leske (Developer)
-- Pavel Krivanek (Developer)
-- Tristan Bourgois (Past Developer)
-- Stephane Ducasse (Promotor and financer)
 
-We want to thank Eliot Miranda for the pickle implementation of VisualWorks parcels that show us that it was a good approach to follow. 
 
 %=========================================================================% 
 
@@ -77,9 +73,13 @@ Gofer it
     load.
 ]]]
 
+@@authorToDo SD: is 1.9 the right version, man ?
+
+
 !!!Basic demo
 
-Open the ==Transcript== and evaluate code below in a ==Workspace==.
+Open the ==Transcript== and execute code below in a ==Workspace==. This example serializes a set, the default transcript and a block.
+It shows that we can serialize them. On reload it shows that the set is correctly recreated and that the block evaluate properly.
 
 [[[language=Smalltalk
 | serializedArray materializedArray |
@@ -113,19 +113,18 @@ materializedArray third
 %=========================================================================% 
 
 !! Getting Started
-
 @GettingStarted
 
 !!!Basic examples
-
-We give some class-side messages to facilitate the more common uses of serialization and materialization. The next example writes and reads from file:
+Fuel offers some class-side messages to ease more common uses of serialization (==serialize:toFileNamed:==) and materialization. The next example writes and reads from file:
 
 [[[language=Smalltalk
 FLSerializer serialize: 'stringToSerialize' toFileNamed: 'demo.fuel'. 
 materializedString := FLMaterializer materializeFromFileNamed: 'demo.fuel'.
 ]]]
 
-We also provide messages for storing into a ==ByteArray==. This can be fine for users of a NoSQL database:
+Fuel also provides the messages ==serializeToByteArray:== and ==materializeFromByteArray:== for storing into a ==ByteArray==. 
+This can be interesting for users of a NoSQL database such Mongo.
 
 [[[language=Smalltalk
 anArray := FLSerializer serializeToByteArray: 'stringToSerialize'. 
@@ -134,7 +133,7 @@ materializedString := FLMaterializer materializeFromByteArray: anArray.
 
 !!!FileStream
 
-In this example we work with files. Note that we set the file in binary mode:
+In the following example we work with files. Note that we set the stream in binary mode:
 
 [[[language=Smalltalk
 FileStream forceNewFileNamed: 'demo.fuel' do: [:aStream |
@@ -147,11 +146,15 @@ FileStream oldFileNamed: 'demo.fuel' do: [:aStream |
 		materializeFrom: aStream binary) root].
 ]]]
 
-Note also that we are no longer using the class-side messages of previous examples. Now, for both ==FLSerializer== and ==FLMaterializer==, we first create instances with ==#newDefault== to then perform the desired operations. As we will see in next example, creating the instances brings more possibilities.
+Note also that we are no longer using the class-side messages of previous examples. 
+Now, for both ==FLSerializer== and ==FLMaterializer==, we first create instances with ==newDefault== to then perform 
+the desired operations. As we will see in next example, creating the instances brings more possibilities.
 
 !!!Compressing 
 
 Of course, you could use stream compressors provided by the system. However, we have detected some errors serializing ==WideString==s. An example of use:
+
+@@authorToDo SD: I do not get the point on errors....
 
 [[[language=Smalltalk
 FileStream forceNewFileNamed: 'number.fuel.zip' do: [:aFileStream | 
@@ -172,7 +175,17 @@ FileStream oldFileNamed: 'number.fuel.zip' do: [:aFileStream |
 
 !!!Showing a progress bar
 
-Sometimes it is nice to see progress updates on screen. Use ==#showProgress== in this cases.
+Sometimes it is nice to see progress updates on screen. Use the message ==showProgress== in this case.
+Pay attention that you should install the package ==FuelProgressUpdate== to get this behavior.
+
+To load it you can use:
+
+[[[language=Smalltalk
+(ConfigurationOfFuel project version: '1.9') 
+	load: 'FuelProgressUpdate'.
+]]]
+
+The following example uses ==showProgress==. 
 
 [[[language=Smalltalk
 FileStream forceNewFileNamed: 'numbers.fuel' do: [:aStream |
@@ -187,19 +200,16 @@ FileStream oldFileNamed: 'numbers.fuel' do: [:aStream |
 		materializeFrom: aStream binary ].
 ]]]
 
-Package ==FuelProgressUpdate== must be installed. You can use:
 
-[[[language=Smalltalk
-(ConfigurationOfFuel project version: '1.9') 
-	load: 'FuelProgressUpdate'.
-]]]
 
 %=========================================================================% 
-
 !! Managing Globals
 @ManagingGlobals
 
-Let us assume a ==CompiledMethod== is referenced from the graph to serialize. Sometimes we may be interested in storing just the selector and name of the class, because we know it will be present when materializing the graph. However, sometimes we want to really store the method with full detail.
+
+Let us assume a ==CompiledMethod== is referenced from the graph to serialize. Sometimes we may be interested in storing just the selector 
+and name of the class, because we know it will be present when materializing the graph. However, sometimes we want to really store the 
+method with full detail.
 
 This means that given an object graph, there is not an unique way of serializing it. Fuel offers dynamic and static mechanisms to customize this.
 

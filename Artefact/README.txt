@@ -1,1 +1,0 @@
-Now the files are hosted in Entreprise Pharo on github.
