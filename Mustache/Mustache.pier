@@ -238,8 +238,8 @@ context := { 'list' -> #(1 2 3) } asDictionary.
 '
 ]]]
 
-Now we can iterate over nested elements. For example, we define a ''list'' binding that contains multiple ''number'' bindings. The section ''list'' is evaluated for each of the its ''number'' bindings.
-
+Now we can iterate over nested elements. For example, we define a ''list'' binding that 
+contains multiple ''number'' bindings. The section ''list'' is evaluated for each of the its ''number'' bindings.
 
 [[[
 | templateString context |
@@ -328,16 +328,22 @@ outputs:
 
 !! UnescapedToken 
 
-
-
+[[[
+	| template result |
+	template := MustacheTemplate on: 'This is a test for {{ name }}.'.
+	result := template value: { 'name' -> '&' } asDictionary .
+	result  'This is a test for &amp;.'
+]]]
 
 
 [[[
-| template result |
-template := MustacheTemplate on: 'This is a test for {{& name }}.'.
-result := template value: { 'name' -> '&' } asDictionary .
-result = 'This is a test for &.'.
+	| template result |
+	template := MustacheTemplate on: 'This is a test for {{& name }}.'.
+	result := template value: { 'name' -> '&' } asDictionary .
+	result  'This is a test for &.'
 ]]]
+
+
 
 By default if a template uses a variable that is not defined in a context, it....
 
