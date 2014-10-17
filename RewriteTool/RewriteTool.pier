@@ -28,28 +28,23 @@ After that, we will go in more details about tool and how it works.
 
 !! Getting started
 
+To begin, you need to retrieve the RewriteTool which is a part of PharoExtra on
+Smalltalkhub. In order to do this, add and configure  the repository in your
+Monticello browser as following:
+
 [[[
 MCHttpRepository
-	location: 'http://smalltalkhub.com/mc/MarkRizun/RewriteTool/main'
+	location: 'http://smalltalkhub.com/mc/PharoExtras/RewriteTool/main'
 	user: ''
 	password: ''
-	
-()
 ]]]
+
+If you are more comfortable with Gofer, an alternative way to retrieve and load
+the RewriteTool is to enter the following code:
 
 [[[
 Gofer new
-  url: 'http://smalltalkhub.com/mc/MarkRizun/RewriteTool/main';
-  package: 'ConfigurationOfRewriteTool';
-  load.
-(Smalltalk at: #ConfigurationOfRewriteTool) loadDevelopment
-]]]
-
-better
-
-[[[
-Gofer new
-  url: 'http://smalltalkhub.com/mc/MarkRizun/RewriteTool/main';
+  url: 'http://smalltalkhub.com/mc/PharoExtras/RewriteTool/main'
   configuration;
   load.
 ConfigurationOfRewriteTool loadDevelopment
@@ -63,32 +58,60 @@ And second part is rewrite rule browser(next as ''"Browser"''), in which user ca
 
 !!!Rewrite rule builder
 
-Builder has four panes and three buttons, and each of this items has its own functions.
-It provides a possibility, with simple GUI, to build rewrite rules dynamically.
 
-+Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=Rewrite rule builder+
+The builder can be launched by typing the following code in your Pharo
+workspace:
+
+[[[
+RewriteRuleBuilder new openWithSpec.
+]]]
+
+As illustrated in figure *rewriteRuleBuilder*, builder has four panes and three
+buttons, and each of this items has its own functions.  It provides a
+possibility, with simple GUI, to build rewrite rules dynamically.
+
++Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=rewriteRuleBuilder+
 
 ""Panes""
 
--Top left pane, labeled ''"Source expression"'', contains source code of expression (in future maybe method?) which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as ''Source pane''.
--Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part of rewrite rule. You can change match rule either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
--Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create transform rule also with options in action-click menu, or just manually typing code. Similar to previous one it's called in rest of chapter ''Transform pane''
--The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, which is in two bottom panes, to a source expression. You should note that this pane is the only one that is not editable, so it's read only. Later, this pane is referenced as ''Result pane''
+''TODO: rename panes labels when it will be done in the software''
+
+-Top left pane, labeled ''"Source expression"'', contains source code of expression which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as ''Source pane''.
+
+-Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part — the pattern — of rewrite rule. You can change the pattern either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
+
+-Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create the action of the transformation rule also with options in action-click menu, or just manually typing code. Similar to previous one it's called in rest of chapter ''Transform pane''.
+
+-The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, composed of the two bottom panes, to a source expression. You should note that this pane is the only one that is not editable, so it's read only. Later, this pane is referenced as ''Result pane''.
 
 ""Buttons""
 
--"Undo" is a general undo. It performs an undo action for three editable panes: Source, Match and Transform. Also there are is local undo for each pane separately (DESCRIBED LATER).
+-''TODO: this part is not clear''. "Undo" is a general undo. It performs an undo action for three editable panes: Source, Match and Transform. Also there is local undo for each pane separately (''DESCRIBED LATER'').
 -"Generate rule" button creates new class - a subclass of ''RBTransformationRule'' using information from two bottom panes. After the rule is created using this button, you can apply it to specific scope.
 -"Browse rules" button opens up "Rewrite rule browser", which allows you to browse created rules, and apply them to scope that you want.
 
 !!!Rewrite rule browser
 
-This tool contains all previously created rewrite rules in most left pane. Also it displays all packages / classes / protocols / methods that are present in the current image.
+The browser can be launched by typing the following code in your Pharo
+workspace:
+[[[
+RewriteRuleBrowser new openWithSpec.
+]]]
 
-You can select a rewrite rule that you want to apply. Then choose a scope, which you want to be transformed with this rule and click "Apply rule to selected scope" button.
-In order to browse slected rewrite rule class, click "Browse selected rule" button.
+The browser is shown figure *rewriteRuleBrowser*. This tool contains all
+previously created rewrite rules in most left pane. Also it displays all
+packages, classes, protocols and methods that are present in the current image.
 
-+Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=Rewrite rule browser+
+You can select a rewrite rule that you want to apply. Then choose a scope,
+which you want to be transformed with this rule and click "Apply rule to
+selected scope" button. A multiple selection can be done by pressing ''Shift''
+key while clicking on the first and the last package, class, protocol or
+method. After applying a rule, a confirmation window which shows changes
+appears. You can accept or cancel them.
+
+To browse selected rewrite rule class, click "Browse selected rule" button.
+
++Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=rewriteRuleBrowser+
 
 !!Examples
 
@@ -109,8 +132,13 @@ into:
     someObject ifNil: [ ^ true ]
 ]]]
 
-First, you need to input template source code in Source pane of Builder. ''(how to input? - "IN DEVELOPEMENT!")''
-In all panes you get exactly the same code.
+First, you need to input template source code in Source pane of Builder. If you
+launched the builder with the line given previously, the input code the one of
+our example. In all panes you get exactly the same code. If you want to create
+your own rewrite rule, just type or copy-paste the code on which you would like
+to apply a transformation in the Source pane. Be sure to save any changes in
+the pane in order to have the right result.
+
 To start with, look at status bar in Match pane. Obviously, for now it says "matches", as source code and match rule are equal.
 This status bar will help you to create rule, that will really correspond to source code.
 If it changes to "doesn't match", you probably should use "Undo" button, and rethink your next move.
@@ -157,7 +185,7 @@ Also, Result pane was updated:
 Now let's work with our block: ''[ ^ true ]''.
 Here we have the same situation as we had with ''someObject''.
 Again, we don't care about which block is passed as an argument to ''ifTrue:'' or ''ifNil:''.
-So, we select our block (now working in Match pane) and choose an option ''Abstract block''.
+So, in Match pane, we select our block (be sure to include the brackets) and choose the option ''Abstract block''.
 In result it will be changed into ''`@block1''.
 
 Finally, select ''ifTrue:'' in Transform pane, and apply ''Change selector'' option from menu.
@@ -176,33 +204,37 @@ Than click on ''Browse rules'' button, and you will see that your new class is i
 
 !!!Second example
 
-If you did not understand something in example with ''isNil ifTrue:[ ... ]'' into ''ifNil[ ... ]'', please go back to it to be sure you know the basics.
+To understand the following example, the previous one which transforms ''isNil
+ifTrue:[ ... ]'' into ''ifNil[ ... ]'' has to be understood. If not, please
+take your time and go back to be sure you know the basics.
 
-This time we are going to recreate one of rules that already exists in Critic Browser.
-Its class is called RBMinMaxRule.
-It has a method initialize, where all rules are initialized
-There you can see that RBMinMaxRule has many rules that are similar to each other, thus we will take a look only at one of them.
-Suppose, we have something like this:
+This time we are going to recreate one of rules that already exists in Critic
+Browser. We choose the one called ==RBMinMaxRule==. It has a method initialize
+where all rules are initialized. There you can see that ==RBMinMaxRule== has
+many rules that are similar to each other. Thus let us take a look only at one
+of them. Suppose we have a snippet of code which returns the max of two objects
+and which is written as following:
 
-[[[ label = secondExample1 | language = Smalltalk
+[[[ label=secondExample1 | language = Smalltalk
     temp := a < b
 	ifTrue: [ a ]
 	ifFalse: [ b ]
 ]]]
 
-where ''temp'' is a temporary variable.
-Also objects ''a'' and ''b'' are comparable, let's say they are just integers.
-This piece of code does simple assignment of bigger number (''a'' or ''b'') to temporary variable ''temp''.
-But it's written in a bad way.
-We can do something simpler and more beautiful:
+where ''temp'' is a temporary variable. Let us suppose that the objects ''a''
+and ''b'' are comparable, for instance integers.  This piece of code does
+simple assignment of bigger number (''a'' or ''b'') to the temporary variable
+''temp''. However it is written in a bad way.  We would rather write a simpler
+and more beautiful snippet of code as illustrated in the following script:
 
-[[[ label = secondExample2 | language = Smalltalk
+[[[ label=secondExample2|language=Smalltalk
     temp := a max: b
 ]]]
 
-Now it looks good, and other person can easily understand what this code does.
-In order, to create a rule that will do a transformation as presented before, obviously, we will use our Builder.
-First of all, input this code:
+This version is more readable and other people can easily understand what this code does.
+In order to create a rule that will do the transformation as presented before, we will use our Builder.
+First of all, launch the Builder and type this input code into Source and Match
+panes (the left ones):
 
 [[[ label = secondExample3 | language = Smalltalk
     temp := a < b
@@ -210,17 +242,16 @@ First of all, input this code:
 	ifFalse: [ b ]
 ]]]
 
-into Source and Match panes.
-And this code:
+Then enter this code into the Transform pane (the bottom right one):
 
 [[[ label = secondExample4 | language = Smalltalk
     temp := a max: b
 ]]]
 
-into Transform pane.
-Now choose ''temp'' in Match pane and do ''Abstract variable'' on it.
-Than do the same thing with ''a'' and ''b''.
-What you get after previous actions in Mathc panel is:
+Now select ''temp'' in Match pane and mark it as an ''Abstract variable'' with
+the contextual menu (right click). Apply the same operation on ''a'' and ''b''.
+After this step, your Match panel should look like the following snippet of
+code:
 
 [[[ label = secondExample5 | language = Smalltalk
     `variable1 := `variable2 < `variable3
@@ -228,38 +259,49 @@ What you get after previous actions in Mathc panel is:
 	ifFalse: [ `variable3 ]
 ]]]
 
-and in Transform panel:
+""Note:"" Variable names may be different if you did other changes before
+trying this example.
+
+As for the Transform panel, it should be very similar to the following code:
 
 [[[ label = secondExample6 | language = Smalltalk
     `variable1 := `variable2 max: `variable3
 ]]]
 
-Looks good. If you want to match and transform only expressions where ''a'' and ''b'' are simple variables it is enough.
-But if you need something more complex, for example, ''a'' is some expressions that does calculations and than returns a result, you will have to do next.
-Choose ''`variable2'' and do ''As list'' on it. Than on ''`@variable2'' do ''Recurse into'', as a result in Match panel you get:
+If you want to match and transform only expressions where ''a'' and ''b'' are
+simple variables, this rule is sufficient. However if you need something more
+complex, for instance ''a'' is some expression that does calculations and that
+returns a result, you will have to go on with the example.  Select
+''`variable2'' and mark it as ''As list'' with the contextual menu. Then apply
+''Recurse into'' on ''`@variable2'' which results in the following snippet of
+code in Match panel:
+
+'''TODO: bug or not when recurse into ? no backquote is added to the selected
+variable...'''
 
 [[[ label = secondExample7 | language = Smalltalk
-    `variable1 := ``@variable2 < `variable3
+  `variable1 := ``@variable2 < `variable3
 	ifTrue: [ ``@variable2 ]
 	ifFalse: [ `variable3 ]
 ]]]
 
-and in Transform panel:
+Add a backquote to ''`@variable2'' in the Transform panel:
 
 [[[ label = secondExample8 | language = Smalltalk
     `variable1 := ``@variable2 max: `variable3
 ]]]
 
-If it's necessary, you can do exactly the same thing with ''b''.
-After few simple actions we got the result which we expected.
-To use this rule, first generate class using ''Generate rule'' button, and ...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...
-
+If necessary, you can do exactly the same thing with ''b'' (''`variable3'' in
+the previous snippet). After few simple actions we got the result which we
+expected. Use ''Generate rule'' button to generate the class of this rule in
+order to use it in the Browser.
 
 !!Rewrite Tool in details
 
 In this section each and every part of rewrite tool is described in details.
 There are explained a lot of important ideas.
-Understanding of this ideas is crucial, because it will increase users effectivity, while working with tool.
+Understanding of this ideas is crucial, because it will increase users
+effectivity, while working with the tool.
 
 +Simple example>file://figures/simpleExample.png|label=Simple example+
 

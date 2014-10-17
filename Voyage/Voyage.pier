@@ -118,6 +118,13 @@ Association class>>isVoyageRoot
 	^true
 ]]]	
 
+We also define the name of the collection that will be used to store documents with the ==voyageCollectionName== class method.
+
+[[[
+Association class>>voyageCollectionName
+	^ 'Associations'
+]]]	
+
 Then, to save an association, we need to just send it the ==save== message:
 
 [[[
@@ -401,6 +408,16 @@ In this case, to search for objects by one of the embedded document elements, th
 [[[
 [ :each | (each at: 'origin.x') = 42 ]
 ]]]
+
+!!!!Quering with elements from another root document
+
+With no-SQL databases, it is not possible to query on multiple collections (equivalent of JOIN in SQL). You have two options: alter your schema to use embedded documents or write application-level code to reproduce the JOIN behavior. The later option can be done with two queries:
+
+[[[
+color := Color selectOne: [ :each | each name = 'red' ]
+Point selectOne: [ :each | (each at: 'color.__id') = color voyageId ]
+]]]
+
 
 !!!!Using ==where:== message to perform Javascript comparisons
 
