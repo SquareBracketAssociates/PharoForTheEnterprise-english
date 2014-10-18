@@ -185,7 +185,7 @@ To load it you can use:
 	load: 'FuelProgressUpdate'.
 ]]]
 
-The following example uses ==showProgress==. 
+The following example uses the message ==showProgress==. 
 
 [[[language=Smalltalk
 FileStream forceNewFileNamed: 'numbers.fuel' do: [:aStream |
@@ -209,28 +209,28 @@ FileStream oldFileNamed: 'numbers.fuel' do: [:aStream |
 
 Let us assume a ==CompiledMethod== is referenced from the graph to serialize. Sometimes we may be interested in storing just the selector 
 and name of the class, because we know it will be present when materializing the graph. However, sometimes we want to really store the 
-method with full detail.
-
-This means that given an object graph, there is not an unique way of serializing it. Fuel offers dynamic and static mechanisms to customize this.
+method with full detail. This means that given an object graph, there is not an unique way of serializing it. Fuel offers dynamic and static mechanisms to customize this.
 
 !!!Default globals
 
-By default, Fuel considers following objects as globals, i.e. will store just its name:
+By default, Fuel considers the following objects as globals, i.e., it will store just their name:
 
 - ==nil==, ==true==, ==false==, and ==Smalltalk globals==.
 - Any ==Class==, ==Trait==, ==Metaclass== or ==ClassTrait==.
-- Any ==CompiledMethod== (except when either it ==#isInstalled== not or ==#isDoIt==, for example, the code is evaluated from Workspace).
-- Some well-known global variables: ==Smalltalk== ==SourceFiles== ==Transcript== ==Undeclared== ==Display== ==TextConstants== ==ActiveWorld== ==ActiveHand== ==ActiveEvent== ==Sensor== ==Processor== ==ImageImports== ==SystemOrganization== ==World==.
+- Any ==CompiledMethod== (except when either it answers false to the message ==isInstalled== or true to the message ==isDoIt==, for example, the code is evaluated from Workspace).
+- Some well-known global variables: ==Smalltalk==, ==SourceFiles==, ==Transcript==, ==Undeclared==, ==Display==, ==TextConstants==, ==ActiveWorld==, ==ActiveHand==, ==ActiveEvent==, ==Sensor==, ==Processor==, ==ImageImports==, ==SystemOrganization== and ==World==.
 
-!!!Custom globals are duplicated
+@@authorToDo SD: is the line on compiled method correct
 
-In this following code snippet we show that by default the global value is not serialized as a global, and so it is duplicated on materialization.
+!!!Custom globals are duplicated on materialization
+
+With this following code snippet, we show that by default a global value is not serialized as a global. In such a case it is duplicated on materialization.
 
 [[[language=Smalltalk
- "Define a global variable named #SomeGlobal."
+ "Define a global variable named SomeGlobal."
  SomeGlobal := Set new.
  
- "Serialize and materialize the value of #SomeGlobal."
+ "Serialize and materialize the value of SomeGlobal."
  FLSerializer 
  	serialize: SomeGlobal 
  	toFileNamed: 'g.fuel'.
@@ -239,21 +239,21 @@ In this following code snippet we show that by default the global value is not s
  [ (FLMaterializer materializeFromFileNamed: 'g.fuel') ~~ SomeGlobal ] assert.
 ]]]
 
-But...
+The following explains how we can tell Fuel to handle a new global to avoid its duplication on materialization. 
 
 !!!How to avoid duplication
 
-Instead, in the code below ==#considerGlobal:== is used to specify that it should be stored as global.
+Instead, in the code below the message ==considerGlobal:== is used to specify that it should be stored as global.
 
 [[[language=Smalltalk
  | aSerializer |
  
- "Define a global variable named #SomeGlobal."
+ "Define a global variable named SomeGlobal."
  SomeGlobal := Set new.
  
  aSerializer := FLSerializer newDefault.
  
- "Tell the serializer to consider #SomeGlobal as global."
+ "Tell the serializer to consider SomeGlobal as global."
  aSerializer analyzer considerGlobal: #SomeGlobal.
  
  aSerializer 
@@ -268,22 +268,22 @@ This feature is tested in ==tests-globals== protocol of ==FLBasicSerializationTe
 
 !!!Changing the environment
 
-It is possible to specify where the global will be looked-up during materialization. The method ==#globalEnvironment:== exists for that purpose, as the following example shows. 
+It is possible to specify where the global will be looked-up during materialization. The message ==globalEnvironment:== exists for that purpose, as the following example shows. 
 
 [[[language=Smalltalk
  | aSerializer aMaterializer anEnvironment |
  
- "Define a global variable named #SomeGlobal."
+ "Define a global variable named SomeGlobal."
  SomeGlobal := Set new.
  
- "Tell the serializer to consider #SomeGlobal as global."
+ "Tell the serializer to consider SomeGlobal as global."
  aSerializer := FLSerializer newDefault.
  aSerializer analyzer considerGlobal: #SomeGlobal.
  aSerializer 
  	serialize: SomeGlobal 
  	toFileNamed: 'g.fuel'.
  
- "Override value for #SomeGlobal."
+ "Override value for SomeGlobal."
  anEnvironment := Dictionary newFrom: Smalltalk globals.
  anEnvironment at: #SomeGlobal put: {42}.
  
@@ -298,50 +298,50 @@ It is possible to specify where the global will be looked-up during materializat
  	[ (aMaterializer materializeFrom: aStream) root = {42} ] assert ]
 ]]]
 
-This feature is tested in the class ==FLGlobalEnvironmentTest==. The global environment can be setted also for serialization (not only materialization), but we don't include an example for that case.
+This feature is tested in the class ==FLGlobalEnvironmentTest==. The global environment can be set also for serialization and not only for materialization, but we don't include an example for that case.
 
 
 %=========================================================================% 
 
 !! Customizing the Graph
+When serializing an object you often want to select the state should be serialized. With Fuel you can specify the variables can be ignored.
 
 !!!Ignoring Instance Variables
 
-It can happen that instance variables should never be serialized. A practical way to do this is overriding the hook method ==#fuelIgnoredInstanceVariableNames==. 
+It can happen that instance variables should never be serialized. A practical way to do this is overriding the hook method ==fuelIgnoredInstanceVariableNames==. 
 
-Let's say we have the class ==User== and we do not want to serialize the instance variables =='acumulatedLogins'== and =='applications'==. So we implement:
+Let's say we have the class ==User== and we do not want to serialize the instance variables =='accumulatedLogins'== and =='applications'==. So we implement:
 
 [[[language=Smalltalk
 User class >> fuelIgnoredInstanceVariableNames
-    ^#('acumulatedLogins' 'applications')
+    ^#('accumulatedLogins' 'applications')
 ]]]
 
-When materialized, such instance variables will be nil. If you want to re-initialize and set values to those instance variables, you can use ==#fuelAfterMaterialization== for that.
+When materialized, such instance variables will point to ==nil==. If you want to re-initialize and set values to those instance variables, you can use the messahe ==fuelAfterMaterialization== for that.
 
-Be aware that in case of renaming those instance variables, you should rename that method as well. Notice also that the method ==#fuelIgnoredInstanceVariableNames== is implemented at class side. This means that ""all"" instances of such class will ignore the defined instances variables. 
+Be aware that in case of renaming those instance variables, you should revisit that method as well. Notice also that the method ==fuelIgnoredInstanceVariableNames== is implemented on the class side. This means that ""all"" instances of such class will ignore the defined instances variables when serialized. 
 
 We test this feature in ==FLIgnoredVariablesTest==.
 
-In ==StOMP== serializer this same hook is called ==#stompTransientInstVarNames== and in ==SIXX== it is ==#sixxIgnorableInstVarNames==. 
+%In ==StOMP== serializer this same hook is called ==#stompTransientInstVarNames== and in ==SIXX== it is ==#sixxIgnorableInstVarNames==. 
 
 !!!Post-Materialization Action
 
-The method ==#fuelAfterMaterialization== let us execute something once an object has been materialized. For example, let's say we would like to set back the instance variable =='acumulatedLogins'== during materialization. Hence, we can implement:
+The message ==fuelAfterMaterialization== lets us execute some action once an object has been materialized. For example, let's say we would like to set back the instance variable =='accumulatedLogins'== during materialization. Hence, we can implement:
 
 [[[language=Smalltalk
 User >> fuelAfterMaterialization
- acumulatedLogins := 0. 
+     accumulatedLogins := 0. 
 ]]]
 
 !!!Substitution on Serialization
 
-Sometimes you may want to serialize something different than the original object, without altering them.
+Sometimes you may want to serialize something different than the original object, without altering it. Fuel proposes two different ways to do 
+this.
 
 !!!!Dynamic way
 
-You can establish a pluggable substitution to a particular serialization. 
-
-Let's illustrate with an example, where your graph includes a ==Stream== and you want to serialize ==nil== instead. 
+You can establish a pluggable substitution to a particular serialization. Let's illustrate with an example, where your graph includes a ==Stream== and you want to serialize ==nil== instead. 
 
 [[[language=Smalltalk
 objectToSerialize := Array with: 'hello' with: '' writeStream.
@@ -356,13 +356,10 @@ FileStream forceNewFileNamed: 'demo.fuel' do: [ :aStream |
         on: aStream binary ].
 ]]]
 
-So, when loading you will get ==#('hello' nil)==, without any instance of a stream.
-
-You can find this code in ==FLUserGuidesTest>>testPluggableSubstitution==.
+So, when loading you will get ==#('hello' nil)==, without any instance of a stream. You can find this code in ==FLUserGuidesTest>>testPluggableSubstitution==.
 
 !!!! Static way
-
-You have to override ==#fuelAccept:== in the class of the object to be substituted. Fuel visits each object in the graph by sending this message, to determine how to trace and serialize it. Note that this will affect every serialization, in contrast with the 'dynamic way' we explained above; but it could be much faster.
+You can also do it more systematically by override the method ==fuelAccept:== in the class of the object to be substituted. Fuel visits each object in the graph by sending this message to determine how to trace and serialize it. Note that this will affect every serialization, in contrast with the dynamic way we explained above; but it could be much faster.
 
 As an example, imagine we want to replace an object directly with nil. In other words, we want to make a whole object transient, say ==CachedResult==. For that, we should implement:
 
@@ -371,14 +368,14 @@ CachedResult >> fuelAccept: aGeneralMapper
     ^ aGeneralMapper visitSubstitution: self by: nil
 ]]]
 
-As another example, we have a ==Proxy== class and when serializing we want to serialize its ==target== instead of the proxy. So we implement:
+As another example, we have a ==Proxy== class and when serializing we want to serialize its ==target== instead of the proxy. So we redefine ==fuelAccept:== as follows:
 
 [[[language=Smalltalk
 Proxy >> fuelAccept: aGeneralMapper
     ^ aGeneralMapper visitSubstitution: self by: target
 ]]]
 
-Notice that ==#fuelAccept:== is the same as the previous example. The last example is when an object needs to change the value of its instance variables. Say we have again the class ==User== and we want to ==nil== the instance variable =='history'== when its size is greater than 100. 
+The last example is when an object needs to change the value of its instance variables.  Let' imagine that we have again the class ==User== and we want to ==nil== the instance variable =='history'== when its size is greater than 100. 
 
 [[[language=Smalltalk
 User >> fuelAccept: aGeneralMapper
@@ -390,7 +387,7 @@ User >> fuelAccept: aGeneralMapper
         ifFalse: [ super fuelAccept: aGeneralMapper ]
 ]]]
 
-""Note"" we are substituting the original user by another instance of ==User==, which Fuel will visit with the same ==#fuelAccept:== method. We could easily fall in an infinite sequence of substitutions if we don't take care. To avoid this problem, it is useful ==#visitSubstitution:by:onRecursionDo:==, where you define an alternative mapping for the case of mapping an object which is already a substitute of another one:
+""Note"" we are substituting the original user by another instance of ==User==, which Fuel will visit with the same ==fuelAccept:== method. We could easily fall in an infinite sequence of substitutions if we don't take care. To avoid this problem, it is useful to use the message ==visitSubstitution:by:onRecursionDo:==, where you define an alternative mapping for the case of mapping an object which is already a substitute of another one:
 
 [[[language=Smalltalk
 User >> fuelAccept: aGeneralMapper
@@ -400,11 +397,13 @@ User >> fuelAccept: aGeneralMapper
         onRecursionDo: [ super fuelAccept: aGeneralMapper ]
 ]]]
 
-In the case, the substitute user (i.e. the one with the empty history) is will be visited via its super implementation.
+In the case, the substituted user (i.e., the one with the empty history) is will be visited via its super implementation.
 
 You can see tests for this functionality at ==FLHookedSubstitutionTest==.
 
+
 !!! Substitution on Materialization
+In the same way that we may want to customize object serialization, we may want to customize object materialization. 
 
 !!!! Global Sends
 
@@ -421,15 +420,15 @@ User >> fuelAccept: aGeneralMapper
         ifFalse: [ super fuelAccept: aGeneralMapper ]
 ]]]
 
-So what will happen is that during serialization, the admin user won't be completly serialized (with all its intance variables) but instead its global name and selector are stored. Then, at materialization time, Fuel will send ==#admin== to the class ==User==, and use what that answers as the admin user of the materialized graph. 
+What will happen is that during serialization, the admin user won't be completely serialized (with all its intance variables) but instead its global name and selector are stored. Then, at materialization time, Fuel will send the message ==admin== to the class ==User==, and use the returned value as the admin user of the materialized graph. 
 
 We test this feature in ==FLGlobalSendSerializationTest==.
 
 !!!! Hooking instance creation
 
-Fuel provides two hook methods to customise how instances are created: ==#fuelNew== and ==#fuelNew:==.
+Fuel provides two hook methods to customise how instances are created: ==fuelNew== and ==fuelNew:==.
 
-For (regular) fixed objects, the method ==#fuelNew== is defined in ==Behavior== as:
+For (regular) fixed objects, the method ==fuelNew== is defined in ==Behavior== as:
 
 [[[language=Smalltalk
 fuelNew
@@ -443,13 +442,13 @@ fuelNew
 	^ self uniqueInstance
 ]]]
 
-This similarly applies to variable objects through the method ==#fuelNew:==, which by default answers ==#basicNew:==.
+This similarly applies to variable size objects through the method ==fuelNew:==, which by default answers ==basicNew:==.
 
 We test this feature in ==FLSingletonTest==.
 
 !!!Not Serializable Objects
 
-You may want to be sure that some objects are not serialized. For this case we provide ==#visitNotSerializable:==, which in next example forbids serialization of any instance of ==MyNotSerializableObject==.
+You may want to be sure that some objects are not serialized. For this case Fuel provides the hook method named ==visitNotSerializable:==, which in next example forbids serialization of any instance of ==MyNotSerializableObject==.
 
 [[[language=Smalltalk
 MyNotSerializableObject >> fuelAccept: aGeneralMapper
@@ -463,7 +462,7 @@ We test this feature in ==FLBasicSerializationTest>>testNotSerializableObject==.
 
 !! Errors
 
-We provide a hierarchy of errors which allow to clearly identify the problem if something went wrong:
+We provide a hierarchy of errors which allow one to clearly identify the problem when something went wrong:
 
 - ==FLError==
 -- ==FLSerializationError==
@@ -520,13 +519,15 @@ As most classes of Fuel, they have class comments that give an idea their meanin
 %=========================================================================% 
 
 !! Object Migration
-
-Often, we need to load objects whose class has changed since it was saved. In this document how to load them in the different cases. Figure *figClassChanges* is useful to explain some of them. Imagine we serialized an instance of ==Point== and we need to materialize it when ==Point== class has changed.
+We often need to load objects whose class has changed since it was saved. Figure *figClassChanges* is useful to explain the possible changes that can happen in a class shape. Imagine we serialized an instance of ==Point== and we need to materialize it when ==Point== class has changed.
 
 +Example of changes in a class>file://figures/ClassChanges.png|width=70|label=figClassChanges+
-_
 
-Let's start with the easier cases. If a variable was ""inserted"", its value will be ==nil==. If ""removed"", it is also obvious: the serialized value will be ignored. In the case the variables are the same the the ""order changed"", Fuel also tolerates it automatically.
+
+@@authorToDo SD stopped here
+
+
+Let's start with the simple cases. If a variable was ""inserted"", its value will be ==nil==. If ""removed"", it is also obvious: the serialized value will be ignored. In the case the variables are the same but where the ""order changed"", Fuel handles it automatically.
 
 A more interesting case is when a variable was ""renamed"", where the user can map old names to new ones. In our example:
 
