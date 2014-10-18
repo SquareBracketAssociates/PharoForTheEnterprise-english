@@ -521,7 +521,7 @@ As most classes of Fuel, they have class comments that give an idea their meanin
 !! Object Migration
 We often need to load objects whose class has changed since it was saved. Figure *figClassChanges* is useful to explain the possible changes that can happen in a class shape. Imagine we serialized an instance of ==Point== and we need to materialize it when ==Point== class has changed.
 
-+Example of changes in a class>file://figures/ClassChanges.png|width=70|label=figClassChanges+
++Example of changes to a class>file://figures/ClassChanges.png|width=70|label=figClassChanges+
 
 
 @@authorToDo SD stopped here
@@ -529,7 +529,7 @@ We often need to load objects whose class has changed since it was saved. Figure
 
 Let's start with the simple cases. If a variable was ""inserted"", its value will be ==nil==. If ""removed"", it is also obvious: the serialized value will be ignored. In the case the variables are the same but where the ""order changed"", Fuel handles it automatically.
 
-A more interesting case is when a variable was ""renamed"", where the user can map old names to new ones. In our example:
+A more interesting case is when a variable was ""renamed"". Fuel cannot automatically guess the renaming but the user can specify using the message ===migratedClassNamed:variables:==. The user should provide a mapping from old names to new ones as shown in the following example:
 
 [[[language=Smalltalk
 FLMaterializer newDefault
@@ -537,9 +537,10 @@ FLMaterializer newDefault
 	variables: {'x' -> 'posX'. 'y' -> 'posY'}.
 ]]]
 
-Not surprisingly, if nothing specified the change will be understood by Fuel as two independent operations, an insertion and a removal.
+Not surprisingly, if nothing is specified, the change will be understood by Fuel as two independent operations: an insertion and a removal.
 
-The last change in the figure is a ""class rename"". This should be specified this way:
+The last change that can happen is a ""class rename"". Again Fuel provides a way to handle this case using the message ==migrateClassNamed:toClass:==. 
+This should be specified this way:
 
 [[[language=Smalltalk
 FLMaterializer newDefault
@@ -547,13 +548,13 @@ FLMaterializer newDefault
 	toClass: Coordinate.
 ]]]
 
-It is also available ==#migrateClassNamed:toClass:variables:== to combine both ""class and variable rename"".
+Fuel defines the message ==migrateClassNamed:toClass:variables:== that combines both ""class and variable rename"".
 
 Although not illustrated in the figure, a class could also change its ""layout"". For example, Point could change from being ""fixed"" to ""variable"". This should be also automatically tolerated by Fuel. Unfortunately, the inverse (variable to fixed) is not supported so far.
 
 You can find tests related to this guide in ==FLMigrationTest==.
 
-Additionally, the method ==globalEnvironment:==, showed in *ManagingGlobals*, might be useful for migrations: you can prepare an ad-hoc environment dictionary with the same keys that were used during serialization, but with the new classes as values.
+Additionally, the method ==globalEnvironment:==, showed in Section *ManagingGlobals*, is useful for migrations: you can prepare an ad-hoc environment dictionary with the same keys that were used during serialization, but with the new classes as values.
 
 
 %=========================================================================% 
@@ -572,7 +573,6 @@ We include below an example of migration. Let's say we have some files serialize
  fileNames := #('a.fuel' 'b.fuel' 'c.fuel' 'd.fuel' 'e.fuel').
  objectsByFileName := Dictionary new.
  
-
  (ConfigurationOfFuel project version: oldVersion) load.
  materializerClass := Smalltalk at: #FLMaterializer.
  
@@ -580,7 +580,6 @@ We include below an example of migration. Let's say we have some files serialize
  	objectsByFileName 
  		at: fileName 
  		put: (materializerClass materializeFromFileNamed: fileName) ].
- 
  
  (ConfigurationOfFuel project version: newVersion) load.
  serializerClass := Smalltalk at: #FLSerializer.
@@ -598,18 +597,17 @@ We include below an example of migration. Let's say we have some files serialize
 
 @@note Note 3: This script should be evaluated in the original image. For example, we don't guarantee that Fuel 1.7 loads in Pharo 2.0, but we know that Fuel 1.9 loads in Pharo 1.4.
 
-
 %=========================================================================% 
 
 !! Debugging
 
-There are a couple of packages that help us debugging Fuel. To understand the output of the tools in this guide, you should know some basics of how Fuel internally works. 
+There are a couple of packages that help us debugging Fuel. To understand the output of the tools, you should know some basics of how Fuel internally works. 
 
 !!!Serialization
-The most important thing to remark is that serialization is split in two main steps: analysis and encoding.
+The most important thing to know is that serialization is split in two main steps: analysis and encoding.
 
 !!!!Analysis
-It consists in a graph iteration, mapping each traversed object to its correspondent grouping, called ""cluster"". 
+It consists in a graph iteration, mapping each traversed object to its correspondent grouping, called a ""cluster"". 
 
 !!!!Encoding
 After analysis, we linearly write on the stream, in these steps:
@@ -638,7 +636,8 @@ Ensure you have them with:
     load: #(FuelDebug FuelPreview).
 ]]]
 
-Next, a transcript of some useful class comments. 
+Here is a list of some useful class comments. 
+
 
 !!!!FLGraphViewBuilder
 I add draw capabilities to analysis in ==FuelDebug== package.
@@ -666,13 +665,13 @@ Right-click a node for inspect it. Some examples:
 
 Figure *figFuelPreview* shows how they look like.
 
-+Visual preview of graph that would be serialized>file://figures/FuelPreview.png|width=60|label=figFuelPreview+
++Visual preview of graph to be serialized>file://figures/FuelPreview.png|width=60|label=figFuelPreview+
 _
 
 !!!!FLDebugSerialization
 I am a serialization which facilitates debugging, by logging the stream position before and after main steps of ==FLSerialization==, including cluster information. Obviously, you should be familiar with such class and the algorithm to understand the output log.
 
-To use, send ==#setDebug== to your serializer and run as usually. For example:
+To use, send the message ==setDebug== to your serializer and run as usually. For example:
 
 [[[language=Smalltalk
 FileStream forceNewFileNamed: 'debug.fuel' do: [:aFile |
@@ -690,7 +689,7 @@ FLDebugSerialization last log
 !!!!FLDebugMaterialization
 I am a materialization which facilitates debugging, by logging the stream position before and after main steps of ==FLMaterialization==, including cluster information. Obviously, you should be familiar with such class and the algorithm to understand the output log.
 
-To use, send ==#setDebug== to your serializer and run as usually. For example:
+To use, send the message ==setDebug== to your serializer and run as usually. For example:
 
 [[[language=Smalltalk
 FileStream oldFileNamed: 'debug.fuel' do: [:aFile |
@@ -710,7 +709,7 @@ FLDebugMaterialization last log
 
 !! Built-in Header Support
 
-Since the graph of objects serialized in a file can be large, and it can be useful to query some small extra info, Fuel supports the possibility to easily add such information in a header. The following examples show this set of features:
+Since the graph of objects serialized in a file can be large, and it can be useful to query some small extra info, Fuel supports the possibility to easily add such information in a header. The following example shows this feature: First we add a property called timestamp to the header using the message ==at:putAdditionalObject:==. We then define soem pre and post actions. In particular we show how we can use the property value using the message ==additionalObjectAt:== 
  
 [[[language=Smalltalk
 | serializer |
@@ -774,3 +773,11 @@ Materialized at 28 March 2013 1:01:21 pm
 ]]]
  
 For additional examples, you can see tests in ==FLHeaderSerializationTest==.
+
+
+! Conclusion
+
+Fuel is a fast and stable binary object serializer. Some people use Fuel to get information when an error occurs in an application 
+that they deployed to a client. In such a case, they serialize the full stack and once they get the file they just load it and open a debugger on the 
+saved stack. Fuel has been covered by scientific publications that you can find on *http//rmod.lille.inria.fr* and ou can find more information about Fuel 
+on the following web site: *http://rmod.inria.fr/web/software/Fuel*. 
