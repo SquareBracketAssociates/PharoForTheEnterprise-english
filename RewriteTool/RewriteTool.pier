@@ -1,10 +1,15 @@
 ﻿!Rewrite Tool
 
-The purpose of this chapter is to explain what is Rewrite Tool, why do we need it and how to use it properly.
-It also helps to understand better how Rewrite Tool works. Inasmuch it uses rewrite engine, its general concepts are described.
-This engine, which is really powerful and very useful, is used by Pharo to match and transform expressions or methods.
-Often we encounter a situation when we want to transform some part of code in a lot of different places into another code.
-For example, if you want to change 
+'''TODO: layout figures/sections; dev documentation: architecture, etc.; change
+option naming (as list, recurse into)'''
+
+The purpose of this chapter is to explain what is Rewrite Tool, why do we need
+it and how to use it properly. It also helps to understand better how Rewrite
+Tool works. Inasmuch it uses rewrite engine, its general concepts are
+described. This engine, which is really powerful and very useful, is used by
+Pharo to match and transform expressions or methods.  Often we encounter a
+situation when we want to transform some part of code in a lot of different
+places into another code.  For example, if you want to change 
 
 [[[ label = matchExample | language = Smalltalk
     self isNil ifTrue: [ ^ true ] 
@@ -13,14 +18,16 @@ to next code:
 [[[ label = transformExample | language = Smalltalk
     self ifNil: [ ^ true ]
 ]]]
-in each and every method of your package.
-It may take a lot of time and nerves to manage this manually.
-However, you can use rewrite engine to transform all of your methods in the way you want, if only you know how.
-The syntax of rewrite engine is not that straightforward, thus to create specific matching and transforming rules with it you will have to spend some time.
-Moreover, even if you know engine syntax perfectly, it's very easy to miss a dot or misspell some part of rewrite expression.
-As you may have guessed, Rewrite Tool helps us to solve such a problem.
-It provides a GUI which allows user to create rewrite rules without knowledge of rewrite engine syntax.
-After rule is created you may simply apply it to scope that you want: packages, classes, methods.
+in each and every method of your package.  It may take a lot of time and nerves
+to manage this manually. However, you can use rewrite engine to transform all
+of your methods in the way you want, if only you know how. The syntax of
+rewrite engine is not that straightforward, thus to create specific matching
+and transforming rules with it you will have to spend some time. Moreover, even
+if you know engine syntax perfectly, it is very easy to miss a dot or misspell
+some part of rewrite expression. As you may have guessed, Rewrite Tool helps us
+to solve such a problem. It provides a GUI which allows user to create rewrite
+rules without knowledge of rewrite engine syntax. After rule is created you may
+simply apply it to scope that you want: packages, classes, methods.
 
 In this chapter, we describe the tool itself in general. Then, we will take a
 look at examples that will show you Rewrite Tool at work. After that, we will
@@ -80,9 +87,15 @@ possibility, with simple GUI, to build rewrite rules dynamically.
 
 -Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part — the pattern — of rewrite rule. You can change the pattern either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
 
--Bottom right pane is pretty much the same as previous one. Here you have label ''"Transform rule"''. It's a second part of rewrite rule. In this pane you can create the action of the transformation rule also with options in action-click menu, or just manually typing code. Similar to previous one it's called in rest of chapter ''Transform pane''.
+-Bottom right pane is pretty much the same as previous one. Here you have label
+''"Transform rule"''. It is a second part of rewrite rule. In this pane you can
+create the action of the transformation rule also with options in action-click
+menu, or just manually typing code. Similar to previous one it is called in rest of chapter ''Transform pane''.
 
--The last one, but not the least important, is top right pane - ''"Result expression"''. It displays the result of applying a rewrite rule, composed of the two bottom panes, to a source expression. You should note that this pane is the only one that is not editable, so it's read only. Later, this pane is referenced as ''Result pane''.
+-The last one, but not the least important, is top right pane - ''"Result
+expression"''. It displays the result of applying a rewrite rule, composed of
+the two bottom panes, to a source expression. You should note that this pane is
+the only one that is not editable, so it is read only. Later, this pane is referenced as ''Result pane''.
 
 ""Buttons""
 
@@ -120,7 +133,7 @@ Following examples are meant to teach you basics of using Builder.
 
 !!!First example
 
-Now, back to example: we want to transform
+Back to example, we would like to transform the following snippet of code:
 
 [[[ label = matchExample | language = Smalltalk
     self isNil ifTrue: [ ^ true ] 
@@ -133,11 +146,11 @@ into:
 ]]]
 
 First, you need to input template source code in Source pane of Builder. If you
-launched the builder with the line given previously, the input code is the one of
-our example. In all panes you get exactly the same code. If you want to create
-your own rewrite rule, just type or copy-paste the code on which you would like
-to apply a transformation in the Source pane. Be sure to save any changes in
-the pane in order to have the right result.
+launched the builder with the previously given line, the input code is the one
+of our example. In all panes you get exactly the same code. If you want to
+create your own rewrite rule, just type or copy-paste the code on which you
+would like to apply a transformation in the Source pane. Be sure to save any
+changes in the pane in order to have the right result.
 
 To start with, look at status bar in Match pane. Obviously, for now it says "matches", as source code and match rule are equal.
 This status bar will help you to create rule, that will really correspond to source code.
@@ -171,10 +184,12 @@ As you may noticed Transform pane text also was changed in following way:
 ]]]
 
 It means that in result on the place of ''self'' we will get ''self''.
-In case you want to have in result something else, for example ''anotherObject'' use an option ''Change'' on a `variable1 in Transform pane (or manually type it, but it's not recommended).
+In case you want to have in result something else, for example
+''anotherObject'' use an option ''Change'' on a `variable1 in Transform pane
+(or manually type it, but it is not recommended).
 But for now, we don't want that.
 To proceed, select ''isNil'' in Transform pane, open a menu.
-The options in this case are different from previous one, as it's not a variable selected, but selector.
+The options in this case are different from previous one, as it is not a variable selected, but selector.
 So, click on ''Ignore selector'' option. It will remove ''isNil'' from Transform pane.
 Also, Result pane was updated:
 
@@ -182,7 +197,7 @@ Also, Result pane was updated:
     self ifTrue: [ ^ true ]
 ]]]
 
-Now let's work with our block: ''[ ^ true ]''.
+Now let us work with our block: ''[ ^ true ]''.
 Here we have the same situation as we had with ''self''.
 Again, we don't care about which block is passed as an argument to ''ifTrue:'' or ''ifNil:''.
 So, in Match pane, we select our block (be sure to include the brackets) and choose the option ''Abstract block''.
@@ -252,7 +267,7 @@ Then enter this code into the Transform pane (the bottom right one):
     temp := a max: b
 ]]]
 
-+Step 1 of max transformation example>file://figures/example2-1.png|width=40|label=example2-1+
++Step 1 of max transformation example>file://figures/example2-1.png|width=60|label=example2-1+
 
 !!!!Step 2:
 Now select ''temp'' in Match pane and mark it as an ''Abstract variable'' with
@@ -277,7 +292,7 @@ As for the Transform panel, it should be very similar to the following code:
 If you want to match and transform only expressions where ''a'' and ''b'' are
 simple variables, this rule is sufficient. 
 
-+Step 2 of max transformation example>file://figures/example2-2.png|width=40|label=example2-2+
++Step 2 of max transformation example>file://figures/example2-2.png|width=60|label=example2-2+
 
 !!!!Step 3:
 However if you need something more complex, for instance ''a'' is some
@@ -302,8 +317,8 @@ If necessary, you can do exactly the same thing with ''b'' (''`variable3'' in
 the previous snippet). After few simple actions we got the result which we
 expected.
 
-+Step 3 (a) of max transformation example>file://figures/example2-3a.png|width=40|label=example2-3a+
-+Step 3 (b) of max transformation example>file://figures/example2-3b.png|width=40|label=example2-3b+
++Step 3 (a) of max transformation example>file://figures/example2-3a.png|width=60|label=example2-3a+
++Step 3 (b) of max transformation example>file://figures/example2-3b.png|width=60|label=example2-3b+
 
 !!!!Step 4:
 Use ''Generate rule'' button to generate the class of this rule in order to use
@@ -311,10 +326,9 @@ it in the Browser.
 
 !!Rewrite Tool in details
 
-In this section each and every part of rewrite tool is described in details.
-There are explained a lot of important ideas.
-Understanding of this ideas is crucial, because it will increase users
-effectivity, while working with the tool.
+In this section we describe each and every part of rewrite tool. It is grounded
+on many important ideas that are explained here. A good understanding of this
+ideas is crucial to increase users effectiveness, while working with the tool.
 
 !!!Menu options
 
@@ -334,11 +348,12 @@ List of all available options (may be changed):
 
 !!!!""Abstract actions""
 
-Any of abstract action replaces selected object(s) with metavariable that corresponds to selected node of AST.
+Any of abstract action replaces selected object(s) with metavariable that
+corresponds to selected node of AST. Next is described what can be matched with
+the metavariable in each case.
 
-Next is described what can be matched with the metavariable in each case.
-
-Note: In the end of each metavariable name there is an index, but it is not displayed in the examples below.
+""Note:"" each metavariable name ends with an index, but for readability
+reasons it is not displayed in the examples below.
 
 ''""Abstract block""''
 
@@ -408,7 +423,8 @@ First time ''``@variable'' is ''self size'' and second time it is ''self''.
 
 ''""Change""''
 
-Replaces selected node of AST with users input.
+Replaces selected node of AST with users input. Contrary to a manual change,
+all occurences are modified in the different panes.
 
 ''""Change selector""''
 
@@ -479,12 +495,12 @@ Create new metavariable
 
 !!!!""Non-existing metavariables""
 
-Another thing, that you shuld know is that you can't create new metavariable in ''Transform rule'' pane,
-if it's not created in ''Match rule'' pane.
-Meaning, that you are not able to apply, for example, ''Abstract block'' action in ''Transform rule'' pane,
-if there is no metavariable in ''Match rule'' pane.
-If there is one, system will suggest you to choose name from existing metavariables.
-Let's take previous example:
+Another thing, that you shuld know is that you can't create new metavariable in
+''Transform rule'' pane, if it is not created in ''Match rule'' pane. Meaning,
+that you are not able to apply, for example, ''Abstract block'' action in
+''Transform rule'' pane, if there is no metavariable in ''Match rule'' pane.
+If there is one, system will suggest you to choose name from existing
+metavariables. Let us take previous example:
 
 [[[ label = tipsExample1 | language = Smalltalk
     "Code below is useless - just an example"
@@ -502,7 +518,7 @@ Let's take previous example:
 
 In case you select ''super'' in ''Transform rule'' pane and apply ''Abstract variable'' action, an error will be raised.
 But if you previously done this process in ''Match rule'' pane with ''self'' variable,
-it's possible now to create metavariables in ''Transform rule'' pane.
+it is possible now to create metavariables in ''Transform rule'' pane.
 If you now select ''super'' in  ''Transform rule'' pane and apply ''Abstract variable'' action window will be displayed.
 With other actions like ''Abstract literal'', ''Abstract condition'' etc. happens exactly the same thing.
 
