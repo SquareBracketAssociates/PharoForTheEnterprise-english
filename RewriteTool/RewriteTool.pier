@@ -548,11 +548,17 @@ So, rewrite engine makes it possible to get an AST representation of any rule.
 It means, user can easily match or replace(transform) any part of code as a node.
 
 The syntax of rewrite engine may seem a bit confusing, however it contains only few key symbols.
-Firstly, it has a backquote symbol
+These symbols are:
+-backquote(`)
+-at sign(@)
+-dot(.)
+-number sign(#)
+
+Firstly, a backquote symbol.
 [[[
 `
 ]]]
-that represents any metavariable. For example, it can be
+It represents any metavariable. For example, it can be
 [[[
 `variable1
 ]]]
@@ -580,3 +586,39 @@ It means, that name of metavariable is important, as it is unique.
 Each metavariable has it's own AST node representation.
 Conclusion is, that different metavariables match different variables.
 And one metavariable matches the same variable many times.
+
+Also backquote symbol is responsible for recursing into message sends, statements, objects etc.
+[[[
+``@variable1 size
+]]]
+This rule will match any object that has a sender size.
+Moreover, whenever match is found, rewrite engine looks inside of matched node for more matches.
+It means that engine will search for this construction
+[[[
+``@variable1 size
+]]]
+inside of this node:
+[[[
+``@variable1
+]]]
+So, if you have 
+[[[
+self size size
+]]]
+you will get two matches. First of all, 
+[[[
+``@variable1
+]]]
+matches with reciever of size:
+[[[
+self size
+]]]
+And than, our metavariable matches with
+[[[
+self
+]]]
+
+Secondly, at sign, which 
+[[[
+@
+]]]
