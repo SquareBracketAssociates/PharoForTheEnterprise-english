@@ -99,7 +99,7 @@ the only one that is not editable, so it is read only. Later, this pane is refer
 
 ""Buttons""
 
--''TODO: this part is not clear''. "Undo" is a general undo. It performs an undo action for three editable panes: Source, Match and Transform. Also there is local undo for each pane separately (''DESCRIBED LATER'').
+-''TODO: this part is not clear. Is it clear now?''. "Undo" button is a general undo for three editable panes: Source, Match and Transform. All changes, that were made in one of these panes, are stacked. If you click on "Undo" button, the last change that was made in any of these panes, will be retreived. Also there is local undo for each pane separately (''DESCRIBED LATER'').
 -"Generate rule" button creates new class - a subclass of ''RBTransformationRule'' using information from two bottom panes. After the rule is created using this button, you can apply it to specific scope.
 -"Browse rules" button opens up "Rewrite rule browser", which allows you to browse created rules, and apply them to scope that you want.
 
@@ -539,3 +539,44 @@ To sum up, rewrite rule builder allows you to edit rules, but do it only if real
 ]]]
 
 "IN DEVELOPEMENT!"
+
+!!!Rewrite engine
+
+Builder uses rewrite engine to parse rules, to match and transform code. This engine works with strings, that are recognized on level of abstract syntax tree.
+As a result, each part of matching or transforming string becomes a node of AST, which makes this engine very powerful.
+So, rewrite engine makes it possible to get an AST representation of any rule.
+It means, user can easily match or replace(transform) any part of code as a node.
+
+The syntax of rewrite engine may seem a bit confusing, however it contains only few key symbols.
+Firstly, it has a backquote symbol
+[[[
+`
+]]]
+that represents any metavariable. For example, it can be
+[[[
+`variable1
+]]]
+This expression will match any variable.
+Up to this point it seems to be simple, however, there is one tricky place.
+[[[
+`variable1
+"Some code"
+`variable2
+]]]
+This expression will not match
+[[[
+myVar
+"Some code"
+myVar
+]]]
+because we use different metavariables and equal variables.
+But it will match
+[[[
+myVar
+"Some code"
+myAnotherVar
+]]]
+It means, that name of metavariable is important, as it is unique.
+Each metavariable has it's own AST node representation.
+Conclusion is, that different metavariables match different variables.
+And one metavariable matches the same variable many times.
