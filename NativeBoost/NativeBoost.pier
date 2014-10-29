@@ -26,7 +26,7 @@ multilib/lib32-libx11 1.6.1-1
     X11 client-side library (32-bit)
 ]]]
 
-In order to create the bindings, we need to install the 32-bit package: 
+To create the bindings, we need to install the 32-bit package: 
 
 [[[language=shellcommands
 $ pacman -S multilib/lib32-libx11
@@ -52,7 +52,7 @@ $ file /usr/local/lib/libyaz.so.4.0.0
 /usr/local/lib/libyaz.so.4.0.0: ELF 32-bit LSB  shared object, Intel 80386, version 1 (SYSV), dynamically linked, BuildID[sha1]=479fbc7e495cb53600f145cf575dc1f176703c20, not stripped
 ]]]
 
-We also have to make sure that all dependent libraries are found:
+We also have to make sure that all dependent libraries are found using ==ldd== command:
 
 [[[language=shellcommands
 $ ldd /usr/local/lib/libyaz.so.4.0.0
@@ -74,7 +74,9 @@ $ ldd libyaz.so
 
 To add a custom directory globally to ==LD_LIBRARY_PATH==, just add it in ==/etc/ld.so.conf==.
 
-At last, remember that we can write bindings for C libraries easily, other languages such as ==C\+\+== are beyond the scope of this chapter.
+At last, remember that we can write bindings for C libraries easily, other languages such as ==C\+\+== are beyond the scope of this chapter 
+because  ==C\+\+== does not have a standard binary interface. It means that to call a  ==C\+\+==  library you have to know the OS version, the  ==C\+\+== compiler version
+and may be some other information. Usually to call  ==C\+\+== library, one practice is to wrap it in a C-layer and call this C layer. 
 
 
 !!! To install X11 on Mac
@@ -107,6 +109,8 @@ self nbGetSymbolAddress: 'XOpenDisplay'  module: '/your/path/to/32-bit/libX11.so
 ]]]
 
 That should answer something like ==@ 16rF71D14D0==, the address of the function. If ==nil== is answered, then something is wrong and you should refer to previous section. Else, we can go further!
+You can use ==find . -name '*X11*.dylib'== to look for libraries for example.
+
 
 The function ==XOpenDisplay== takes a pointer on char as parameter (thus a String) and returns a pointer on a ==Display==. 
 We could define all the function in a large class representing the library, but we will apply an object-oriented decomposition of the X11 world. Therefore,  we need to define a class that will hold an handle for ==Display==. We can do this by creating a subclass of ==NBExternalObject== as follows:
@@ -119,7 +123,8 @@ NBExternalObject subclass: #NBXLibDisplay
 	category: 'NBXLib'
 ]]]
 
-For each NativeBoost entity we have to define the function ==#nbLibraryNameOrHandle== that answers the path to the module. In order to not define multiple times this function, we can define a ==Trait== to be used by all our ==NBXLib== package classes:
+For each NativeBoost entity we have to define the method ==nbLibraryNameOrHandle== that answers the path to the module. 
+To avoid to define multiple times this method, we can define a ==Trait== to be used by all our ==NBXLib== package classes:
 
 [[[
 Trait named: #TNBXLibLibrary
@@ -144,7 +149,9 @@ NBExternalObject subclass: #NBXLibDisplay
 	category: 'NBXLib'
 ]]]
 
-We can now create the binding for the function ==XOpenDisplay==. As it will be used to create a new ==NBXLibDisplay== instance, we should define the primitive on the class side:
+We can now create the binding for the function ==XOpenDisplay==. 
+As it will be used to create a new ==NBXLibDisplay== instance, we define the primitive on the class side.
+We define the message ==open:== that will call the X11 primitive as follows:
 
 [[[
 NBXLibDisplay class>>open: displayName
@@ -160,7 +167,7 @@ Then we can try to open the default X display (number 0):
 NBXLibDisplay  open: ':0'
 ]]]
 
-that should answer a new instance on ==NBXLibDisplay==. If ==displayName== argument is ==NULL==, XOpenDisplay defaults to the value of the ==DISPLAY== environment variable. As it's often what we want, we can add a new class method named ==open== defined as follows:
+This expression should answer a new instance of ==NBXLibDisplay==. If ==displayName== argument is ==NULL==, XOpenDisplay defaults to the value of the ==DISPLAY== environment variable. As it's often what we want, we can add a new class method named ==open== defined as follows:
 
 [[[
 NBXLibDisplay class>>open
@@ -169,32 +176,41 @@ NBXLibDisplay class>>open
 	^self nbCall: #(NBXLibDisplay XOpenDisplay (nil))
 ]]]
 
-and then we can open the default display with:
+We can then open the default display with the following expression:
 
 [[[
 NBXLibDisplay open
 ]]]
 
-When you inspect the result of the last expression you should obtain Figure
+When you inspect the result of the last expression you should obtain Figure *displayInstance*.
 
 +Inspecting NBXLibDisplay open>file://figures/displayInstance.pdf|width=40|label=displayInstance+
 
 
 !! About NativeBoostPlugin primitives
 
-Now it is time to explain what we did a bit.
-This line:
+Now it is time to explain what we did a bit. Let'us analyse what we wrote.
+
+We wrote basically two lines: 
 
 [[[
 <primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
 ]]]
 
-is a ==pragma== that tries to execute a primitive function, only evaluating the body of the method (in this case the send of ==nbCall:==) if it fails. First, the ==#primitiveNativeCall== of the ==#NativeBoostPlugin==  tries to perform the foreign call by executing assembly code. If it fails (which it always will the first time because the assembly code has not been generated yet), an ==errorCode== is returned and the body of the method is evaluated. 
+The first line is a ==pragma== (named ==primitive:module:error:==) that tries to execute a primitive function.
+As any primitive, it only execute the body of the method (in this case the send of ==nbCall:==) if the primitive fails. 
 
+So here first the ==primitiveNativeCall== of ==NativeBoostPlugin== tries to perform the foreign 
+call by executing assembly code. If it fails (which it always will the first time because the assembly code 
+has not been generated yet), an ==errorCode== is returned and the body of the method is executed. This evaluation will kick 
+in the assembly generation and next time we will call this method, the primitive will not fail.
+
+
+Now let'us look at the second line. 
 [[[
 ^self nbCall: #(NBXLibDisplay XOpenDisplay (char * displayName))
 ]]]
-
+The second line defines the call we want to perform.
 Here, ==nbCall:== will parse the array and produce the machine code to perform the function call to ==XOpenDisplay==.
 
 
@@ -221,7 +237,7 @@ See below for a longer list.
 
 Usually the C idiom to represent a string datatype is to declare a pointer to the first character of a null-terminated array - In C there is no formal definition of what a string is. Now when we want to call functions expecting ==char *==, care must be taken. Let us see why.
 
-We should pay attention because a ==char *== data type is not necessarily a string. It could simply be a pointer. Therefore, read the documentation of the library to make sure
+We should pay attention because a ==char *== datatype is not necessarily a string. It could simply be a pointer. Therefore, read the documentation of the library to make sure
 that the function argument in question is expecting a string and not just a pointer to a char value.
 
 For null-terminated strings, NativeBoost provides a special type named ==String==. Using this type, the value is automatically converted between a Pharo ==ByteString== and a C null-terminated string. 
@@ -340,11 +356,11 @@ NBExternalObject subclass: #NBXLibDisplay
 	category: 'NBXLib'
 ]]]
 
-and then initialize the ==Display== class variable. Note that the value is a symbol because the array contains literal values. Do not forget to evaluate ==NBXLibDisplay initialize== once you define the method:
+and then initialize the ==Display== class variable. Note that the value is a symbol because the array contains literal values. 
+Do not forget to execute the expression ==NBXLibDisplay initialize== once you define the method:
 
 [[[
 NBXLibDisplay class>>initialize
-
 	Display := #NBXLibDisplay
 ]]]
 
@@ -374,7 +390,6 @@ SharedPool subclass: #NBXLibTypes
 	category: 'NBXLib'
 
 NBXLibTypes class>>initialize
-
 	Display := #NBXLibDisplay.
 	
 NBExternalObject subclass: #NBXLibDisplay
@@ -400,21 +415,30 @@ Instances of ==NBExternalObject== represent an external object of one kind, prov
 
 A typical usage of ==NBExternalObject== is to create a subclass, and then use that subclass name directly in function signatures. This is what we did previously.
 
+We defined a subclass
 [[[
 NBExternalObject subclass: #NBXLibDisplay
-
-newObj := NBXLibDisplay newObject.
-
-NBXLibDisplay class>>newObject
-	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
-	^self nbCall: #(NBXLibDisplay XOpenDisplay (nil))
 ]]]
 
-Here, we assume that ==XOpenDisplay()== returns a handle (or pointer) to some opaque external structure. Using an NBExternalObject subclass (i.e. NBXLibDisplay) as a return type in the function signature, we are telling the code generator to automatically convert the return value into an instance of that class and initialize its handle to the value returned by the function.
+We defined then a primitive call and got an instance from that class.
+[[[
+NBXLibDisplay class>>open
+	<primitive: #primitiveNativeCall module: #NativeBoostPlugin error: errorCode>
+	^self nbCall: #(NBXLibDisplay XOpenDisplay (nil))	
+	
+newObj := NBXLibDisplay open.
+]]]
+
+Here, we assume that ==XOpenDisplay()== returns a handle (or pointer) to some opaque external structure. 
+Using an NBExternalObject subclass (i.e., NBXLibDisplay) as a return type in the function signature, 
+we are telling the code generator to automatically convert the return value into an instance of that class 
+and initialize its handle to the value returned by the function.
 
 When used as argument type, the ==handle== instance variable is passed to the external function.
 
-The main advantage of using an ==NBExternalObject== subclass as a type name for arguments is that it provides type safety by checking that the incoming argument is an instance of your class, and nothing else. Otherwise, the primitive will fail without calling the external function.
+The main advantage of using an ==NBExternalObject== subclass as a type name for arguments is that it 
+provides type safety by checking that the incoming argument is an instance of your class, and nothing else. 
+Otherwise, the primitive will fail without calling the external function.
 
 
 !! Self magic
@@ -657,8 +681,8 @@ We use ==NBExternalAddress *== and not ==void *== because: using ==void *== we c
 
 So far we defined a method (primitive) to call the C function but we did not define how to perform the actual call. Now we explain the next steps to arrive to this point.
 
-Communicating with a C library often requires dealing with arrays of certain data type (ints, floats etc).
-There is no direct correspondence between Pharo arrays (array of objects) and arrays in C (array of certain data type values), and NativeBoost provides no implicit conversions between them because there is no magic.  While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex data types, like array of structures it is impossible.
+Communicating with a C library often requires dealing with arrays of certain datatype (ints, floats etc).
+There is no direct correspondence between Pharo arrays (array of objects) and arrays in C (array of certain datatype values), and NativeBoost provides no implicit conversions between them because there is no magic.  While for most basic types, the automatic conversion can be done (integers, floats etc), for any more complex datatypes, like array of structures it is impossible.
 Moreover, an automatic conversion between C arrays and instances of ==Array== would require copying/converting data to represent each array element as an object (which is expensive if done systematically). Such automatic conversion requires knowledge about the array size beforehand, which also is not always the case.
 
 In case, if we don't need accessing array's elements and just need a space to store an array as a whole, we can just use instances of ==ByteArray== big enough to accommodate C array of requested size (after all, anything held in computer memory is just a bunch of bytes).
@@ -699,7 +723,7 @@ The only difference is that the elements has fixed type. If we pass invalid obje
 ]]]
 
 !!!! Anonymous classes.
-In certain situations, it is tedious to have to define a class for each data types. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==. Here is the equivalent of the previous one:
+In certain situations, it is tedious to have to define a class for each datatypes. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==. Here is the equivalent of the previous one:
 
 [[[
 myClass := NBExternalArray ofType: 'int'.
@@ -766,7 +790,7 @@ value := intValueBuffer nbUInt32AtOffset: 0.
 
 
 !!!! Anonymous classes.
-Again in certain situations, it is tedious to have to define a class for each data type, especially when there are way too many as in some libraries. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==. Here is the equivalent of the previous one:
+Again in certain situations, it is tedious to have to define a class for each datatype, especially when there are way too many as in some libraries. NativeBoost supports the creation on the fly of anonymous classes using the message ==ofType:==. Here is the equivalent of the previous one:
 
 [[[
 myClass := NBExternalTypeValue ofType: 'int'.
