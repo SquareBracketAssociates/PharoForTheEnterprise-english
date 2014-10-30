@@ -1,3 +1,4 @@
+! Plugins in Nautilus 
 
 !! Plugin Manager
 Nautilus provides several plugins and, of course, you can build your own. 
@@ -49,11 +50,12 @@ notify Nautilus not to display anything.
 
 [[[
 MyPlugin>>display
-
-    morph := LabelMorph new contents: '';
-        enabled: false; vResizing: #shrinkWrap; hResizing: #spaceFill; yourself.
-
-^ morph
+    morph := LabelMorph new contents: 'MyPlugin';
+        enabled: false; 
+		vResizing: #shrinkWrap; 
+		hResizing: #spaceFill; 
+		yourself.
+	^ morph
 ]]]
 
 You can also redefine the following methods on the class side:
@@ -68,7 +70,8 @@ You can also redefine the following methods on the class side:
 And finally you can redefine the ==pluginName== method to change the name displayed in the Nautilus Plugin Manager.
 
 [[[
-
+MyPlugin class>>description
+	^ 'MyPlugin'
 ]]]
 
 [[[
@@ -76,9 +79,7 @@ MyPlugin class>>description
 	^ 'A super cool plugin'
 ]]]
 
-!!! Plugin Manager
+!!! Check in the Plugin Manager
 
-Enable and disable plugins: Nautilus provides several plugins and, of course, you can build your own. 
-To see the available list of plugins and add or remove them,  click in the top right arrow of a Nautilus browser -> Nautilus Plugin Manager. There, you can add and remove plugins with absolute freedom.
-
+Now your plugin should appear in the plugin list of the plugin manager and in Nautilus once you select it.
 
