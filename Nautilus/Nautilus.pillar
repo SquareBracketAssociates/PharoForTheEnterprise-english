@@ -11,6 +11,23 @@ Once you selected a plugin, it will be active the next time you open a new brows
 	How to do enable 
 ]]]
 
+!! Some cool predefined plugins
+
+!!!AnnotationPane. 
+This plugin shows the meta information of methods such as author, last modification and others. Figure *PackageTasks* shows an example.
++Method Annotation>file://figures/AnnotationPane.png|width=80|label=AnnotationPane+ 
+
+!!!Tasks. 
+This plugin shows the methods with a ==flag:== within the package. This is really handy to monitor 
+what you should do next. Figure *PackageTasks* shows an example. When you click on the list of flagged elements you jump to the element.
+
++Package Tasks>file://figures/PackageTasks.png|width=80|label=PackageTasks+ 
+
+!!!BreadCrumbs. This plugin offers a navigation path to the currently selected element. All the menu are available on the elements.
+Figure *BreadScrums-Full* shows an example.
+
++Navigable path (BreadScrums)>file://figures/BreadScrums-Full.png|width=80|label=BreadScrums-Full+ 
+
 
 !! How to create Nautilus-Plugins
 
@@ -58,11 +75,11 @@ MyPlugin>>display
 	^ morph
 ]]]
 
-You can also redefine the following methods on the class side:
+You can also redefine the following method on the class side:
 
 - ==defaultPosition== defines the default position of the morph. Possible values are =={#top, #middle, #bottom, #none}==. The default value is ==#none==.
 
-- ==possiblePositions== answers a collection of the possible positions the widget could adopt.
+- ==possiblePositions== answers a collection of the possible positions the widget can adopt.
 
 
 !!! Describing your plugin
