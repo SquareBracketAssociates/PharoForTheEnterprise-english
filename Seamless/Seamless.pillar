@@ -39,10 +39,55 @@ From the point of view of the Pharo developer Seamless aspires to be what RMI an
 
 !!Enough Said: Death to Sockets
 
-<quote here>
+!!!Installation
 
-- Installation
-- Hallo Transcript !
+To install and start playing around with Seamless evaluate the following code-snippet in your Workspace:
+
+[[[
+Gofer it
+	url: 'http://ss3.gemstone.com/ss/Seamless';
+	package: 'ConfigurationOfSeamless';
+	load.
+
+((Smalltalk at: #ConfigurationOfSeamless) project version: '0.4') load.
+]]]
+
+Seamless has been ported to Pharo 3.0. To install Pharo on your system follow the online instructions *here>http://pharo.org/download* or *here>http://get.pharo.org/*. Loading Seamless can be also done directly from the command line as follows:
+
+[[[
+./pharo-ui Pharo.image config \
+          http://ss3.gemstone.com/ss/Seamless \
+          ConfigurationOfSeamless \
+          --install=0.4
+]]]
+
+Then in order to be able to initiate and respond requests from other images evaluate:
+
+[[[
+aDeamon := SeamlessDeamon 
+		newDefaultWithGlobalAccess 
+		startOn: 8080.
+]]]
+
+which again can be done directly from the command-line at start-up. 
+
+To sum-up and to facilitate your deployments here is how you can download pharo, load Seamless and start the deamon in your prefered port from scratch:
+
+[[[
+wget -O- get.pharo.org | bash;
+./pharo-ui Pharo.image config \
+          http://ss3.gemstone.com/ss/Seamless \
+          ConfigurationOfSeamless \
+          --install=0.4 \
+          eval "SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080"
+]]]
+
+In order to follow the example in this chapter you will be needing two images,
+listening to port 8080 (""peer1"" from now on) and 8081 (""peer2"" from now on) respectively.
+
+''eval under pharo-ui exits upon evaluation, fix''
+
+!!!Hallo Transcript !
 
 !!Between Ping-Pong and the REST
 
