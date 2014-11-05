@@ -99,9 +99,16 @@ the only one that is not editable, so it is read only. Later, this pane is refer
 
 ""Buttons""
 
--''TODO: this part is not clear. Is it clear now?''. "Undo" button is a general undo for three editable panes: Source, Match and Transform. All changes, that were made in one of these panes, are stacked. If you click on "Undo" button, the last change that was made in any of these panes, will be retreived. Also there is local undo for each pane separately (''DESCRIBED LATER'').
--"Generate rule" button creates new class - a subclass of ''RBTransformationRule'' using information from two bottom panes. After the rule is created using this button, you can apply it to specific scope.
--"Browse rules" button opens up "Rewrite rule browser", which allows you to browse created rules, and apply them to scope that you want.
+- "Undo" button is a general undo for the three editable panes: Source, Match
+  and Transform. All changes, that were made in one of these panes, are
+  stacked. If you click on "Undo" button, the last change that was made in any
+  of these panes, will be retreived. Also there is local undo for each pane
+  separately (''DESCRIBED LATER'').
+- "Generate rule" button creates new class which is a subclass of
+  ''RBTransformationRule'' using information from two bottom panes. After the
+  rule is created using this button, you can apply it to specific scope.
+- "Browse rules" button opens up "Rewrite rule browser", which allows you to
+  browse created rules, and apply them to scope that you want.
 
 !!!Rewrite rule browser
 
@@ -145,6 +152,8 @@ into:
     self ifNil: [ ^ true ]
 ]]]
 
+!!!!Step 1:
+
 First, you need to input template source code in Source pane of Builder. If you
 launched the builder with the previously given line, the input code is the one
 of our example. In all panes you get exactly the same code. If you want to
@@ -159,16 +168,25 @@ As was mentioned earlier, your main playground is Match pane.
 Thus, almost all next actions are made in this pane, and also in Transform pane.
 In our example we don't care about the concerned object (''self'').
 It can be ''self'' or maybe just some temporary variable.
-That is why you have to select ''self'' and right click on it, which opens a menu,
-which displays all actions that can be applied to selected object.
-Actually this object is represented as a node of an AST - abstract syntax tree.
-In Builder each node of AST has its own set of options.
-Read more on abstract syntax tree ''""HERE""''. 
+That is why you have to select ''self'' and right click on it, which opens a
+menu.
+
++Step 1 of simple example>file://figures/simpleExample1-1.png|width=60|label=simpleExample1-1+
+As shown in figure *simpleExample1-1*, it displays all actions that can be
+applied to selected object. Actually this object is represented as a node of
+an AST (abstract syntax tree). In Builder each node of AST has its own set of
+options we will note detail here. For more information on abstract syntax tree
+''""you may read HERE""''.
 In this particular case it will contain following options:
 - Ignore
 - Change
 - Abstract variable 
-You need ''"Abstract variable"'', inasmuch it changes ''self'' into metavariable. You can read more about metavariables and rewrite engine ''""HERE""''.
+You need ''"Abstract variable"'', inasmuch it changes ''self'' into
+metavariable, as illustrated in figure *simpleExample1-2*.
++End of step 1 of simple example>file://figures/simpleExample1-2.png|width=60|label=simpleExample1-2+
+
+You can read more about metavariables and rewrite engine ''""HERE""''.
+
 This metavariable will match any object for example: ''self'', ''Color'' (classes are objects too), ''someTempVar''.
 After this change we should have:
 
@@ -188,24 +206,46 @@ In case you want to have in result something else, for example
 ''anotherObject'' use an option ''Change'' on a `variable1 in Transform pane
 (or manually type it, but it is not recommended).
 But for now, we don't want that.
-To proceed, select ''isNil'' in Transform pane, open a menu.
-The options in this case are different from previous one, as it is not a variable selected, but selector.
-So, click on ''Ignore selector'' option. It will remove ''isNil'' from Transform pane.
-Also, Result pane was updated:
 
-[[[ label = resultExampleStep1 | language = Smalltalk
-    self ifTrue: [ ^ true ]
-]]]
 
-Now let us work with our block: ''[ ^ true ]''.
-Here we have the same situation as we had with ''self''.
-Again, we don't care about which block is passed as an argument to ''ifTrue:'' or ''ifNil:''.
-So, in Match pane, we select our block (be sure to include the brackets) and choose the option ''Abstract block''.
-In result it will be changed into ''`@block1''.
+!!!!Step 2:
++Step 2 of simple example>file://figures/simpleExample1-3.png|width=60|label=simpleExample1-3+
 
-Finally, select ''ifTrue:'' in Transform pane, and apply ''Change selector'' option from menu.
-Type in recently opened window: ''ifNil:'', and press ''Ok'' button.
-We are done with our task.
+The next step concerns ''isNil'': select it in Transform pane and right-click
+to open a menu. The options in this case are different from previous one, as it
+is not a variable selected, but selector. So, click on ''Ignore selector''
+option. It will remove ''isNil'' from Transform pane.
+Also, Result pane was updated.%:
+
+%[[[ label = resultExampleStep1 | language = Smalltalk
+%    self ifTrue: [ ^ true ]
+%]]]
+
+!!!!Step 3:
+
++Step 3 of simple example>file://figures/simpleExample1-4.png|width=60|label=simpleExample1-4+
+
+Now let us work with our block: ''[ ^ true ]''. We have the same situation as
+we had with ''self''. Once again, we don't care about which block is passed as
+an argument to ''ifTrue:'' or ''ifNil:''. Therefore in Match pane, we select
+our block (be sure to include the brackets) and choose the option ''Abstract
+block'' as examplefied in figure *simpleExample1-4*. In result it will be
+changed into ''`@block1''.
+
+!!!!Step 4:
+
++Step 4 of simple example>file://figures/simpleExample1-5.png|width=60|label=simpleExample1-5+
+
+Finally, select ''ifTrue:'' in Transform pane, and apply ''Change selector''
+option from menu. Type in recently opened window: ''ifNil:'', and press ''Ok''
+button as shown by figure *simpleExample1-5*. 
+
+You can also select ''super size'' and ignore it in Match and Transform panes,
+and then delete it in the source one to finish the transformation and obtaining
+the same rule as in *simpleExample1-6*.
+
++Step 5 of simple example>file://figures/simpleExample1-6.png|width=60|label=simpleExample1-6+
+
 You can see the result of applying rewrite rule to source code in Result pane.
 
 [[[ label = resultExampleStep2 | language = Smalltalk
@@ -217,7 +257,6 @@ Than click on ''Browse rules'' button, and you will see that your new class is i
 
 ...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...
 
-+Simple example ''TODO: to change''>file://figures/simpleExample.png|label=simpleExample+
 
 !!!Second example
 
@@ -432,7 +471,8 @@ Replaces selector of selected node of AST with users input.
 
 ''""Ignore""''
 
-Removes selected node of AST.
+Removes selected node of AST. This option is used when a part of the code is
+not useful or relevant for the pattern.
 
 ''""Ignore selector""''
 
