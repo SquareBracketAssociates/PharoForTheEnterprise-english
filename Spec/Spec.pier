@@ -28,20 +28,29 @@ In section four the API of the ''Spec'' basic models is detailled as well as how
 The next section presents the support for dynamic UIs in ''Spec''. 
 The sixth section is dedicated to the creation of new ''Spec'' basic widgets, and in section seven the core interpreter loop of ''Spec'' is outlined.
 
-(This documentation was written by Benjamin Van Ryseghem and Johan Fabry, with the suprising help of Sean P. DeNigris.
-For corrections, comments and questions about this text please use *Github>https://github.com/SpecForPharo/documentation*.)
+Spec was developed by Benjamin Van Ryseghem and it is maintained by the community and the pharo core team.
+This documentation has been written by Benjamin Van Ryseghem, Johan Fabry and Stéphane Ducasse, with the suprising help of Sean P. DeNigris. 
+It is actively maintained. Suggestions for improvements are welcome via the Pharo mailing-list.
+
 !! Defining and Reusing UIs with ''Spec''
 @sec_reuse_spec
 
-This section introduces an example of how to define and reuse ''Spec'' user interfaces. The example UI that is built will serve to browse the public API of all the basic widgets offered by ''Spec''.
-This API is further documented in *sec_where_to_find_what_I_want*.
-In this section we do not detail the different parts of ''Spec'' yet, for a more in-depth discussion on the heart of ''Spec''  we refer to *sec_heart_of_spec*.
+This section introduces an example of how to define and reuse ''Spec'' user interfaces. The example UI that is built will serve to browse the 
+public API of all the basic widgets offered by ''Spec''.
 
-The example is structured in four parts.
+This API is further documented in *sec_where_to_find_what_I_want*. In this section we do not detail the different parts of ''Spec'' yet, 
+for a more in-depth discussion on the heart of ''Spec''  we refer to *sec_heart_of_spec*.
+
+The example is structured in four parts that will result in the browser shown in *fig_protocol_browser*.
 First, a list UI named  ""ModelList"" that is dedicated to render the subclasses of the ''AbstractWidgetModel'' class is created.
 Second, a UI composed of a list and a label is defined and named ""ProtocolList"".
 Third, a protocol viewer is defined by combining a ""ModelList"" with two ""ProtocolList"" to browse the ''protocol'' and ''protocol-events'' methods.
-Finally a protocol browser is made by reusing a protocol viewer and adding a text zone.
+Finally a protocol browser is made by reusing a protocol viewer and adding a text zone. 
+
+
++Protocol Browser>file://figures/Protocol_Browser.png|width=50|label=fig_protocol_browser+
+
+
 
 !!! The ModelList
 
@@ -61,13 +70,11 @@ This step is done in the method ==initializeWidgets== as shown in the code *ex_m
 More details on the use of the ==initializeWidgets== method are given in *subsec_initializeWidgets*.
 
 [[[label=ex_modelList_initializeWidgets|caption=Implementation of ModelList>>#initializeWidgets|language=Smalltalk 
-initializeWidgets
+ModelList>>initializeWidgets
 
 	list := self newList.
-	
 	list items: (AbstractWidgetModel allSubclasses 
 		sorted: [:a :b | a name < b name ]).
-		
 	self focusOrder add: list
 ]]]
 
@@ -90,16 +97,16 @@ The code *ex_modelList_others* shows the implementation of these three methods a
 
 [[[label=ex_modelList_others|caption=ModelList other methods|language=Smalltalk 
 "accessing"
-list
+ModelList>>list
 	^ list
 	
 "protocol"
-title
+ModelList>>title
 
 	^ 'Widgets'
 	
 "protocol-events"
-whenSelectedItemChanged: aBlock
+ModelList>>whenSelectedItemChanged: aBlock
 
 	list whenSelectedItemChanged: aBlock
 ]]]
@@ -124,14 +131,12 @@ ComposableModel subclass: #ProtocolList
 The ==initializeWidgets== method for this UI is quite similar to the method in ModelList, as the code in *ex_protocolList_init* shows.
 
 [[[label=ex_protocolList_init|caption=ProtocolList implementation of initializeWidgets|language=Smalltalk 
-initializeWidgets
+ProtocolList>>initializeWidgets
 
 	protocols := self newList.
 	label := self newLabel.
-	
 	label text: 'Protocol'.
 	protocols	displayBlock: [ :m | m selector ].
-	
 	self focusOrder add: protocols
 ]]]
 
@@ -140,7 +145,7 @@ Now the sub widgets need to be placed more specifically than in the previous exa
 The code *ex_protocolList_layout* shows how to build a column with the label on top and the list taking all the space that is left.
 
 [[[label=ex_protocolList_layout|caption=ProtocolList layout|language=Smalltalk 
-defaultSpec
+ProtocolList class>>defaultSpec
 	<spec: #default>
 
 	^ SpecLayout composed
@@ -157,35 +162,35 @@ The code *ex_protocolList_others* shows the implementations of these methods as 
 
 [[[label=ex_protocolList_others|caption=ProtocolList other methods|language=Smalltalk 
 "accessing"
-label
+ProtocolList>>label
 	^ label
 	
 "accessing"
-protocols
+ProtocolList>>protocols
 	^ protocols
 	
 "protocol"
-items: aCollection
+ProtocolList>>items: aCollection
 
 	protocols items: aCollection
 	
 "protocol"
-label: aText
+ProtocolList>>label: aText
 
 	label text: aText
 	
 "protocol"
-resetSelection
+ProtocolList>>resetSelection
 
 	protocols resetSelection
 	
 "protocol"
-title
+ProtocolList>>title
 
 	^ 'Protocol widget'
 	
 "protocol-events"
-whenSelectedItemChanged: aBlock
+ProtocolList>>whenSelectedItemChanged: aBlock
 
 	protocols whenSelectedItemChanged: aBlock
 ]]]
@@ -213,13 +218,13 @@ This is because it does not use basic widgets but instead reuses the user interf
 The remainder of the method is quite similar to the previous implementation, as shown in the code in *ex_viewer_initializeWidgets*.
 
 [[[label=ex_viewer_initializeWidgets|caption=Implementation of ProtocolViewer>>#initializeWidgets|language=Smalltalk 
-initializeWidgets
+ProtocolViewer>>initializeWidgets
 
 	models := self instantiate: ModelList.
 	protocols := self instantiate: ProtocolList.
 	events := self instantiate: ProtocolList.
 	
-	protocols	label: 'protocol'.
+	protocols label: 'protocol'.
 	events label: 'protocol-events'.
 		
 	self focusOrder 
@@ -232,7 +237,7 @@ The layout puts the sub widgets in one column, with all sub widgets taking the s
 The code in *ex_viewer_layout* shows the implementation of this layout.
 
 [[[label=ex_viewer_layout|caption=ProtocolViewer column layout|language=Smalltalk 
-defaultSpec
+ProtocolViewer class>>defaultSpec
 	<spec: #default>
 	
 	^ SpecLayout composed
@@ -251,7 +256,7 @@ The implementation of this method is exposed in code *ex_viewer_presenter*.
 More details on the ==initializePresenter== method are given in *subsec_initializePresenter*.
 
 [[[label=ex_viewer_presenter|caption=ProtocolViewer sub widget interactions|language=Smalltalk
-initializePresenter
+ProtocolViewer>>initializePresenter
 
 	models whenSelectedItemChanged: [ :class |
 		self resetProtocolSelection.
@@ -422,6 +427,17 @@ The final user interface can be opened with the following snippet: ==ProtocolBro
 The result can be seen in figure *fig_protocol_browser*.
 
 +Protocol Browser>file://figures/Protocol_Browser.png|width=50|label=fig_protocol_browser+
+
+
+!!! Adding Menu
+
+may be this should be adding in the flow.
+
+
+
+
+
+
 !! The heart of Spec
 @sec_heart_of_spec
 
@@ -519,7 +535,7 @@ they should provide a comprehensive API.
 This method is optional. Without it, the different widgets in the UI will simply not respond to changes in each others' state.
 ]]]
 
-!!! the ''layout'' method
+!!! The ''layout'' method
 @subsec_layout
 
 This method specifies the layout of the different widgets in the UI.
@@ -569,7 +585,7 @@ Specifying this method is mandatory, as without it the UI would show no widgets 
 ]]]
 
 
-!!!! Layout Examples
+!! Layouts
 
 As layouts can become quite complex, this section provides a list of examples of the construction of layouts.
 First two examples are given of the use of *rows and columns>layout_rows_and_column_layout*.
@@ -735,6 +751,12 @@ The example *ex_specify_layout* shows how to add an instance of ""MyWidget"" usi
 	add: #myWidget withSpec: #anotherLayout;
 	yourself
 ]]]
+
+
+
+!! Menus
+
+
 !! Where to find what I want
 @sec_where_to_find_what_I_want
 
@@ -821,7 +843,7 @@ resetSelection
 	selectionHolder reset.
 	multiSelectionHolder removeAll
 ]]]
-!! Spec the Dynamic
+!! Dynamic Spec
 @sec_spec_the_dynamic
 
 Having an user interface with a well known number of sub widgets and a static layout is not always sufficient. 
