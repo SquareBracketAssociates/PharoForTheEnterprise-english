@@ -8,6 +8,9 @@ We show how to do add them with a dynamic user interface, and minimize duplicati
 
 !! The party model
 In the party model, party is a superclass of person and company. 
+
+@@todo Put an UML class diagram 
+
 Create the abstract superclass ==Party==
 [[[label=createParty|caption=Create the party class|language=Smalltalk 
 Object subclass: #DOParty
