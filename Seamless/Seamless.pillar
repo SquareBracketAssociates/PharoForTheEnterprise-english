@@ -85,12 +85,54 @@ wget -O- get.pharo.org | bash;
 In order to follow the example in this chapter you will be needing two images,
 listening to port 8080 (""peer1"" from now on) and 8081 (""peer2"" from now on) respectively.
 
-''eval under pharo-ui exits upon evaluation, fix''
+''Note: eval under pharo-ui exits upon evaluation, fix''
 
 !!!Hallo Transcript !
 
+Once you have your peers set-up you can start sending messages from one to another. The simplest example would be to print the customary \'hallo world\' or a sequence of numbers from peer1 to the transcript of peer2. There are a lot of different ways to do that with Seamless let's see some of them (from peer1):
+
+[[[
+"sugar 1"
+remoteTranscript := (Transcript from: '127.0.0.1:8081'). 
+remoteTranscript open.
+remoteTranscript show: 'Hallo World !'.
+1 to: 100 do: [:i | 
+	remoteTranscript show: i; cr.
+].	
+]]]
+
+As you can see the only difference with printing locally is on line 2 when we retrieve the remote transcript instead of using the local Transcript of peer1.
+We will come back to the trade-offs introduced to your code by this ''transperancy'' between local and remote execution. In the meantime here is some other ways you can retrieve a remote object and start sending messages to it with Seamless:
+
+[[[
+"sugar 2"
+remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
+"sugar 3"
+remoteEnvironment := '127.0.0.1:8081' asRemoteEnvironment.
+remoteTranscript := remoteEnvironment at: #Transcript.
+"sugar 4 (alt 1)"
+remoteTranscript := (Smalltalk from: '127.0.0.1:8081') globals at: #Transcript.
+]]]
+
+This is of course all syntactic sugar with the seamless deamon and protocol working behind the scene to manage your remote references. You can even use these as a base to introduce your own abstractions for fetching remote objects.
+
+At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitely means that a remote peer has full access to the SystemDictionary on the other side and whence the whole system. This is of course intentional and usefull for prototyping but of course rather perilous for deployment.
+
+Remember when we where setting-up our seamless deamon we invoked:
+
+[[[
+SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080
+]]]
+
+inside the SeamlessDeamon>>newDefaultWithGlobalAccess method (which we will be examining in detail in Section blah) the Smalltalk globals are given as the entry point of communication and the overall distribution policies are set to their most permissive state. 
+
+Restricting which objects can be referenced from your image and how exactly they will behave is a matter of changing this entry point dictionary (to point to a user-defined one rather than the system dictionary) and altering the distribution policy of your deamon. 
+
+''Note: clean up syntactic sugars and loose the SeamlessDeamonManager (just adds complexity)''
+
 !!Between Ping-Pong and the REST
 
+- Before starting log examples from previous section
 - The ping-pong examples
 - Make a diagram with transparent distribution
 on one end REST on the other, explain the
