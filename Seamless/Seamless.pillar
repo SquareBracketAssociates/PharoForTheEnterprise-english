@@ -206,7 +206,7 @@ on the spectrum, give an all serialized rest example
 - Green Threading and UI
 - Exception Handling
 - Distributed-GC
-- Futures
+- Futures (say here about batch communication execution and other optimizations)
 - Monitoring
 
 !!Acks
