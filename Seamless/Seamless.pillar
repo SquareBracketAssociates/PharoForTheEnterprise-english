@@ -132,7 +132,42 @@ Restricting which objects can be referenced from your image and how exactly they
 
 !!Between Ping-Pong and the REST
 
-- Before starting log examples from previous section
+''Note: Before starting log the examples from previous section and say how traffic may be reduced''
+
+Taking a hint from the logging results of our previous example we now move on to a more complicated case in order to better understand how proxies are generated and propagated in both directions as code is executed. Our goal is for the reader to be able to reason about the distribution of objects and structure code accordingly.
+
+Continuing we will discuss the well-documented caveats of ''transparent distribution'' (ref here from ibm) and how this model compares to the the other end of the communication spectrum, namely that of stateless one-shot requests (REST). Then we will see how you can code and configure Seamless to move your implementation towards one or the other end of the spectrum.
+
+[[[
+localPingPong
+
+	PingPong new decrement: 100 using: PingPong new.
+]]]
+
+[[[
+pingPong
+
+	remotePingPongClass := ('127.0.0.1:8081' globalAt: #PingPong). 
+
+	PingPong new decrement: 100 using: remotePingPongClass new. 
+]]]
+
+[[[
+decrement: aNumber using: aPingPongInstance
+	
+	aNumber = 0 ifFalse: [
+	
+		aPingPongInstance 
+			decrement: aNumber - 1 
+			using: self.
+		
+	].
+
+	Transcript show: aNumber; cr.
+]]]
+
+''NOTE: explain what the code does and say that this is a intentionally coupled example. Talk about REST do the diagram and then show asLocal (and how it breaks propagation), By value: and the Seamless configuration consider moving some of these discussions elsewhere''
+
 - The ping-pong examples
 - Make a diagram with transparent distribution
 on one end REST on the other, explain the
