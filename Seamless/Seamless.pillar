@@ -31,7 +31,7 @@ which itself was preceded by projects such as OpenCorba {{{latex:
 }}}. It was born as an engineering prerequisite for a research prototype on 
 remote debugging and has since be used on and off internally by other RMoD projects at INRIA. 
 
-From the point of view of the Pharo developer Seamless aspires to be what RMI and DCOM is for Java and the .NET platforms respectively while leveraging the reflective and dynamic nature of our environment. Seamless may be distinguished from other solutions in that:
+From the point of view of the Pharo developer Seamless aspires to be \- eventually \- what RMI and DCOM is for Java and the .NET platforms respectively while leveraging the reflective and dynamic nature of our environment. Seamless may be distinguished from other solutions in that:
 
 - It targets the Pharo environment and strives to integrate with its core facilities (ie available serialization solutions like Fuel, proxy implementations like Ghost etc)
 - It provides abstractions, syntactic carbohydrates (sugar) and programming facades to make the prototyping of distributed applications feel ''out-of-the-box''. In a nutshell Seamless is biased towards Rapid Application Prototyping.
@@ -136,35 +136,97 @@ Restricting which objects can be referenced from your image and how exactly they
 
 Taking a hint from the logging results of our previous example we now move on to a more complicated case in order to better understand how proxies are generated and propagated in both directions as code is executed. Our goal is for the reader to be able to reason about the distribution of objects and structure code accordingly.
 
-Continuing we will discuss the well-documented caveats of ''transparent distribution'' (ref here from ibm) and how this model compares to the the other end of the communication spectrum, namely that of stateless one-shot requests (REST). Then we will see how you can code and configure Seamless to move your implementation towards one or the other end of the spectrum.
+After that we will discuss the well-documented caveats of ''transparent distribution'' (ref here from ibm) and how this model compares to the the other end of the communication spectrum, namely that of stateless one-shot requests (REST). Then we will see how you can code and configure Seamless to move your implementation towards one or the other end of the spectrum.
+
+In the first code snippet below (which you can find in the Examples sub-package of Seamless) we see the localPingPong method of the TutorialExample class. This method on line 2 creates a new instance of the PingPong class and sends the message \#decrement:using: to it.
 
 [[[
-localPingPong
-
-	PingPong new decrement: 100 using: PingPong new.
+1 TutorialExample class>>localPingPong
+2	PingPong new decrement: 100 using: PingPong new.
 ]]]
+
+The ping-pong instance through the \#decrement:using: method is responsible for decrementing the number ''aNumber'' which it receives as the first argument through mutual-recursion with another ping-pong instance (whence the name ping-pong). The number is decreased on line 6 as it is passed back and forth between the two instances, while on line 11 the number of each step is printed. Printing is done after the mutual recursive calls with each executing context (100 contexts in this example) printing the number it received and returning.
+
+If you open a Transcript and execute ''TutorialExample localPingPong'' you will \- as expected \- see the count-down from 100 being printed on your screen.
 
 [[[
-pingPong
-
-	remotePingPongClass := ('127.0.0.1:8081' globalAt: #PingPong). 
-
-	PingPong new decrement: 100 using: remotePingPongClass new. 
+1 PingPong>> decrement: aNumber using: aPingPongInstance
+2	
+3	aNumber = 0 ifFalse: [
+4	
+5		aPingPongInstance 
+6			decrement: aNumber - 1 
+7			using: self.
+8		
+9	].
+10
+11	Transcript show: aNumber; cr.
 ]]]
+
+This rather abstract and boring example can become more intresting if one of the two instances is remote. This is achived on lines 2 and 3 of the \#pingPong method in the TutorialExample class (see below) where a local PingPong instance receives a remote instance of the same class as a second argument.
+
+To run this example set-up peer1 and peer2 as previously and open the Transcripts on both sides. You should see that now \- in contrast with the local version \- only even numbers are printed on peer1 while odd numbers are printed on peer2.
+
+In this case the hundred executing contexts which print the results before returning are coupled between the two machines. Naturally the first call to the local pingPong instance on line 3 below will wait for all contexts in both machines to return before printing 100. 
+
+The first lesson here is that in this remote case ''waiting'' includes both the computation that is taking place (the decrement of the numbers) but also the communication overhead that the hundred remote calls will generate. The second point you should note is that this overhead was implicitely generated. We only ''explicitely'' sent one remote call from peer1 on lines 2 and 3 where we created a remote proxy to peer2. Then peer2 ''implicitely'' received a remote proxy from peer1 through line 7 of the \#decrement:using: method where self is passed as a second argument. This resulted in interwinded ping-pong calls generated in both directions. 
 
 [[[
-decrement: aNumber using: aPingPongInstance
-	
-	aNumber = 0 ifFalse: [
-	
-		aPingPongInstance 
-			decrement: aNumber - 1 
-			using: self.
-		
-	].
-
-	Transcript show: aNumber; cr.
+1 TutorialExample class>>pingPong
+2	remotePingPongClass := ('127.0.0.1:8081' globalAt: #PingPong). 
+3	PingPong new decrement: 100 using: remotePingPongClass new. 
 ]]]
+
+By default Seamless chooses a handfull of classes to be passed or returned by value (ie copied) while all other local arguments to a remote call (or return values) will be passed by reference (implicitely creating proxies on the other side). As a simple rule you can think that by default ''basic objects'' such as numbers and strings are passed by value while more ''composite objects'' are passed by reference. The global default deamon of Seamless passes only the following classes by value:
+
+- Boolean 
+- Character 
+- Number 
+- String 
+- Symbol 
+- UndefinedObject 
+- Color
+
+
+Of course this list can be changed dynamically either while setting up your deamon or even (if needed) while your application is running. Even more conveniently you can programmatically choose to serialize a previously proxied object or ''force'' the serialization of a local object to the other side on a per instance basis.
+
+To illustrate this consider the following two examples below. On the first example we have changed the pingPong method we saw earlier by sending the message \#asLocalObject to the remotePingPong instance we have created. This message send will actually return a copy of the remote pingPong instance, effectively serializing the proxied object. This will in turn result in a local-only execution of the \#decrement:using: method, since now both ping pong instances reside on the same machine. You can confirm this by running the following code and watching the whole sequence of numbers being printed only on peer1.
+
+[[[
+1 TutorialExample class>>pingPong
+2	remotePingPongClass := ('127.0.0.1:8081' globalAt: #PingPong). 
+3	PingPong new decrement: 100 using: remotePingPongClass new asLocalObject. 
+]]]
+
+Alternatively you could force the otherwise implicit proxy generated from peer1 to be passed by value as follows:
+
+[[[
+1 PingPong>> decrement: aNumber using: aPingPongInstance
+2	
+3	aNumber = 0 ifFalse: [
+4	
+5		aPingPongInstance 
+6			decrement: aNumber - 1 
+7			using: (By value: self).
+8		
+9	].
+10
+11	Transcript show: aNumber; cr.
+]]]
+
+The only thing that has changed here is the ''By value:'' directive on line 7 which will force the local ping pong instance of peer1 to be sent by copy to peer2. You can confirm this by running the code and watching the whole sequence of numbers (except the first) being printed only on peer2.
+
+In all examples above we only had to add a one-liner or even a single message sent to make our initial mutual recursion to be distributed across two machines in different ways. The question of course here is how do you choose between the diffent approaches. More precissely how do you choose which objects to proxy and which objects to pass by value.
+
+The answer to this is illustrated in the following figure. It turns out that the more objects or classes of objects you pass by value the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls the more closer you are to ''tranparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). 
+
+''NOTE: Figure Here''
+
+The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your code by profiling and considering the trade-offs. Even more so you may even want to use Seamless to craft usefull abstractions that enforce certain paradigms to your code.  Hopefully by the end of this Chapter you will be able to do that by studying how middleware solutions like Seamless work under the hood.
+
+ 
+
+''NOTE: why By value: and not byValue''
 
 ''NOTE: explain what the code does and say that this is a intentionally coupled example. Talk about REST do the diagram and then show asLocal (and how it breaks propagation), By value: and the Seamless configuration consider moving some of these discussions elsewhere''
 
