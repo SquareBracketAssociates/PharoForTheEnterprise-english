@@ -85,7 +85,7 @@ wget -O- get.pharo.org | bash;
 In order to follow the example in this chapter you will be needing two images,
 listening to port 8080 (""peer1"" from now on) and 8081 (""peer2"" from now on) respectively.
 
-''Note: eval under pharo-ui exits upon evaluation, fix''
+''Note: eval under pharo-ui exits upon evaluation, fix -- whileTrue: [Processor yield] or smth''
 
 !!!Hallo Transcript !
 
@@ -128,11 +128,11 @@ inside the SeamlessDeamon>>newDefaultWithGlobalAccess method (which we will be e
 
 Restricting which objects can be referenced from your image and how exactly they will behave is a matter of changing this entry point dictionary (to point to a user-defined one rather than the system dictionary) and altering the distribution policy of your deamon. 
 
-''Note: clean up syntactic sugars and loose the SeamlessDeamonManager (just adds complexity)''
+''Note: clean up syntactic sugars and loose the SeamlessDeamonManager (just adds complexity) -- Also now that you have the logger expand this with passing implicit refs etc''
 
 !!Between Ping-Pong and the REST
 
-''Note: Before starting log the examples from previous section and say how traffic may be reduced''
+''Note: Before starting log the examples from previous section and say how traffic may be reduced -- Either move this one as a last example or reduce it''
 
 Taking a hint from the logging results of our previous example we now move on to a more complicated case in order to better understand how proxies are generated and propagated in both directions as code is executed. Our goal is for the reader to be able to reason about the distribution of objects and structure code accordingly.
 
@@ -244,6 +244,8 @@ on the spectrum, give an all serialized rest example
 !!Practice Makes Perfect
 
 - All the examples from the presentation
+
+''NOTE: Actually put the contact example here''
 
 !!Ok, ok: Make me a Remote Tester
 
