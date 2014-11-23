@@ -71,25 +71,27 @@ aDeamon := SeamlessDeamon
 
 which again can be done directly from the command-line at start-up. 
 
-To sum-up and to facilitate your deployments here is how you can download pharo, load Seamless and start the deamon in your prefered port from scratch:
+To sum-up here is how you can download pharo, load Seamless and start the deamon in your prefered port in one go:
 
 [[[
 wget -O- get.pharo.org | bash;
 ./pharo-ui Pharo.image config \
           http://ss3.gemstone.com/ss/Seamless \
           ConfigurationOfSeamless \
-          --install=0.4 \
-          eval "SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080"
+          --install=0.4;
+./pharo-ui Pharo.image eval "SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080"
 ]]]
 
 In order to follow the example in this chapter you will be needing two images,
 listening to port 8080 (""peer1"" from now on) and 8081 (""peer2"" from now on) respectively.
 
-''Note: eval under pharo-ui exits upon evaluation, fix -- whileTrue: [Processor yield] or smth''
 
 !!!Hallo Transcript !
 
-Once you have your peers set-up you can start sending messages from one to another. The simplest example would be to print the customary \'hallo world\' or a sequence of numbers from peer1 to the transcript of peer2. There are a lot of different ways to do that with Seamless let's see some of them (from peer1):
+Once you have your peers set-up you can start sending messages from one to another. The simplest example would be to print 
+the customary \'hallo world\' or a sequence of numbers from peer1 to the transcript of peer2. 
+
+There are a lot of different ways to do that with Seamless let's see some of them (from peer1):
 
 [[[
 "sugar 1"
@@ -116,7 +118,7 @@ remoteTranscript := (Smalltalk from: '127.0.0.1:8081') globals at: #Transcript.
 
 This is of course all syntactic sugar with the seamless deamon and protocol working behind the scene to manage your remote references. You can even use these as a base to introduce your own abstractions for fetching remote objects.
 
-At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitely means that a remote peer has full access to the SystemDictionary on the other side and whence the whole system. This is of course intentional and usefull for prototyping but of course rather perilous for deployment.
+At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitely means that a remote peer has full access to the SystemDictionary on the other side and whence the whole system. This is of course intentional and usefull for prototyping but may cause security problems in deployment.
 
 Remember when we where setting-up our seamless deamon we invoked:
 
@@ -124,9 +126,39 @@ Remember when we where setting-up our seamless deamon we invoked:
 SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080
 ]]]
 
-inside the SeamlessDeamon>>newDefaultWithGlobalAccess method (which we will be examining in detail in Section blah) the Smalltalk globals are given as the entry point of communication and the overall distribution policies are set to their most permissive state. 
+inside the SeamlessDeamon>>newDefaultWithGlobalAccess method (which we will be examining in detail later on) the Smalltalk globals are given as the entry point of communication and the overall distribution policies are set to their most permissive state. 
 
-Restricting which objects can be referenced from your image and how exactly they will behave is a matter of changing this entry point dictionary (to point to a user-defined one rather than the system dictionary) and altering the distribution policy of your deamon. 
+Restricting which objects can be referenced from your image and how exactly they will behave is a 
+matter of changing this entry point dictionary (to point to a user-defined one rather than the system dictionary) and altering the distribution policy of your deamon. 
+
+Let's now re-run our Transcript example (shown above), only this time we will use the SeamlessLogger (on both peers) to take a pick behind the scenes:
+
+[[[
+SeamlessLogger new.
+]]]
+
++Remote Printing of Basic Objects (LOG)>file://figures/transcriptWithBasicArgs.png|width=100|label=transcriptWithBasicArgs+
+
+Figure *transcriptWithBasicArgs* shows the loggers on peer1 (left) and peer2 (right) after printing "1 to: 100" on the Transcript of peer2 as we did earlier. On the upper left side of each logger we can see the list of ''deamons'' in each peer. Multiple deamons with different configurations (communication and serialization protocols and policies) can co-exist in each peer. While each one of these deamons can connect to multiple remote peers initiating a one-to-one ''session'' with each one (lower left side of each logger). On each of these ''sessions'' we can start/stop logging (stopping also clears the log) and update the log-views (upper right and lower right side of each logger) even while the communication is taking place. Automatic updating of the log is currently disabled in order to minimize the slow-down introduced by the logging facilities.
+
+''Note to the Reader: You can actually connect two local deamons in the same image -- which is another great way to test, profile and prototype your code. Furthermore connecting to a local deamon can give you a controlled view of a system since all your calls will be mediated by proxies and the deamon policies''
+
+The log-views for our example inform us that:
+
+- Peer1/Upper-Right: 2 instances of TSeamlessRemoteProxy (ie remote objects) received all ''local'' messages (100% of them) that amounted to 201 messages in total. 0.5% (ie 1 out of the 201) of those messages send to TSeamlessRemoteProxy instances where #at:, 49.8% (ie 100 messages) where #cr, while the rest 49.8% (ie 100 messages) were #show.
+- Peer1/Lower-Right: All messages were outgoing, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+- Peer2/Upper-Right: As expected it was an instance (local to peer2) of the SystemDictionary class that received the #at: (to retrieve the remoteTranscript) while all other messages (200 of them) were send to 1 instance of the ThreadSafeTranscript, and were divide among #show and #cr sends.
+- Peer2/Lower-Right: All messages were incoming, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+
+So far so good, no suprises here as far as remote communication goes this is the simplest example possible. Let's try something else now:
+
+[[[
+remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
+
+(1 to: 100) do: [:i | 
+	remoteTranscript show: Object new; cr.
+].	
+]]]
 
 ''Note: clean up syntactic sugars and loose the SeamlessDeamonManager (just adds complexity) -- Also now that you have the logger expand this with passing implicit refs etc''
 
@@ -169,7 +201,15 @@ To run this example set-up peer1 and peer2 as previously and open the Transcript
 
 In this case the hundred executing contexts which print the results before returning are coupled between the two machines. Naturally the first call to the local pingPong instance on line 3 below will wait for all contexts in both machines to return before printing 100. 
 
-The first lesson here is that in this remote case ''waiting'' includes both the computation that is taking place (the decrement of the numbers) but also the communication overhead that the hundred remote calls will generate. The second point you should note is that this overhead was implicitely generated. We only ''explicitely'' sent one remote call from peer1 on lines 2 and 3 where we created a remote proxy to peer2. Then peer2 ''implicitely'' received a remote proxy from peer1 through line 7 of the \#decrement:using: method where self is passed as a second argument. This resulted in interwinded ping-pong calls generated in both directions. 
+The first note we should take here is that in this remote case ''waiting'' includes both the computation 
+that is taking place (the decrement of the numbers) 
+but also the communication overhead that the hundred remote calls will generate. 
+Furthermore one remote-call may trigger and ''wait for'' several other remote-calls
+that are intertwined in both directions. Finally all this overhead can be ''implicitely'' 
+generated. In our example we only ''explicitely'' sent one remote call from peer1 on 
+lines 2 and 3 where we created a remote proxy to peer2. Then peer2 ''implicitely'' received 
+a remote proxy from peer1 through line 7 of the \#decrement:using: method where self 
+is passed as a second argument. This resulted in interwinded ping-pong calls generated in both directions. 
 
 [[[
 1 TutorialExample class>>pingPong
@@ -222,9 +262,8 @@ The answer to this is illustrated in the following figure. It turns out that the
 
 ''NOTE: Figure Here''
 
-The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your code by profiling and considering the trade-offs. Even more so you may even want to use Seamless to craft usefull abstractions that enforce certain paradigms to your code.  Hopefully by the end of this Chapter you will be able to do that by studying how middleware solutions like Seamless work under the hood.
+The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your code by profiling and considering the trade-offs. Even more so you may want to use Seamless to craft usefull abstractions that enforce certain paradigms to your code.  Hopefully by the end of this Chapter you will be able to do that by studying how middleware solutions like Seamless work under the hood.
 
- 
 
 ''NOTE: why By value: and not byValue''
 
@@ -263,15 +302,23 @@ on the spectrum, give an all serialized rest example
 
 - explain the different cases of distributing objects
 
-!!Open Issues: Where Do We Go From Here ?
+!!Where Do We Go From Here ?
 
-- More Doc/Tests
-- Refactoring to Patterns (TM)
+Short-Term
+
+- More Doc/Tests, Critics, Refactoring to Patterns (TM)
 - Green Threading and UI
 - Exception Handling
+- Session Clean-Up
+- Throughput Profiling / Optimization
+
+Mid-Term
+
+- Futures / Batch-communication
 - Distributed-GC
-- Futures (say here about batch communication execution and other optimizations)
-- Monitoring
+- Closer integration with Fuel
+- Shared-Memory
+
 
 !!Acks
 
