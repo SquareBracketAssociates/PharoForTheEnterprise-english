@@ -373,11 +373,17 @@ For example, a query that selects all elements in the database whose name is ==J
 [ :each | each name = 'John']
 ]]]
 
+
+
 A slightly more complicated query is to find all elements in the database whose name is ==John== and the value in ==orders== is greater than 10.
 
 [[[
 [ :each | (each name = 'John') & (each orders > 10 ) ]
 ]]]
+
+
+Note that this way of querying only works for querying values of the object but not values of references to other objects. 
+For such case you should build your query using id as traditionally done in relational database. But the best solution to be in the Mongo spirit, is in fact to revisit the object model to avoid relationships expressed with foreign keys.
 
 
 !!!!Using the ==at:== message to access embedded documents

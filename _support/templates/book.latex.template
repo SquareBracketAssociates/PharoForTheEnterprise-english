@@ -13,10 +13,12 @@
 % Add the path for the figures of each chapter here:
 \graphicspath{
         {figures/}
+		{Bloc/}
         {Mapless/}
 		{Artefact/}
         {Athens/}
         {Logger/}
+		{Nautilus/}
         {BabyMock/}
         {BioPharo/}
         {CalculatorTutorial/}

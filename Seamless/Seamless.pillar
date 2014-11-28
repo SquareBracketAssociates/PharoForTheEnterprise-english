@@ -1,32 +1,404 @@
-! (DRAFT) Seamless: A Reflective Middleware for Pharo
+! Seamless: A Reflective Middleware for Pharo (DRAFT) 
 
-ABSTRACT HERE
+Seamless {{{latex:\footnote{\url{http://ss3.gemstone.com/ss/Seamless.html}} }}} 
+is a reflective communication middleware for Pharo
+that aims to facilitate the prototyping of distributed applications.
+It provides developer friendly abstractions and syntactic sugar
+for an ''out-of-the-box'' Pharo to Pharo communication experience.
+After prototyping your application, Seamless lets you easily 
+profile and tweak communication settings such as distribution and
+serialization policies for optimizing performance and avoid common
+distribution caveats. This Chapter covers version 0.4 of Seamless 
+for Pharo 3.0 and will be updated frequently towards version 1.0 (stable release).
+
+''Note: Final version should present a whole prototyping-profiling-tweaking-deployment cycle for one of the examples (plus ui for logging/profiling facilities)''
 
 !!Wait: Reflective What ?
 
-<quote here>
+''The first thing we do, let's kill all the lawyers'' \-\- from "Henry VI", Shakespeare
 
-- What is Reflective Middleware - Why do we need it
-- Seamless a descendant of rST
-- Aspires to be what RMI is to Java and when possible to be more
-dynamic - this is afterall Pharo  - thus can be considered to be closer to projets like Java Cajo, OpenCorba etc
-- Refs to everything especially the Fabio Kon paper, OpenCorba PhD \etc
-- Was born to support a research prototype for remote debugging
-- Has since been used on and off internally by some RMoD projects
+A communication middleware is a networking solution (such as a library or a framework) that aims
+to hide some of the complicated networking setup (low-level details of socket management, remote method
+invocation, naming etc) from the developer. A reflective communication middleware is the more dynamic 
+variant of such a system whose implementation relies on run-time reflection and can thus be itself adapted and configured
+at runtime {{{latex:\footnote{For more info on reflective middleware, you can read this overview by Fabio Kon et al: \url{http://www.inf.ufg.br/~fmc/papers/CACM-ReflectiveMiddleware-no-access.pdf}} }}}. 
+Seamless is such a reflective middleware for Pharo and as a project can be considered a descendent of Remote Smalltalk 
+{{{latex:\footnote{\url{http://www.squeaksource.com/rST.html}} }}} 
+which itself was preceded by projects such as OpenCorba {{{latex:
+\footnote{\url{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.79.1783}}
+}}} and Distributed Smalltalk {{{latex:
+\footnote{\url{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.22.7323}}
+}}}. It was born as an engineering prerequisite for a research prototype on 
+remote debugging and has since be used on and off internally by other RMoD projects at INRIA. 
 
-What makes Seamless different is its focus on two seemingly simple goals:
+From the point of view of the Pharo developer Seamless aspires to be \- eventually \- what RMI and DCOM is for Java and the .NET platforms respectively while leveraging the reflective and dynamic nature of our environment. Seamless may be distinguished from other solutions in that:
 
-- Provide abstractions, syntactic carbohydrates and programming facades to make the prototyping of distributed application feel "out-of-the-box" in Pharo. In a nutshell: support Rapid Application Prototyping for your distributed projects.
-- Fine-grained control for folks who want/need (eg on final deployment) to look under the hood and fine-tune their system. Seamless tries to do that by decomposing and reifying every single part of the object distribution process and its policies. 
+- It targets the Pharo environment and strives to integrate with its core facilities (ie available serialization solutions like Fuel, proxy implementations like Ghost etc)
+- It provides abstractions, syntactic carbohydrates (sugar) and programming facades to make the prototyping of distributed applications feel ''out-of-the-box''. In a nutshell Seamless is biased towards Rapid Application Prototyping.
+- Under the hood it tries to reify every single part of the object distribution process and its policies, so as to allow profiling and fine-tuning for optimizing performance and avoiding common distribution caveats. 
 
 !!Enough Said: Death to Sockets
 
-<quote here>
+!!!Installation
 
-- Installation
-- Hallo Transcript !
+To install and start playing around with Seamless evaluate the following code-snippet in your Workspace:
 
-!! Between Ping-Pong and the REST
+[[[
+Gofer it
+	url: 'http://ss3.gemstone.com/ss/Seamless';
+	package: 'ConfigurationOfSeamless';
+	load.
+
+((Smalltalk at: #ConfigurationOfSeamless) project version: '0.4') load.
+]]]
+
+Seamless has been ported to Pharo 3.0. To install Pharo on your system follow the online instructions *here>http://pharo.org/download* or *here>http://get.pharo.org/*. Loading Seamless can be also done directly from the command line as follows:
+
+[[[
+./pharo-ui Pharo.image config \
+          http://ss3.gemstone.com/ss/Seamless \
+          ConfigurationOfSeamless \
+          --install=0.4
+]]]
+
+Then in order to be able to initiate and respond requests from other images evaluate:
+
+[[[
+aDeamon := SeamlessDeamon 
+		newDefaultWithGlobalAccess 
+		startOn: 8080.
+]]]
+
+which again can be done directly from the command-line at start-up. 
+
+To sum-up here is how you can download pharo, load Seamless and start the deamon in your prefered port in one go:
+
+[[[
+wget -O- get.pharo.org | bash;
+./pharo-ui Pharo.image config \
+          http://ss3.gemstone.com/ss/Seamless \
+          ConfigurationOfSeamless \
+          --install=0.4;
+./pharo-ui Pharo.image eval "SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080"
+]]]
+
+In order to follow the example in this chapter you will be needing two images,
+listening to port 8080 (""peer1"" from now on) and 8081 (""peer2"" from now on) respectively.
+
+
+!!!Hallo Transcript !
+
+Once you have your peers set-up you can start sending messages from one image to another. This section 
+will step-by-step dissect these remote msg-sends by showing you: 
+
+- How you get a reference to a remote receiver
+- What happens when you pass different kind of objects as arguments 
+- How values from these message-sends are returned.
+
+along the way we will see how to use the SeamlessLogger and take a quick look behind the scenes.
+
+The simplest example possible would be to print the customary \'hallo world\' or a sequence of numbers from peer1 to the transcript of peer2. 
+
+There are a lot of different ways to do that with Seamless let's see some of them (from peer1):
+
+[[[
+"sugar 1"
+remoteTranscript := (Transcript from: '127.0.0.1:8081'). 
+remoteTranscript open.
+remoteTranscript show: 'Hallo World !'.
+1 to: 100 do: [:i | 
+	remoteTranscript show: i; cr.
+].	
+]]]
+
+As you can see the only difference with printing locally is on line 2 when we retrieve the remote transcript instead of using the local Transcript of peer1.
+We will come back to the trade-offs introduced to your code by this ''transperancy'' between local and remote execution. In the meantime here is some other ways you can retrieve a remote object and start sending messages to it with Seamless:
+
+[[[
+"sugar 2"
+remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
+"sugar 3"
+remoteEnvironment := '127.0.0.1:8081' asRemoteEnvironment.
+remoteTranscript := remoteEnvironment at: #Transcript.
+"sugar 4 (alt 1)"
+remoteTranscript := (Smalltalk from: '127.0.0.1:8081') globals at: #Transcript.
+]]]
+
+This is of course all syntactic sugar with the seamless deamon and protocol working behind the scene to manage your remote references. You can even use these as a base to introduce your own abstractions for fetching remote objects.
+
+At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitely means that a remote peer has full access to the SystemDictionary on the other side and whence the whole system. This is of course intentional and usefull for prototyping but may cause security problems in deployment.
+
+Remember when we where setting-up our seamless deamon we invoked:
+
+[[[
+SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080
+]]]
+
+inside the SeamlessDeamon>>newDefaultWithGlobalAccess method (which we will be examining in detail later on) the Smalltalk globals are given as the entry point of communication and the overall distribution policies are set to their most permissive state. 
+
+Restricting which objects can be referenced from your image and how exactly they will behave is a 
+matter of changing this entry point dictionary (to point to a user-defined one rather than the system dictionary) and altering the distribution policy of your deamon. 
+
+Let's now re-run our Transcript example (shown above), only this time we will use the SeamlessLogger (on both peers) to take a pick behind the scenes:
+
+[[[
+SeamlessLogger new.
+]]]
+
++Remote Printing of Basic Objects (LOG)>file://figures/transcriptWithBasicArgs.png|width=100|label=transcriptWithBasicArgs+
+
+Figure *transcriptWithBasicArgs* shows the loggers on peer1 (left) and peer2 (right) after printing "1 to: 100" on the Transcript of peer2 as we did earlier. On the upper left side of each logger we can see the list of ''deamons'' in each peer. Multiple deamons with different configurations (communication and serialization protocols and policies) can co-exist in each peer. While each one of these deamons can connect to multiple remote peers initiating a one-to-one ''session'' with each one (lower left side of each logger). On each of these ''sessions'' we can start/stop logging (stopping also clears the log) and update the log-views (upper right and lower right side of each logger) even while the communication is taking place. Automatic updating of the log is currently disabled in order to minimize the slow-down introduced by the logging facilities.
+
+''Note to the Reader: You can actually connect two local deamons in the same image -- which is another great way to test, profile and prototype your code. Furthermore connecting to a local deamon can give you a controlled view of a system since all your calls will be mediated by proxies and the deamon policies''
+
+The log-views for our example inform us that:
+
+- ""Peer1-Upper-Log"": 2 instances of TSeamlessRemoteProxy (ie remote objects) received all ''local'' messages (100% of them) that amounted to 201 messages in total. 0.5% (ie 1 out of the 201) of those messages send to TSeamlessRemoteProxy instances where #at:, 49.8% (ie 100 messages) where #cr, while the rest 49.8% (ie 100 messages) were #show.
+- ""Peer1-Lower-Log"": All messages were outgoing, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+- ""Peer2-Upper-Log"": As expected it was an instance (local to peer2) of the SystemDictionary class that received the #at: (to retrieve the remoteTranscript) while all other messages (200 of them) were send to 1 instance of the ThreadSafeTranscript, and were divide among #show and #cr sends.
+- ""Peer2-Lower-Log"": All messages were incoming, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+
+So far so good, no suprises here as far as remote communication goes this is the simplest example possible. Let's try something else now:
+
+[[[
+1 remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
+2 aLocalObject := Object new.
+3 (1 to: 100) do: [:i | 
+4	remoteTranscript show: aLocalObject; cr.
+5 ].	
+]]]
+
+The only thing we have changed here (on line 4) is the argument passed to the message #show: that the remoteTranscript receives. The code behaves as expected (ie aLocalObject is printed on the remoteTranscript as previously), but this time ''behind the scenes'' something different is going on. As shown in Figure *transcriptWithCompositeArgs* our ""explicit"" call to the remoteTranscript generated ""implicit"" proxies and incomming traffic from the other side. More specifically aLocalObject was implicitely proxied to peer2 because it was passed as an argument to #show, and then this new proxy generated traffic because it received the message #asString from the Transcript on peer2.   
+
++Remote Printing of composite Objects (LOG)>file://figures/transcriptWithCompositeArgs.png|width=100|label=transcriptWithCompositeArgs+
+
+Note also here that because of this implicit ''proxying'', although the code seems to send 200 messages (100 shows and 100 cr) 
+the traffic that was generated in both directions in total was 300 messages. So why this difference, what changed ? The answer is that the argument to #show:
+changed from a Number to a composite Object. More specifically it changed from a terminal instance that ""can be copied"" when passed as an 
+argument, to an instance that is not terminal but ''potentially'' points to other objects. This latter instance ""should be referenced"" (ie proxied) 
+otherwise (if copied) it will not remain in sync with the other side. ""Should"" is the operative word here, cause at the end of the day it is
+you (the programmer) that decides what gets ''proxied'' (and remains in sync) and what gets ''copied'' as terminal information (be it terminal
+instances such as numbers or even composite objects with their whole object graph).
+
+By default Seamless chooses for you a handfull of classes to be passed or returned by value (ie copied) while all other local 
+arguments to a remote call (or return values) will be passed by reference (implicitely creating proxies on the other side). 
+This is done because while prototyping, you shouldn't - ideallly - care. Knowing what Seamless does for you though will help you
+code more efficiently. As we said a simple rule that you can guide you  is that by default ''basic objects'' such as numbers 
+and strings are passed by value while more ''composite objects'' are passed by reference. 
+The global default deamon of Seamless passes only the following classes by value:
+
+- Boolean 
+- Character 
+- Number 
+- String 
+- Symbol 
+- UndefinedObject 
+- Color
+
+Of course this list can be changed dynamically either while setting up your deamon or even (if needed) while your application is running. 
+Even more conveniently you can programmatically choose to serialize a previously proxied object or ''force'' the serialization of a local object to the 
+other side on a per instance and per message basis. For our example this would be done as follows:
+
+[[[
+1 remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
+2 aLocalObject := Object new.
+3 (1 to: 100) do: [:i | 
+4	remoteTranscript show: aLocalObject byValue; cr.
+5 ].	
+]]]
+
+By sending the message #byValue to a local object (line 4), it will force it to be copied rather than proxied on the 
+remote call it is passed as an argument. Conversely #byValue send to a proxy (ie a remote and not a local
+object) will return a local copy of it for further processing. Several synonyms exist in Seamless for this 
+facility (ie #asLocalObject, #asRemoteObject etc) but they all do the same thing for both local and remote objects.
+That is: ''Force the serialization of the object in question'' in the syntactic context they are used. 
+
+''Note: clean up all this By value: crap''
+
+So we 've seen what happens when both terminal instances and composite objects are passed as arguments to remote calls.
+What about remote proxies themselves, what happens then ? Let's evaluate the following code:
+
+[[[
+1 remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
+2 (1 to: 100) do: [:i | 
+3    remoteTranscript show: remoteTranscript; cr.
+4  ].	
+]]]
+
+This time on line 3 we ask the remote transcript to print itself. The code behaves as expected, we see the transcript on peer2 being
+printed as a string on itself. This time though behind the scenes (in Figure *transcriptWithProxyArgs*) we don't see any implicit proxies created 
+or messages send from both sides. In fact the log when passing proxies as arguments looks identical to the one we saw on Figure *transcriptWithBasicArgs*
+when passing numbers by value. Why ? Well, it turns out that a proxy passed as an argument to a remote call will just be de-referenced in the other side where
+it actually resides as a local object.  
+
++Remote Printing of Proxied Objects (LOG)>file://figures/transcriptWithProxyArgs.png|width=100|label=transcriptWithProxyArgs+
+
+Similarly for return values of remote calls, there are three distinct cases (according to the serialization policies of the peer that 
+responds to the message):
+
+# A return value is serialized if it is a local terminal instance
+# A return value is proxied if it is a composite object
+# A return value is de-referenced in the other side (cause it is a proxy from the calling peer)
+
+Run the following code and watch the values printed in your local transcript to make these distinctions more clear:
+
+[[[
+1 remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
+2
+3 returnValue := remoteTranscript class. 
+4 Transcript show: returnValue; cr; show: returnValue xxx___isProxy; cr; cr.
+5
+6 returnValue := returnValue allInstances. 
+7 Transcript show: returnValue; cr; show: returnValue xxx___isProxy; cr; cr.
+8
+9  returnValue := returnValue size.
+10 Transcript show: returnValue; cr; show: returnValue xxx___isProxy; cr; cr.
+11 
+12 returnValue := (Smalltalk from: '127.0.0.1:8081') globals at: #aRemoteObject put: Object new.
+13 Transcript show: returnValue; cr; show: returnValue xxx___isProxy ; cr; cr.
+
+<OUTPUT>
+
+ThreadSafeTranscript
+true
+
+{Transcript}
+true
+
+1
+false
+
+an Object
+false
+]]]
+
+On line 1 as previously we retrieve the remote transcript and then on line 3 we send the message #class to it. We print the return
+value and ask if it is a proxy. The return value is the class ''ThreadSafeTranscript'' (a composite object from the other side) so it is
+indeed a proxy (''true''). Then on line 6 we ask from this remote class all its instances and print them locally. The answer is an
+ordered collection that includes the remote transcript ''{Transcript}'' and since this is a composite object it exists on peer1 as
+a proxy (''true''). Finally on line 12 we create a new entry on the remote System Dictionary storing a local object (from peer1). As
+we saw earlier this local object will be ''implicitely'' proxied on peer2. But, when the remote call #at:put: will return the value stored
+(''an Object''), this value will be a de-referenced local object (''false'') that is also being proxied on the other side.
+
+To sum-up the following Table gives you all the possibilities for both arguments and return values for a two-peer communication:
+
+|! Type |! Distribution
+| ''Terminal Instance'' | ""By Value"" (Serialized/Copied)
+| ''Composite Object'' | ""By Reference"" (Proxied)
+| ''Proxy'' | ""De-Referenced"" (Proxied Object from the other side)
+
+'''Note to the reader: When dealing with more than two-peer communications schemes - which we did not cover - and when additionally that communication scheme is intermixed, 
+there can be a forth case. This can happen for eg. when a remote message from peer1 to peer2 is sent that passes as an argument a proxy from peer3. In this
+case either the proxy is duplicated on the other side or a proxy-to-a-proxy is created, depending on the distribution policy''
+
+''Note: clean up syntactic sugars and loose the SeamlessDeamonManager (just adds complexity) -- Also now that you have the logger expand this with passing implicit refs etc''
+
+!!Between Ping-Pong and the REST
+
+''Note: Before starting log the examples from previous section and say how traffic may be reduced -- Either move this one as a last example or reduce it''
+
+Taking a hint from the logging results of our previous example we now move on to a more complicated case in order to better understand how proxies are generated and propagated in both directions as code is executed. Our goal is for the reader to be able to reason about the distribution of objects and structure code accordingly.
+
+After that we will discuss the well-documented caveats of ''transparent distribution'' (ref here from ibm) and how this model compares to the the other end of the communication spectrum, namely that of stateless one-shot requests (REST). Then we will see how you can code and configure Seamless to move your implementation towards one or the other end of the spectrum.
+
+In the first code snippet below (which you can find in the Examples sub-package of Seamless) we see the localPingPong method of the TutorialExample class. This method on line 2 creates a new instance of the PingPong class and sends the message \#decrement:using: to it.
+
+[[[
+1 TutorialExample class>>localPingPong
+2	PingPong new decrement: 100 using: PingPong new.
+]]]
+
+The ping-pong instance through the \#decrement:using: method is responsible for decrementing the number ''aNumber'' which it receives as the first argument through mutual-recursion with another ping-pong instance (whence the name ping-pong). The number is decreased on line 6 as it is passed back and forth between the two instances, while on line 11 the number of each step is printed. Printing is done after the mutual recursive calls with each executing context (100 contexts in this example) printing the number it received and returning.
+
+If you open a Transcript and execute ''TutorialExample localPingPong'' you will \- as expected \- see the count-down from 100 being printed on your screen.
+
+[[[
+1 PingPong>> decrement: aNumber using: aPingPongInstance
+2	
+3	aNumber = 0 ifFalse: [
+4	
+5		aPingPongInstance 
+6			decrement: aNumber - 1 
+7			using: self.
+8		
+9	].
+10
+11	Transcript show: aNumber; cr.
+]]]
+
+This rather abstract and boring example can become more intresting if one of the two instances is remote. This is achived on lines 2 and 3 of the \#pingPong method in the TutorialExample class (see below) where a local PingPong instance receives a remote instance of the same class as a second argument.
+
+To run this example set-up peer1 and peer2 as previously and open the Transcripts on both sides. You should see that now \- in contrast with the local version \- only even numbers are printed on peer1 while odd numbers are printed on peer2.
+
+In this case the hundred executing contexts which print the results before returning are coupled between the two machines. Naturally the first call to the local pingPong instance on line 3 below will wait for all contexts in both machines to return before printing 100. 
+
+The first note we should take here is that in this remote case ''waiting'' includes both the computation 
+that is taking place (the decrement of the numbers) 
+but also the communication overhead that the hundred remote calls will generate. 
+Furthermore one remote-call may trigger and ''wait for'' several other remote-calls
+that are intertwined in both directions. Finally all this overhead can be ''implicitely'' 
+generated. In our example we only ''explicitely'' sent one remote call from peer1 on 
+lines 2 and 3 where we created a remote proxy to peer2. Then peer2 ''implicitely'' received 
+a remote proxy from peer1 through line 7 of the \#decrement:using: method where self 
+is passed as a second argument. This resulted in interwinded ping-pong calls generated in both directions. 
+
+[[[
+1 TutorialExample class>>pingPong
+2	remotePingPongClass := ('127.0.0.1:8081' globalAt: #PingPong). 
+3	PingPong new decrement: 100 using: remotePingPongClass new. 
+]]]
+
+By default Seamless chooses a handfull of classes to be passed or returned by value (ie copied) while all other local arguments to a remote call (or return values) will be passed by reference (implicitely creating proxies on the other side). As a simple rule you can think that by default ''basic objects'' such as numbers and strings are passed by value while more ''composite objects'' are passed by reference. The global default deamon of Seamless passes only the following classes by value:
+
+- Boolean 
+- Character 
+- Number 
+- String 
+- Symbol 
+- UndefinedObject 
+- Color
+
+
+Of course this list can be changed dynamically either while setting up your deamon or even (if needed) while your application is running. Even more conveniently you can programmatically choose to serialize a previously proxied object or ''force'' the serialization of a local object to the other side on a per instance basis.
+
+To illustrate this consider the following two examples below. On the first example we have changed the pingPong method we saw earlier by sending the message \#asLocalObject to the remotePingPong instance we have created. This message send will actually return a copy of the remote pingPong instance, effectively serializing the proxied object. This will in turn result in a local-only execution of the \#decrement:using: method, since now both ping pong instances reside on the same machine. You can confirm this by running the following code and watching the whole sequence of numbers being printed only on peer1.
+
+[[[
+1 TutorialExample class>>pingPong
+2	remotePingPongClass := ('127.0.0.1:8081' globalAt: #PingPong). 
+3	PingPong new decrement: 100 using: remotePingPongClass new asLocalObject. 
+]]]
+
+Alternatively you could force the otherwise implicit proxy generated from peer1 to be passed by value as follows:
+
+[[[
+1 PingPong>> decrement: aNumber using: aPingPongInstance
+2	
+3	aNumber = 0 ifFalse: [
+4	
+5		aPingPongInstance 
+6			decrement: aNumber - 1 
+7			using: (By value: self).
+8		
+9	].
+10
+11	Transcript show: aNumber; cr.
+]]]
+
+The only thing that has changed here is the ''By value:'' directive on line 7 which will force the local ping pong instance of peer1 to be sent by copy to peer2. You can confirm this by running the code and watching the whole sequence of numbers (except the first) being printed only on peer2.
+
+In all examples above we only had to add a one-liner or even a single message sent to make our initial mutual recursion to be distributed across two machines in different ways. The question of course here is how do you choose between the diffent approaches. More precissely how do you choose which objects to proxy and which objects to pass by value.
+
+The answer to this is illustrated in the following figure. It turns out that the more objects or classes of objects you pass by value the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls the more closer you are to ''tranparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). 
+
+''NOTE: Figure Here''
+
+The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your code by profiling and considering the trade-offs. Even more so you may want to use Seamless to craft usefull abstractions that enforce certain paradigms to your code.  Hopefully by the end of this Chapter you will be able to do that by studying how middleware solutions like Seamless work under the hood.
+
+
+''NOTE: why By value: and not byValue''
+
+''NOTE: explain what the code does and say that this is a intentionally coupled example. Talk about REST do the diagram and then show asLocal (and how it breaks propagation), By value: and the Seamless configuration consider moving some of these discussions elsewhere''
 
 - The ping-pong examples
 - Make a diagram with transparent distribution
@@ -41,7 +413,9 @@ on the spectrum, give an all serialized rest example
 
 !!Practice Makes Perfect
 
-- All the examples from the presentation
+- All the examples from the presentation (Also Isolation Here ?)
+
+''NOTE: Actually put the contact example here''
 
 !!Ok, ok: Make me a Remote Tester
 
@@ -59,15 +433,26 @@ on the spectrum, give an all serialized rest example
 
 - explain the different cases of distributing objects
 
-!!Open Issues: Where Do We Go From Here ?
+!!Where Do We Go From Here ?
 
-- More Doc/Tests
-- Refactoring to Patterns (TM)
+Short-Term
+
+- More Doc/Tests, Critics, Refactoring to Patterns (TM)
 - Green Threading and UI
-- Exception Handling
+- Exception Handling / Stability
+- Session Clean-Up
+- Throughput Profiling / Optimization (RMI, DCOM)
+- Remote Reflection
+
+Mid-Term
+
+- Futures / Batch-communication / Memoization
 - Distributed-GC
-- Futures
-- Monitoring
+- Closer integration with Fuel (ie Shallow or Incremental Copy especially for Collections)
+- Shared-Memory
+- Field Examples
+
+
 
 !!Acks
 
