@@ -308,6 +308,8 @@ In the first code snippet below (which you can find in the Examples sub-package 
 2	PingPong new decrement: 100 using: PingPong new.
 ]]]
 
++Mutally recursive calls between ping-pong instances>file://figures/pingPong.pdf|width=100|label=pingPong+
+
 The ping-pong instance through the \#decrement:using: method is responsible for decrementing the number ''aNumber'' which it receives as the first argument through mutual-recursion with another ping-pong instance (whence the name ping-pong). The number is decreased on line 6 as it is passed back and forth between the two instances, while on line 11 the number of each step is printed. Printing is done after the mutual recursive calls with each executing context (100 contexts in this example) printing the number it received and returning.
 
 If you open a Transcript and execute ''TutorialExample localPingPong'' you will \- as expected \- see the count-down from 100 being printed on your screen.
@@ -391,7 +393,7 @@ In all examples above we only had to add a one-liner or even a single message se
 
 The answer to this is illustrated in the following figure. It turns out that the more objects or classes of objects you pass by value the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls the more closer you are to ''tranparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). 
 
-''NOTE: Figure Here''
++A (over-simplified) view of the spectum of communication middleware solutions in terms of distribution policies and implicit traffic>file://figures/spectrum.pdf|width=100|label=spectrum+
 
 The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your code by profiling and considering the trade-offs. Even more so you may want to use Seamless to craft usefull abstractions that enforce certain paradigms to your code.  Hopefully by the end of this Chapter you will be able to do that by studying how middleware solutions like Seamless work under the hood.
 
@@ -415,23 +417,107 @@ on the spectrum, give an all serialized rest example
 
 - All the examples from the presentation (Also Isolation Here ?)
 
++Main classes of the "contact manager" application of Pharocasts.>file://figures/contacts.pdf|width=100|label=contacts+
+
 ''NOTE: Actually put the contact example here''
 
 !!Ok, ok: Make me a Remote Tester
-
 - A simple remote testing application with Seamless
 
 !!Ok, ok: Make me a Distributed Game
 
 - Noury's application with Seamless
 
-!!What's Under the Hood
++Main classes of the "puzzle-game" application of Car-Mines.>file://figures/game.pdf|width=100|label=game+
 
-- diagram from PhD ++ Seamless implementation part
 
 !!How It All Works ?
 
-- explain the different cases of distributing objects
+''NOTE: architectural overview and summoning the deamon ?''
+
+On Figure *low-level*, we provide an overview of the low-level communication infrastructure of Seamless:
+
++Mutally recursive calls between ping-pong instances>file://figures/seamlessStack-low-level.pdf|width=100|label=low-level+
+
+;SeamlessConnection
+:Low-level bidirectional asynchronous event-driven communication abstraction. 
+A seamless connection has the same api regardless 
+of the underlying communication protocol or medium. 
+Currently Seamless can operate both over plain sockets with 
+its own protocol and over HTTP.
+
+;SeamlessTranscoder
+:This is our marshaller which is responsible for serializing and materializing information, passed through the connection. 
+Different marshalers can support different 
+transcoding algorithms. Currently Seamless operates by wrapping a fast binary marshaller (Fuel), 
+but also a simpler yet more verbose string marshaller has been tested. 
+Other options could include serializing to xml, json etc
+
+;SeamlessTransporter 
+:The concrete subclasses of this abstract class handles the actual communication between peers. 
+Each concrete transporter 
+knows about the communication channels supported by the peers (protocols, types of sockets etc) 
+and establishes an appropriate SeamlessConnection between them.
+
+;SeamlessObjectTransporter 
+:This is an OO abstraction for the transporter. 
+Instead of sending or receiving bytes, plain-text, xml etc higher-level components 
+of the Seamless framework exchange objects through this class. 
+These objects are instances of one the SeamlessProtocol classes.
+
+;SeamlessProtocol 
+:This is a whole hierarchy of classes, that defines an open object protocol. 
+As we saw, connected peers with Seamless 
+exchange objects (through the object transporter). These objects are instances 
+of one of the SeamlessProtocol classes that contain both data (other objects) 
+and meta-data (describing the semantics of the object exchange, message-passing infromation etc). 
+
+;SeamlessProcessManager
+:While a SeamlessConnection is asynchronous by itself the ProcessManager can create its own blocking strategy. 
+
+The SeamlessProcessManager is listening to the asynchronous communications and suspends or resumes requesting processes on-demand. 
+
+;SeamlessDistributionTable
+:This is an actual reference table keeping track of remote references, as well as local references of objects from other peers. 
+
+Remote referencing in Seamless is also adaptable with two tested available implementations. The first one uses Ghost which 
+is a uniform, light-weight and stratified general purpose proxy model, while the second one is 
+more specialized and is based on shadow classes.
+
+Figure *high-level* provides an overview of the high-level communication components of Seamless. 
+These depend on the low-level communication infranstructure, through ''SeamlessSession'' which has 
+a one-to-one relationship with the ''SeamlessConnection'' on Figure *low-level*.
+
++High-level architectural overview of Seamless>file://figures/seamlessStack-high-level.pdf|width=100|label=high-level+
+
+;SeamlessDeamon
+:This class defines methods for the orchestration (assembling) and initialization of our middleware, acting more or less as an Abstract Factory. 
+Deamons can handle multiple connections 
+(see also SeamlessSessions) to different peers and each 
+environment can have multiple deamons (with different adaptations) 
+running parallely.
+
+;SeamlessSession 
+:This is a high-level view of a SeamlessConnection that is established upon successful authentication on both sides.
+
+;SeamlessAuthenticationManager 
+:A simple authentication manager (see users and groups below).
+
+;SeamlessUserGroup 
+:A user group is a named set of users that is associated with a specific distribution strategy. 
+
+;SeamlessUser 
+:This is a standard/user password pair.
+
+;SeamlessDistributionStrategy 
+:A distribution strategy combines a distribution policy with a security policy (see below) to make decisions about whether or how communicaton will proceed. 
+
+;SeamlessDistributionPolicy 
+:This class (through its concrete subclasses) decides how specific objects or group of objects will be distributed among peers. 
+Options can include: full serialization, shallow serialization, proxying, etc..
+
+;SeamlessSecurityPolicy 
+:The concrete subclasses of this abstract class are responsible for authentication and for restricting access (either message sending or distribution) for specific instances or whole classes of objects.
 
 !!Where Do We Go From Here ?
 
