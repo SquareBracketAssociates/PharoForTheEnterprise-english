@@ -590,19 +590,20 @@ It means, user can easily match or replace(transform) any part of code as a node
 The syntax of rewrite engine may seem a bit confusing, however it contains only few key symbols.
 These symbols are:
 -backquote(`)
--at sign(@)
 -dot(.)
 -number sign(#)
+-at sign(@)
 
-Firstly, a backquote symbol.
+!!!!Backquote symbol
 [[[
 `
 ]]]
-It represents any metavariable. For example, it can be
+It represents any metavariable, and other symbols specify whic kind of metavariable it is.
+For example, it can be
 [[[
 `variable1
 ]]]
-This expression will match any variable.
+This expression will match any simple object like: Object, super, etc. (but not literal)
 Up to this point it seems to be simple, however, there is one tricky place.
 [[[
 `variable1
@@ -658,7 +659,78 @@ And than, our metavariable matches with
 self
 ]]]
 
-Secondly, at sign, which 
+!!!!Dot symbol
+[[[
+.
+]]]
+It has the simplest role in rewrite engine.
+Dot is used to match statement in sequence node.
+[[[
+`.Statement1
+]]]
+matches with
+[[[
+myVar asString size
+]]]
+Obviously, it is also used as end of statement.
+Working with rewrite engine syntax requires a lot of attention and patience, as if you miss dot somewhere, 
+it will match nothing or something you didn't want to.
+In case you are using builder, it will automatically place all dots you need.
+If you have couple of statements like this:
+[[[
+myVar := 123.
+myVar asString size.
+]]]
+it matches next rewrite engine expression:
+[[[
+`.Statement1.
+`.Statement2
+]]]
+As was mentioned earlier, backquote states that it is metavariable, and unique name of each metavariable indicates that matched AST nodes are different.
+
+!!!!Number sign
+[[[
+#
+]]]
+This symbol says that metavariable should match only literal nodes of AST.
+Example:
+[[[
+`#literal1
+]]]
+mathces any literal:
+[[[
+#(1, 2, 3) "or" #foo "or" 19 "etc."
+]]]
+
+!!!!At symbol
+Finally, we will examine functions of at sign:
 [[[
 @
 ]]]
+
+At sign, as an element of rewrite engine syntax, is used to indicate list of something: temporary variables, statements, arguments or keywords in message send.
+To match any message send you have to specify any number of keywords and any number of arguments like this:
+[[[
+myObject `@message: `@keyword
+]]]
+matches any message sent to myObject.
+If you want to match more than one statement which are one after another it's not necessary to write:
+[[[
+`.Statement1.
+`.Statement2.
+`.Statement3.
+"etc."
+]]]
+Instead use at sign together with dot symbol, and you will get equal to previous expression:
+[[[
+`@.Statements
+]]]
+Also, it's possible to match list of temps this way:
+[[[
+| `@temporaries |
+]]]
+In general, at symbol used with backquote
+[[[
+`@object
+]]]
+matches any message, literal or block node of AST, which is really important to know.
