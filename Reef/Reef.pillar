@@ -1,6 +1,6 @@
-!Reef
+!Reef: Reconciling Javascript and Seaside
 
-Reef is a framework to build dynamic components embedding Javascript. Reef is a complement to Seaside. Reef does not replace Seaside, instead, it makes easier the definition and use of AJAX/Javascript. Reef makes the writing of Ajax interaction much simpler since as a developer there is no need to manipulate Javascript using query. Reef also integrates smoothly with JS libraries such bootstrapp.
+Reef is a framework to build dynamic components embedding Javascript developed by E. Lorenzano. Reef is a complement to Seaside. Reef does not replace Seaside, instead, it makes easier the definition and use of AJAX/Javascript. Reef makes the writing of Ajax interaction much simpler since as a developer there is no need to manipulate Javascript using queries and string concatenation. Reef also integrates smoothly with JS libraries such bootstrapp.
 
 A reef component can be embedded inside a Seaside one: we call Reef entities components for this reason.  A Seaside component can also be embedded inside a Reef one. 
 
@@ -180,7 +180,7 @@ We will create a Reef component and embed it inside a Seaside one.
 
 !!!A Simple Reef Component Form
 
-To create a form in Reef, you need to subclass from class ==REForm==. ==REForm is the class responsible for creating forms in Reef. 
+To create a form in Reef, you need to subclass from class ==REForm==. ==REForm== is the class responsible for creating forms in Reef. 
 
 
 [[[
@@ -189,7 +189,7 @@ REForm subclass: #RTSearchPart
 
 ]]]
 
-	==REForm== is a subclass of ==REContainer== which is the root of the components that can have children. Other reef container components are ==REPanel==, ==REGrid==, and ==REList==. Of course such components can be further specialised: hence ==REPanel== is the superclass of ==REDialog==, ==REAccordion==, ==RECarousel==, and ==RETabs==. All these components can then contain other components as shown in Figure~\ref{review}. 
+  ==REForm== is a subclass of ==REContainer== which is the root of the components that can have children. Other reef container components are ==REPanel==, ==REGrid==, and ==REList==. Of course such components can be further specialised: hence ==REPanel== is the superclass of ==REDialog==, ==REAccordion==, ==RECarousel==, and ==RETabs==. All these components can then contain other components as shown in Figure~\ref{review}. 
 
 +The ==REView== hierarchy: ==REContainer== is the root of the component container components.>file://figures/REViewHierarchy|width=50|label=hierarchy+ 
 
@@ -348,10 +348,8 @@ What changes did we introduce?
 - then, we modified ==onKeyPress:== to call ==search== instead of showing a dialog. 
 - The ==search== method does a refresh of the panel by doing:
 -- remove all children (if any) 
--- add all class names with a name starting with ``text'', as a new panel (we need a
-panel because we want a name per line...) 
--- send a ==refresh== message, which actually performs the refresh of the panel
-content. 
+-- add all class names with a name starting with ''text'', as a new panel (we need a panel because we want a name per line...) 
+-- send a ==refresh== message, which actually performs the refresh of the panel content. 
 
 
 Once you refreshed your application, you should see Figure *v3*.
@@ -378,12 +376,12 @@ In Reef, we try to keep this natural flow, as much as we can, by hiding most of 
 
 There are three kinds of  possible interactions between a page in a client and the Seaside server:
 
-# The client application needs to access the server to do something, and then update the status of the page, but without rendering a new page because it can be too costly. As we think this kind of interaction is the hardest to manage, and the most commonly used, this is the default Reef behavior.
-# The client application needs to call server with some functionality, and then it renders a new page. This is the ``normal behavior'' of a web application, and in Reef we support it as a way to ``get back'' to normal flow, while inside a Reef flow.
-# The page needs to change the DOM (for instance, to hover current selected row), without going to server at all. This is, for us, the most difficult to solve, because the DOM manipulation needs to be a JavaScript sentence.
+- The client application needs to access the server to do something, and then update the status of the page, but without rendering a new page because it can be too costly. As we think this kind of interaction is the hardest to manage, and the most commonly used, this is the default Reef behavior.
+- The client application needs to call server with some functionality, and then it renders a new page. This is the ''normal behavior'' of a web application, and in Reef we support it as a way to ''get back'' to normal flow, while inside a Reef flow.
+- The page needs to change the DOM (for instance, to hover current selected row), without going to server at all. This is, for us, the most difficult to solve, because the DOM manipulation needs to be a JavaScript sentence.
 
 
-These three different interactions are defining the ways an application can interact with the user, creating different results, but just one final feeling: we are in a ``desktop'' application.
+These three different interactions are defining the ways an application can interact with the user, creating different results, but just one final feeling: we are in a ''desktop'' application.
 We are going to explain how Reef manages these three approaches.
 
 !!!Updating the server, then update the client
@@ -470,7 +468,7 @@ In this case, a new page (with aComponent contents) will be rendered if the logi
 
 Here is the list
 
-- ==[ ... ] A block in Reef is a callback who leads to an interaction between client and server, without render a new page. Exception: callbacks on form elements.
+- ==[ ... ]== A block in Reef is a callback who leads to an interaction between client and server, without render a new page. Exception: callbacks on form elements.
 
 - ==[ ... ] asReefPageCallback== Contents of block are executed, but all rendering is do it in a new page.
 
@@ -484,7 +482,7 @@ Here is the list
 
 - ==inPage:== 	Renders the block contents in a new page.
 
-- ==inClient:== 	Renders the block, in same page as we are now. It works just like ==asReefClientCallback}.
+- ==inClient:== 	Renders the block, in same page as we are now. It works just like ==asReefClientCallback==.
 
 !!Interaction in Action
 
@@ -510,21 +508,5 @@ REForm new
 ]]]
 
 
-
-%=========================================================
-\ifx\wholebook\relax\else
-   \bibliographystyle{jurabib}
-   \nobibliography{scg}
-   \end{document}
-\fi
-%=========================================================
-
-
-
-%%% Local Variables: 
-%%% coding: utf-8
-%%% mode: latex
-%%% TeX-master: Lint.tex
-%%% TeX-PDF-mode: t
-%%% End:
-
+!! Conclusion
+Reef is mega cool. 
