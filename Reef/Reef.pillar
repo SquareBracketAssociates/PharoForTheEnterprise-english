@@ -88,7 +88,7 @@ REApplication
 
 Now you should get the following in your web-browser
 
-+A Seaside Counter based on Reef>file://figures/reefCounter.png|width=50|label=review+ 
++A Seaside Counter based on Reef>file://figures/ReefCounter.png|width=50|label=review+ 
 
 
 !!! A second version with controlled refresh.
