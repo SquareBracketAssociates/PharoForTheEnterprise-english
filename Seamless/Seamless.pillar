@@ -11,8 +11,6 @@ serialization policies for optimizing performance and avoid common
 distribution caveats. This Chapter covers version 0.4 of Seamless 
 for Pharo 3.0 and will be updated frequently towards version 1.0 (stable release).
 
-''Note: Final version should present a whole prototyping-profiling-tweaking-deployment cycle for one of the examples (plus ui for logging/profiling facilities)''
-
 !!Wait: Reflective What ?
 
 ''The first thing we do, let's kill all the lawyers'' \-\- from "Henry VI", Shakespeare
@@ -31,17 +29,17 @@ which itself was preceded by projects such as OpenCorba {{{latex:
 }}}. It was born as an engineering prerequisite for a research prototype on 
 remote debugging and has since be used on and off internally by other RMoD projects at INRIA. 
 
-From the point of view of the Pharo developer Seamless aspires to be \- eventually \- what RMI and DCOM is for Java and the .NET platforms respectively while leveraging the reflective and dynamic nature of our environment. Seamless may be distinguished from other solutions in that:
+From the point of view of the Pharo developer Seamless aspires to be \- eventually \- what RMI and DCOM is for Java and the .NET platforms respectively, while leveraging the reflective and dynamic nature of our environment. Seamless may be distinguished from other solutions in that:
 
 - It targets the Pharo environment and strives to integrate with its core facilities (ie available serialization solutions like Fuel, proxy implementations like Ghost etc)
 - It provides abstractions, syntactic carbohydrates (sugar) and programming facades to make the prototyping of distributed applications feel ''out-of-the-box''. In a nutshell Seamless is biased towards Rapid Application Prototyping.
-- Under the hood it tries to reify every single part of the object distribution process and its policies, so as to allow profiling and fine-tuning for optimizing performance and avoiding common distribution caveats. 
+- Under the hood it tries to reify every single part of the object distribution process and its policies, so as to allow extentibility as well as easy profiling and fine-tuning.
 
-!!Enough Said: Death to Sockets
+!!Enough Said: Death to Sockets !
 
 !!!Installation
 
-To install and start playing around with Seamless evaluate the following code-snippet in your Workspace:
+Seamless has been ported to Pharo 3.0. To install Pharo on your system follow the online instructions *here>http://pharo.org/download* or *here>http://get.pharo.org/*. To install Seamless and start playing around evaluate the following code-snippet in your Workspace:
 
 [[[
 Gofer it
@@ -52,7 +50,7 @@ Gofer it
 ((Smalltalk at: #ConfigurationOfSeamless) project version: '0.4') load.
 ]]]
 
-Seamless has been ported to Pharo 3.0. To install Pharo on your system follow the online instructions *here>http://pharo.org/download* or *here>http://get.pharo.org/*. Loading Seamless can be also done directly from the command line as follows:
+Alternatively Seamless can be also loaded directly from the command line as follows:
 
 [[[
 ./pharo-ui Pharo.image config \
@@ -61,7 +59,7 @@ Seamless has been ported to Pharo 3.0. To install Pharo on your system follow th
           --install=0.4
 ]]]
 
-Then in order to be able to initiate and respond requests from other images evaluate:
+Then in order to be able to initiate and respond to requests from other images evaluate:
 
 [[[
 aDeamon := SeamlessDeamon 
@@ -69,9 +67,7 @@ aDeamon := SeamlessDeamon
 		startOn: 8080.
 ]]]
 
-which again can be done directly from the command-line at start-up. 
-
-To sum-up here is how you can download pharo, load Seamless and start the deamon in your prefered port in one go:
+which again can be done directly from the command-line at start-up. To sum-up here is how you can download pharo, load Seamless and start the deamon in your prefered port in one go:
 
 [[[
 wget -O- get.pharo.org | bash;
@@ -85,17 +81,18 @@ wget -O- get.pharo.org | bash;
 In order to follow the example in this chapter you will be needing two images,
 listening to port 8080 (""peer1"" from now on) and 8081 (""peer2"" from now on) respectively.
 
-
 !!!Hallo Transcript !
 
 Once you have your peers set-up you can start sending messages from one image to another. This section 
 will step-by-step dissect these remote msg-sends by showing you: 
 
-- How you get a reference to a remote receiver
-- What happens when you pass different kind of objects as arguments 
+- How you get a reference to a remote receiver.
+- What happens when you pass different kind of objects as arguments. 
 - How values from these message-sends are returned.
 
-along the way we will see how to use the SeamlessLogger and take a quick look behind the scenes.
+along the way we will also see how to use the SeamlessLogger, which doubles as a profiler for remote messaging.
+
+!!!!Fetching Remote References
 
 The simplest example possible would be to print the customary \'hallo world\' or a sequence of numbers from peer1 to the transcript of peer2. 
 
@@ -126,18 +123,27 @@ remoteTranscript := (Smalltalk from: '127.0.0.1:8081') globals at: #Transcript.
 
 This is of course all syntactic sugar with the seamless deamon and protocol working behind the scene to manage your remote references. You can even use these as a base to introduce your own abstractions for fetching remote objects.
 
-At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitely means that a remote peer has full access to the SystemDictionary on the other side and whence the whole system. This is of course intentional and usefull for prototyping but may cause security problems in deployment.
+%{{{latex:\fbox{\begin{minipage}[t]{0.3\textwidth}
 
-Remember when we where setting-up our seamless deamon we invoked:
+%At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitely 
+%means that a remote peer has full access to the SystemDictionary on the 
+%other side and whence the whole system. This is of course intentional and usefull for prototyping but may cause security problems in deployment.
 
-[[[
-SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080
-]]]
+%Remember when we where setting-up our seamless deamon we invoked:
 
-inside the SeamlessDeamon>>newDefaultWithGlobalAccess method (which we will be examining in detail later on) the Smalltalk globals are given as the entry point of communication and the overall distribution policies are set to their most permissive state. 
+%[[[
+%SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080
+%]]]
 
-Restricting which objects can be referenced from your image and how exactly they will behave is a 
-matter of changing this entry point dictionary (to point to a user-defined one rather than the system dictionary) and altering the distribution policy of your deamon. 
+%inside the SeamlessDeamon>>newDefaultWithGlobalAccess 
+%method (which we will be examining in detail later on) the Smalltalk globals are given as the entry point of communication and the overall distribution policies are set to their most permissive state. 
+%Restricting which objects can be referenced from your image and how exactly they will behave is a 
+%matter of changing this entry point dictionary and altering the distribution policy of your deamon.  
+
+%\end{minipage}} }}}
+
+
+!!!!Passing Arguments By Value
 
 Let's now re-run our Transcript example (shown above), only this time we will use the SeamlessLogger (on both peers) to take a pick behind the scenes:
 
@@ -149,14 +155,19 @@ SeamlessLogger new.
 
 Figure *transcriptWithBasicArgs* shows the loggers on peer1 (left) and peer2 (right) after printing "1 to: 100" on the Transcript of peer2 as we did earlier. On the upper left side of each logger we can see the list of ''deamons'' in each peer. Multiple deamons with different configurations (communication and serialization protocols and policies) can co-exist in each peer. While each one of these deamons can connect to multiple remote peers initiating a one-to-one ''session'' with each one (lower left side of each logger). On each of these ''sessions'' we can start/stop logging (stopping also clears the log) and update the log-views (upper right and lower right side of each logger) even while the communication is taking place. Automatic updating of the log is currently disabled in order to minimize the slow-down introduced by the logging facilities.
 
-''Note to the Reader: You can actually connect two local deamons in the same image -- which is another great way to test, profile and prototype your code. Furthermore connecting to a local deamon can give you a controlled view of a system since all your calls will be mediated by proxies and the deamon policies''
+%''Note to the Reader: You can actually connect two local deamons in the same image -- 
+%which is another great way to test, profile and prototype your code. 
+%Furthermore connecting to a local deamon can give you a controlled 
+%view of a system since all your calls will be mediated by proxies and the deamon policies''
 
 The log-views for our example inform us that:
 
-- ""Peer1-Upper-Log"": 2 instances of TSeamlessRemoteProxy (ie remote objects) received all ''local'' messages (100% of them) that amounted to 201 messages in total. 0.5% (ie 1 out of the 201) of those messages send to TSeamlessRemoteProxy instances where #at:, 49.8% (ie 100 messages) where #cr, while the rest 49.8% (ie 100 messages) were #show.
-- ""Peer1-Lower-Log"": All messages were outgoing, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
-- ""Peer2-Upper-Log"": As expected it was an instance (local to peer2) of the SystemDictionary class that received the #at: (to retrieve the remoteTranscript) while all other messages (200 of them) were send to 1 instance of the ThreadSafeTranscript, and were divide among #show and #cr sends.
-- ""Peer2-Lower-Log"": All messages were incoming, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+- ""Peer1 (Upper-Log)"": 2 instances of TSeamlessRemoteProxy (ie remote objects) received all ''local'' messages (100% of them) that amounted to 201 messages in total. 0.5% (ie 1 out of the 201) of those messages send to TSeamlessRemoteProxy instances where #at:, 49.8% (ie 100 messages) where #cr, while the rest 49.8% (ie 100 messages) were #show.
+- ""Peer1 (Lower-Log)"": All messages were outgoing, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+- ""Peer2 (Upper-Log)"": As expected it was an instance (local to peer2) of the SystemDictionary class that received the #at: (to retrieve the remoteTranscript) while all other messages (200 of them) were send to 1 instance of the ThreadSafeTranscript, and were divide among #show and #cr sends.
+- ""Peer2 (Lower-Log)"": All messages were incoming, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+
+!!!!Passing Arguments By Reference
 
 So far so good, no suprises here as far as remote communication goes this is the simplest example possible. Let's try something else now:
 
@@ -170,7 +181,7 @@ So far so good, no suprises here as far as remote communication goes this is the
 
 The only thing we have changed here (on line 4) is the argument passed to the message #show: that the remoteTranscript receives. The code behaves as expected (ie aLocalObject is printed on the remoteTranscript as previously), but this time ''behind the scenes'' something different is going on. As shown in Figure *transcriptWithCompositeArgs* our ""explicit"" call to the remoteTranscript generated ""implicit"" proxies and incomming traffic from the other side. More specifically aLocalObject was implicitely proxied to peer2 because it was passed as an argument to #show, and then this new proxy generated traffic because it received the message #asString from the Transcript on peer2.   
 
-+Remote Printing of composite Objects (LOG)>file://figures/transcriptWithCompositeArgs.png|width=100|label=transcriptWithCompositeArgs+
++Remote Printing of Composite Objects (LOG)>file://figures/transcriptWithCompositeArgs.png|width=100|label=transcriptWithCompositeArgs+
 
 Note also here that because of this implicit ''proxying'', although the code seems to send 200 messages (100 shows and 100 cr) 
 the traffic that was generated in both directions in total was 300 messages. So why this difference, what changed ? The answer is that the argument to #show:
@@ -180,7 +191,7 @@ otherwise (if copied) it will not remain in sync with the other side. ""Should""
 you (the programmer) that decides what gets ''proxied'' (and remains in sync) and what gets ''copied'' as terminal information (be it terminal
 instances such as numbers or even composite objects with their whole object graph).
 
-By default Seamless chooses for you a handfull of classes to be passed or returned by value (ie copied) while all other local 
+By default Seamless chooses for you a handfull of classes (including all their subclasses) to be passed or returned by value (ie copied) while all other local 
 arguments to a remote call (or return values) will be passed by reference (implicitely creating proxies on the other side). 
 This is done because while prototyping, you shouldn't - ideallly - care. Knowing what Seamless does for you though will help you
 code more efficiently. As we said a simple rule that you can guide you  is that by default ''basic objects'' such as numbers 
@@ -194,8 +205,11 @@ The global default deamon of Seamless passes only the following classes by value
 - Symbol 
 - UndefinedObject 
 - Color
+- Point
 
-Of course this list can be changed dynamically either while setting up your deamon or even (if needed) while your application is running. 
+!!!!Changing Policies on The Fly
+
+Of course the above list can be changed dynamically either while setting up your deamon or even (if needed) while your application is running. 
 Even more conveniently you can programmatically choose to serialize a previously proxied object or ''force'' the serialization of a local object to the 
 other side on a per instance and per message basis. For our example this would be done as follows:
 
@@ -213,7 +227,7 @@ object) will return a local copy of it for further processing. Several synonyms 
 facility (ie #asLocalObject, #asRemoteObject etc) but they all do the same thing for both local and remote objects.
 That is: ''Force the serialization of the object in question'' in the syntactic context they are used. 
 
-''Note: clean up all this By value: crap''
+!!!!Passing Proxies Around
 
 So we 've seen what happens when both terminal instances and composite objects are passed as arguments to remote calls.
 What about remote proxies themselves, what happens then ? Let's evaluate the following code:
@@ -232,6 +246,8 @@ when passing numbers by value. Why ? Well, it turns out that a proxy passed as a
 it actually resides as a local object.  
 
 +Remote Printing of Proxied Objects (LOG)>file://figures/transcriptWithProxyArgs.png|width=100|label=transcriptWithProxyArgs+
+
+!!!!Return Values
 
 Similarly for return values of remote calls, there are three distinct cases (according to the serialization policies of the peer that 
 responds to the message):
@@ -256,7 +272,9 @@ Run the following code and watch the values printed in your local transcript to 
 11 
 12 returnValue := (Smalltalk from: '127.0.0.1:8081') globals at: #aRemoteObject put: Object new.
 13 Transcript show: returnValue; cr; show: returnValue xxx___isProxy ; cr; cr.
+]]]
 
+[[[
 <OUTPUT>
 
 ThreadSafeTranscript
@@ -276,7 +294,8 @@ On line 1 as previously we retrieve the remote transcript and then on line 3 we 
 value and ask if it is a proxy. The return value is the class ''ThreadSafeTranscript'' (a composite object from the other side) so it is
 indeed a proxy (''true''). Then on line 6 we ask from this remote class all its instances and print them locally. The answer is an
 ordered collection that includes the remote transcript ''{Transcript}'' and since this is a composite object it exists on peer1 as
-a proxy (''true''). Finally on line 12 we create a new entry on the remote System Dictionary storing a local object (from peer1). As
+a proxy (''true''). Then on line 9 we ask this remote ordered collection for its size. Since size returns a number and numbers are 
+terminal instances the size is returned by value (''false''). Finally on line 12 we create a new entry on the remote System Dictionary storing a local object (from peer1). As
 we saw earlier this local object will be ''implicitely'' proxied on peer2. But, when the remote call #at:put: will return the value stored
 (''an Object''), this value will be a de-referenced local object (''false'') that is also being proxied on the other side.
 
@@ -287,11 +306,11 @@ To sum-up the following Table gives you all the possibilities for both arguments
 | ''Composite Object'' | ""By Reference"" (Proxied)
 | ''Proxy'' | ""De-Referenced"" (Proxied Object from the other side)
 
-'''Note to the reader: When dealing with more than two-peer communications schemes - which we did not cover - and when additionally that communication scheme is intermixed, 
-there can be a forth case. This can happen for eg. when a remote message from peer1 to peer2 is sent that passes as an argument a proxy from peer3. In this
-case either the proxy is duplicated on the other side or a proxy-to-a-proxy is created, depending on the distribution policy''
+%''For the curius reader: When dealing with more than two-peer communications schemes - which we did not cover - and when additionally that communication scheme is intermixed, 
+%there can be a forth case. This can happen for eg. when a remote message from peer1 to peer2 is sent that passes as an argument a proxy from peer3. In this
+%case either the proxy is duplicated on the other side or a proxy-to-a-proxy is created, depending on the distribution policy''
 
-''Note: clean up syntactic sugars and loose the SeamlessDeamonManager (just adds complexity) -- Also now that you have the logger expand this with passing implicit refs etc''
+%''Note: clean up syntactic sugars and loose the SeamlessDeamonManager (just adds complexity) -- Also now that you have the logger expand this with passing implicit refs etc''
 
 !!Between Ping-Pong and the REST
 
