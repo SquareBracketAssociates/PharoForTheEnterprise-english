@@ -327,7 +327,7 @@ In the first code snippet below (which you can find in the Examples sub-package 
 2	PingPong new decrement: 100 using: PingPong new.
 ]]]
 
-+Mutally recursive calls between ping-pong instances>file://figures/pingPong.pdf|width=100|label=pingPong+
++Mutally recursive calls between ping-pong instances>file://figures/pingPong.pdf|width=70|label=pingPong+
 
 The ping-pong instance through the \#decrement:using: method is responsible for decrementing the number ''aNumber'' which it receives as the first argument through mutual-recursion with another ping-pong instance (whence the name ping-pong). The number is decreased on line 6 as it is passed back and forth between the two instances, while on line 11 the number of each step is printed. Printing is done after the mutual recursive calls with each executing context (100 contexts in this example) printing the number it received and returning.
 
@@ -346,6 +346,8 @@ If you open a Transcript and execute ''TutorialExample localPingPong'' you will 
 10
 11	Transcript show: aNumber; cr.
 ]]]
+
++The Log of the PingPong Example>file://figures/pingPongLogger.png|width=100|label=ppLog+
 
 This rather abstract and boring example can become more intresting if one of the two instances is remote. This is achived on lines 2 and 3 of the \#pingPong method in the TutorialExample class (see below) where a local PingPong instance receives a remote instance of the same class as a second argument.
 
@@ -436,12 +438,65 @@ on the spectrum, give an all serialized rest example
 
 - All the examples from the presentation (Also Isolation Here ?)
 
-+Main classes of the "contact manager" application of Pharocasts.>file://figures/contacts.pdf|width=100|label=contacts+
 
-''NOTE: Actually put the contact example here''
++Main classes of the Contact manager application of Pharocasts.>file://figures/contacts.pdf|width=100|label=contacts+
+
+[[[
+ContactsDatabaseExample loadBeattles (on peer1)
+...
+ContactsDatabaseExample loadBeattlesWifes (on peer2)
+]]]
+
++The Contact Manager with the Beattles (peer1) and the Beattles Wifes (peer2)>file://figures/contacts1.png|width=100|label=contacts1+
+
+[[[
+ContactListEditor open. "the local editor"
+
+[...]
+
+Contact database: (Contact from: '127.0.0.1:8081') database.
+
+ContactListEditor open. "browsing contacts from remote peer"
+]]]
+
++Loading the Contacts of a Remote Peer>file://figures/contacts2.png|width=100|label=contacts2+
+
++Mixing Local and Remote Contacts (Crude Data-Balancing)>file://figures/contacts3.png|width=100|label=contacts3+
+
+[[[
+[...]
+Contact database addAll: (Contact from: '127.0.0.1:8081') database.
+
+ContactListEditor open.
+]]]
 
 !!Ok, ok: Make me a Remote Tester
 - A simple remote testing application with Seamless
+
+[[[
+TestRunnerExample>>>testCategoryNamed: aCategoryName at: aRemoteAddress
+
+	| tr |
+
+	tr := (TestRunner from: aRemoteAddress) new.
+	tr
+		categoryAt: (tr categoryList indexOf: aCategoryName) put: true; 
+		selectAllClasses;
+		runAll.
+	
+	"difference on inspection between local and remote objects"
+	tr result inspect.
+	tr result asLocalObject inspect.
+	Smalltalk tools inspector inspect: tr result.
+]]]
+
+[[[
+TestRunnerExample new
+       testCategoryNamed: #'ProfStef-Tests'
+       at: '127.0.0.1:8081'
+]]]
+
++Different ways to to distribute the test results>file://figures/testing.png|width=100|label=testing+
 
 !!Ok, ok: Make me a Distributed Game
 
@@ -449,6 +504,26 @@ on the spectrum, give an all serialized rest example
 
 +Main classes of the "puzzle-game" application of Car-Mines.>file://figures/game.pdf|width=100|label=game+
 
+[[[
+BackEndAppliPuzzleDistribue demarrer. "peer2"
+[...]
+AppliPuzzleDistant demarrer. "peer1"
+]]]
+
+[[[
+AppliPuzzleDistant>>connexionAuBackEnd
+	| classePuzzleDistante |
+	classePuzzleDistante := (middleware connectOn: '127.0.0.1:1111') at: #Puzzle.
+	puzzle := classePuzzleDistante new.
+	afficheur := AfficheurPuzzle new.
+	afficheur puzzle: puzzle vue: vue.
+	vue onClickDo: [:x :y| 
+		Transcript show: 'sending'; cr.
+		puzzle inverserSelectionPieceX: x y: y.
+	]
+]]]
+
++Front-End and Log of the Puzzle Game>file://figures/gameScreen.png|width=100|label=gameScreen+
 
 !!How It All Works ?
 
