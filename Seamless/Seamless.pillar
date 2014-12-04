@@ -375,14 +375,14 @@ What we should note here is that one ''explicit'' remote call (on Line 3 on the 
 - PLUS the communication ovehead that the subsequent ""coupled"" 100 contexts generated
 
 Now these kind of scenarios can easily appear under ''naive'' distribution coding 
-and although the ping-pong example runs pretty smoothly for 100 contexts, it does not scale
-gracefully. More coupled and more complicated examples will generate more implicit 
-proxies and traffic that can easily bring memory, processors and bandwidth to their limits. Not 
-to mention that these situations are intrisincly hard to reason about and debug.
+and although the ping-pong example runs pretty smoothly in Seamless for 100 and more contexts, 
+it does not scale gracefully. More coupled and more complicated examples will generate more implicit 
+proxies and more traffic that inevitably introduce unexeptable slow-downs (latency) or bring application 
+resources (memory, bandwidth) to their limits. 
 
 !!!Where is the Ball ?
 
-Moreover serializing on-demand our objects (ping-pong balls) will not ''exactly'' work in this case. That is if we intend to leave the rest of the code unchanged. To illustrate this consider the following two examples below. On the first example we have changed the pingPong method we saw earlier by sending the message \#asLocalObject to the remotePingPong instance we have created. This message send will actually return a copy of the remote pingPong instance, effectively serializing the proxied object. This will in turn result in a local-only execution of the \#decrement:using: method, since now both ping pong instances reside on the same machine. You can confirm this by running the following code and watching the whole sequence of numbers being printed only on peer1.
+In our particular example even serializing on-demand our objects (ping-pong balls) will not ''exactly'' help us. That is if we intend to leave the rest of the code unchanged. To illustrate this consider the following two examples below. On the first example we have changed the pingPong method we saw earlier by sending the message \#asLocalObject to the remotePingPong instance we have created. This message send will actually return a copy of the remote pingPong instance, effectively serializing the proxied object. This will in turn result in a local-only execution of the \#decrement:using: method, since now both ping pong instances reside on the same machine. You can confirm this by running the following code and watching the whole sequence of numbers being printed only on peer1.
 
 [[[
 1 TutorialExample class>>pingPong
@@ -410,19 +410,24 @@ The only thing that has changed here is the ''byValue'' directive on line 7 whic
 
 In both examples above by serializing the distributed objects - despite de-coupling the communication - we actually changed the ''semantics of the application'' since now we don't get the same side-effects as in the first scenario (even numbers on one peer and odd numbers on the other). 
 
-Of course the solution {{{latex:\footnote{Apart from using optimization like futures or batch communication (see concluding Section)} }}} to this ''coupling'' problem (if we hypothesize that our intention is to print odd and even numbers on two different peers) is to change the code itself to look more like the first ''Hallo Transcript'' example on Section *DieSockets*. That example just prints numbers in the other side in one-shot remote message-sends by passing arguments by copy.
+Of course the solution {{{latex:\footnote{Apart from using optimizations like futures or batch communication (see concluding Section)} }}} to this ''coupling'' problem (if we hypothesize that our intention is to print odd and even numbers on two different peers) is to change the code itself to look more like the first ''Hallo Transcript'' example on Section *DieSockets*. That example just prints numbers in the other side in one-shot remote message-sends by passing arguments by copy.
 
 !!!The (Simplified) Big Picture
 
 +A (over-simplified) view of the spectum of communication middleware solutions in terms of distribution policies and implicit traffic>file://figures/spectrum.pdf|width=100|label=spectrum+
 
-We generalize and illustrate this situation in Figure *spectrum*. It turns out that the more objects or classes of objects you pass by value (like the first ''Hallo Transcript'' example) the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls (like in the ping-pong example) the more closer you are to ''tranparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). On the other hand REST is more static and feels like a procedural communication API rather than an object-oriented one while transparent distribution is fully object-oriented and intuitive "but" when taken to extremes is ''mostly utopic''. {{{latex:\footnote{With the exception of transparent distribution over shared local memory (see concluding section)} }}} 
+We generalize and illustrate this situation in Figure *spectrum*. It turns out that the more objects or classes of objects you pass by value (like the first ''Hallo Transcript'' example) the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls (like in the ping-pong example) the more closer you are to ''tranparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). On the other hand REST is more static and feels like a procedural communication API rather than an object-oriented one while transparent distribution is fully object-oriented and intuitive. "But" when this transparency is taken to extremes it can be seen as ''mostly utopic''. {{{latex:\footnote{With the exception of transparent distribution over shared local memory (see concluding Section)} }}} 
 
 The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your own code by profiling and considering the trade-offs. Even more so you may want to use Seamless to craft usefull abstractions that enforce certain paradigms to your code.  
 
 !!Practice Makes Perfect
 
-- All the examples from the presentation (Also Isolation Here ?)
+In this section we will go over some applications from the Seamless-Examples package, that you should
+play around with to get more comfortable with the framework. 
+
+!!!Ok, ok: Contact the Beattles
+
+First on our list is ...
 
 
 +Main classes of the Contact manager application of Pharocasts.>file://figures/contacts.pdf|width=100|label=contacts+
@@ -456,7 +461,7 @@ Contact database addAll: (Contact from: '127.0.0.1:8081') database.
 ContactListEditor open.
 ]]]
 
-!!Ok, ok: Make me a Remote Tester
+!!!Ok, ok: Make me a Remote Tester
 - A simple remote testing application with Seamless
 
 [[[
@@ -484,7 +489,7 @@ TestRunnerExample new
 
 +Different ways to to distribute the test results>file://figures/testing.png|width=100|label=testing+
 
-!!Ok, ok: Make me a Distributed Game
+!!!Ok, ok: Make me a Distributed Game
 
 - Noury's application with Seamless
 
@@ -513,7 +518,9 @@ AppliPuzzleDistant>>connexionAuBackEnd
 
 !!How It All Works ?
 
-''NOTE: architectural overview and summoning the deamon ?''
+%''NOTE: architectural overview and summoning the deamon ?''
+
+!!!Lower-Lever Overview
 
 On Figure *low-level*, we provide an overview of the low-level communication infrastructure of Seamless:
 
@@ -564,6 +571,8 @@ Remote referencing in Seamless is also adaptable with two tested available imple
 is a uniform, light-weight and stratified general purpose proxy model, while the second one is 
 more specialized and is based on shadow classes.
 
+!!!Higher-Lever Overview
+
 Figure *high-level* provides an overview of the high-level communication components of Seamless. 
 These depend on the low-level communication infranstructure, through ''SeamlessSession'' which has 
 a one-to-one relationship with the ''SeamlessConnection'' on Figure *low-level*.
@@ -599,27 +608,41 @@ Options can include: full serialization, shallow serialization, proxying, etc..
 ;SeamlessSecurityPolicy 
 :The concrete subclasses of this abstract class are responsible for authentication and for restricting access (either message sending or distribution) for specific instances or whole classes of objects.
 
+!!Seamless Papercuts
+
+It is the little things in life that will make you mad. Here are some do's and dont's while using Seamless. 
+These ''papercuts'' will incrementally go away as we advance to more stable releases.
+
+!!!Damn you UI Process
+
+!!!Damn you Workspace
+
+!!!Damn you Morphic
+
+!!!Damn you Image-Save
+
+!!!Damn you Exceptions
+
 !!Where Do We Go From Here ?
 @FutureWork
 
 Short-Term
 
-- More Doc/Tests, Critics, Refactoring to Patterns (TM)
-- Green Threading and UI
-- Exception Handling / Stability
-- Session Clean-Up
-- Throughput Profiling / Optimization (RMI, DCOM)
-- Remote Reflection
+- More Doc/Tests, Critics, Refactoring to Patterns (TM), Traits
+- Green Threading and UI (papercut)
+- Exception Handling / Stability (papercut)
+- Session Clean-Up (papercut)
+- Shared-Memory
 
 Mid-Term
 
 - Futures / Batch-communication / Memoization
-- Distributed-GC
+- Low-level Profiling / (RMI, DCOM and literature review)
 - Closer integration with Fuel (ie Shallow or Incremental Copy especially for Collections)
-- Shared-Memory
+- More Monitoring
+- Remote Reflection
+- Distributed-GC
 - Field Examples
-
-
 
 !!Acks
 
