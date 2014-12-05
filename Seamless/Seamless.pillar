@@ -427,10 +427,15 @@ play around with to get more comfortable with the framework.
 
 !!!Ok, ok: Contact the Beattles
 
-First on our list is ...
-
+First on our list is the ContactListEditor app from PharoCasts {{{latex:
+\footnote{\url{http://www.pharocasts.com/2011/02/pharo-gui-with-polymorph.html}}
+}}}. We will be repurposing the app using Seamless to make it browse and edit contacts from a remote peer. 
 
 +Main classes of the Contact manager application of Pharocasts.>file://figures/contacts.pdf|width=100|label=contacts+
+
+The ContactListEditor is a local application for contact management that is aimed at showcasing Polymorph. The two main classes of the app are shown in Figure *contacts*. The contact manager has a simple model-view architecture. We will be running through Seamless the view (seen on the left of the figure) on peer1 and the model (on the right of the figure) on peer2. The view consists of the ContactListEditor class, which remembers the currently selected contact (''selectedContactIndex'' iv) and retrieves all available contacts through the #contacts method. These contacts are actually stored on the class-side variable of the class Contact (''database'' iv), with each Contact instance holding a firstName and a lastName string.
+
+The class ContactsDatabaseExample on the Seamless-Examples package provides some helper methods to load example data on each peer for the application. Go ahead and evaluate the following code on peer1 and peer2 respectively.
 
 [[[
 ContactsDatabaseExample loadBeattles (on peer1)
@@ -438,28 +443,62 @@ ContactsDatabaseExample loadBeattles (on peer1)
 ContactsDatabaseExample loadBeattlesWifes (on peer2)
 ]]]
 
-+The Contact Manager with the Beattles (peer1) and the Beattles Wifes (peer2)>file://figures/contacts1.png|width=100|label=contacts1+
+Then by evaluating:
 
 [[[
 ContactListEditor open. "the local editor"
+]]]
 
-[...]
+on each peer you should be seeing something similar to Figure *contacts1*. This the local behaviour of the app (as it was originally intented) with our sample data (ie John on peer1 and Yoko on peer2).
 
++The Contact Manager with the Beattles (peer1) and the Beattles Wifes (peer2)>file://figures/contacts1.png|width=100|label=contacts1+
+
+Now let's evaluate the following code on peer1, to browse the contacts of peer2 remotely:
+
+[[[
 Contact database: (Contact from: '127.0.0.1:8081') database.
 
 ContactListEditor open. "browsing contacts from remote peer"
 ]]]
 
+By now you should be comfortable by what has happened here. On the first line of the code-snippet we pointed the Contacts database to peer2 and then on the second line we re-opened the editor. Now Yoko (and the rest of the Beattles wifes) is shown on peer1 although they are stored on peer2. Of course we could have achieved that in a more elegant way, by extending the view to be able to 
+Browse more than one databases. But we wanted to leave the original application code as unchanged as possible.
+
+Figure *contacts2* shows the results of this remote repurposing and the SeamlessLogger. Go ahead and browse or edit the contacts and also try to move around the window. If it will feels a bit sluggish, update the SeamlessLogger to see why. The ui (morphic in this case) in the view is sending messages to your model (stored on the other side) even while you are moving the window !
+
 +Loading the Contacts of a Remote Peer>file://figures/contacts2.png|width=100|label=contacts2+
 
-+Mixing Local and Remote Contacts (Crude Data-Balancing)>file://figures/contacts3.png|width=100|label=contacts3+
+Of course there are many remedies to these situations, with the first one being to ''control when morphic asks the model for updates''. Instead of changing Morphic itself to do that (always an option) you can adopt a Model-Model-View-Controller pattern in your code (for more on this read here {{latex:
+\footnote{\url{http://c2.com/cgi/wiki?ModelModelViewController }}
+}}}). What this means essentially is that ''what you see'' is the ''Application Model'' or the ''UI Model'', which is different from the ''Domain Model'' or ''Back-End Model'' (the Contacts database in this case). If you have this distinction in your code, morphic will be sending messages to the first model which is by definition local, while the second model can be distributed (like in our case) without Morphic getting in the way.
+
+Another way would be to use a more ''rest-like'' approach by using Seamless as we described earlier. This is seen in the following code-snippet. Go ahead and try it:
 
 [[[
-[...]
-Contact database addAll: (Contact from: '127.0.0.1:8081') database.
+Contact database: (Contact from: '127.0.0.1:8081') database asLocalObject
+
+ContactListEditor open. "browsing contacts from remote peer"
+]]]
+
+As you may have guessed what we did here is to ''on-demand serialize'' our request to the other side by bringing all the 
+wifes locally. Of course we brought the whole of the contacts database in this example (since it is small) but in a real-world scenario you would be probably doing this incrementally (ie bringing the first n-contacts to show your user and then using paging to navigate). Serializing means that editing, browsing etc does not generate additional requests but also that now it is your responsibility to sync the local copy to the other side. 
+
+Finally on Figure *contacts3* we see something more exotic that you can do with the contact manager example. This is a ''crude'' data-balancing example. Go ahead and try on peer1 the followind code-snipet:
+
+[[[
+ContactsDatabaseExample loadBeattles.
+
+Contact database: (OrderedCollection new 
+			addAll: Contact database; 
+			addAll: (Contact from: '127.0.0.1:8081') database;
+			yourself).
 
 ContactListEditor open.
 ]]]
+
+What we did here is first restore the Beattles on peer1 and then add both the local Beattles and their remote wifes (as proxies) on the local db. The result as seen in Figure *contacts3* is a database that ''seamlessly'' (pun intented) integrates contacts from two different machines. 
+
++Mixing Local and Remote Contacts (Crude Data-Balancing)>file://figures/contacts3.png|width=100|label=contacts3+
 
 !!!Ok, ok: Make me a Remote Tester
 - A simple remote testing application with Seamless
