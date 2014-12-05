@@ -189,6 +189,158 @@ Make sure that you execute the test method: ==testIVOffsetAndValue==
 
 
 
+!!Object Allocation and Initialization
+
+The creation of an object is the composition of two elementary operations: its 'allocation' and its 'initialization'. 
+
+We now define all the primitives that allow us to allocate and initialize an object. Remember that 
+# the allocation is a class method that returns a nearly empty structure, nearly empty because the instance represented by the structure should at least knows its class and 
+# the initialization of an instance is an instance method that given a newly allocated instance and a list of initialization arguments fill the instance.
+
+!!! Allocation
+
+!!!! Your Job. 
+In the category =='instance allocation'== implement the primitive called ==allocateAnInstance== that sent to an ''objClass'' returns a new instance whose instance variable values are nil and whose objClassId represents the objClass. 
+
+As shown in the class ==ObjTest==, if the class ==ObjPoint== has two instance variables: ==ObjPoint allocateAnInstance== returns ==#(#ObjPoint nil nil)==.
+
+Make sure that you execute the test method: ==testAllocate== 
+
+!!! Keywords Primitives
+
+The original implementation of ObjVLisp uses the facility offered by the Lisp keywords to ease the specification of the instance variable values during
+instance creation then providing an uniform and unique way to create objects.
+We have to implement some functionality to support keywords. However
+as this is not really interesting that you lose time we give you
+all the necessary primitives. 
+
+!!!! Your Job. 
+All the functionality for managing the keywords are defined into the category =='keyword management'==. Read the code and the associated test called ==testKeywords== in the class ==ObjTest==.
+
+Make sure that you execute the test method: ==testKeywords==
+
+!!! Object Initialization
+Once an object is allocated, it may be initialized by the programmer by specifying a list of initialization values. We can represent such list by an array containing alternatively
+a keyword and a value like ==#(#toto 33 #x 23)== where 33 is associated with ==#toto== and 23 with ==#x==.
+
+!!!! Your Job. 
+Read in the category =='instance initialization'== the primitive  ==initializeUsing: anArray== that sent an object with an initialization list returns an initialized object.
+
+
+
+!! Static Inheritance of Instance Variables
+
+Instance variables are statically inherited at the class creation time. The simplest form of instance variable inheritance is to define the  complete set of instance variables as the ordered fusion between the inherited instance variables  and the locally defined instance variables. For simplicity reason and as most of the languages, we chose to forbid duplicated instance
+variables in the inheritance chain.
+
+!!!! Your Job. 
+In the category =='iv inheritance'== read the primitive  ==computeNewIVFrom: superIVOrdCol with: localIVOrdCol==.
+
+The primitive takes two ordered collections of symbols and returns an ordered collection containing the union of the two ordered collections but with the extra constraint that the order of elements of the first ordered collection is kept. Look at the test method testInstanceVariableInheritance for examples.
+
+Make sure that you execute the test method: ==testInstanceVariableInheritance==
+ 
+!!!!Side Remark. 
+You could think that keeping the same order of the instance variables between a superclass and its subclass is not an issue. This is partly true in this simple implementation because the instance variable accessors computes each time the corresponding offset to access an instance variable using the primitive ==offsetFromClassOfInstanceVariable:==.  However, the structure (instance variable order) of a class is hardcoded by the primitives. That's why your implementation of the primitive
+==computeNewIVFrom:with:== should take care of that aspect.
+
+!!Method Management
+A class stores the behavior (expressed by methods) shared by all its instances into a method dictionary. In our implementation, we represent methods by associating a symbol to a Pharo ''block=='' a kind of an anonymous method. The block is then stored in the method dictionary of an objClass. In this implementation we do not offer the ability to  access  directly instance variables of the class in which the method is defined. This could be done by sharing a common environment among all the methods. The programmer has to use accessors or the ==setIV== and ==getIV== objMethods defined on ==ObjObject== to access the instance variables. You can find them in the bootstrap method on the class side of ==Obj==.
+
+The following code describes the definition of the method ==x== defined  on the objClass ==ObjPoint== that invokes a field access
+
+[[[
+ObjPoint  
+	addUnaryMethod: #accessInstanceVariableX 
+    withBody: 'objself send: #getIV withArguments: #(#x). 
+]]]
+
+As a first approximation this code will create the following block that will get stored into the class method dictionary. ==[:objself | objself send: #getIV withArguments: #(#x)]==.  As you may notice, in our implementation, the receiver is always an explicit argument of the method. Here we named it ==objself==. 
+
+In the ObjVLisp world, we do not have a syntax for message passing. Instead of we call the primitives using the  Pharo syntax for message passing (using the message ==send:withArguments:==)
+
+
+!!!!Defining a method and sending a message. 
+
+As we want to keep this implementation as simple as possible, we define only one primitive for sending a message ==send:withArguments:==. To see the mapping between Pharo and ObjVlisp ways of expressing message sent, look at the comparison below:
+
+[[[
+Pharo Unary: self odd 
+ObjVLisp: objself send: #odd withArguments: #()
+
+Pharo Binary: a + 4 
+ObjVLisp:  a send: #+ withArguments: #(#(4)) 
+
+Pharo    Keyword: a max: 4 &
+ObjVLisp: a send: #max: withArguments: #(4)\\
+]]]
+
+
+
+
+While in Pharo you would write the following method definition:
+[[[
+bar: x
+
+     self foo: x    
+]]]
+
+In our implementation of ObjVlisp you write:
+
+[[[
+anObjClass
+        addMethod: #bar
+        args: 'x'
+        withBody: 'objself send: #foo: withArguments: #x'. 
+]]]
+
+
+
+!!!! Your Job. 
+We provide you all the primitives that deals with method definition. In the category =='method management'== look at the methods  ==addMethod: aSelector args: aString withBody: aStringBlock==,
+==removeMethod: aSelector== and ==doesUnderstand: aSelector==. Implement ==bodyOfMethod: aSelector==. 
+
+Make sure that you execute the test method: ==testMethodManagement==
+
+
+
+!! Message Passing and Dynamic Lookup
+
+Sending a message is the result of the composition of method
+lookup and execution. The following ==basicSend:withArguments:from:== primitive just implements it. 
+First it looks up the method into the class or superclass of the receiver then if a
+method has been found it execute it, else (lookup:for: returned nil and we raise a Pharo error. 
+
+[[[
+basicSend: selector withArguments: arguments from: aClass
+	"Execute the method found starting from aClass and whose name is selector."
+	"The core of the sending a message, reused for both a normal send or a super one."
+	| methodOrNil |
+	methodOrNil := (aClass lookup: selector).
+	^ methodOrNil 
+		ifNotNil: [ methodOrNil valueWithArguments: (Array with: self) , arguments ] 
+		ifNil: [ Error signal: 'Obj message' , selector asString, ' not understood' ] 
+]]]
+
+Based on this primitive we can express ==send:withArguments:== and ==super:withArguments:== as follows:
+
+[[[
+send: selector withArguments: arguments 
+	"send the message whose selector is <selector> to the receiver. The arguments of the messages are an array <arguments>. The method is lookep up in the class of the receiver. self is an objObject or a objClass."
+
+	^ self basicSend: selector withArguments: arguments from:  self objClass
+]]]
+
+
+
+
+!!!Method Lookup
+The primitive ==lookup: selector== applied to an objClass should return the method associated to the selector if it found it, else nil to indicate that it failed. 
+
+!!!! Your Job. 
+Implement the primitive ==lookup: selector== that sent to an objClass with a method selector, a symbol and the initial receiver of the message, returns the method-body of the method associated with the selector in the objClass or its superclasses.  Moreover if the method is not found, nil is returned.
+
+Make sure that you execute the test method: ==testNilWhenErrorInLookup== and ==testRaisesErrorSendWhenErrorInLookup==
 
 
 
@@ -197,15 +349,115 @@ Make sure that you execute the test method: ==testIVOffsetAndValue==
 
 
 
+!! Managing super
+
+To invoke a superclasses' hidden method, in Java and Pharo you use ==super==, which means that the lookup up will start above the class defining the method containing the super expression. In fact we can consider that in Java or Pharo, super is a syntactic sugar to refer to the receiver but changing where the method lookup starts. This is what we see in our implementation where we do not have syntactic support. 
+
+[[[
+bar: x
+
+     super foo: x    
+]]]
+
+In our implementation of ObjVlisp we do not have a syntactic construct to express super, you have to use the ==super:withArguments:== Pharo message.
+
+[[[
+anObjClass
+        addMethod: #bar
+        args: 'x'
+        withBody:  'objself super: #foo: withArguments: #(#x) from: superClassOfClassDefiningTheMethod'. 
+]]]
+
+Note that ==superClassOfClassDefiningTheMethod== is a variable that is bound to the superclass of ==anObjClass== i.e., the class defining the method ==bar== (see later).
+
+
+[[[
+Pharo Unary: super odd 
+ObjVLisp:  objself super: #odd withArguments: #() from: superClassOfClassDefiningTheMethod
+
+Pharo Binary: super + 4 
+ObjVLisp: objself super: #+ withArguments: #(4) from: superClassOfClassDefiningTheMethod
+
+Pharo Keyword: super max: 4 
+ObjVlisp: objself super: #max: withArguments: #(4) from: superClassOfClassDefiningTheMethod
+]]]
 
 
 
 
+!!!Representing super
+
+We would like to explain you where the ==superClassOfClassDefiningTheMethod== variable comes from. 
+For super sends we add a parameter to the primitive. This parameter corresponds to the super class of class in which the method is defined. This argument should always have the same name, i.e.,  ==superClassOfClassDefiningTheMethod==. This variable will be bound when the method is added in the method dictionary of an objClass. 
+
+In fact, a method is not only a block but it needs to know the class that defines it or its superclass. We added such information using currification. (a currification is the transformation of a function with n arguments into function with less argument but an environment capture: ==f(x,y)= (+ x y)== is transformed into a function ==f(x)=f(y)(+ x y)== that returns a function of a single argument y and where x is bound to a value and obtain a function generator). For example, ==f(2,y)== returns a function ==f(y)=(+ 2 y)== that adds its parameter to 2. A currification acts as a generator of function where one of the argument of the original function is fixed. 
+
+In Pharo we wrapped the block representing the method around another block with a single parameter and bind this parameter with the superclass of the class defining the method. When the method is added to the method dictionary, we evaluate the first block with the superclass as parameter as illustrated as follows:
+
+[[[
+method := [: superClassOfClassDefiningTheMethod |
+		 	[:objself :otherArgs  |
+	        	  ... method code ...
+	          	]]
+method value: (Obj giveClassNamed: self objSuperclassId)
+]]]
+
+So now you know where the ==superClassOfClassDefiningTheMethod== variable comes from. 
+Make sure that you execute the test method:  ==testMethodLookup==
+
+
+!!!! Your Job. 
+Now you should be implement ==super: selector withArguments: arguments from: aSuperclass== using the primitive ==basicSend:withArguments:from:==.
 
 
 
+!!Handling Not Understood Messages
+
+Now we can revisit error handling. Instead of raising a Pharo error, we want to send an ObjVlisp message to the receiver of the message to give him a chance to trap the error.
+
+Compare the two following versions of ==basicSend: selector withArguments: arguments from: aClass== and notice  and propose an implementation of ==sendError: selector withArgs: arguments==.
+
+[[[
+basicSend: selector withArguments: arguments from: aClass
+	"Execute the method found starting from aClass and whose name is selector."
+	"The core of the sending a message, reused for both a normal send or a super one."
+	| methodOrNil |
+	methodOrNil := (aClass lookup: selector).
+	^ methodOrNil 
+		ifNotNil: [ methodOrNil valueWithArguments: (Array with: self) , arguments ] 
+		ifNil: [ Error signal: 'Obj message' , selector asString, ' not understood' ] 
+]]]
 
 
+[[[
+basicSend: selector withArguments: arguments from: aClass
+	"Execute the method found starting from aClass and whose name is selector."
+	"The core of the sending a message, reused for both a normal send or a super one."
+	| methodOrNil |
+	methodOrNil := (aClass lookup: selector).
+	^ methodOrNil 
+		ifNotNil: [ methodOrNil valueWithArguments: (Array with: self) , arguments ] 
+		ifNil: [ self sendError: selector withArgs: arguments ] 
+]]]
+
+It should be noted that the objVlisp method is defined as follows in the ==ObjObject== class (see the bootstrap method on the class side of Obj). The obj ==error== method expects a single parameter: an array of arguments whose first element is the selector of the not understood message. 
+
+[[[
+objObject 
+	addMethod: #error
+	args: 'arrayOfArguments'
+	withBody: 'Transcript show: ''error '', arrayOfArguments first.  ''error '', arrayOfArguments first'.
+]]]
+
+[[[
+sendError: selector withArgs: arguments
+	"send error wrapping arguments into an array with the selector as first argument. Instead of an array we should create a message object."
+	
+	^ self send: #error withArguments:  {(arguments copyWithFirst: selector)}
+	
+]]]
+
+Make sure that you read and execute the test method: ==testSendErrorRaisesErrorSendWhenErrorInLookup==
 
 
 
