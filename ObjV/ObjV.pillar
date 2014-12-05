@@ -15,7 +15,7 @@ are some of the points you can deeply understand while doing the exercise.
 - What is class initialization?
 - What the semantics of the method lookup?
 - What is a reflective kernel?
-- What are the roles of the classes \stc{Class} and \stc{Object}?
+- What are the roles of the classes \stc{Class== and \stc{Object==?
 - What is the role of a metaclass? 
 
 
@@ -61,15 +61,13 @@ We do not want to implement a scanner, a parser and a compiler for ObjVLisp but 
 Every object in the ObjVLisp world is instance of ==Obj== in our implementation world (Pharo).
 In Pharo ==Obj== is a subclass of ==Array==.
 
-Since ==Obj== is a subclass of ==Array==, ==#(#ObjPoint 10 15)}== is an objInstance of the class ==ObjPoint==. ==ObjPoint== is the name of an objClass.   ==#(#ObjClass #ObjPoint #ObjObject #(class x y) #(:x :y) nil )== is the array that represents the objclass  ==ObjPoint==.
+Since ==Obj== is a subclass of ==Array==, ==#(#ObjPoint 10 15)== is an objInstance of the class ==ObjPoint==. ==ObjPoint== is the name of an objClass.   ==#(#ObjClass #ObjPoint #ObjObject #(class x y) #(:x :y) nil )== is the array that represents the objclass  ==ObjPoint==.
 
 
 
-!!!About representation choices.
+!!! About representation choices.
 
-We could have implemented ObjVLisp functionality at the class level of a 
-class named ==Obj== inheriting only from ==Object==. 
-However, to use the ObjVlisp primitive (a Pharo method) ==objInstanceVariableValue: anObject for: anInstanceVariable== that returns the value of the instance variable in ==anObject==, we would have been forced to write the following expression: 
+We could have implemented ObjVLisp functionality at the class level of a class named ==Obj== inheriting only from ==Object==. However, to use the ObjVlisp primitive (a Pharo method) ==objInstanceVariableValue: anObject for: anInstanceVariable== that returns the value of the instance variable in ==anObject==, we would have been forced to write the following expression: 
 
 [[[
 Obj objInstanceVariableValue: 'x' for: aPoint
@@ -78,7 +76,7 @@ Obj objInstanceVariableValue: 'x' for: aPoint
 We chose to represent any ObjVLisp object by an array and to define the ObjVLisp functionality in the instance side of a subclass of ==Array== named ==Obj==. That way we can write in a more natural and readable way  the previous functionality as:
 
 [[[
-==aPoint objInstanceVariableValue: 'x'.
+aPoint objInstanceVariableValue: 'x'.
 ]]]
 
 
@@ -86,10 +84,107 @@ We chose to represent any ObjVLisp object by an array and to define the ObjVLisp
 
 
 
+!!! Facilitating ObjVLisp class access.
+We need a way to declare, store and access ObjVLisp classes. As a
+solution, on the class level of the Pharo class ==Obj== we defined a
+dictionary holding the defined classes. This dictionary acts as the namespace for our language. We defined the following methods to store and access defined classes.
+
+- ==declareClass: anObjClass== stores the instance of ==ObjClass== given as arguments in the class repository (here a dictionary whose keys are the names of the classes and values the ObjVLisp classes themselves).
+
+- ==giveClassNamed: aSymbol== returns if it exists the ObjVLisp
+class  named ==aSymbol==. The class should have been declared previously.
+
+
+With such methods we can write code like the following one that looks for the class of the class ==ObjPoint==. 
+
+[[[
+Obj giveClassNamed: #ObjPoint
+]]]
+
+To make class access less heavy, we also implemented a shortcut: 
+We trap messages not understood sent to ==Obj== and look into the defined class dictionary. 
+Since ==ObjPoint== is an unknown message, this same code is then written as:
+
+[[[
+Obj ObjPoint
+]]]
+
+Now you are ready to start.
 
 
 
 
+!!Structure and Primitives
+
+The first issue is how to represent objects.  We have to agree on an initial representation. In this implementation we chose to represent the objinstances as arrays (instances of ==Obj== a subclass of ==Array==). In the following we used the terms array for talking about instances of the class ==Obj==.  
+
+Note that we could extend the model so that the metaclasses support possible
+instance structure changes  but in the current implementation
+we will simply hardcode the class structure.
+
+!!!! Your Job. 
+Check that the class ==Obj== exists and  inherits from ==Array==. 
+
+
+!!!Structure of a Class
+As one of the first objects that we will create is the class ==ObjClass== we
+focus now on the minimal structure of the classes in our language.  Given an
+array  a class has the following structure: an identifier to its class, a name, 
+an identifier to its superclass (we limit the model to single inheritance), a list of 
+instance variables, a list of initialization keywords, and a method dictionary. 
+
+For example the class ==ObjPoint== has then the following structure: 
+
+[[[
+#(#ObjClass #ObjPoint #ObjObject #(class x y) #(:x :y) nil ))
+]]]
+
+
+It means that ==ObjPoint== is an instance of ==ObjClass==, is named ==#ObjPoint==, inherits from a class named ==ObjObject==, has three instance variables, two initialization keywords and an uninitialized method dictionary. To access this structure we define some primitives.
+
+
+!!!! Your Job. 
+ The test methods of the class ==RawObjTest== that are in the categories =='step1-tests-structure of objects'== and =='step2-tests-structure of classes'== give some examples of structure accesses. Implement the primitives that are missing to run the following tests ==testPrimitiveStructureObjClassId==,
+ ==testPrimitiveStructureObjIVs==, ==testPrimitiveStructureObjKeywords==, 
+ ==testPrimitiveStructureObjMethodDict==, ==testPrimitiveStructureObjName==, ==testPrimitiveStructureObjIVs== and ==testPrimitiveStructureObjSuperclassId==. 
+
+You can execute them by selecting the following expression ==(RawObjTest selector:
+ #testPrimitiveStructureObjClassId) run==.  Note that arrays start at 1 in Pharo. Below is the list of the primitives that you should implement.
+
+Implement in category =='object structure primitives'== the primitives that manage:
+- the class of the instance represented  as a symbol. ==objClassId==, ==objClassId: aSymbol==. The receiver is an ==objObject==. This means that this primitive  can be applied on any objInstances to get its class identifier.
+
+Implement in category =='class structure primitives'== the primitives that manage:
+- the class name. ==objName==, ==objName: aSymbol==. The receiver is an objClass.
+- the superclass ==objSuperclassId==, ==objSuperclassId: aSymbol==. The receiver is an objClass.
+- the instance variables ==objIVs==, ==objIVs: anOrderedCollection==. The receiver is an objClass.
+- the keyword list ==objKeywords==, ==objKeywords: anOrderedCollection==. The receiver is an objClass. 
+- the method dictionary ==objMethodDict==, ==objMethodDict: anIdentityDictionary==. The receiver is an objClass.
+
+
+
+!!!Finding the class of an object
+Every object keeps the identifier of its class (its name). For example an instance of ==ObjPoint== has then the following structure: ==#(#ObjPoint 10 15)== where ==#ObjPoint== is a symbol identifying  the class ==ObjPoint==.
+ 
+!!!! Your Job. 
+
+Implement the following primitives:
+
+- Using the primitive ==giveClassNamed: aSymbol== defined at the class level of Obj, define the primitive  ==objClass== in the category =='object-structure primitive'== that returns the objInstance that represents its class (Classes are objects too in ObjVLisp).
+
+Make sure that you execute the test method: ==testClassAccess==
+
+- In the category =='iv management'== define a method called ==offsetFromClassOfInstanceVariable: aSymbol== that returns the offset of the instance variable represented by the symbol. It returns 0 if the variable is not defined. Look at the tests ==#testIVOffset==. (Hints: Use the Pharo method ==indexOf:==).
+
+Make sure that you execute the test method: ==testIVOffset==
+
+Using the preceding method, define in the category =='iv management'== 
+# the method ==offsetFromObjectOfInstanceVariable: aSymbol== that returns the offset of the instance variable and 
+# the method ==valueOfInstanceVariable: aSymbol== that returns the value of this instance variable in the given object. Look at the tests ==#testIVOffsetAndValue==.  
+
+Note that for the method ==offsetFromObjectOfInstanceVariable:== you can check that the instance variable exists in the class of the object and else raise an error using the Pharo method ==error:==.
+
+Make sure that you execute the test method: ==testIVOffsetAndValue==
 
 
 
