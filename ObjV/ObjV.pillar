@@ -453,13 +453,334 @@ objObject
 sendError: selector withArgs: arguments
 	"send error wrapping arguments into an array with the selector as first argument. Instead of an array we should create a message object."
 	
-	^ self send: #error withArguments:  {(arguments copyWithFirst: selector)}
+	^ self send: #error withArguments:  {(arguments copyWithFirst: selector)==
 	
 ]]]
 
 Make sure that you read and execute the test method: ==testSendErrorRaisesErrorSendWhenErrorInLookup==
 
 
+
+!!Bootstrapping the system
+
+Now you have implemented all the behavior we need and you are ready to bootstrap the system: this means creating the kernel consisting of  ==ObjObject== and ==ObjClass== classes from themselves. The idea of a bootstrap is to be  as lazy as possible and to use the system to create itself. Three 
+steps compose the bootstrap, 
+# we create by hand the minimal part of  the objClass ==ObjClass==  and then 
+# we use it to create normally ==ObjObject== objClass and then 
+# we recreate normally and completely ==ObjClass==. 
+
+These three steps are described by the following bootstrap method of Obj class.
+Note the bootstrap is defined as class methods of the class Obj. 
+
+[[[
+Obj class >> bootstrap
+      "self bootstrap"
+      
+      self initialize.
+      self manuallyCreateObjClass.
+      self createObjObject.
+      self createObjClass.
+]]]            
+
+
+
+To help you to implement the functionality of the objClasses ==ObjClass== and 
+==ObjObject==, we defined another set of tests in the class ==ObjTestBootstrap==.
+Read them.
+
+!!! Manually creating ObjClass
+
+The first step is to create manually the class ==ObjClass==. By manually we mean create an array (because we chose an array to represent instances and classes in particular) that represents the objClass ==ObjClass==, then define its methods. You will implement/read this in the primitive ==manuallyCreateObjClass== as shown below:
+
+[[[
+Obj class >> manuallyCreateObjClass
+        "self manuallyCreateObjClass"
+
+        | class |
+        class := self manualObjClassStructure.
+        Obj declareClass: class.
+        self defineManualInitializeMethodIn: class.      
+        self defineAllocateMethodIn: class.
+        self defineNewMethodIn: class.
+        ^class
+]]]
+
+
+
+For this purpose, you have to implement/read all the primitives that
+compose it.
+
+!!! Your Job. 
+At the class level in the category =='bootstrap objClass manual'== read or implement:
+the primitive ==manualObjClassStructure== that returns an objObject that represents the class ==ObjClass==. 
+
+Make sure that you execute the test method: ==testManuallyCreateObjClassStructure==
+
+- As the ==initialize== of this first phase of the bootstrap is not easy we give you its code. Note that the definition of the objMethod ==initialize== is done in the primitive method ==defineManualInitializeMethodIn:==.
+
+[[[
+Obj class >>defineManualInitializeMethodIn: class 
+      class 
+	  	addMethod: #initialize
+      	withBody: 
+            [ :aclass :initArray | 
+            |  objsuperclass |
+            aclass initializeUsing: initArray.            
+            "Initialize a class as an object. In the bootstrapped system will be done via super"
+            objsuperclass := Obj giveClassNamed: aclass objSuperclassId ifAbsent: [nil].
+            objsuperclass isNil
+                        ifFalse: [aclass objIVs: (aclass computeNewIVFrom: objsuperclass objIVs 
+                                                 with: aclass objIVs)]
+                        ifTrue: [aclass objIVs: (aclass computeNewIVFrom: #(#class) 
+                                                with: aclass objIVs)].
+            aclass objKeywords: (aclass generateKeywords: (aclass objIVs copyWithout: #class)).
+            aclass objMethodDict: (IdentityDictionary new: 3).
+            Obj declareClass: aclass.
+            aclass ]
+]]]
+
+Note that this method works without inheritance since the class ==ObjObject== does not
+exist yet. 
+
+The primitive ==defineAllocateMethodIn: anObjClass== defines in anObjClass passed as argument the objMethod ==allocate==. ==allocate== takes only one argument: the class for which a new instance is created as shown below:
+
+[[[
+defineAllocateMethodIn: class 
+
+	class 
+		addUnaryMethod: #allocate 
+		withBody: 'objself allocateAnInstance'
+]]]
+
+Following the same principle, define the primitive ==defineNewMethodIn: anObjClass== that defines in anObjClass passed as argument the objMethod ==new==. ==new== takes two arguments: a class and an  initargs-list. It should invoke the objMethod ==allocate== and ==initialize==.
+
+
+
+Make sure that you execute the test method: ==testManuallyCreateObjClassAllocate==
+
+
+
+!!! Your Job. 
+
+Read carefully the following remarks below and the code. 
+
+- In the objMethod ==manualObjClassStructure==, the instance variable inheritance is simulated. Indeed the instance variable array contains ==#class== that should normally be inherited from ==ObjObject== as we will see in the third phase of the bootstrap. 
+
+- Note that the class is declared into the class repository using the method ==declareClass:==.
+
+- Note the method ==#initialize== is method of the metaclass ==ObjClass==: when you create a class the initialize method is invoked on a class! The ==initialize== objMethod defines on ==ObjClass== has two aspects: the first one dealing with the initialization of the class like any other instance (first line). This behavior is normally done using a super call to invoke the ==initialize== method defined in ==ObjObject==. The final version of the ==initialize== method will do it using perform. The second one dealing with the initialization of classes: performing the instance variable inheritance, then computing the keywords of the newly created class. Note in this final step that the keyword array  does not contain the ==#class:== keyword because we do not want to let the user modify the class of an object. 
+
+
+
+
+
+!!!Creation of ObjObject
+
+Now you are in the situation where you can create the first real and normal class of the system: the class ==ObjObject==. To do  that you send the message ==new== to class ==ObjClass== specifying that the class you are creating is named ==#ObjObject== and 
+only have one instance variable called ==class==. Then you will add the methods defining the behavior shared by all the objects. 
+
+!!! Your Job.
+Implement/read the following methods:
+
+- the primitive ==objObjectStructure== that creates the ==ObjObject== by invoking the ==new== message 
+to the class ==ObjClass==:
+
+[[[ 
+Obj class >>objObjectStructure
+
+	^ (self giveClassNamed: #ObjClass)
+          send: #new
+          withArguments: #(#(#name: #ObjObject #iv: #(#class)))
+]]]
+
+The class ==ObjObject== is named ==ObjObject==, has only one instance variable ==class== and does not have a superclass because it is the inheritance graph root.
+      
+
+Now implement the primitive ==createObjObject== that calls ==objObjectStructure== to obtain the objObject representing
+==objObject== class and define methods in it. To help you we give here the beginning of such a method
+
+[[[
+Obj class >> createObjObject
+        | objObject |
+        objObject := self objObjectStructure.
+        objObject addMethod: #class withBody: [:object | object objClass].
+        objObject addMethod: #isClass withBody: [:object | false].
+        ...
+        ...
+        ...
+        ^objObject
+]]]
+
+Implement the following method in ==ObjObject==
+
+- the objMethod ==class== that given an objInstance returns its class (the objInstance that represents the class). 
+- the objMethod ==isClass== that returns false.
+- the objMethod ==isMetaClass== that returns false.
+- the objMethod ==error== that takes two arguments the receiver and the selector of the original invocation and raises an  error. 
+- the objMethod ==getIV== that takes the receiver and an attribute name, aSymbol, and returns its value for the receiver. 
+- the objMethod ==setIV== that takes the receiver, an attribute name and a value and sets the value of the given attribute to the given value. 
+- the objMethod ==initialize== that takes the receiver and an initargs-list and initializes the receiver according to the specification given by the  initargs-list. Note that here the ==initialize== method only fill  the instance according to the specification given by the initargs-list. Compare with the ==initialize== method defined on ==ObjClass==. 
+       
+
+Make sure that you read and execute the test method: ==testCreateObjObjectStructure==
+
+In particular notice that this class does not implement the class method ==new== because it is not a metaclass but does implement the instance method ==initialize== because any object should be initialized. 
+
+Make sure that you read and execute the test method: ==testCreateObjObjectMessage==
+
+Make sure that you read and execute the test method: ==testCreateObjObjectInstanceMessage==
+
+
+
+
+
+!!!Creation of ==ObjClass==
+
+Following the same approach, you can now recreate completely the class
+==ObjClass==. The primitive ==createObjClass== is responsible to create the final
+class ==ObjClass==. So you will implement it and define all the primitive it needs. 
+Now we only define what is specific to classes, the rest is inherited from the superclass of the class ==ObjClass==, the class ==ObjObject==.
+
+[[[
+Obj class >> createObjClass
+      "self bootstrap"
+
+      | objClass |
+      objClass := self objClassStructure.
+      self defineAllocateMethodIn: objClass.
+      self defineNewMethodIn: objClass.
+      self defineInitializeMethodIn: objClass.
+      objClass addMethod: #isMetaclass
+            withBody: [:class | class objIVs includes: #superclass].  
+            "an object is a class if its class is a metaclass. cool"
+      objClass addMethod: #isClass
+            withBody: [:class | class objClass unarySend: #isMetaclass].
+      ^objClass
+]]]
+
+To make the method ==createObjClass== working we should implement the method it calls. Implement then: 
+
+
+- the primitive ==objClassStructure== that creates the ==ObjClass== class  by invoking the ==new== message to the class ==ObjClass==. Note that during this method the ==ObjClass== symbol refers to  two different entities because the new class that is created using the old one is declared in the class dictionary with the same name.
+
+
+Make sure that you read and execute the test method: ==testCreateObjClassStructure==
+
+      
+Now implement the primitive ==createObjClass== that starts as follow:
+
+[[[
+Obj class >>createObjClass
+
+        | objClass |
+        objClass := self objClassStructure.
+        self defineAllocateMethodIn: objClass.
+        self defineNewMethodIn: objClass.
+        self defineInitializeMethodIn: objClass.
+        ...
+        ...
+        ^objClass
+]]]
+
+
+
+
+
+- the objMethod ==isClass== that returns true. 
+- the objMethod ==isMetaclass== that returns true.
+
+[[[
+objClass 
+        addUnaryMethod: #isMetaclass
+        withBody: 'objself objIVs includes: #superclass'.
+       "an object is a class if is class is a metaclass. cool"
+       
+objClass 
+       addUnaryMethod: #isClass
+       withBody: 'objself objClass unarySend: #isMetaclass'.
+]]]
+
+
+- the primitive ==defineInitializeMethodIn: anObjClass== that adds the objMethod ==initialize== to the objClass passed as argument. The objMethod ==initialize== takes the receiver (an objClass) and an initargs-list and initializesthe receiver according to the specification given by the initargs-list. In particular, it should be initialized as any other object, then it should compute its instance variable (i.e., inherited instance variables are computed), the keywords are also computed, the method dictionary should be defined and the class is then declared as an existing one. We provide the following template to help you.
+
+[[[
+Obj class>>defineInitializeMethodIn: objClass 
+
+   objClass 
+          addMethod: #initialize
+          args: 'initArray'
+          withBody: 
+             'objself binarySuper: #initialize with: initArray from: superClassOfClassDefiningTheMethod.
+           objself objIVs: (objself
+                                 computeNewIVFrom: 
+                                       (Obj giveClassNamed: objself objSuperclassId) objIVs
+                                 with: objself objIVs).
+           objself computeAndSetKeywords.
+           objself objMethodDict: IdentityDictionary new.
+           Obj declareClass: objself.
+           objself'
+]]]
+
+
+[[[
+Obj class >>defineInitializeMethodIn: objClass 
+
+	objClass 
+		addMethod: #initialize
+		args: 'initArray'
+		withBody: 
+			'objself super: #initialize withArguments: {initArray} from: superClassOfClassDefiningTheMethod.
+			objself objIVs: (objself
+							computeNewIVFrom: (Obj giveClassNamed: objself objSuperclassId) objIVs
+							with: objself objIVs).
+			objself computeAndSetKeywords.
+			objself objMethodDict: IdentityDictionary new.
+			Obj declareClass: objself.
+			objself'
+]]]			
+       
+
+Make sure that you execute the test method: ==testCreateObjClassMessage==
+       
+Note the following points: 
+
+- The locally specified instance variables now are just the instance variables that  describe a class. The instance variable ==class== is inherited from ==ObjObject==.
+- The ==initialize== method now does a super send to invoke the initialization performed by ==ObjObject==.
+
+
+
+
+
+
+
+
+!!New features that you could implement
+
+You can implement some simple features:
+
+- define a metaclass that automatically defines accessors for the specified instances variables.
+- avoid that we can change the selector and the arguments when calling a super send.
+
+!!! Shared Variable
+Note that contrary to the proposition made in the 6th postulate of the original ObjVLisp model, class instance variables are not equivalent of shared variables.   According to the 6th postulate, a shared variable will be stored into the instance representing the class and not in an instance variable of the class representing the shared variables.  For example if a workstation has a shared variable named ==domain==.  But
+domain should not be an extra instance variable of the class of ==Workstation==. Indeed domain has nothing to do with class description. 
+
+The correct solution is that ==domain== is a value hold into the list of the shared variable of the class ==Workstation==. This means that
+a ''class'' has an extra information to describe it: an instance variable ==sharedVariable== holding pair.  So we should be able to write
+
+[[[
+Obj Workstation getIV: #sharedVariable
+or 
+Obj Workstation sharedVariableValue: #domain
+
+and get
+ #((domain 'inria.fr'))
+]]]
+
+introduce shared variables: add a new instance variable in the
+class ObjClass to hold a dictionary of shared variable bindings (a
+symbol and a value) that can be queried using specific methods:
+==sharedVariableValue:==, ==sharedVariableValue:put:==. 
 
 
 
