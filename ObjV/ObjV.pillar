@@ -1,0 +1,118 @@
+! Building ObjVlisp a Minimal, Uniform and Reflective Object-Oriented Language Kernel
+
+This tutorial written by Stéphane Ducasse will step by step guide you to build 
+the kernel of the ObjVLisp model. ObjVlisp was designed by P. Cointe as got inspired by the kernel 
+of Smalltalk 78. It has explicit metaclasses and it is composed of two classes ==Object== and ==Class==.
+
+!!Objectives
+During the lecture you saw the main points of the ObjVLisp model, now you 
+will implement it. The goals of this implementation are to give a 
+concrete understanding of the concepts presented in the lecture. Here 
+are some of the points you can deeply understand while doing the exercise.
+
+- What is a possible object structure?
+- What is object  allocation and initialization?
+- What is class initialization?
+- What the semantics of the method lookup?
+- What is a reflective kernel?
+- What are the roles of the classes \stc{Class} and \stc{Object}?
+- What is the role of a metaclass? 
+
+
+!!Before Starting
+In this section we discuss the files that you will use, the implementation choices and the conventions that we will follow during 
+all this tutorial. 
+
+!!!Provided Files.
+You need to download and install Pharo from *http://www.pharo.org/*. You need a virtual machine, and the couple image and changes. You can use *http://get.pharo.org* to get a script to download Pharo. You can use the book Pharo by Example from *http://www.pharo.org/PharoByExample/* for an overview of the syntax and the system. 
+
+All the necessary files are provided as a Monticello package. It contains all the classes, the method categories and the method signatures of the methods that you have to implement. It provides additional functionality such as a dedicated inspector and some extra methods that will make your life easy and help you to concentrate on the essence of the model. It contains also all the tests of the functionality you have to implement. For each functionality you will have to run some tests.
+
+For example to run a particular test named ==testPrimitive==, evaluate the following expression ==(ObjTest selector: #testPrimitiveStructure) run== or to click on the icon of the method named ==testPrimitiveStructure==.  
+
+Note that since you are developing the kernel, to test it we implemented manually some mocks of the classes and kernel. This is the setup method of the test classes that build this fake kernel. Now pay attention because the setups are often taking shortcuts. 
+
+To load the code open a monticello browser, add a file repository to point to the ObjVLispSkeleton project under ==StephaneDucasse== in ht eObjVLispSkeleton project at *http://www.smalltalkhub.com* and select and load the package.
+ 
+To do this, use the following expression in the smalltalkhub repository creation pop up.
+
+[[[
+MCSmalltalkhubRepository
+    owner: 'StephaneDucasse'
+    project: 'ObjVLispSkeleton'
+    user: ''
+    password: ''
+]]]
+
+Select the latest file and load it. 
+ 
+!!! Conventions. 
+We use the following conventions: we name as ''primitives'' all the Pharo methods that participate 
+in the building of ObjVLisp. These primitives are mainly implemented as methods of the class ==Obj==.  Note that in a Lisp implementation such primitives would be just lambda expressions, in a C implementation such primitives would be represented by C functions.
+
+To help you to distinguish between classes in the implementation language (Pharo) and the ObjVLisp model, we prefix  all the ObjVLisp classes by ==Obj==. Finally, some of the crucial and confusing primitives (mainly the class structure ones) are all prefixed by ==obj==. For example the primitive that given an 'objInstance' returns its class identifier is named ==objClassId==.
+We also talk about objInstances, objObjects and objClasses to refer to 
+specific instances, objects or classes defined in ObjVLisp. 
+
+!!! Inheriting from Array.
+
+We do not want to implement a scanner, a parser and a compiler for ObjVLisp but concentrate on the essence of the language. That's why we chose to use as much as possible the implementation language, here Pharo. As Pharo does not support macro definition, we will use as much as possible the existing classes to avoid extra syntactic problems.
+
+Every object in the ObjVLisp world is instance of ==Obj== in our implementation world (Pharo).
+In Pharo ==Obj== is a subclass of ==Array==.
+
+Since ==Obj== is a subclass of ==Array==, ==#(#ObjPoint 10 15)}== is an objInstance of the class ==ObjPoint==. ==ObjPoint== is the name of an objClass.   ==#(#ObjClass #ObjPoint #ObjObject #(class x y) #(:x :y) nil )== is the array that represents the objclass  ==ObjPoint==.
+
+
+
+!!!About representation choices.
+
+We could have implemented ObjVLisp functionality at the class level of a 
+class named ==Obj== inheriting only from ==Object==. 
+However, to use the ObjVlisp primitive (a Pharo method) ==objInstanceVariableValue: anObject for: anInstanceVariable== that returns the value of the instance variable in ==anObject==, we would have been forced to write the following expression: 
+
+[[[
+Obj objInstanceVariableValue: 'x' for: aPoint
+]]]
+
+We chose to represent any ObjVLisp object by an array and to define the ObjVLisp functionality in the instance side of a subclass of ==Array== named ==Obj==. That way we can write in a more natural and readable way  the previous functionality as:
+
+[[[
+==aPoint objInstanceVariableValue: 'x'.
+]]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
