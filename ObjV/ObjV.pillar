@@ -753,6 +753,108 @@ Note the following points:
 
 
 
+!! First User Classes: ObjPoint and ColoredObjPoint
+
+Now that ObjVLisp is created and we can start to program some classes. 
+Implement the class ==ObjPoint== and ==ObjColoredPoint==. Here is a possible implementation.
+
+!!!ObjPoint
+You can choose to implement it at the class level of the class Obj.
+Pay attention that your scenario covers the following aspects: 
+- First just create the class ==ObjPoint==. 
+- Create an instance of the class ==ObjPoint==.
+- Send some messages defined in ==ObjObject== to this instance. 
+
+Define the class ==ObjPoint== so that we can create points as follows:
+
+[[[
+aPoint := pointClass send: #new withArguments: #((#x: 24 #y: 6)).
+aPoint send: #getIV withArguments: #(#x).
+aPoint send: #setIV withArguments: #(#x 25).
+aPoint send: #getIV withArguments: #(#x).
+]]]
+
+Then add some functionality to the class ==ObjPoint== like the methods ==x==, ==x:==, ==display== which prints the receiver. 
+
+[[[
+ObjPoint 
+	addMethod: #x
+    withBody: [:objself | objself send: #getIV withArguments: #(#x)].
+
+ObjPoint 
+	addMethod: #x:
+	args: 'val'
+    withBody: [:objself :val | objself send: #setIV withArguments: (Array with: #x with: val)].
+
+ObjPoint 
+	addMethod: #display
+    withBody:  [:objself |
+                        Transcript cr; show: 'aPoint with x = '.
+                        Transcript show: (objself send: #x withArguments: #()) printString; cr].
+]]]
+
+Then test these new functionality.
+
+[[[                         
+aPoint send: #x withArguments: #().
+aPoint send: #x: withArguments: #(33).
+aPoint send: #display withArguments: #().
+]]]                  
+
+
+!!! ObjColoredPoint
+Following the same idea, define the class ==ObjColored==.
+[[[
+%\ttt{|} coloredPointClass aColoredPoint \ttt{|}
+%ObjClass send: #new
+%       withArguments: #((#name: #ObjColoredPoint 
+%                        #iv: #(#color) 
+%                        #superclass: #ObjPoint)).
+%]]]
+
+Create an instance and send it some basic messages. 
+
+[[[
+aColoredPoint := coloredPointClass
+                    send: #new 
+                    withArguments: #((#x: 24 #y: 6 #color: #blue)).      
+             
+aColoredPoint send: #getIV withArguments: #(#x).
+aColoredPoint send: #setIV withArguments: #(#x 25).
+aColoredPoint send: #getIV withArguments: #(#x).
+aColoredPoint send: #getIV withArguments: #(#color). 
+]]]
+
+Define some functionality and invoke them: the method color,  implement the method display so that it invokes the superclass and adds some information 
+related to the color. Here is an example: 
+
+
+%coloredPointClass 
+%            addMethod: #color
+%            withBody: [:objself \ttt{|} objself binarySend: #getIV with: #color].
+
+%coloredPointClass 
+%            addMethod: #color:
+%            withBody: [:objself :val \ttt{|} objself send: #setIV 
+%                                           withArguments: (Array with: #color with: val)].
+
+[[[
+coloredPointClass 
+            addMethod: #display
+            withBody: [:objself | 
+                  objself  super: #display withArguments: #() from: superClassOfClassDefiningTheMethod.
+                  Transcript cr;  show: ' with Color = '.
+                  Transcript show: (objself send: #color withArguments: #()) printString; cr].
+
+aColoredPoint send: #x withArguments: #().
+aColoredPoint send: #color withArguments: #().
+aColoredPoint send: #display withArguments: #()
+]]]
+
+
+
+
+
 
 !!New features that you could implement
 
@@ -761,7 +863,7 @@ You can implement some simple features:
 - define a metaclass that automatically defines accessors for the specified instances variables.
 - avoid that we can change the selector and the arguments when calling a super send.
 
-!!! Shared Variable
+!!! Shared Variables
 Note that contrary to the proposition made in the 6th postulate of the original ObjVLisp model, class instance variables are not equivalent of shared variables.   According to the 6th postulate, a shared variable will be stored into the instance representing the class and not in an instance variable of the class representing the shared variables.  For example if a workstation has a shared variable named ==domain==.  But
 domain should not be an extra instance variable of the class of ==Workstation==. Indeed domain has nothing to do with class description. 
 
