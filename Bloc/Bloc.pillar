@@ -1,38 +1,39 @@
-!Bloc: a New Morph Framework
+! Bloc: a New Morph Framework
 
+In this chapter you will learn about Bloc a new morph framework that has been redesigned from scratch. 
+Note that we did not say that Bloc is a new Morphic Framework. Morphic is just the current Pharo morph framework. Bloc has been designed to be able to embed Morphic elements so that we can use Morphic widget during the building of Bloc. Certain implementation decision (such as the coordinates computation) will be revisited
+when we will have enough widgets in Bloc to be able to make a big jump and do not need Morphic anymore. 
 
-
-
+We will describe the overall architecture and the key players of Bloc as well as how to build a simple widget.
 
 !! What is Bloc
-
 Bloc is a complete rewrite of an infrastructure to display graphical element such as elementary graphical objects and widgets. Bloc is composed of three main categories 
 of entities: entities managing the runtime (event dispatch, alarm, main rendering loop), basic graphical elements such as images, label, and more advanced widgets (to be developed)
 
 - An infrastructure. The new infrastructure is roughly composed of spaces (managed by a single universe) and a rendering loop and helper objects.
 - Basic objects. They are composed of a simple hierarchy whose root is ==BlProtoMorph==. Each morph is potentially composed of views instances of ==BlMorphView== (that manages the rendering) and event listeners (that handles interactions and event reactions).
-- Widgets. Widgets are composed of widgetModel and composite basic objects. (to be done probably in MVP style)
+- Widgets. Widgets are composed of widgetModel and composite basic objects following an Model View Presenter style
 
 
 
 !! Universe, Space and Infrastructure
-In this section we will present the main classes supporting the infrastructure (event dispatching, alarm, display management). 
+In this section we  present the main classes supporting the infrastructure (event dispatching, alarm, display management). 
 
-A morph lives in a space (a model) which is responsible of the display. A space is responsible to indirectly handle events, manage canvas, main loop and morph worlds. A space is a kind of mediator. 
+A morph lives in a ''space'' (a model) which is responsible of the display. A space is responsible to indirectly handle events, manage canvas, main loop and morph worlds. A space is a kind of mediator. 
 
 !!! A Universe 
 
-A ==BlUniverse== is the root of all ==BlSpace== instances. Universe and spaces are not graphical objects. They serve as model for 
-rendering infrastructure. 
+Universe and spaces are not graphical objects. They serve as model for rendering infrastructure. 
+There is one single universe and it manages spaces instances. We can have a Morphic space and several Bloc ones. The system has one unique universe. The main responsibility of a Universe is to manage (create, delete and activate) named spaces. 
 
-The system has one unique universe. The main responsibility of a Universe is to manage (create, delete and activate) named spaces. 
+The class ==BlUniverse== defines a singleton.  
+The ==BlUniverse== singleton is the root of all ==BlSpace== instances. 
 
 In addition, a ==BlUniverse== also offers a global announcer. This global announcer is used for global ticking behavior of the ==BlMainLoopManager==. As an example, alarms are managed using this global ticking mechanism as shown in ==BlAlarmQueue>>start== and ==BlAlarmQueue>>subscribesToTicks==.
 
 
 !!! Spaces
-
-==BlSpace== is the root of the space hierarchy. Its subclasses are for Morphic and Bloc respectively. 
+The class ==BlSpace== is the root of the space class hierarchy. Its subclasses are for Morphic and Bloc respectively. 
 
 A ==BlSpace== is a uniquely identified object (via a name). A space is owned by a Universe. A space is responsible to start and shutdown a root morph: ==WorldMorph== in Morphic and ==BlSpaceMorph== in Bloc. A space has a source of (vm) event stream, its sensor. At the current time, it also has a manager which brigdes to the UIManager (for ui process management and other). In the future we expect that it will disappear as well as UIManager.
 
@@ -66,17 +67,16 @@ Dispatch???
 
 
 !!! ProtoMorph
-A BlProtoMorph is the root of the Morph hierarchy. a BlProtoMorph  has a position but its extent is computed or set by subclasses.
+The class ==BlProtoMorph== is the root of the Morph hierarchy. A ==BlProtoMorph==  has a position but its extent is computed or set by subclasses.
 
-A BlProtoMorph has an eventListener that handles morph interaction. A event listener encapsulates state about the interaction (in fact a listener is chain of command so listener can be dynamically added and removed).
+A ==BlProtoMorph== has an eventListener that handles morph interaction. A event listener encapsulates state about the interaction (in fact a listener is chain of command so listener can be dynamically added and removed).
 
-You can add event listener using the message: 
-==BlProtoMorph>>addEventListener:==
+You can add event listener using the message: ==BlProtoMorph>>addEventListener:==
 
 A morph lives in a space which is responsible of the display. A space is responsible to indirectly handle events, manage canvas, main loop and morph worlds. A space is a kind of mediator. 
 
 !!! Morph 
-A BlMorph is a subclass of BlProtoMorph. It adds support for views (graphical display of a morph) and 
+A ==BlMorph== is a subclass of ==BlProtoMorph==. It adds support for views (graphical display of a morph) and 
 
 - views that render the morph (responsible of innerbounds and drawbounds)
 - 
@@ -189,6 +189,17 @@ We think that the widgets should be designed by focusing on few elements.
 
 BlSpace should have a rootMorph instance variable.
 In BlMorphicSpace it will point to the WorldMorph and to a SpaceMorph for BlSpaceMorph
+
+
+sinon, Bloc a un peu avancé.
+on a maintenant une unification entre View et Morph qui fait qu’on peut 
+composer des vues avec les memes layoutStrategy que pour les morphs :)
+Je peux maintenant finir le toggle button avec label ou icon ou les deux.
+BlMorphWithLayout a disparu. Un CompositeMorph a un layoutStrategy (dummy par défaut).
+
+Bon, problème avec le système de coordonnes local. Celui des vues est bon (suivant ce que disait Igor)
+mais pas celui des morphs. donc je vais maintenant m’occuper de ça.
+
 
 !! Open Questions
 

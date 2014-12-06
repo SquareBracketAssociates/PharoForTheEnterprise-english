@@ -1,25 +1,10 @@
-!Spec: a new framework for describing user interfaces
-!!Introduction
+! Spec: a framework for describing user interfaces
 
-Writing user interfaces is notoriously a tedious task.
-It often requires time and a clear understanding of the separation of concerns between the logic of the model and the logic of the user interface.
-Indeed, many frameworks mix domain models with widget models.
+This chapter presents the Spec UI builder framework. ''Spec'' has been originally developed by B. Van Ryseghem based on an idea of S. Ducasse. It is now maintained by the community and the pharo core team.
+Spec is attempt to support UI logic reuse. Spec is influenced by VisualWorks and Dolphin MVP in the sense that it recognizes the need for a Presenter or ApplicationModel class, in Spec called ComposableModel that manages the logic and the link between widgets and domain objects. Spec, following the tradition, uses ''value holders'', simple object raising announcements when their values, often domain objects, change. 
 
-''Spec'' is a framework for describing user interfaces. 
-It allows for the separation of concerns between the different parts of the user interface as expressed in the MVP pattern, on which it is inspired.
-''Spec'' emphasizes the reuse of widgets as well as their customization.
-The goal of this text is to provide an overview of the functionalities of ''Spec''. 
-
-To avoid possible misunderstandings due to confusion in terminology, we first define the following four terms, which will be used frequently:
-
-;UI Element
-:an interactive graphical element displayed as part of the Graphical User Interface.
-;UI Model
-:an object that contains the state and behavior of one or several UI elements.
-;Widget
-:the union of a UI Element and its UI model.
-;Basic widgets
-:low level widgets like a list, a button, etc. They are not composed of other widgets.
+In this documentation, original written by B. Van Ryseghem and J. Fabry and now maintained and updated by S. Ducasse and J. Fabry will teach you how to define a new browser and how to reuse its logic and UI elements.  
+We will also provide an overview of the functionalities of ''Spec''.
 
 The structure of this text is as follows:
 First we give a short tutorial on how to define and reuse UIs with ''Spec''.
@@ -28,9 +13,34 @@ In section four the API of the ''Spec'' basic models is detailled as well as how
 The next section presents the support for dynamic UIs in ''Spec''. 
 The sixth section is dedicated to the creation of new ''Spec'' basic widgets, and in section seven the core interpreter loop of ''Spec'' is outlined.
 
-Spec was developed by Benjamin Van Ryseghem and it is maintained by the community and the pharo core team.
+We thank Sean De Nigris for his editing support. The documentation is actively maintained. Suggestions for improvements are welcome via the Pharo mailing-list.
+
+!! Motivation 
+
+Writing user interfaces is notoriously a tedious task. It often requires time and a clear understanding of the separation of concerns between the logic of the model and the logic of the user interface. Indeed, many frameworks mix domain models with widget models.
+
+''Spec'' is a framework for describing user interfaces.  It allows for the separation of concerns between the different parts of the user interface as expressed in the MVP pattern, on which it is inspired.
+''Spec'' emphasizes the reuse of widgets as well as their customization.
+ 
+
+To avoid possible misunderstandings due to confusion in terminology, we first define the following four terms, which will be used frequently:
+
+;UI Element
+:an interactive graphical element displayed as part of the graphical user interface.
+;UI Model
+:an object that contains the state and behavior of one or several UI elements.
+;Widget
+:the union of a UI Element and its UI model.
+;Basic widgets
+:low level widgets like a list, a button, etc. They are not composed of other Spec widgets.
+
+
+
+
 This documentation has been written by Benjamin Van Ryseghem, Johan Fabry and Stéphane Ducasse, with the suprising help of Sean P. DeNigris. 
-It is actively maintained. Suggestions for improvements are welcome via the Pharo mailing-list.
+
+
+
 
 !! Defining and Reusing UIs with ''Spec''
 @sec_reuse_spec
@@ -429,7 +439,7 @@ The result can be seen in figure *fig_protocol_browser*.
 +Protocol Browser>file://figures/Protocol_Browser.png|width=50|label=fig_protocol_browser+
 
 
-!!! Adding Menu
+!!! Adding Menu and KeyBinding
 
 may be this should be adding in the flow.
 
