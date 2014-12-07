@@ -11,7 +11,7 @@ serialization policies for optimizing performance and avoid common
 distribution caveats. This Chapter covers version 0.4 of Seamless 
 for Pharo 3.0 and will be updated frequently towards version 1.0 (stable release).
 
-!!Wait: Reflective What ?
+!!Wait: Reflective What?
 
 ''The first thing we do, let's kill all the lawyers'' \-\- from "Henry VI", Shakespeare
 
@@ -35,7 +35,7 @@ From the point of view of the Pharo developer Seamless aspires to be \- eventual
 - It provides abstractions, syntactic carbohydrates (sugar) and programming facades to make the prototyping of distributed applications feel ''out-of-the-box''. In a nutshell Seamless is biased towards Rapid Application Prototyping.
 - Under the hood it tries to reify every single part of the object distribution process and its policies, so as to allow extensibility as well as easy profiling and fine-tuning.
 
-!!Enough Said: Death to Sockets !
+!!Enough Said: Death to Sockets!
 @DieSockets
 
 !!!Installation
@@ -82,7 +82,7 @@ wget -O- get.pharo.org | bash;
 In order to follow the example in this chapter you will be needing two images,
 listening to port 8080 (""peer1"" from now on) and 8081 (""peer2"" from now on) respectively.
 
-!!!Hallo Transcript !
+!!!Hallo Transcript!
 
 Once you have your peers set-up you can start sending messages from one image to another. This section 
 will step-by-step dissect these remote msg-sends by showing you: 
@@ -380,7 +380,7 @@ it does not scale gracefully. More coupled and more complicated examples will ge
 proxies and more traffic that inevitably introduce unacceptable slow-downs (latency) or bring application 
 resources (memory, bandwidth) to their limits. 
 
-!!!Where is the Ball ?
+!!!Where is the Ball?
 
 In our particular example even serializing on-demand our objects (ping-pong balls) will not ''exactly'' help us. That is if we intend to leave the rest of the code unchanged. To illustrate this consider the following two examples below. On the first example we have changed the pingPong method we saw earlier by sending the message \#asLocalObject to the remotePingPong instance we have created. This message send will actually return a copy of the remote pingPong instance, effectively serializing the proxied object. This will in turn result in a local-only execution of the \#decrement:using: method, since now both ping pong instances reside on the same machine. You can confirm this by running the following code and watching the whole sequence of numbers being printed only on peer1.
 
@@ -580,7 +580,7 @@ What is interesting to note about the puzzle game (as shown in the log of Figure
 
 %+++You can discuss here about the policies once more and show examples
 
-!!How It All Works ?
+!!How It All Works?
 
 %''NOTE: architectural overview and summoning the deamon ?''
 
@@ -700,7 +700,7 @@ Please save your code on a repository or on the local-cache and reload your proj
 
 Once we move to a stable release we will be porting remote reflection facilities (from the Mercury prototype) and full-blown exception handling for your remote exceptions. Right now Seamless only forwards back to the original caller (that may be many remote calls coupled) a SeamlessRemoteException that is less informative than you might expect. Stay tuned.
 
-!!Where Do We Go From Here ?
+!!Where Do We Go From Here?
 @FutureWork
 
 !!!Short-Term
