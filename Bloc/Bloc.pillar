@@ -201,6 +201,18 @@ Bon, problème avec le système de coordonnes local. Celui des vues est bon (sui
 mais pas celui des morphs. donc je vais maintenant m’occuper de ça.
 
 
+Pour ce qui est des View:
+Tout a une view. Typiquement, un RectangleView ou un CircleView avec un BorderStyle.
+Un compositeMorph peut contenir des morphs et gérer le layout avec un LayoutStrategy.
+Une View peut aussi être composée (CompositeView) et utiliser un LayoutStrategy.
+L’intérêt est de pouvoir construire des vues complexes.
+Par exemple, un ToggleButton a une View composite avec un rectangle qui change de couleur 
+et éventuellement un label et/ou une icône. La gestion du positionnement des elements de la View est effectué par un BorderLayoutStrategy.
+Un BorderLayoutStrategy (ou tout autre LayoutStrategy) peut donc être utilisé pour tes morphs ou des Views.
+Tu peux voir quelques exemples dans BlCompositeView.
+exampleWithBoxLayout15 ne marche pas bien mais c’est du au problème de coordonnées locales qui sont mal gérées pour un morph. Pour les Views c’est ok par contre.
+
+
 !! Open Questions
 
 !!! Supporting Headless mode
