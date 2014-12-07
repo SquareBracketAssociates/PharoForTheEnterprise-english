@@ -20,7 +20,7 @@ to hide some of the complicated networking setup (low-level details of socket ma
 invocation, naming etc) from the developer. A reflective communication middleware is the more dynamic 
 variant of such a system whose implementation relies on run-time reflection and can thus be itself adapted and configured
 at runtime {{{latex:\footnote{For more info on reflective middleware, you can read this overview by Fabio Kon et al: \url{http://www.inf.ufg.br/~fmc/papers/CACM-ReflectiveMiddleware-no-access.pdf}} }}}. 
-Seamless is such a reflective middleware for Pharo and as a project can be considered a descendent of Remote Smalltalk 
+Seamless is such a reflective middleware for Pharo and as a project can be considered a descendant of Remote Smalltalk 
 {{{latex:\footnote{\url{http://www.squeaksource.com/rST.html}} }}} 
 which itself was preceded by projects such as OpenCorba {{{latex:
 \footnote{\url{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.79.1783}}
@@ -33,7 +33,7 @@ From the point of view of the Pharo developer Seamless aspires to be \- eventual
 
 - It targets the Pharo environment and strives to integrate with its core facilities (ie available serialization solutions like Fuel, proxy implementations like Ghost etc)
 - It provides abstractions, syntactic carbohydrates (sugar) and programming facades to make the prototyping of distributed applications feel ''out-of-the-box''. In a nutshell Seamless is biased towards Rapid Application Prototyping.
-- Under the hood it tries to reify every single part of the object distribution process and its policies, so as to allow extentibility as well as easy profiling and fine-tuning.
+- Under the hood it tries to reify every single part of the object distribution process and its policies, so as to allow extensibility as well as easy profiling and fine-tuning.
 
 !!Enough Said: Death to Sockets !
 @DieSockets
@@ -68,7 +68,7 @@ aDeamon := SeamlessDeamon
 		startOn: 8080.
 ]]]
 
-which again can be done directly from the command-line at start-up. To sum-up here is how you can download pharo, load Seamless and start the deamon in your prefered port in one go:
+which again can be done directly from the command-line at start-up. To sum-up here is how you can download pharo, load Seamless and start the daemon in your preferred port in one go:
 
 [[[
 wget -O- get.pharo.org | bash;
@@ -110,7 +110,7 @@ remoteTranscript show: 'Hallo World !'.
 ]]]
 
 As you can see the only difference with printing locally is on line 2 when we retrieve the remote transcript instead of using the local Transcript of peer1.
-We will come back to the trade-offs introduced to your code by this ''transperancy'' between local and remote execution. In the meantime here is some other ways you can retrieve a remote object and start sending messages to it with Seamless:
+We will come back to the trade-offs introduced to your code by this ''transparency'' between local and remote execution. In the meantime here is some other ways you can retrieve a remote object and start sending messages to it with Seamless:
 
 [[[
 "sugar 2"
@@ -122,15 +122,15 @@ remoteTranscript := remoteEnvironment at: #Transcript.
 remoteTranscript := (Smalltalk from: '127.0.0.1:8081') globals at: #Transcript.
 ]]]
 
-This is of course all syntactic sugar with the seamless deamon and protocol working behind the scene to manage your remote references. You can even use these as a base to introduce your own abstractions for fetching remote objects.
+This is of course all syntactic sugar with the seamless daemon and protocol working behind the scene to manage your remote references. You can even use these as a base to introduce your own abstractions for fetching remote objects.
 
 %{{{latex:\fbox{\begin{minipage}[t]{0.3\textwidth}
 
-%At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitely 
+%At this point the curious reader may have noticed that the above code (especially syntactic sugar 4) implicitly 
 %means that a remote peer has full access to the SystemDictionary on the 
-%other side and whence the whole system. This is of course intentional and usefull for prototyping but may cause security problems in deployment.
+%other side and whence the whole system. This is of course intentional and useful for prototyping but may cause security problems in deployment.
 
-%Remember when we where setting-up our seamless deamon we invoked:
+%Remember when we where setting-up our seamless daemon we invoked:
 
 %[[[
 %SeamlessDeamon newDefaultWithGlobalAccess startOn: 8080
@@ -139,7 +139,7 @@ This is of course all syntactic sugar with the seamless deamon and protocol work
 %inside the SeamlessDeamon>>newDefaultWithGlobalAccess 
 %method (which we will be examining in detail later on) the Smalltalk globals are given as the entry point of communication and the overall distribution policies are set to their most permissive state. 
 %Restricting which objects can be referenced from your image and how exactly they will behave is a 
-%matter of changing this entry point dictionary and altering the distribution policy of your deamon.  
+%matter of changing this entry point dictionary and altering the distribution policy of your daemon.  
 
 %\end{minipage}} }}}
 
@@ -154,12 +154,12 @@ SeamlessLogger new.
 
 +Remote Printing of Basic Objects (LOG)>file://figures/transcriptWithBasicArgs.png|width=100|label=transcriptWithBasicArgs+
 
-Figure *transcriptWithBasicArgs* shows the loggers on peer1 (left) and peer2 (right) after printing "1 to: 100" on the Transcript of peer2 as we did earlier. On the upper left side of each logger we can see the list of ''deamons'' in each peer. Multiple deamons with different configurations (communication and serialization protocols and policies) can co-exist in each peer. While each one of these deamons can connect to multiple remote peers initiating a one-to-one ''session'' with each one (lower left side of each logger). On each of these ''sessions'' we can start/stop logging (stopping also clears the log) and update the log-views (upper right and lower right side of each logger) even while the communication is taking place. Automatic updating of the log is currently disabled in order to minimize the slow-down introduced by the logging facilities.
+Figure *transcriptWithBasicArgs* shows the loggers on peer1 (left) and peer2 (right) after printing "1 to: 100" on the Transcript of peer2 as we did earlier. On the upper left side of each logger we can see the list of ''daemons'' in each peer. Multiple daemons with different configurations (communication and serialization protocols and policies) can co-exist in each peer. While each one of these daemons can connect to multiple remote peers initiating a one-to-one ''session'' with each one (lower left side of each logger). On each of these ''sessions'' we can start/stop logging (stopping also clears the log) and update the log-views (upper right and lower right side of each logger) even while the communication is taking place. Automatic updating of the log is currently disabled in order to minimize the slow-down introduced by the logging facilities.
 
-%''Note to the Reader: You can actually connect two local deamons in the same image -- 
+%''Note to the Reader: You can actually connect two local daemons in the same image -- 
 %which is another great way to test, profile and prototype your code. 
-%Furthermore connecting to a local deamon can give you a controlled 
-%view of a system since all your calls will be mediated by proxies and the deamon policies''
+%Furthermore connecting to a local daemon can give you a controlled 
+%view of a system since all your calls will be mediated by proxies and the daemon policies''
 
 The log-views for our example inform us that:
 
@@ -170,7 +170,7 @@ The log-views for our example inform us that:
 
 !!!!Passing Arguments By Reference
 
-So far so good, no suprises here as far as remote communication goes this is the simplest example possible. Let's try something else now:
+So far so good, no surprises here as far as remote communication goes this is the simplest example possible. Let's try something else now:
 
 [[[
 1 remoteTranscript := '127.0.0.1:8081' globalAt: #Transcript.
@@ -192,12 +192,12 @@ otherwise (if copied) it will not remain in sync with the other side. ""Should""
 you (the programmer) that decides what gets ''proxied'' (and remains in sync) and what gets ''copied'' as terminal information (be it terminal
 instances such as numbers or even composite objects with their whole object graph).
 
-By default Seamless chooses for you a handfull of classes (including all their subclasses) to be passed or returned by value (ie copied) while all other local 
-arguments to a remote call (or return values) will be passed by reference (implicitely creating proxies on the other side). 
-This is done because while prototyping, you shouldn't - ideallly - care. Knowing what Seamless does for you though will help you
+By default Seamless chooses for you a handful of classes (including all their subclasses) to be passed or returned by value (ie copied) while all other local 
+arguments to a remote call (or return values) will be passed by reference (implicitly creating proxies on the other side). 
+This is done because while prototyping, you shouldn't - ideally - care. Knowing what Seamless does for you though will help you
 code more efficiently. As we said a simple rule that you can guide you  is that by default ''basic objects'' such as numbers 
 and strings are passed by value while more ''composite objects'' are passed by reference. 
-The global default deamon of Seamless passes only the following classes by value:
+The global default daemon of Seamless passes only the following classes by value:
 
 - Boolean 
 - Character 
@@ -210,7 +210,7 @@ The global default deamon of Seamless passes only the following classes by value
 
 !!!!Changing Policies on The Fly
 
-Of course the above list can be changed dynamically either while setting up your deamon or even (if needed) while your application is running. 
+Of course the above list can be changed dynamically either while setting up your daemon or even (if needed) while your application is running. 
 Even more conveniently you can programmatically choose to serialize a previously proxied object or ''force'' the serialization of a local object to the 
 other side on a per instance and per message basis. For our example this would be done as follows:
 
@@ -297,7 +297,7 @@ indeed a proxy (''true''). Then on line 6 we ask from this remote class all its 
 ordered collection that includes the remote transcript ''{Transcript}'' and since this is a composite object it exists on peer1 as
 a proxy (''true''). Then on line 9 we ask this remote ordered collection for its size. Since size returns a number and numbers are 
 terminal instances the size is returned by value (''false''). Finally on line 12 we create a new entry on the remote System Dictionary storing a local object (from peer1). As
-we saw earlier this local object will be ''implicitely'' proxied on peer2. But, when the remote call #at:put: will return the value stored
+we saw earlier this local object will be ''implicitly'' proxied on peer2. But, when the remote call #at:put: will return the value stored
 (''an Object''), this value will be a de-referenced local object (''false'') that is also being proxied on the other side.
 
 To sum-up the following Table gives you all the possibilities for both arguments and return values for a two-peer communication:
@@ -355,7 +355,7 @@ Inside the #decrement:using: method (seen below), the number is decreased on lin
 
 If you open a Transcript and execute ''TutorialExample localPingPong'' you will \- as expected \- see the count-down from 100 being printed on your screen.
 
-This rather abstract and boring example can become more intresting if one of the two instances is remote. This is achived on lines 2 and 3 of the \#pingPong method in the TutorialExample class (see below) where a local PingPong instance receives a remote instance of the same class as a second argument.
+This rather abstract and boring example can become more intresting if one of the two instances is remote. This is achieved on lines 2 and 3 of the \#pingPong method in the TutorialExample class (see below) where a local PingPong instance receives a remote instance of the same class as a second argument.
 
 [[[
 1 TutorialExample class>>pingPong
@@ -372,12 +372,12 @@ In this case the hundred executing contexts which print the results before retur
 What we should note here is that one ''explicit'' remote call (on Line 3 on the code-snippet above) not only generated implicit proxyfications and traffic, but this implicit traffic was heavily coupled between the two machines. In essence the execution time of this one ''explicit'' remote call, includes:
 
 - it's own execution time and it's own communication overhead
-- PLUS the communication ovehead that the subsequent ""coupled"" 100 contexts generated
+- PLUS the communication overhead that the subsequent ""coupled"" 100 contexts generated
 
 Now these kind of scenarios can easily appear under ''naive'' distribution coding 
 and although the ping-pong example runs pretty smoothly in Seamless for 100 and more contexts, 
 it does not scale gracefully. More coupled and more complicated examples will generate more implicit 
-proxies and more traffic that inevitably introduce unexeptable slow-downs (latency) or bring application 
+proxies and more traffic that inevitably introduce unacceptable slow-downs (latency) or bring application 
 resources (memory, bandwidth) to their limits. 
 
 !!!Where is the Ball ?
@@ -414,18 +414,18 @@ Of course the solution {{{latex:\footnote{Apart from using optimizations like fu
 
 !!!The (Simplified) Big Picture
 
-+A (over-simplified) view of the spectum of communication middleware solutions in terms of distribution policies and implicit traffic>file://figures/spectrum.pdf|width=100|label=spectrum+
++A (over-simplified) view of the spectrum of communication middleware solutions in terms of distribution policies and implicit traffic>file://figures/spectrum.pdf|width=100|label=spectrum+
 
-We generalize and illustrate this situation in Figure *spectrum*. It turns out that the more objects or classes of objects you pass by value (like the first ''Hallo Transcript'' example) the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls (like in the ping-pong example) the more closer you are to ''tranparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). On the other hand REST is more static and feels like a procedural communication API rather than an object-oriented one while transparent distribution is fully object-oriented and intuitive. "But" when this transparency is taken to extremes it can be seen as ''mostly utopic''. {{{latex:\footnote{With the exception of transparent distribution over shared local memory (see concluding Section)} }}} 
+We generalize and illustrate this situation in Figure *spectrum*. It turns out that the more objects or classes of objects you pass by value (like the first ''Hallo Transcript'' example) the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls (like in the ping-pong example) the more closer you are to ''transparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). On the other hand REST is more static and feels like a procedural communication API rather than an object-oriented one while transparent distribution is fully object-oriented and intuitive. "But" when this transparency is taken to extremes it can be seen as ''mostly utopic''. {{{latex:\footnote{With the exception of transparent distribution over shared local memory (see concluding Section)} }}} 
 
-The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your own code by profiling and considering the trade-offs. Even more so you may want to use Seamless to craft usefull abstractions that enforce certain paradigms to your code.  
+The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your own code by profiling and considering the trade-offs. Even more so you may want to use Seamless to craft useful abstractions that enforce certain paradigms to your code.  
 
 !!Practice Makes Perfect
 
 In this section we will go over some applications from the Seamless-Examples package, that you should
 play around with to get more comfortable with the framework. 
 
-!!!Ok, ok: Contact the Beattles
+!!!Ok, ok: Contact the Beatles
 
 First on our list is the ContactListEditor app from PharoCasts {{{latex:
 \footnote{\url{http://www.pharocasts.com/2011/02/pharo-gui-with-polymorph.html}}
@@ -449,9 +449,9 @@ Then by evaluating:
 ContactListEditor open. "the local editor"
 ]]]
 
-on each peer you should be seeing something similar to Figure *contacts1*. This the local behaviour of the app (as it was originally intented) with our sample data (ie John on peer1 and Yoko on peer2).
+on each peer you should be seeing something similar to Figure *contacts1*. This the local behavior of the app (as it was originally intented) with our sample data (ie John on peer1 and Yoko on peer2).
 
-+The Contact Manager with the Beattles (peer1) and the Beattles Wifes (peer2)>file://figures/contacts1.png|width=100|label=contacts1+
++The Contact Manager with the Beatles (peer1) and the Beatles Wifes (peer2)>file://figures/contacts1.png|width=100|label=contacts1+
 
 Now let's evaluate the following code on peer1, to browse the contacts of peer2 remotely:
 
@@ -461,14 +461,14 @@ Contact database: (Contact from: '127.0.0.1:8081') database.
 ContactListEditor open. "browsing contacts from remote peer"
 ]]]
 
-By now you should be comfortable by what has happened here. On the first line of the code-snippet we pointed the Contacts database to peer2 and then on the second line we re-opened the editor. Now Yoko (and the rest of the Beattles wifes) is shown on peer1 although they are stored on peer2. Of course we could have achieved that in a more elegant way, by extending the view to be able to 
+By now you should be comfortable by what has happened here. On the first line of the code-snippet we pointed the Contacts database to peer2 and then on the second line we re-opened the editor. Now Yoko (and the rest of the Beatles wifes) is shown on peer1 although they are stored on peer2. Of course we could have achieved that in a more elegant way, by extending the view to be able to 
 Browse more than one databases. But we wanted to leave the original application code as unchanged as possible.
 
-Figure *contacts2* shows the results of this remote repurposing and the SeamlessLogger. Go ahead and browse or edit the contacts and also try to move around the window. If it will feels a bit sluggish, update the SeamlessLogger to see why. The ui (morphic in this case) in the view is sending messages to your model (stored on the other side) even while you are moving the window !
+Figure *contacts2* shows the results of this remote re-purposing and the SeamlessLogger. Go ahead and browse or edit the contacts and also try to move around the window. If it feels a bit sluggish, update the SeamlessLogger to see why. The ui (morphic in this case) in the view is sending messages to your model (stored on the other side) even while you are moving the window !
 
 +Loading the Contacts of a Remote Peer>file://figures/contacts2.png|width=100|label=contacts2+
 
-Of course there are many remedies to these situations, with the first one being to ''control when morphic asks the model for updates''. Instead of changing Morphic itself to do that (always an option) you can adopt a Model-Model-View-Controller pattern in your code (for more on this read here {{latex:
+Of course there are many remedies to these situations, with the first one being to ''control when morphic asks the model for updates''. Instead of changing Morphic itself to do that (always an option) you can adopt a Model-Model-View-Controller pattern in your code (for more on this read here {{{latex:
 \footnote{\url{http://c2.com/cgi/wiki?ModelModelViewController }}
 }}}). What this means essentially is that ''what you see'' is the ''Application Model'' or the ''UI Model'', which is different from the ''Domain Model'' or ''Back-End Model'' (the Contacts database in this case). If you have this distinction in your code, morphic will be sending messages to the first model which is by definition local, while the second model can be distributed (like in our case) without Morphic getting in the way.
 
@@ -483,7 +483,7 @@ ContactListEditor open. "browsing contacts from remote peer"
 As you may have guessed what we did here is to ''on-demand serialize'' our request to the other side by bringing all the 
 wifes locally. Of course we brought the whole of the contacts database in this example (since it is small) but in a real-world scenario you would be probably doing this incrementally (ie bringing the first n-contacts to show your user and then using paging to navigate). Serializing means that editing, browsing etc does not generate additional requests but also that now it is your responsibility to sync the local copy to the other side. 
 
-Finally on Figure *contacts3* we see something more exotic that you can do with the contact manager example. This is a ''crude'' data-balancing example. Go ahead and try on peer1 the followind code-snipet:
+Finally on Figure *contacts3* we see something more exotic that you can do with the contact manager example. This is a ''crude'' data-balancing example. Go ahead and try on peer1 the following code-snipet:
 
 [[[
 ContactsDatabaseExample loadBeattles.
@@ -496,7 +496,7 @@ Contact database: (OrderedCollection new
 ContactListEditor open.
 ]]]
 
-What we did here is first restore the Beattles on peer1 and then add both the local Beattles and their remote wifes (as proxies) on the local db. The result as seen in Figure *contacts3* is a database that ''seamlessly'' (pun intented) integrates contacts from two different machines. 
+What we did here is first restore the Beatles on peer1 and then add both the local Beatles and their remote wifes (as proxies) on the local db. The result as seen in Figure *contacts3* is a database that ''seamlessly'' (pun intended) integrates contacts from two different machines. 
 
 +Mixing Local and Remote Contacts (Crude Data-Balancing)>file://figures/contacts3.png|width=100|label=contacts3+
 
@@ -524,7 +524,7 @@ TestRunnerExample>>>testCategoryNamed: aCategoryName at: aRemoteAddress
 
 The difference of course with a local such scenario is on line 1 where instead of the local TestRunner we fetch a remote one (whose address is described by the ''aRemoteAddress'' argument). 
 
-This is more or less business as usual with Sealess. The intresting part of this example is on lines 7 to 10 where we inspect the test results in three different ways. If you have your two peers set-up evalate the following code to run the ''ProfStef'' tests of peer2 from peer1 and check the results:
+This is more or less business as usual with Seamless. The interesting part of this example is on lines 7 to 10 where we inspect the test results in three different ways. If you have your two peers set-up evaluate the following code to run the ''ProfStef'' tests of peer2 from peer1 and check the results:
 
 [[[
 TestRunnerExample new
@@ -534,17 +534,22 @@ TestRunnerExample new
 
 As seen in Figure *testing* there are three inspectors opened, one in peer2 and the others on peer 1. Line 8 is responsible for the inspector on peer2 (on the right). This inspector opened on the target image (that is peer2 where the tests where run) because the \#inspect message was send to a proxy ! This is the proxy object returned by the message \#result to  another proxy (namely ''tr'') which we retrieved on line 1.
 
++Different ways to to distribute the test results>file://figures/testing.png|width=100|label=testing+
+
 What if we wanted to see the results remotely on peer1 ? This is done on line 10 where we open the local inspector of peer1 "on" the proxy instead of asking the proxy itself to be inspected (as we did on line 8). Most of the traffic generated that is seen on the logs of Figure *testing* is generated by this inspector, which is contacting the other side.
 
 The best way in this case to browse the remote results on peer1 is seen on line 9. Test results are actually computed only once and do not change (ie do not have to be in sync with the other side) so we serialize them (bringing them to peer1) where now the message \#inspect is send to a local object. 
 
-+Different ways to to distribute the test results>file://figures/testing.png|width=100|label=testing+
-
 !!!Ok, ok: Make me a Distributed Game
 
-- Noury's application with Seamless
+Last (but not least) on our list is a puzzle-game from the car-mines lab {{{latex: 
+\footnote{\url{http://car.mines-douai.fr/}} }}} of Ecole-des-Mines de Douai. We will be using Seamless to connect to the game's ''back-end'' from a remote peer who runs the puzzle ''front-end''. The main classes of this game are seen in Figure *game*. 
 
 +Main classes of the "puzzle-game" application of Car-Mines.>file://figures/game.pdf|width=100|label=game+
+
+The game has an MVC architecture with the class GridMorph (on the left side) on the role of the view, the class AfficheurPuzzle on the middle on the role of the controller and the classes Puzzle and Piece as the model. Instances of Puzzle hold a list of pieces and the current selected piece among them, with each piece having a position (Point), a couleur (Color) and a Boolean value describing if the piece is selected or not. The controller has references to both the view and the model. Finally the class AppliPuzzleDistant controls the middleware (a SeamlessDeamon) and assembles the view, the controller and the model together.
+
+You can run and play around with the game by evaluating the following code on peer2 and peer1 respectively:
 
 [[[
 BackEndAppliPuzzleDistribue demarrer. "peer2"
@@ -552,20 +557,28 @@ BackEndAppliPuzzleDistribue demarrer. "peer2"
 AppliPuzzleDistant demarrer. "peer1"
 ]]]
 
+Figure *gameScreen* shows the puzzle game in action with the SeamlessLogger profiling it. The following method (#connectionAuBackEnd) which is called from within the #demarrer method we called earlier is where all the magic happens:
+
 [[[
 AppliPuzzleDistant>>connexionAuBackEnd
 	| classePuzzleDistante |
-	classePuzzleDistante := (middleware connectOn: '127.0.0.1:1111') at: #Puzzle.
-	puzzle := classePuzzleDistante new.
-	afficheur := AfficheurPuzzle new.
-	afficheur puzzle: puzzle vue: vue.
-	vue onClickDo: [:x :y| 
-		Transcript show: 'sending'; cr.
-		puzzle inverserSelectionPieceX: x y: y.
-	]
+1	classePuzzleDistante := (middleware connectOn: '127.0.0.1:1111') at: #Puzzle.
+2	puzzle := classePuzzleDistante new.
+3	afficheur := AfficheurPuzzle new.
+4	afficheur puzzle: puzzle vue: vue.
+5	vue onClickDo: [:x :y| 
+6		Transcript show: 'sending'; cr.
+7		puzzle inverserSelectionPieceX: x y: y.
+8	]
 ]]]
 
+On line 1 the remote model is retrieved via the middleware (a SeamlessDeamon) and a new puzzle is created (line 2) which is proxied. On line 3 a new controller is instantiated and is initialized with the view (this is a GridMorph as the one shown on Figure *gameScreen*) and the remote puzzle. Then finally on lines 5 through 8 the view is instructed through the #onClickDo: method to invert the currently selected piece with the piece on the click's (x,y) co-ordinates. 
+
+What is interesting to note about the puzzle game (as shown in the log of Figure *gameScreen*) is that apart from the ''core-logic'' remote calls of the game (the #inverseSelectionPieceX:y message we have seen) there is a significant amount of traffic generated just by connecting the local controller with the remote model on line 4. This is to be expected since in this example again the ''application'' and the ''domain'' model are the same. Nevertheless after the initialization phase the game runs very smoothly since the return values of most of the messages send to the backend (#x, #y, #couleur etc) are serialized automatically by Seamless (being terminal instances such as Points and Colors). 
+
 +Front-End and Log of the Puzzle Game>file://figures/gameScreen.png|width=100|label=gameScreen+
+
+%+++You can discuss here about the policies once more and show examples
 
 !!How It All Works ?
 
@@ -625,7 +638,7 @@ more specialized and is based on shadow classes.
 !!!Higher-Lever Overview
 
 Figure *high-level* provides an overview of the high-level communication components of Seamless. 
-These depend on the low-level communication infranstructure, through ''SeamlessSession'' which has 
+These depend on the low-level communication infrastructure, through ''SeamlessSession'' which has 
 a one-to-one relationship with the ''SeamlessConnection'' on Figure *low-level*.
 
 +High-level architectural overview of Seamless>file://figures/seamlessStack-high-level.pdf|width=100|label=high-level+
@@ -635,7 +648,7 @@ a one-to-one relationship with the ''SeamlessConnection'' on Figure *low-level*.
 Deamons can handle multiple connections 
 (see also SeamlessSessions) to different peers and each 
 environment can have multiple deamons (with different adaptations) 
-running parallely.
+running in parallel.
 
 ;SeamlessSession 
 :This is a high-level view of a SeamlessConnection that is established upon successful authentication on both sides.
@@ -660,44 +673,64 @@ Options can include: full serialization, shallow serialization, proxying, etc..
 :The concrete subclasses of this abstract class are responsible for authentication and for restricting access (either message sending or distribution) for specific instances or whole classes of objects.
 
 !!Seamless Papercuts
+@PaperCuts
 
 It is the little things in life that will make you mad. Here are some do's and dont's while using Seamless. 
 These ''papercuts'' will incrementally go away as we advance to more stable releases.
 
-!!!Damn you UI Process
+!!!The UI Process
 
-!!!Damn you Workspace
+All ui applications of Pharo are naturally ''event-driven''. What this means is that their application logic is ''triggered'' by input events such as keyboard-strokes and mouse-clicks. Upon the invocation of such events application callbacks are evaluated from within the UI Process. Essentially this results in all front-end applications being handled by a single green thread, unless otherwise instructed by the programmer of the callback. 
 
-!!!Damn you Morphic
+This situation can cause the ui to be unresponsive if for example a single morph is taking too long to compute its callback (try interactively evaluating ''(Delay forSeconds: 10) wait'' from any text morph to see what happens). This ''papercut'' although not specific to Seamless can create frustration when you are proxying application models and feeding them directly to morphs. Using Seamless with futures will help in this case (see below) but the more general solution that we intent to integrate is to equip the UI-Process with sub-threads (either globally or per application) as to allow the ui to respond to events while a sub-ui-thread still computes the ''slow'' callback of a morph.
 
-!!!Damn you Image-Save
+!!!The Workspace
 
-!!!Damn you Exceptions
+A somewhat related papercut involves the workspace. You will be probably experimenting with Seamless by evaluating stuff through the workspace or elsewhere so you should remember that [ ] forking your ''slow'' do-its might help avoid unresponsiveness by the ui. Morover the workspace is currently being particularly ''mean'' to proxies of all kinds (distributed or otherwise) by sending them all shorts of messages for syntax-highlighting and internal book-keeping. By fixing the UI-Process and using memoization for this workspace noise (or even making the workspace aware of proxies) this papercut will be resolved.
+
+!!!Morphic
+
+This is again not specific to Seamless, but can nevertheless hurt your distributed adventures. Morphic sends a lot of messages to your models to update, some of them can be automatically memoized by Seamless (we are working on that) others not. As previously stated using an MMVC pattern and controlling the updates yourself between the ''application'' and the ''domain'' model resolves this issue. Ultimately though we will be looking more closely at Morphic, Spec and Glamour to see if they can provide some kind of abstraction (such as an explicit update policy) to help you do that more easily.
+
+!!!Image-Save
+
+Please save your code on a repository or on the local-cache and reload your projects on start-up on a clean image. This is a good practice in general, trust me. In the future we may review the ability to resume previously ''image-saved'' connections. Right now (to keep us all sane) we perform aggressive clean-ups (on deamons, sessions and sockets) upon every start-up and shut-down.
+
+!!!Exceptions
+
+Once we move to a stable release we will be porting remote reflection facilities (from the Mercury prototype) and full-blown exception handling for your remote exceptions. Right now Seamless only forwards back to the original caller (that may be many remote calls coupled) a SeamlessRemoteException that is less informative than you might expect. Stay tuned.
 
 !!Where Do We Go From Here ?
 @FutureWork
 
-Short-Term
+!!!Short-Term
 
-- More Doc/Tests, Critics, Refactoring to Patterns (TM), Traits
-- Green Threading and UI (papercut)
-- Exception Handling / Stability (papercut)
-- Session Clean-Up (papercut)
-- Shared-Memory
+- More Documentation / Testing / Refactoring: The Seamless code-base requires some additional love. Being for most of its life time an engineering part of a larger research prototype ''there can be dragons here''.
+- Papercuts: See Section *PaperCuts* above. A stable release should not suffer from these annoyances.
+- Shared-Memory: As seen in Figure *spectrum* there is a special and very interesting case where the ''mostly utopic'' transparent distribution end of the communication spectrum makes sense. We are currently working on that.
 
-Mid-Term
+!!!Mid-Term
 
-- Futures / Batch-communication / Memoization
-- Low-level Profiling / (RMI, DCOM and literature review)
-- Closer integration with Fuel (ie Shallow or Incremental Copy especially for Collections)
-- More Monitoring
-- Remote Reflection
-- Distributed-GC
-- Field Examples
+- Futures / Batch-communication / Memoization: There is a large list of optimizations for systems like Seamless from both academia and industry. We will take it one step at a time. After this is done comparing to systems like RMI and DCOM both in terms of features and performance should be the next logical step.
+- Low-level Profiling: The underlying low-level communication solution of Seamless is quite descent for a stable release. We need numbers and low-level profiling (on sockets) to see what can go even better here.
+- Closer integration with Fuel: Lots of great things can happen on this front, by being able to migrate processes, classes or incrementally-serializing remote object graphs. 
+- More Monitoring: The SeamlessLogger has proven to be a very convenient tool. We need more of those (for interacting with the SeamlessProcessManager, the SeamlessDistributionTable, viewing RemoteExceptions etc)
+- Distributed-GC: We have the hooks for implementing simple distributed-gc algorithms and a long list of related bibliography. Quite doable at this stage but also a whole field on its own.
+- Remote Reflection: Bringing parts of our research prototype for remote reflection to enough maturity for community-use is one of Seamless ''raison d' etre'' 
+- Field Applications: Field applications where Seamless is used daily and from which we can get constant feedback.
 
-!!Acks
+!!Summary
 
-
+This Chapter presents Seamless a reflective communication middleware for Pharo
+that aims to facilitate the prototyping of distributed applications. After a short
+introduction on how to install and get started, we present all the details of remote
+messaging under Seamless. Specifically how to fetch remote references, pass arguments by value or by reference
+and retrieve return values. Moreover we show how to set-up distribution policies and change those same policies
+on the fly to fit your needs. We introduce you to the SeamlessLogger which is used for
+logging and profiling of remote messaging and discuss the trade-offs between explicit and implicit
+proxying and traffic. Subsequently we walk through three application examples from the SeamlessExamples package
+and give you an overview of the internal workings of the framework. Finally we detail a list of do's and dont's
+to avoid common caveats associated with Seamless and discuss some short-term and mid-term future perspectives.
 
 
 
