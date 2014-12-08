@@ -1,0 +1,197 @@
+!Bloc: a New Morph Framework
+
+
+
+
+
+!! What is Bloc
+
+Bloc is a complete rewrite of an infrastructure to display graphical element such as elementary graphical objects and widgets. Bloc is composed of three main categories 
+of entities: entities managing the runtime (event dispatch, alarm, main rendering loop), basic graphical elements such as images, label, and more advanced widgets (to be developed)
+
+- An infrastructure. The new infrastructure is roughly composed of spaces (managed by a single universe) and a rendering loop and helper objects.
+- Basic objects. They are composed of a simple hierarchy whose root is ==BlProtoMorph==. Each morph is potentially composed of views instances of ==BlMorphView== (that manages the rendering) and event listeners (that handles interactions and event reactions).
+- Widgets. Widgets are composed of widgetModel and composite basic objects. (to be done probably in MVP style)
+
+
+
+!! Universe, Space and Infrastructure
+In this section we will present the main classes supporting the infrastructure (event dispatching, alarm, display management). 
+
+A morph lives in a space (a model) which is responsible of the display. A space is responsible to indirectly handle events, manage canvas, main loop and morph worlds. A space is a kind of mediator. 
+
+!!! A Universe 
+
+A ==BlUniverse== is the root of all ==BlSpace== instances. Universe and spaces are not graphical objects. They serve as model for 
+rendering infrastructure. 
+
+The system has one unique universe. The main responsibility of a Universe is to manage (create, delete and activate) named spaces. 
+
+In addition, a ==BlUniverse== also offers a global announcer. This global announcer is used for global ticking behavior of the ==BlMainLoopManager==. As an example, alarms are managed using this global ticking mechanism as shown in ==BlAlarmQueue>>start== and ==BlAlarmQueue>>subscribesToTicks==.
+
+
+!!! Spaces
+
+==BlSpace== is the root of the space hierarchy. Its subclasses are for Morphic and Bloc respectively. 
+
+A ==BlSpace== is a uniquely identified object (via a name). A space is owned by a Universe. A space is responsible to start and shutdown a root morph: ==WorldMorph== in Morphic and ==BlSpaceMorph== in Bloc. A space has a source of (vm) event stream, its sensor. At the current time, it also has a manager which brigdes to the UIManager (for ui process management and other). In the future we expect that it will disappear as well as UIManager.
+
+
+
+
+
+
+
+
+HandMorph
+
+
+
+WorldMorph
+
+
+!!! Alarm and Deferred Actions
+General alarm infrastructure (support for stepping)
+
+
+
+Dispatch???
+
+
+
+
+!! Morph 
+
+
+
+
+!!! ProtoMorph
+A BlProtoMorph is the root of the Morph hierarchy. a BlProtoMorph  has a position but its extent is computed or set by subclasses.
+
+A BlProtoMorph has an eventListener that handles morph interaction. A event listener encapsulates state about the interaction (in fact a listener is chain of command so listener can be dynamically added and removed).
+
+You can add event listener using the message: 
+==BlProtoMorph>>addEventListener:==
+
+A morph lives in a space which is responsible of the display. A space is responsible to indirectly handle events, manage canvas, main loop and morph worlds. A space is a kind of mediator. 
+
+!!! Morph 
+A BlMorph is a subclass of BlProtoMorph. It adds support for views (graphical display of a morph) and 
+
+- views that render the morph (responsible of innerbounds and drawbounds)
+- 
+
+
+!!! EventListener
+
+
+!!! Views
+
+
+!!! Alarm
+
+Global alarm
+
+!! Playing with Anchors
+
+Bloc uses new layout for composite morphs. It is based on the anchor design developed by I. Stasenko. Basically a morph has four anchor, one in each 
+direction and it expresses its size based on anchors attached to other morphs.
+
+An anchor is just a special kind of layout properties (==BlLayoutProperties==). It can be attached to any morph. Now only morphs with a layout policy (hence instances of ==BlMorphWithLayout==) will take advantage of them. 
+
+The following example produces two morphs: one (white) nested into  in another one (red). When the root morph changes its size, the white will update its size accordingly.
+[[[
+| redRoot whiteSub1 |
+redRoot := BlMorphWithLayout new.
+redRoot layoutPolicy: BlAnchorLayoutPolicy new.
+redRoot color: Color red.
+whiteSub1 := BlMorph new color: Color white.
+redRoot addMorph: whiteSub1.
+whiteSub1 anchorLeft: redRoot leftAnchor + 4.
+whiteSub1 anchorTop: redRoot topAnchor + 4.
+whiteSub1 anchorBottom: redRoot bottomAnchor - 4.
+whiteSub1 anchorRight: redRoot rightAnchor - 4.
+redRoot openInWorld
+]]]
+
+A more complex example is the following one that produces a layout shown in Figure *moreComplex*.
+
+[[[
+| root1 root2 root sub1 sub2 |
+root := BlMorphWithLayout new.
+root layoutPolicy: BlAnchorLayoutPolicy new.
+root view color: Color red.
+sub1 := BlMorph new withViewDo: [ :s | s color: Color white ].
+sub2 := BlMorph new withViewDo: [ :s | s color: Color black ].
+sub1 anchorLeft: root leftAnchor.
+sub1 anchorTop: root topAnchor.
+sub1 anchorBottom: root topAnchor + 20.
+sub1 anchorRight: root rightAnchor.
+sub2 anchorRight: root rightAnchor - 10.
+sub2 anchorLeft: root leftAnchor + 10.
+sub2 anchorTop: sub1 bottomAnchor + 3.
+sub2 anchorBottom: root bottomAnchor - 3.
+root addMorph: sub1.
+root addMorph: sub2.
+root1 := BlMorphWithLayout new withViewDo: [ :s | s color: Color yellow ].
+root1 layoutPolicy: BlAnchorLayoutPolicy new.
+root anchorRight: root1 rightAnchor - 10.
+root anchorLeft: root1 leftAnchor + 10.
+root anchorTop: root1 topAnchor + 3.
+root anchorBottom: root1 bottomAnchor - 3.
+root1 addMorph: root.
+root2 := BlMorphWithLayout new withViewDo: [ :s | s color: Color pink ].
+root2 layoutPolicy: BlAnchorLayoutPolicy new.
+root1 anchorRight: root2 rightAnchor - 10.
+root1 anchorLeft: root2 leftAnchor + 10.
+root1 anchorTop: root2 topAnchor + 3.
+root2 addMorph: root1.
+root2 openInWorld.
+root2 extent: 400 @ 200.
+root2
+	withViewDo: [ :s | 
+				s
+					borderWidth: 4;
+					borderColor: Color red ]
+]]]
+
++A more complex use of anchor.>file://figures/moreComplexAnchor.png|width=80|label=moreComplex+
+
+!! Bounds
+
+drawingsBounds vs. innerbounds vs. bounds
+
+
+!! MainLoopManager
+
+
+!! SpaceMorph
+
+SpaceMorph is a layer in a 
+
+
+
+!! Step to validate Widgets design
+
+We think that the widgets should be designed by focusing on few elements. 
+
+!!! Button
+
+!!! Menu is more complex because Modal and Hand related
+
+!!! List/Tree
+
+!!! Pane (composite Morph)
+
+!!! Theme support
+
+!! Note for Alain :)
+
+BlSpace should have a rootMorph instance variable.
+In BlMorphicSpace it will point to the WorldMorph and to a SpaceMorph for BlSpaceMorph
+
+!! Open Questions
+
+!!! Supporting Headless mode
+Does UIManager is a kind of Space. In particular is the DummyUIManager as special Space and MainRenderLoop?
+We need to be able to be in headless mode, load the graphics, open a dbugger, close and destroy
