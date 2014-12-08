@@ -1,0 +1,229 @@
+! An XMLPullParser for Pharo
+
+Handling XML is a practical aspect of modern computing. There are several libraries in Pharo to deal with XML such as the XMLReader and XMLWriter packages. In this chapter we present another approach that is known as an XML pull parser. In essence, an XML pull parser is like SAX (the Simple API for XML) i.e., that is, it is based on a streaming API. In particular there is no need to store the complete document. Finally contrary to SAX there is no need to build final state machine to process the document and the XML pull parser controls the flow of events. 
+
+The presented project was developed by Antony Blakey for Cincom Smalltalk. Antony Blakey generously open-sources it. Hernan Morales and XX Travis Ken XX ported it to Pharo. The original documentation is available on the following page (http://linkuistics.com/?page_id=34). We thank Antony for this work. This chapter is freely adapted from this blog and we hope it will help you in your daily tasks. 
+
+
+!! Getting Started
+
+How to load it!
+
+	   more here later.
+
+
+
+
+
+!! XML pull parsing vs. SAX
+
+There are two ways to parse large XML files without using a lot of memory resources: using SAX or Pull. 
+They don't let you modify or generate XML; these XML parsers or readers let you read through a large XML 
+file efficiently, using a small amount of memory.
+
+The difference between SAX and XML pull readers is simple: a SAX reader uses callbacks and a pull parser doesn't. The two models are also described as being push versus pull:
+
+- Using a SAX model: after you set up callbacks, the SAX reader pushes document events to you.
+
+- Using a pull parser model: you pull data from the document using the pull parser API.
+
+With pull parsing, you get information as you request it. It which gives you the flexibility of conveniently changing the kinds of things you're looking for as you go. With the event-driven SAX model you should configure your callbacks and then starts the parser.
+
+
+The pull parser model acts a simple service object. You send it messages and it does it. The SAX model turns that logic upside down. With SAX, you have to define methods so that it can call your methods when things happen. The pull parser model is more flexible and easier to work with. You don't need to do any setup and there is much less you need to know to use it. 
+
+SAX was developed in the early stages of XML and despite its enormous drawbacks it has been institutionalized in the XML industry.
+
+
+!! What is XML pull parsing, when and why you would use it?
+
+
+An XML pull parser converts XML text into a (conceptual or actual) stream of tokens. In the most common case, those tokens are very high level, and in fact there are only 5 events: StartDocument, EndDocument, StartTag, EndTag and Text. Attributes are reported within the StartTag event as a list. Thus, the following XML:
+
+[[[
+<document>
+  <tagA a1='att1' a2='att2'>blah</tagA>
+  <tagB>aaa<tagC>bbb</tagC>ccc</tagB>
+</document>
+]]]
+
+would be converted to the follow steam of tokens:
+
+[[[
+StartDocument
+  StartTag{document,[]}
+    StartTag{tagA,[Attribute{a1,'att1'},Attribute{a2,'att2'}]}
+      Text{'blah'}
+    EndTag{tagA}
+    StartTag{tagB, []}
+      Text{'aaa'}
+      StartTag{tagC, []}
+        Text{'bbb'}
+      EndTag{tagC}
+      Text{'ccc'}
+    EndTag{tagB}
+  EndTag{document}
+EndDocument
+]]]
+
+
+The pull parser is like a stream in that it has a current token, a next method, and an eof state. Note that in this example the parser isn't reporting ignorable whitespace. Usually the parser has settings so that you can control whether it returns namespace declaration attributes, handles xml:space, and other features. Sometimes the pull parser can be configured to return comments, and ignorable whitespace, and other low level events which make it suitable as the basis for driving SAX and DOM building, even to the point of allowing roundtripping.
+
+
+The parser doesn't have to use objects to represent the tokens - they may simply be represented as parser state, so the token type would be represented by a constant and the token values accessed via methods on the parser. In that case you can only access the current token.
+
+This is very similar to SAX, but with the control inverted, and as mentioned above, if the pull parser reports the appropriate level of events then it is trivial to drive SAX handlers from a pull parser.
+
+The two attractive features of the pull parser approach are:
+
+- Unlike a DOM based approach, but like SAX, a pull-based parser doesn't store the document.
+- Unlike SAX you don't have to build an final state machine, either explicitly or implicitly, to process the document. 
+
+It's trivial to build content processors using recursive descent patterns, especially if the parser returns real token objects that aren't recycled, and using a pull parser results in code that is easy to write and understand. A simple extension allows for LL parsing.
+
+For random access to XML, especially XML that isn't being used to represent structured data, a DOM is probably the best bet but you should try with an XMLPull parser to assess the solution.
+
+
+!!The architecture of the XMLPullParser package
+
+There are three main parts to this package:
+
+- The parser, consisting of two classes: ==XMLPullParser== and ==XPPStructureExceptionPullParser== is the primary class, and you can effectively use this package knowing only this class. 
+==XPPStructureException== is raised in response to certain methods you can call on PullParser.
+- The events. There are five kinds of events/tokens that the parser produces: ==StartDocument==, ==EndDocument==, ==StartTag==, ==EndTag==, and ==Text==. These are reified as the following hierarchy:
+
+
+[[[
+XPPEvent
+     XPPStartDocument
+        XPPEndDocument
+        TagEvent
+           StartTag
+           EndTag
+        XPPText
+]]]
+
+XPPEvent and TagEvent are abstract and never instantiated.
+
+
+The names of tags are instances of XPPTag, which are a triple of namespace, type (local name) and qualification, and attributes.
+
+
+
+!! PullParser API and examples
+
+At its core, the API is extremely simple - one class method and two instance methods on the parser, plus accessors and test methods on the event objects. There are a lot more methods than that, but they're all convenience methods layered on top of the others.
+
+==XMLPullParser== presents a stream abstraction - although not the full stream – with two methods: ==current==, which gives you the current event, and ==next==, which advances to the next event and returns it. You know when the end of the stream is reached because the event is a ==XPPEndDocument==. There is currently no ==atEnd== method.
+
+
+The events all contain all of the obvious test methods: ==isStartDocument==, ==isEndDocument==, ==isStartTag==, ==isEndTag== and ==isText==, three additional test methods ==isStartTag:==, ==isEndTag:== and ==is:== which incorporate an event type test with a tag test, as well as the type specific accessors that you would expect. 
+
+Attributes are retrieved from XPPStartTag events using ==at:==, ==at:ifNone:== and ==at:ifFound:ifNone:== methods, text is retreived with ==text==, and the tag (name) is retrieved with ==tag==. All methods that take attribute names or tag names expect a string.
+
+XMLPullParser replicates each of the above event methods, including the type specific accessors, and delegates them to the current event. Thus you can often process XML without any reference to event objects, simply using the parser object.
+
+
+
+Let's write a simple parser extracting all the text from a document. We create an instance of ==XMLPullParser== sending the message ==parse:== to the class. Here is an example
+
+
+[[[
+testTextExtractionFirstLevel
+	"self debug:#testTextExtractionFirstLevel"
+	
+	| xpp  output |
+	xpp := XMLPullParser parse: '<document>
+  <tagA a1=''att1'' a2=''att2''>blah</tagA>
+  <tagB>aaa<tagC>bbb</tagC>ccc</tagB>
+</document>'.
+      output := String new writeStream.
+  	[ xpp next isEndDocument ] whileFalse: [
+   	    xpp isText ifTrue: [ output nextPutAll: xpp text ]].
+  	self assert: output contents equals: 'blahaaabbbccc'. 	
+]]]
+
+
+
+For each ==XMLPullParser>>is*== method there is an ==XMLPullParser>>mustBe*== method, that throws an ==XPPStructureException== if the test fails. For each ==XMLPullParser>>mustBe*== method, except ==mustBeEndDocument==, there is an ==XMLPullParser>>consume*== method, that throws an ==XPPStructureException== if the test fails, but also calls ==XMLPullParser>>next== on success. You can't advance past the end of the document, which is why there is no ==consumeEndDocument== method.
+
+The combination of the delegating accessors and the ==is*==, ==mustBe*== and ==consume*== methods, form the second layer of the API - convenient but not canonical, and all implemented cleanly in terms of the core API. This is the kind of API you would expect in a recursive descent parser library.
+
+
+The third and final layer of the API is built upon the second, and follows a somewhat different pattern, more along the lines of the standard ==ifFalse:ifTrue:== and ==while:== control operators. There are six (purely conceptual) operators: ==if==, ==match==, ==skip==, ==while==, ==collect== and ==text== which are combined as orthogonally as possible with a number of other concepts. We'll go through each of the operators and corresponding ==XMLPullParser== methods.
+
+!!! Operator: match
+
+Method ==match: aTag peek: aBlock== throws an exception if the current event isn't a start tag matching the given tag name. If it succeeds, then aBlock is evaluated without consuming the start tag event. The block can take zero or one argument. If it takes one argument then the current event is passed to the block.
+
+Method ==match: tagName take: aBlock== throws an exception if the current event isn't a start tag matching the given tag name. If it succeeds, then aBlock is evaluated after consuming the start tag event. The block can take zero or one argument. If it takes one argument then the start tag event that was consumed is passed to the block, which can be useful for processing the attributes. After the block executes, the parser must be at an end tag matching the start tag. This end tag is then consumed.
+
+Method ==matchAndPeek: aBlock== throws an exception if the current event isn't a start tag. If it succeeds, then then aBlock is evaluated without consuming the start tag event. The block can take zero or one argument. If it takes one argument then the current event is passed to the block.
+
+Method ==matchAnyTake: aBlock== throws an exception if the current event isn't a start tag. If it succeeds, then aBlock is evaluated after consuming the start tag event. The block can take zero or one argument. If it takes one argument then the start tag event that was consumed is passed to the block, which can be useful for processing the attributes. After the block executes the parser must be at an end tag matching the start tag. This end tag is then consumed.
+
+
+The orthogonal concepts in these four methods are: 
+
+# is the event is consumed before the block is evaluated (consumption meaning that the matching end tag will be also be consumed after the block is evaluated)?; 
+
+# must the start tag match a specific name, or will any start tag do? 
+
+Furthermore, any block supplied in this API can take zero or one argument, with the same meaning as above, wherever the concept is applicable. These concepts are universally applied throughout this API, and the rest of the description will assume you understand this regularity.
+
+!!! Operator: if
+
+Methods ==if: tagName peek: aBlock==, ==if: tagName take: aBlock==, ==ifAnyPeek: aBlock== and ==ifAnyTake: aBlck== are conditional version of the ==match*== messages. If the current event isn't a start tag, or doesn't match a supplied tag name, then the block doesn't get evaluated.
+
+Methods ==if:peek:else:==, ==if:take:else:==, ==ifAnyPeek:else:== and ==ifAnyTake:else:== add a niladic else block to the previous forms. The else block is evaluated if the first block isn't. The else block must take no arguments.
+
+		add example
+
+!!!Operator: while
+
+Methods ==while:peek:==, ==while:take:==, ==whileAnyPeek:== and ==whileAnyTake:== are repeating versions of the ==if*== methods. They may execute zero or more times.
+
+Methods ==while:peek:separatedBy:==, ==while:take:separatedBy:==, ==whileAnyPeek:separatedBy:== and ==whileAnyTake:separatedBy:== add another (niladic) block to the previous while methods, that is evaluated between every pair of elements. Thus this second block is evaluated one less time than the first block.
+
+		add an example
+
+!!!Operator: collect
+Methods ==collect:peek:==, ==collect:take:==, ==collectAnyPeek:== and ==collectAnyTake:== are collecting versions of the ==while*== methods. They return an ==OrderedCollection== containing the result of the blocks evaluated. If there are no evaluations then the collection will be empty.
+
+		add an example
+
+!!!Operator: skip
+
+Methods ==skip:== and ==skipAny== throw an exception if current event isn't a start tag, or doesn't match a supplied tag name. If it succeeds then it consumes the start tag, and all events up to and including the matching end tag, taking correct account of tag nesting. Thus it doesn't stop at the first matching end tag, but rather it keeps a count of the nesting depth.
+
+
+Methods ==skipIf:== and ==skipIfAny== are conditional versions of the previous two methods. They don't throw an exception if the current event isn't a start tag or doesn't match a supplied tag name.
+
+
+Methods ==skipWhile:== and ==skipWhileAny== are repeating versions of the previous two methods. They may execute zero or more times.
+
+!!!Operator: text
+
+Methods ==textOf:== and ==textOfAny== throw an exception if current event isn't a start tag, or doesn't match a supplied tag name. If it succeeds then it consumes the start tag, the (optional) text event within it and the following matching end tag. It returns the text content of the text event that was consumed, or an empty string ==''== if there is no text event within the tag.
+
+
+
+Methods ==textIf:== and ==textIfAny== are conditional versions of the previous two methods. They don't throw an exception if the current event isn't a start tag or doesn't match a supplied tag name, rather they return an empty string.
+
+Methods ==textIf:else:== and ==textIfAnyElse:== operate similarly to the previous two methods but they allow you to supply a block (or any ==value== responder) to provide a value if the tag doesn't match. Note that a matching tag/name that is empty will still provide an empty string as you would expect from XML.
+
+
+
+
+
+
+!! Conclusion
+
+This chapter illustrates how to navigate and manipulate large XML files using a streaming event-based parser that uses a pull approach. It means that you can simply manipulate XML documents with few preparation.
+
+
+
+
+% Local Variables:
+% eval: (flyspell-mode -1)
+% End:

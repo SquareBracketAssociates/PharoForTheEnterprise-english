@@ -1,0 +1,100 @@
+! Localisation
+
+
+In this chapter we briefly explain the use of the Gettext package to translate a Pharo 
+application in a native language. In an application you want to translate, all 
+strings should be sent the ==translated== message. In Pharo Core, by default, ==translated== just 
+return self (does nothing but returning the untranslated string).
+
+To get translation effectively done, you need to install the Gettext extension package 
+and proceed as described in the next sections.
+
+!! Getting Started
+
+To use the gettext catalog, you need to install the gettext package from the PharoNonCorePackages Squeaksource repository.
+
+From Monticello add the following http repository:
+
+
+
+[[[
+MCHttpRepository
+   location: ''
+   user: ''
+   password: ''
+]]]
+
+Then load the Gettext package. 
+[[[
+	(ConfigurationOfGettext project version: #stable) load
+]]]
+
+!! Registering a Domain
+
+Domains are based on package name. Let's say we want to translate the DrGeoII application. 
+All DrGeoII classes are in the class category prefixed DrGeoII, to register these classes 
+in one domain, you execute:
+
+[[[
+TextDomainManager 
+   registerCategoryPrefix: 'DrGeoII' 
+   domain: 'DrGeoII'.
+]]]   
+To export as a POT file template all the messages coming from this domain (i.e.,
+	 the strings receiving the ==translated== message), you execute:
+
+[[[
+GetTextExporter exportTemplate.
+]]]
+
+In the folder containing the Pharo image, a new folder named po is created, it will contains two folders pharo and DrGeoII. Each one come with a POT file template, for DrGeoII it is named DrGeoII.pot. To translate your application in French, just copy this file as fr.po in another place, 
+then start translating. To learn more about translating read the next section
+
+!! Translating message catalog
+
+To translate your message, a simple text editor is 
+enough as long as your are sure to save the file under the UTF-8 encoding.
+ Some text editors assist the user to handle .po files: Emacs, poedit,...
+
+The following section suppose you are under Linux and your distribution gettext package is installed.
+
+Once your file is translated, you compile it to its mo binary format with the msgfmt command:
+
+[[[
+msgfmt fr.po -o DrGeoII.mo
+]]]
+
+If you have more than one message catalogs, you can use a little bash script like:
+
+[[[
+#!/bin/sh
+LANG="es fr"
+PODIR="po"
+MODIR="locale"
+# Compile .po files
+for l in $LANG; do
+   msgfmt $PODIR/$l.po -o $MODIR/$l/LC_MESSAGES/DrGeoII.mo
+done
+]]]
+
+The source message files are in the ==po== folder. The compiled mo catalog files are 
+in ==locale/fr/LC_MESSAGES/DrGeoII.mo== and ==locale/es/LC_MESSAGE/DrGeoII.mo.==
+
+Once the binary catalog is ready, we explain in the next section how to install it.
+
+!! Installing a Messages Catalog
+
+To install the DrGeoII French locale, you create in the Pharo image folder a folder structure like this one:
+
+[[[
+locale/fr/LC_MESSAGES/DrGeoII.mo
+]]]
+
+The ==DrGeoII.mo== is the message catalog in its binary format.
+
+Next, in the Settings browser (World menu/System/Settings), you set the Use locale option to true.
+
+Finally, you save your image and restart it.
+
+That's it!
+

@@ -1,0 +1,169 @@
+!Bootstrap for Seaside
+
+The Twitter Bootstrap http://getbootstrap.com library is one of the most popular front-end framework for developing 
+responsive, mobile first projects on the web. Bootstrap for Seaside offers to the Seaside programmer a smooth integration 
+of Twitter Bootstrap.
+
+The Bootstrap for Seaside  helps you to easily use the Bootstrap library within your Seaside web application. This new version has been developed by Torsten Bergmann.
+
+
+%+Bootstrap>file://bootstrap.png|width=50|label=bootstrap+
+
+!! First A Demo
+
+A browsable demo can be found at http://pharo.pharocloud.com/bootstrap.
+
+You can find the project repository some smalltalk hub at: 
+
+[[[
+http://smalltalkhub.com/#!/~TorstenBergmann/Bootstrap
+]]]
+
+There you will also find the documentation and install instructions.
+
+!!Why should you use it
+
+Bootstrap is a front-end toolkit for rapidly developing web applications. It is a collection of CSS and HTML conventions and design templates for typography, forms, buttons, navigation and other interface components. It helps to enforce a common and professional looking style for your own web application.
+
+Seaside http://www.seaside.st is one of the most powerful web framework ever invented - with its heretic approach it allows for reusability and by using the underlying language and tools it makes you very productive.
+
+By combining the two frameworks using the Bootstrap for Seaside project (or "Bootstrap" for short) the advantages are on your side:
+
+- As a Seaside developer you can continue with your power framework and easily give your components a modern and fresh look with Bootstrap which can also be styled independently by a designer afterwards.
+
+- As a Bootstrap user you can use the power of Seaside to write reusable components and combine them to full working applications easily.
+
+We did'nt we have similar projects in the past already. There were already two projects for Bootstrap and Seaside provided in the past:
+
+- http://ss3.gemstone.com/ss/TwitterBootstrap.html
+- http://smalltalkhub.com/#!/~GastonDallOglio/TBootstrap
+
+Both can still be used but are outdated. They don't have a full test suite, provide no examples and do not rely on the latest Bootstrap version. So we would recommend to use the Bootstrap for Seaside project since it comes with more than 160 tests and is up to date.
+
+!!!!Migration
+
+If you use one of the two before mentioned projects you can easily migrate your code. While project (1) uses the "TWBS" prefix and (2) the "TB" prefix for classes and selectors we use "TBS" as the prefix for classes and method selectors.
+
+!!Installation
+
+!!!!Installation using config browser.
+
+You can install the project from the Pharo configuration browser. Just install and open a fresh Pharo 3.0 image, click on the desktop and select "Tools" -> "Configuration Browser" from the world menu. Select "Bootstrap" and click on install.
+
+Note that by default it loads the Seaside3 framework as a dependent project - so if you started from a fresh and clean Pharo image you end up in a full Seaside development environment with the project on top of it.
+
+!!!!Installation using Gofer.
+
+You can also install the project using the built in Gofer class that allows you to automate the loading. Just open a workspace and evaluate:
+
+[[[
+Gofer new
+    url: 'http://smalltalkhub.com/mc/TorstenBergmann/Bootstrap/main';
+    package: 'ConfigurationOfBootstrap';
+    load.
+
+(Smalltalk at: #ConfigurationOfBootstrap) project stableVersion load
+]]]
+
+!!!!Running the examples.
+
+The project comes with a set of examples that you can open in the webbrowser. First start the webserver:
+
+[[[
+ZnZincServerAdaptor startOn: 8080
+]]]
+and then browse the examples at the following location: http://localhost:8080/bootstrap
+
+
++Bootstrap for Seaside running>file://figures/webBootstrap.png|width=80|label=webBootstrap+
+
+
+
+!!!Component Examples
+
+As you will see you will find nearly all Bootstrap components:
+
+[[[
+Well
+Jumbotron
+Panels
+Alarms
+Buttons
+Breadcrumbs
+Navs and Navbars
+Tables
+Pagination
+...
+]]]
+
+
++Bootstrap Buttons>file://figures/webBootstrap2.png|width=80|label=webBootstrap2+
+
+The examples are oriented towards the HTML examples given on the Bootstrap website and also show the according Smalltalk code. So you can easily see how to use the component set in your own projects.
+
+!!! Architecture
+
+Here are some points about the project architecture. The project contains three basic packages:
+
+[[[
+Bootstrap-Core
+Bootstrap-Widgets
+Bootstrap-Tests
+Bootstrap-Examples
+]]]
+
+Classes use a =="TBS"== prefix and the method extensions the =="tbs"== prefix. The =="Bootstrap-Core"== package includes core classes and styles, while =="Bootstrap-Widgets"== include additional widgets useful when working with Seaside.
+
+The =="Bootstrap-Tests"== package includes tests in the form of SUnit tests. The example package =="Bootstrap-Examples"== includes an examples browser and some demos that may give an understanding on how to use the components.
+
+!!Using the project in your own applications
+
+If you want to use the project in your own web project only the =="Bootstrap-Core"== package is required.
+
+!!!!Registering the file libraries
+
+To use the project just add the bootstrap file library to your Seaside application, depending on state of your project use either the ==TBSDevelopmentLibrary== (for development) or ==TBSDeploymentLibrary== (for production). Also note that the JQuery library is required. The following script shows how to register the libraries for an application.
+
+[[[
+|app|
+app := WAAdmin register: self asApplicationAt: 'mykillerwebapp'.
+app 
+    addLibrary: JQDeploymentLibrary;
+    addLibrary: TBSDeploymentLibrary
+]]]
+
+!!!!Write your code
+
+You can now use the additional methods in your usual ==renderContentOn:== methods for Seaside. Here is an example:
+[[[
+renderContentOn: html
+    html tbsContainer: [
+        html text: 'A text within a bootstrap container']
+]]]
+Have a look at the various examples - they will show you how to use the components.
+
+!!Tips - Tricks
+
+Bootstrap has an easy and powerful mechanism to work with layouts. Have a look at the "Grid" examples that come with the project.
+
+By default the Bootstrap positioned rows/columns are invisible. To easily find out if the layout is correct just use the message    
+ ==showGrid:== for a ==tbsColumn==. This will make the layout visible by adding a background color and border - so you can control the placement on the screen and resizing behavior. Note that this only works with the ==TBSDevelopmentLibrary== file library, so it is not activated in production.
+
+!!!! Code Contributions
+
+The project is MIT licensed and it accepts contributions. If you want to contribute just check that your contributed code is covered by automatic tests and keeps the projects test suite green. Also note that the Bootstrap library itself is under the Apache 2.0 license and adds a "Copyright 2013 Twitter, Inc".
+
+The project is verified by a CI server under: https://ci.inria.fr/pharo-contribution/job/Bootstrap/
+
+!!!Thanks
+
+Thanks go to
+
+- the Bootstrap team who invented the Bootstrap framework at Twitter (Mark Otto, Jacob Thornton and contributors),
+- the contributors of the first Seaside based TwitterBootstrap project (Nick Ager, Jan van de Sandt, Gastón Dall' Oglio, Tobias Pape, Tudor Girba, Paul DeBruicker, Francois Stephany, Philippe Marschall, Norbert Hartl, Yanni Chiu, Diego Lont),
+- to Gaston Dall Oglio (creator of TBootstrap) and
+- pharocloud.com for hosting the demo of the open source project.
+
+!! Conclusion
+Twitter Bootstrap is a really important library that is really nicely integrated with Seaside. It is a key library to support web application development. 
+
