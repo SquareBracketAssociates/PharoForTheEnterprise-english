@@ -547,8 +547,8 @@ Finally, the best way - in this case - to browse the remote results on peer1 is 
 
 !!!Ok, ok: Make me a Distributed Game
 
-Last (but not least) on our list is a puzzle-game from the car-mines lab {{{latex: 
-\footnote{\url{http://car.mines-douai.fr/}} }}} of Ecole-des-Mines de Douai. We will be using Seamless to connect to the game's ''back-end'' from a remote peer who runs the puzzle ''front-end''. The main classes of this game are seen in Figure *game*. 
+Last (but not least) on our list is a puzzle-game from the Car-Mines lab of Ecole-des-Mines de Douai {{{latex: 
+\footnote{\url{http://car.mines-douai.fr/}} }}}. We will be using Seamless to connect to the game's ''back-end'' from a remote peer who runs the puzzle ''front-end''. The main classes of the game are seen in Figure *game*. 
 
 +Main classes of the "puzzle-game" application of Car-Mines.>file://figures/game.pdf|width=100|label=game+
 
@@ -577,11 +577,12 @@ AppliPuzzleDistant>>connexionAuBackEnd
 8	]
 ]]]
 
-On line 1 the remote model is retrieved via the middleware (a SeamlessDeamon) and a new puzzle is created (line 2) which is proxied. On line 3 a new controller is instantiated and is initialized with the view (this is a GridMorph as the one shown on Figure *gameScreen*) and the remote puzzle. Then finally on lines 5 through 8 the view is instructed through the #onClickDo: method to invert the currently selected piece with the piece on the click's (x,y) co-ordinates. 
-
-What is interesting to note about the puzzle game (as shown in the log of Figure *gameScreen*) is that apart from the ''core-logic'' remote calls of the game (the #inverseSelectionPieceX:y message we have seen) there is a significant amount of traffic generated just by connecting the local controller with the remote model on line 4. This is to be expected since in this example again the ''application'' and the ''domain'' model are the same. Nevertheless after the initialization phase the game runs very smoothly since the return values of most of the messages send to the backend (#x, #y, #couleur etc) are serialized automatically by Seamless (being terminal instances such as Points and Colors). 
+On line 1 the remote model is retrieved via the middleware (a SeamlessDeamon) and a new puzzle is created (line 2) which is proxied. On line 3 a new controller is instantiated and is initialized with the view (this is a GridMorph as the one shown on Figure *gameScreen*) and with the remote puzzle. Then finally on lines 5 through 8 the view is instructed through the #onClickDo: method to invert (on a left-click) the currently selected piece with the piece on the click's (x,y) co-ordinates. 
 
 +Front-End and Log of the Puzzle Game>file://figures/gameScreen.png|width=100|label=gameScreen+
+
+What is interesting to note about the puzzle game (as shown in the log of Figure *gameScreen*) is that apart from the ''core-logic'' remote calls of the game (the #inverseSelectionPieceX:y message we have seen) there is a significant amount of traffic generated just by connecting the local controller with the remote model on line 4. This is to be expected since in this example too the ''application'' and the ''domain'' model are the same. Nevertheless the game runs very smoothly under Seamless since the return values of most of the messages send to the backend (#x, #y, #couleur etc) - which we see in Figure *gameScreen* - are serialized automatically by the framework (being terminal instances such as Points and Colors). 
+
 
 %+++You can discuss here about the policies once more and show examples
 
@@ -600,7 +601,7 @@ On Figure *low-level*, we provide an overview of the low-level communication inf
 A seamless connection has the same api regardless 
 of the underlying communication protocol or medium. 
 Currently Seamless can operate both over plain sockets with 
-its own protocol and over HTTP.
+its own protocol and (slower) over http.
 
 ;SeamlessTranscoder
 :This is our marshaller which is responsible for serializing and materializing information, passed through the connection. 
@@ -619,7 +620,7 @@ and establishes an appropriate SeamlessConnection between them.
 :This is an OO abstraction for the transporter. 
 Instead of sending or receiving bytes, plain-text, xml etc higher-level components 
 of the Seamless framework exchange objects through this class. 
-These objects are instances of one the SeamlessProtocol classes.
+These objects are instances of one of the SeamlessProtocol classes.
 
 ;SeamlessProtocol 
 :This is a whole hierarchy of classes, that defines an open object protocol. 
@@ -649,7 +650,7 @@ a one-to-one relationship with the ''SeamlessConnection'' on Figure *low-level*.
 +High-level architectural overview of Seamless>file://figures/seamlessStack-high-level.pdf|width=100|label=high-level+
 
 ;SeamlessDeamon
-:This class defines methods for the orchestration (assembling) and initialization of our middleware, acting more or less as an Abstract Factory. 
+:This class defines methods for the orchestration (assembling) and initialization of our middleware, acting more or less as a Factory. 
 Deamons can handle multiple connections 
 (see also SeamlessSessions) to different peers and each 
 environment can have multiple deamons (with different adaptations) 
@@ -687,7 +688,7 @@ These ''papercuts'' will incrementally go away as we advance to more stable rele
 
 All ui applications of Pharo are naturally ''event-driven''. What this means is that their application logic is ''triggered'' by input events such as keyboard-strokes and mouse-clicks. Upon the invocation of such events application callbacks are evaluated from within the UI Process. Essentially this results in all front-end applications being handled by a single green thread, unless otherwise instructed by the programmer of the callback. 
 
-This situation can cause the ui to be unresponsive if for example a single morph is taking too long to compute its callback (try interactively evaluating ''(Delay forSeconds: 10) wait'' from any text morph to see what happens). This ''papercut'' although not specific to Seamless can create frustration when you are proxying application models and feeding them directly to morphs. Using Seamless with futures will help in this case (see below) but the more general solution that we intent to integrate is to equip the UI-Process with sub-threads (either globally or per application) as to allow the ui to respond to events while a sub-ui-thread still computes the ''slow'' callback of a morph.
+This situation can cause the ui to be unresponsive, if for example a single morph is taking too long to compute its callback (try interactively evaluating ''(Delay forSeconds: 10) wait'' from any text morph to see what happens). This ''papercut'' although not specific to Seamless can create frustration when you are proxying application models and feeding them directly to morphs. Using Seamless with futures will help in this case (see below) but the more general solution that we intent to integrate is to equip the UI-Process with sub-threads (either globally or per application) as to allow the ui to respond to events while a sub-ui-thread still computes the ''slow'' callback of a morph.
 
 !!!The Workspace
 
@@ -695,11 +696,11 @@ A somewhat related papercut involves the workspace. You will be probably experim
 
 !!!Morphic
 
-This is again not specific to Seamless, but can nevertheless hurt your distributed adventures. Morphic sends a lot of messages to your models to update, some of them can be automatically memoized by Seamless (we are working on that) others not. As previously stated using an MMVC pattern and controlling the updates yourself between the ''application'' and the ''domain'' model resolves this issue. Ultimately though we will be looking more closely at Morphic, Spec and Glamour to see if they can provide some kind of abstraction (such as an explicit update policy) to help you do that more easily.
+This is again not specific to Seamless, but can nevertheless hurt your distributed adventures. Morphic sends a lot of messages to your models to update, some of them can be automatically memoized by Seamless (we are working on that) others not. As previously stated using an MMVC pattern and controlling the updates yourself between the ''application'' and the ''domain'' model resolves this issue. Ultimately though we will be looking more closely at Morphic (as well as Spec and Glamour) to see if they can provide some kind of abstraction (such as an explicit update policy) to help you do that more easily.
 
 !!!Image-Save
 
-Please save your code on a repository or on the local-cache and reload your projects on start-up on a clean image. This is a good practice in general, trust me. In the future we may review the ability to resume previously ''image-saved'' connections. Right now (to keep us all sane) we perform aggressive clean-ups (on deamons, sessions and sockets) upon every start-up and shut-down.
+Please save your code on a repository or on the local-cache and reload your projects on start-up on a clean image. This is a good practice in general, trust us. In the future we may review the ability to resume previously ''image-saved'' connections. Right now (to keep us all sane) we perform aggressive clean-ups (on deamons, sessions and sockets) upon every start-up and shut-down.
 
 !!!Exceptions
 
@@ -719,7 +720,7 @@ Once we move to a stable release we will be porting remote reflection facilities
 - Futures / Batch-communication / Memoization: There is a large list of optimizations for systems like Seamless from both academia and industry. We will take it one step at a time. After this is done comparing to systems like RMI and DCOM both in terms of features and performance should be the next logical step.
 - Low-level Profiling: The underlying low-level communication solution of Seamless is quite descent for a stable release. We need numbers and low-level profiling (on sockets) to see what can go even better here.
 - Closer integration with Fuel: Lots of great things can happen on this front, by being able to migrate processes, classes or incrementally-serializing remote object graphs. 
-- More Monitoring: The SeamlessLogger has proven to be a very convenient tool. We need more of those (for interacting with the SeamlessProcessManager, the SeamlessDistributionTable, viewing RemoteExceptions etc)
+- More Monitoring: The SeamlessLogger has proven to be a very convenient tool. We need more of those tools for interacting with the SeamlessProcessManager, the SeamlessDistributionTable, viewing RemoteExceptions etc.
 - Distributed-GC: We have the hooks for implementing simple distributed-gc algorithms and a long list of related bibliography. Quite doable at this stage but also a whole field on its own.
 - Remote Reflection: Bringing parts of our research prototype for remote reflection to enough maturity for community-use is one of Seamless ''raison d' etre'' 
 - Field Applications: Field applications where Seamless is used daily and from which we can get constant feedback.
