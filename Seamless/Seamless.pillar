@@ -440,7 +440,7 @@ First on our list is the ContactListEditor app from PharoCasts {{{latex:
 
 +Main classes of the Contact manager application of Pharocasts.>file://figures/contacts.pdf|width=100|label=contacts+
 
-The ContactListEditor is a local application for contact management that is aimed at showcasing Polymorph. The two main classes of the app are shown in Figure *contacts*. The contact manager has a simple model-view architecture. We will be running through Seamless the view (seen on the left of the figure) on peer1 and the model (on the right of the figure) on peer2. The view consists of the ContactListEditor class, which remembers the currently selected contact (''selectedContactIndex'' iv) and retrieves all available contacts through the #contacts method. These contacts are actually stored on the class-side variable of the class Contact (''database'' iv), with each Contact instance holding a firstName and a lastName string.
+The ContactListEditor is a local application for contact management that is aimed at showcasing Polymorph. The two main classes of the app are shown in Figure *contacts*. It has a simple model-view architecture. We will be running through Seamless the view (seen on the left of the figure) on peer1 and the model (on the right of the figure) on peer2. The view consists of the ContactListEditor class, which remembers the currently selected contact (''selectedContactIndex'' iv) and retrieves all available contacts through the #contacts method. These contacts are actually stored on the class-side variable of the class Contact (''database'' iv), with each Contact instance holding a firstName and a lastName string.
 
 The class ContactsDatabaseExample on the Seamless-Examples package provides some helper methods to load example data on each peer for the application. Go ahead and evaluate the following code on peer1 and peer2 respectively.
 
@@ -456,7 +456,7 @@ Then by evaluating:
 ContactListEditor open. "the local editor"
 ]]]
 
-on each peer you should be seeing something similar to Figure *contacts1*. This the local behavior of the app (as it was originally intented) with our sample data (ie John on peer1 and Yoko on peer2).
+on each peer you should be seeing something similar to Figure *contacts1*. This is the local behavior of the app (as it was originally intented) with our sample data (ie the Beatles on peer1 and Yoko Ono and her friends on peer2).
 
 +The Contact Manager with the Beatles (peer1) and the Beatles Wifes (peer2)>file://figures/contacts1.png|width=100|label=contacts1+
 
@@ -468,16 +468,15 @@ Contact database: (Contact from: '127.0.0.1:8081') database.
 ContactListEditor open. "browsing contacts from remote peer"
 ]]]
 
-By now you should be comfortable by what has happened here. On the first line of the code-snippet we pointed the Contacts database to peer2 and then on the second line we re-opened the editor. Now Yoko (and the rest of the Beatles wifes) is shown on peer1 although they are stored on peer2. Of course we could have achieved that in a more elegant way, by extending the view to be able to 
-Browse more than one databases. But we wanted to leave the original application code as unchanged as possible.
+By now you should be comfortable by what has been done here. On the first line of the code-snippet we pointed the Contacts database to peer2 and then on the second line we re-opened the editor. Now Yoko (and the rest of the Beatles wifes) is shown on peer1 although they are stored on peer2. {{{latex: \footnote{Of course we could have achieved that in a more elegant way, by extending the view to be able to browse more than one databases. In this case we wanted to leave the original application code as unchanged as possible.} }}}
 
 Figure *contacts2* shows the results of this remote re-purposing and the SeamlessLogger. Go ahead and browse or edit the contacts and also try to move around the window. If it feels a bit sluggish, update the SeamlessLogger to see why. The ui (morphic in this case) in the view is sending messages to your model (stored on the other side) even while you are moving the window !
 
 +Loading the Contacts of a Remote Peer>file://figures/contacts2.png|width=100|label=contacts2+
 
-Of course there are many remedies to these situations, with the first one being to ''control when morphic asks the model for updates''. Instead of changing Morphic itself to do that (always an option) you can adopt a Model-Model-View-Controller pattern in your code (for more on this read here {{{latex:
+Of course there are many ways to change that, with the first one being to ''control when morphic asks the model for updates''. For example you can adopt a Model-Model-View-Controller pattern in your code (for more on this read here {{{latex:
 \footnote{\url{http://c2.com/cgi/wiki?ModelModelViewController }}
-}}}). What this means essentially is that ''what you see'' is the ''Application Model'' or the ''UI Model'', which is different from the ''Domain Model'' or ''Back-End Model'' (the Contacts database in this case). If you have this distinction in your code, morphic will be sending messages to the first model which is by definition local, while the second model can be distributed (like in our case) without Morphic getting in the way.
+}}}). What this means essentially is that ''what you see'' in the ui will be the ''Application Model'' or the ''UI Model'', which will be different from the ''Domain Model'' or ''Back-End Model'' (the Contacts database in this case). If you have this distinction in your code, morphic will be sending messages to the first model which is by definition local, while the second model can be distributed (like in our case) without Morphic getting in the way.
 
 Another way would be to use a more ''rest-like'' approach by using Seamless as we described earlier. This is seen in the following code-snippet. Go ahead and try it:
 
@@ -487,10 +486,9 @@ Contact database: (Contact from: '127.0.0.1:8081') database asLocalObject
 ContactListEditor open. "browsing contacts from remote peer"
 ]]]
 
-As you may have guessed what we did here is to ''on-demand serialize'' our request to the other side by bringing all the 
-wifes locally. Of course we brought the whole of the contacts database in this example (since it is small) but in a real-world scenario you would be probably doing this incrementally (ie bringing the first n-contacts to show your user and then using paging to navigate). Serializing means that editing, browsing etc does not generate additional requests but also that now it is your responsibility to sync the local copy to the other side. 
+As you may have guessed what we did here is to ''on-demand serialize'' our request to the other side by bringing all remote contacts locally. Of course we brought the whole of the contacts database in this example (since it is small). In a real-world scenario you would be probably doing this incrementally (ie bringing the first n-contacts and then using paging to navigate). Serializing means that editing, browsing etc does not generate additional requests but also that now it is your responsibility to sync the local copy to the other side. 
 
-Finally on Figure *contacts3* we see something more exotic that you can do with the contact manager example. This is a ''crude'' data-balancing example. Go ahead and try on peer1 the following code-snipet:
+Finally on Figure *contacts3* we see something more exotic that you can do with the contact manager example. This is a ''crude'' data-balancing case. Go ahead and try on peer1 the following code-snipet:
 
 [[[
 ContactsDatabaseExample loadBeattles.
@@ -503,14 +501,14 @@ Contact database: (OrderedCollection new
 ContactListEditor open.
 ]]]
 
-What we did here is first restore the Beatles on peer1 and then add both the local Beatles and their remote wifes (as proxies) on the local db. The result as seen in Figure *contacts3* is a database that ''seamlessly'' (pun intended) integrates contacts from two different machines. 
+Here we first restored the Beatles on peer1 and then added both the local Beatles and their remote wifes (as proxies) on the local db. The result as seen in Figure *contacts3* is a database that ''seamlessly'' (pun intended) integrates contacts from two different machines. 
 
 +Mixing Local and Remote Contacts (Crude Data-Balancing)>file://figures/contacts3.png|width=100|label=contacts3+
 
 !!!Ok, ok: Make me a Remote Tester
 
-Next stop is remote testing. Take a look at the class TestRunnerExample and its \#testCategoryNamed:at: method. From lines 1 to 5 we run the tests of a specific
-category as you might have expected. That is by selecting first the category (line 3) then all its classes (line 4) and finally running the tests.
+Next stop is remote testing. Take a look at the class TestRunnerExample and its \#testCategoryNamed:at: method below. From lines 1 to 5 we run the tests of a specific
+category as you might have expected. That is we select first the category (line 3) then all its classes (line 4) and finally we run the tests (line 5).
 
 [[[
 TestRunnerExample>>>testCategoryNamed: aCategoryName at: aRemoteAddress
@@ -522,16 +520,16 @@ TestRunnerExample>>>testCategoryNamed: aCategoryName at: aRemoteAddress
 3		categoryAt: (tr categoryList indexOf: aCategoryName) put: true; 
 4		selectAllClasses;
 5		runAll.
-5	
+6	
 7	"difference on inspection between local and remote objects"
 8	tr result inspect.
 9	tr result asLocalObject inspect.
 10	Smalltalk tools inspector inspect: tr result.
 ]]]
 
-The difference of course with a local such scenario is on line 1 where instead of the local TestRunner we fetch a remote one (whose address is described by the ''aRemoteAddress'' argument). 
+The difference of course with a local such scenario is on line 1 where instead of the local TestRunner we fetch a remote one (whose address is described by ''aRemoteAddress'' argument). 
 
-This is more or less business as usual with Seamless. The interesting part of this example is on lines 7 to 10 where we inspect the test results in three different ways. If you have your two peers set-up evaluate the following code to run the ''ProfStef'' tests of peer2 from peer1 and check the results:
+Now the more crucial part of this example is on lines 7 to 10 where we inspect the test results in three different ways. If you have your two peers set-up evaluate the following code to run the ''ProfStef'' tests of peer2 from peer1 and check the results:
 
 [[[
 TestRunnerExample new
@@ -539,13 +537,13 @@ TestRunnerExample new
        at: '127.0.0.1:8081'
 ]]]
 
-As seen in Figure *testing* there are three inspectors opened, one in peer2 and the others on peer 1. Line 8 is responsible for the inspector on peer2 (on the right). This inspector opened on the target image (that is peer2 where the tests where run) because the \#inspect message was send to a proxy ! This is the proxy object returned by the message \#result to  another proxy (namely ''tr'') which we retrieved on line 1.
+As seen in Figure *testing* there are three inspectors opened, one in peer2 and the other two on peer 1. Line 8 is responsible for the inspector on peer2 (on the right). This inspector opened on the target image (that is peer2 where the tests where run) because the \#inspect message was send to a proxy ! This is the proxy object returned by the message \#result sent to  another proxy (namely ''tr'') which we retrieved on line 1.
 
 +Different ways to to distribute the test results>file://figures/testing.png|width=100|label=testing+
 
-What if we wanted to see the results remotely on peer1 ? This is done on line 10 where we open the local inspector of peer1 "on" the proxy instead of asking the proxy itself to be inspected (as we did on line 8). Most of the traffic generated that is seen on the logs of Figure *testing* is generated by this inspector, which is contacting the other side.
+What if now we wanted to see the results remotely on peer1 ? This is done on line 10 where we open the local inspector of peer1 "on" the proxy instead of asking the proxy itself to be inspected (as we did on line 8). Most of the traffic generated (that is seen on the logs of Figure *testing*) originates by this inspector, which is contacting the other side.
 
-The best way in this case to browse the remote results on peer1 is seen on line 9. Test results are actually computed only once and do not change (ie do not have to be in sync with the other side) so we serialize them (bringing them to peer1) where now the message \#inspect is send to a local object. 
+Finally, the best way - in this case - to browse the remote results on peer1 is seen on line 9. Since test results are actually computed only once and do not change (ie do not have to be in sync with the other side) we serialize them (bringing them to peer1) where now the message \#inspect is send to a local object. 
 
 !!!Ok, ok: Make me a Distributed Game
 
