@@ -49,7 +49,7 @@ In Mapless you do things using a ==do:== closure which Mapless uses to automatic
 Want to save something? Zero bureaucracy, just tell that to the model:
 
 [[[
-odb do:[task save].
+odb do: [ task save ].
 ]]]
 
 At *http://www.airflowing.com* we call this the low-friction way to do it.
@@ -59,20 +59,20 @@ At *http://www.airflowing.com* we call this the low-friction way to do it.
 Getting all models of a given class:
 
 [[[
-odb do:[RTask findAll].
+odb do: [ RTask findAll ].
 ]]]
 
 
 !!! Getting a specific model:
 
 [[[
-odb do:[RTask findAt: 'c472099f-79b9-8ea2-d61f-e5df34b3ed06'].
+odb do: [ RTask findAt: 'c472099f-79b9-8ea2-d61f-e5df34b3ed06' ].
 ]]]
 
 For getting efficiently a (sub)group of models, you write your own Mapless class side getters. They should act on the MongoDB indices with the parameters of your query. You'll get your models in a breeze:
 
 [[[
-odb do:[RTask findAtUsername: 'awesomeguy'].
+odb do: [ RTask findAtUsername: 'awesomeguy' ].
 ]]]
 
 !!! Adding something to a model
@@ -80,11 +80,11 @@ odb do:[RTask findAtUsername: 'awesomeguy'].
 You can use Mapless models pretending they are prototypical like in Self or Javascript objects. No instVars. No setters. No getters. All just works:
 
 [[[
-odb do:[
+odb do: [
     task 
         deadline: Date tomorrow; 
         notes: 'Wonder how it feels to use this thing, hmm...';
-        save].
+        save ].
 ]]]
 
 !!Need composition?
@@ -92,14 +92,14 @@ odb do:[
 Of course you do! The only thing you need is to save the children first
 
 [[[
-odb do:[ |anAlert|
+odb do: [ | anAlert |
   anAlert := RAlert new 
                 duration: 24 hours;
                 message: 'You will miss the target!';
                 save.
     task 
         alert: anAlert;
-        save].
+        save ].
 ]]]
 
 This is what we call low-maintenance.
@@ -109,11 +109,11 @@ This is what we call low-maintenance.
 Mapless embraces an aggressive lazy approach. When you query for models you get them. But if they are composed by other (sub)Mapless, they are going to be references and only reify into the proper Mapless model if you send them a message and you can do this with arbitrary depth:
 
 [[[
-odb do:[task alert message].   
+odb do: [task alert message ].   
 
-odb do:[task alert class = MaplessReference].  "<- true"   
+odb do: [task alert class = MaplessReference ].  "<- true"   
 
-odb do:[task alert description].  "<- 'You will miss the target!'"   
+odb do: [task alert description ].  "<- 'You will miss the target!'"   
 ]]]
 
 
@@ -145,9 +145,9 @@ guy := MaplessRedisDummyPerson new
             firstName: 'John';
             lastName: 'Q';
             yourself.               
-redis do:[:c| guy save].
-redis do:[:c| MaplessRedisDummyPerson findAt: '38skolpqv0y9lazmk772hmsed'].
-redis do:[:c| (MaplessRedisDummyPerson findAt: '38skolpqv0y9lazmk772hmsed') lastName].
+redis do: [ :c | guy save ].
+redis do: [ :c | MaplessRedisDummyPerson findAt: '38skolpqv0y9lazmk772hmsed' ].
+redis do: [ :c | (MaplessRedisDummyPerson findAt: '38skolpqv0y9lazmk772hmsed') lastName ].
 ]]]
 
 
