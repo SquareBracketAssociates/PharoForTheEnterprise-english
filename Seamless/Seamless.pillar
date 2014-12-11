@@ -164,9 +164,13 @@ Figure *transcriptWithBasicArgs* shows the loggers on peer1 (left) and peer2 (ri
 The log-views for our example inform us that:
 
 - ""Peer1 (Upper-Log)"": 2 instances of TSeamlessRemoteProxy (ie remote objects) received all ''local'' messages (100% of them) that amounted to 201 messages in total. 0.5% (ie 1 out of the 201) of those messages send to TSeamlessRemoteProxy instances where #at:, 49.8% (ie 100 messages) where #cr, while the rest 49.8% (ie 100 messages) were #show.
-- ""Peer1 (Lower-Log)"": All messages were outgoing, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
-- ""Peer2 (Upper-Log)"": As expected it was an instance (local to peer2) of the SystemDictionary class that received the #at: (to retrieve the remoteTranscript) while all other messages (200 of them) were send to 1 instance of the ThreadSafeTranscript, and were divide among #show and #cr sends.
-- ""Peer2 (Lower-Log)"": All messages were incoming, with each line representing the (message-id) counting from the start of the session, the class with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash), and the selector.
+- ""Peer1 (Lower-Log)"": All messages were outgoing (outgoing arrow), with each line also displaying: 
+-- the message-id counting from the start of the session 
+-- the class, with a unique qualifier for each instance that received the message under parenthesis (for proxies this is the proxy-id for local objects this is their hash)
+-- the selector of the message
+- ""Peer2 (Upper-Log)"": As expected it was an instance (local to peer2) of the SystemDictionary class that received the #at: (to retrieve the remoteTranscript) while all other messages (200 of them) were send to 1 instance of the ThreadSafeTranscript, and were divided among #show and #cr sends.
+- ""Peer2 (Lower-Log)"": All messages were incoming (ingoing arrow), with each line displaying as before the message-id, the class with a 
+unique qualifier for each instance and the selector.
 
 !!!!Passing Arguments By Reference
 
@@ -197,7 +201,7 @@ arguments to a remote call (or return values) will be passed by reference (impli
 This is done because while prototyping, you shouldn't - ideally - care. Knowing what Seamless does for you though will help you
 code more efficiently. As we said a simple rule that you can guide you  is that by default ''basic objects'' such as numbers 
 and strings are passed by value while more ''composite objects'' are passed by reference. 
-The global default daemon of Seamless passes only the following classes by value:
+The global default daemon of Seamless passes the instances of the following classes (and of their subclasses) by value:
 
 - Boolean 
 - Character 
@@ -255,7 +259,7 @@ responds to the message):
 
 # A return value is serialized if it is a local terminal instance
 # A return value is proxied if it is a composite object
-# A return value is de-referenced in the other side (cause it is a proxy from the calling peer)
+# A return value is de-referenced in the other side (since it is a proxy from the calling peer)
 
 Run the following code and watch the values printed in your local transcript to make these distinctions more clear:
 
@@ -317,12 +321,13 @@ To sum-up the following Table gives you all the possibilities for both arguments
 
 Armed with the experience of our previous example we now move on to a slightly 
 more complicated case in order to understand more about the trade-offs of implicit proxyfication 
-and traffic. Our goal is for the reader to be able to reason with ease about the distribution of objects
-(either explicit or implicit) and structure his or her code accordingly.
+and traffic. Our goal is for the reader to be able to reason with ease about the distribution (either explicit or implicit) 
+of objects and structure his or her code accordingly.
 
 After that we will have a short discussion about the well-documented caveats of ''transparent distribution'' {{{latex:
 \footnote{\url{http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.41.7628}}
-}}}   and how this model compares to the the other end of the communication spectrum, namely that of stateless one-shot requests (REST). 
+}}}   and how this model compares to - what can be seen as - the the other end of the communication spectrum, 
+namely that of stateless one-shot requests (REST). 
 
 !!!Let's Play Ping-Pong
 
@@ -374,11 +379,11 @@ What we should note here is that one ''explicit'' remote call (on Line 3 on the 
 - it's own execution time and it's own communication overhead
 - PLUS the communication overhead that the subsequent ""coupled"" 100 contexts generated
 
-Now these kind of scenarios can easily appear under ''naive'' distribution coding 
-and although the ping-pong example runs pretty smoothly in Seamless for 100 and more contexts, 
-it does not scale gracefully. More coupled and more complicated examples will generate more implicit 
-proxies and more traffic that inevitably introduce unacceptable slow-downs (latency) or bring application 
-resources (memory, bandwidth) to their limits. 
+Now these kind of scenarios can easily appear under ''naive'' distribution coding.
+Now although the ping-pong example runs pretty smoothly in Seamless for a lot more than 100 contexts, 
+more coupled and more complicated examples will generate even more implicit 
+traffic. These coupled scenarios can introduce unacceptable slow-downs (latency) to your application 
+or bring application resources (memory, bandwidth) to their limits. 
 
 !!!Where is the Ball?
 
@@ -416,9 +421,11 @@ Of course the solution {{{latex:\footnote{Apart from using optimizations like fu
 
 +A (over-simplified) view of the spectrum of communication middleware solutions in terms of distribution policies and implicit traffic>file://figures/spectrum.pdf|width=100|label=spectrum+
 
-We generalize and illustrate this situation in Figure *spectrum*. It turns out that the more objects or classes of objects you pass by value (like the first ''Hallo Transcript'' example) the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls (like in the ping-pong example) the more closer you are to ''transparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). On the other hand REST is more static and feels like a procedural communication API rather than an object-oriented one while transparent distribution is fully object-oriented and intuitive. "But" when this transparency is taken to extremes it can be seen as ''mostly utopic''. {{{latex:\footnote{With the exception of transparent distribution over shared local memory (see concluding Section)} }}} 
+We generalize and illustrate this situation in Figure *spectrum*. It turns out that the more objects or classes of objects you pass by value (like the first ''Hallo Transcript'' example) the more ''closer'' you are to a communication paradigm like REST where everything is passed as a copy and each call is a ''one-shot'' request against a simple communication API (that is uncoupled and does not generate implicit traffic).  On the contrary the more you rely on the implicit proxyfication of objects between calls (like in the ping-pong example) the more closer you are to ''transparent'' distribution and its documented caveats (strong coupling, latency, hard to debug). On the other hand REST is more static and feels like a procedural communication API rather than an object-oriented one while transparent distribution is fully object-oriented and intuitive. But when this transparency is taken to extremes it can be seen as ''mostly utopic''. {{{latex:\footnote{With the exception of transparent distribution over shared local memory (see concluding Section)} }}} 
 
 The idea behind Seamless is that you should be able to play across the whole spectrum while you are prototyping and fine-tune your own code by profiling and considering the trade-offs. Even more so you may want to use Seamless to craft useful abstractions that enforce certain paradigms to your code.  
+
+%Here we can actually show an automatic enforced rest-like session where everything is serialised 
 
 !!Practice Makes Perfect
 
