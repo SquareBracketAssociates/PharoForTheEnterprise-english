@@ -1,6 +1,8 @@
 Pharo for the Enterprise (english version) [![Build Status](https://ci.inria.fr/pharo-contribution/buildStatus/icon?job=PharoForTheEnterprise)](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/) [![Build Status](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english.svg?branch=master)](https://travis-ci.org/SquareBracketAssociates/PharoForTheEnterprise-english)
 ====================
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/SquareBracketAssociates/PharoForTheEnterprise-english?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 An experiment of writing a book with the Pier syntax using plain-text editors.
 
 This book is continuously built on an [Inria Jenkins server](https://ci.inria.fr/pharo-contribution/job/PharoForTheEnterprise/).
