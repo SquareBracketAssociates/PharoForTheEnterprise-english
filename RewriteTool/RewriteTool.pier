@@ -734,3 +734,24 @@ In general, at symbol used with backquote
 `@object
 ]]]
 matches any message, literal or block node of AST, which is really important to know.
+
+!!Architecture of Rewrite Tool
+
+This section covers the architecture of Rewrite Tool, explains each class responsibilities.
+Also it gives a clear understanding of class hierarchy, which is present in Rewrite Tool.
+
+!!!Panel classes hierarchy
+
+To begin with, let's take a look at one of the key hierarchy - an ''AbstractPanel'' class and its subclasses.
+Clearly, ''AbstractPanel'' is an abstract class,
+which represents a panel with text field and a label (""label is not there yet =)"").
+Text field contains a code, which is considered later as an AST in order to make further manipulations with code possible.
+Also in ''AbstractPanel'' class is implemented basic behavior of all actions,
+that were described in paragraph ""4.1. Menu options"".
+Why "basic behavior", you might ask?
+That is so, because each of ''AbstractPanel'' subclasses shares this behavior, however its not complete in the abstract class.
+Its subclasses represent four panels of builder and they are: ''SourcePanel'', ''MatchPanel'', ''TransformPanel'', ''ResultPanel'',
+which were mentioned in ""2.1. Rewrite rule builder"" section.
+To sum up, 
+''AbstractPanel'' class is responsible for implementation of all actions that can be applied to AST nodes in builder.
+Moreover it implements an update method, which, obviously, updates AST ant code in text field, that is displayed.
