@@ -740,11 +740,14 @@ matches any message, literal or block node of AST, which is really important to 
 This section covers the architecture of Rewrite Tool, explains each class responsibilities.
 Also it gives a clear understanding of class hierarchy, which is present in Rewrite Tool.
 
-!!!Panel classes hierarchy
+!!!Hierarchy of panel classes
 
 To begin with, let's take a look at one of the key hierarchy - an ''AbstractPanel'' class and its subclasses.
+
+!!!!AbstractPanel class
+
 Clearly, ''AbstractPanel'' is an abstract class,
-which represents a panel with text field and a label (""label is not there yet =)"").
+which represents a panel that contains text field and a label (""label is not there yet =)"").
 Text field contains a code, which is considered later as an AST in order to make further manipulations with code possible.
 Also in ''AbstractPanel'' class is implemented basic behavior of all actions,
 that were described in paragraph ""4.1. Menu options"".
@@ -754,4 +757,23 @@ Its subclasses represent four panels of builder and they are: ''SourcePanel'', '
 which were mentioned in ""2.1. Rewrite rule builder"" section.
 To sum up, 
 ''AbstractPanel'' class is responsible for implementation of all actions that can be applied to AST nodes in builder.
-Moreover it implements an update method, which, obviously, updates AST ant code in text field, that is displayed.
+Moreover it implements an update method, which, obviously, updates AST and code in text field, which is displayed.
+
+Next, we may examine subclasses of ''AbstractPanel''.
+
+!!!!SourcePanel class
+
+Holds source code of expression that should be transformed into something new.
+Actually, ''SourcePanel'' does not implement any other functionality than it inherits from ''AbstractPanel''.
+This class only states that there are no available options in this panel by action-clicking (right click).
+It's done in method #menuActions, which returns an empty array.
+
+[[[
+    menuActions
+	^ {}
+]]]
+
+To remind, instance of ''SourcePanel'' class is located on top left of builder.
+
+!!!!ResultPanel class
+
