@@ -255,7 +255,7 @@ You can see the result of applying rewrite rule to source code in Result pane.
 You can click on ''Generate rule'' button to automatically generate a class for your new rule.
 Than click on ''Browse rules'' button, and you will see that your new class is in Browser.
 
-...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...
+""...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...""
 
 
 !!!Second example
@@ -269,7 +269,7 @@ Browser. We choose the one called ==RBMinMaxRule==. It has a method initialize
 where all rules are initialized. There you can see that ==RBMinMaxRule== has
 many rules that are similar to each other. Thus let us take a look only at one
 of them. Suppose we have a snippet of code which returns the max of two objects
-and which is written as following:
+and which is written as follows:
 
 [[[ label=secondExample1 | language = Smalltalk
     temp := a < b
@@ -362,6 +362,153 @@ expected.
 !!!!Step 4:
 Use ''Generate rule'' button to generate the class of this rule in order to use
 it in the Browser.
+
+
+!!!Third example
+
+""...Probably we have to put explanation to rewrite engine before examples, or just give some link...""
+
+Class ==RBMinMaxRule== is a subclass of ==RBTransformationRule==, which has other not less interesting examples of rewrite rules. 
+That is why we will examine ==RBAtIfAbsentRule==. 
+This one works with collections and blocks, so its implementation may be more complicated than implementation of rules in two previous examples,
+ however it is still easy to understand. 
+
+Again, open ==RBAtIfAbsentRule>>#initialize== method, and you will see few, similar to each other, rules. 
+Here is one of them:
+
+[[[ label=thirdExample1 | language = Smalltalk
+    self rewriteRule
+	"..."
+	replace: '``@dictionary at: ``@key
+		  ifAbsent: [| `@temps |
+	          ``@.Statements.
+	          ``@dictionary at: ``@key 
+                  put: ``@object]'
+	with:    '``@dictionary at: ``@key
+	          ifAbsentPut: [| `@temps |
+	          ``@.Statements.
+	          ``@object]'
+]]]
+
+At first look it may seem too complex, but after we generate it with builder, you will clearly know the responsibilities of each part of this rule.
+With such a rule we can do followning transformation:
+
+[[[ label=thirdExample2 | language = Smalltalk
+    	"before rule is applied"
+
+	| myDictionary |
+	myDictionary := Dictionary new 
+		at: 1 put: 'a';
+		at: 2 put: 'b';
+		yourself.
+	myDictionary at: 3 ifAbsent: [
+	 | temp1 temp2 temp3 | 
+	 temp1 := 'c'.
+	 temp2 := 'd'.
+	 temp3 := temp1, temp2.
+	 myDictionary at: 3 put: temp3 ].
+	 ^ myDictionary
+
+	"after rule is applied"
+
+	| myDictionary |
+	myDictionary := Dictionary new
+		at: 1 put: 'a';
+		at: 2 put: 'b';
+		yourself.
+	myDictionary at: 3 ifAbsentPut: [ 
+	 | temp1 temp2 temp3 |
+	 temp1 := 'c'.
+	 temp2 := 'd'.
+	 temp3 := temp1 , temp2.
+	 temp3 ].
+	^ myDictionary
+]]]
+
+This code contains all keywords that are present in rule such as: #at:ifAbsent:, and #at:ifAbsentPut:. 
+Current example is using this code, to implement the rule, that we selected earlier.
+
+!!!!Step 1:
+
+In order to open Builder with previous code inside of it, select first part of code (the one that is before rule is applied)
+ in Nautilus workspace, go to ''Source code refactoring'' and select ''RewriteRuleBuilder'' option. 
+Or you can just open Builder through ''World menu >> Tools >> Builder'',
+ and than copy and paste first part of code in Source and Match panels, and second part - in Transform panel.
+Next copy second part of code, and paste it into Transform panel. 
+Now we are ready to implement the rule.
+
++Step 1 of ifAbsent: transformation example>file://figures/example3-1.png|width=60|label=example3-1+
+
+!!!!Step 2:
+Required code is inside of the Builder, so it is time to begin creating the rule.
+As always, all following actions are done in Match panel, unless other panel is specified. 
+To start with, select any reference of ==myDictionary==, except one that is a variable declaration,
+ and apply ''Abstract variable'' option. 
+After that, do ''As List'' on newely created metavariable ==`variable1==. 
+You will get ==`@variabl1==, and finally, apply ''Recurse into'' to this one.
+The result is ==``@variable1==, and all in all it is: 
+
+Despite tha fact, that we don't need recursion and list symbol in this particular situation, 
+we still use them, because of next reasons:
+- to get exactly the same rule as we have in ==RBAtIfAbsentRule==;
+- to create a rule that can be used in general situation, not only in particular one;
+- to learn which actions Builder is able to perform.
+
+Now we do exactly the same actions with a key, which is equal to 3.
+
++Step 2 of ifAbsent: transformation example>file://figures/example3-2.png|width=60|label=example3-2+
+
+!!!!Step 3:
+
+Apply ''Abstract statement'' action to next snippet:
+
+[[[ label=thirdExample3 | language = Smalltalk
+    	"..."
+
+	``@variable1 := Dictionary new
+	at: 1 put: 'a';
+	at: 2 put: 'b';
+	yourself.
+
+	"..."
+]]]
+
+Basically, we want to match here pretty much everything, so let's do ''As List'' and ''Recurse into'' on ==`.Statement1==, and as a result we have ==``@.Statement1==.
+To finish with initialization part of this code, select declaration of temporary variable ==| myDictionary |== and do on it ''Abstract temporaries list''.
+Note, that ==| myDictionary |== in Transform panel wasn't transformed to ==| ``@temporaries |==, so we have to do it ourselves. 
+Select ==| myDictionary |== in Transform panel, and apply ''Abstract temporaries list''. 
+In opened window select ==| ``@temporaries |== option.
+
+!!!!Step 4:
+
+After this steps, lets take a look at the argument of ==#ifAbsent:== - a block. 
+With temporaries declaration ==| temp1 temp2 temp3 |== we do exactly the same thing as in previous step. 
+Also we have to do same actions in Transform panel, but now in opened window choose ==| ``@temporaries2 |== instead of ==| ``@temporaries1 |==. 
+
+Apply ''Abstract statement""s""'' action to next snippet:
+
+[[[ label=thirdExample4 | language = Smalltalk
+    	"..."
+
+	temp1 := 'c'.
+	temp2 := 'd'.
+	temp3 := temp1 , temp2.
+
+	"..."
+]]]
+
+Than do it with same snippet in Transform panel, and choose ==`@.Statements2==. 
+Next, back to Match panel, on ==`@.Statements2== node do ''Recurse into''. 
+The rule is almost ready, there is one variable left that we have to change - ==temp3==. 
+Select it and use ''Abstract variable'', ''As List'' and ''Recurse into'' actions one after another, and that is how you get ==``@variable3==. 
+Finally we have our rule, which does exactly what we wanted - transformation that is mentioned in the beginning of this example. 
+
++Step 4 of ifAbsent: transformation example>file://figures/example3-4.png|width=60|label=example3-4+
+
+If you wish, now it is possible to ''Generate'' a class, that will hold this rule, so afterwars you can use it in Browser. 
+
+""... Again, maybe explained Browser ...""
+
 
 !!Rewrite Tool in details
 
@@ -765,13 +912,13 @@ Next, we may examine subclasses of ''AbstractPanel''.
 
 Holds source code of expression that should be transformed into something new.
 Actually, ''SourcePanel'' does not implement any other functionality than it inherits from ''AbstractPanel''.
-This class only states that there are no available options in this panel by action-clicking (right click).
-It's done in method #menuActions, which returns an empty array.
+This class only states that there are no available options in this panel by action-clicking (right click). 
+It's done in method #menuActions, which returns an empty array. (Not really true now, as it will have Smart Suggestions options)
 
 [[[
     menuActions
 	^ {}
-]]]
+]]] (Change this piece of code later)
 
 To remind, instance of ''SourcePanel'' class is located on top left of builder.
 
