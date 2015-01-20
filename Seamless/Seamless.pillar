@@ -728,8 +728,14 @@ Once we move to a stable release we will be porting remote reflection facilities
 %Other orthogonal todo's (when there is time)
 %-Actor/Component models: Especially REST-like components on top of Seamless (ie automatically serialize not the object but the args and calls send to a family of objects or instances of classes). This will be a nice example for how to tailor Seamless to specific needs.
 %-Contributors Doc: Code documentation and user manual (this Chapter) is not enough for someone to start contributing unless he spends a lot of time exploring. A walkthrough on extention points and core-logic methods would be more appropriate
-%-Locking mechanisms: This is also orthogonal, when multiple peers send messages to the same objects how do you synchronize (locks, monitors, transactions and the like)
+%-Locking mechanisms: This is also orthogonal, when multiple peers send messages to the same objects how do you synchronize (locks, monitors, transactions and the like) ++ abstractions like channels, CPS -- classic dist algos etc
 %Low-level: There are a bunch of low-level libraries out there that may be more reliable or fast than SocketStream for our use cases. See for eg http://zeromq.org/ (write a plugin and measure). Does it worth it ?
+%Meta-Description & Discovery: Discover Services (aka connect to one repo that knows the rest) and provide meta-descriptions
+%Review distribution policies use traits (to mark classes) / special methods for policies and or annotations
+% Rest / DCOM / RMI examples
+% Same image optimizations and usages (for even more incremental prototyping / profiling)
+% Review bibliography and see automatic extraction of policies from tests
+
 
 !!Summary
 
