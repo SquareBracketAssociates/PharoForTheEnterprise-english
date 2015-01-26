@@ -734,6 +734,7 @@ Once we move to a stable release we will be porting remote reflection facilities
 %Review distribution policies use traits (to mark classes) / special methods for policies and or annotations
 % Rest / DCOM / RMI examples
 % Same image optimizations and usages (for even more incremental prototyping / profiling)
+% Incremental prototyping and profiling might be a possible middle-ground between tr. distribution and rest
 % Review bibliography and see automatic extraction of policies from tests
 
 
