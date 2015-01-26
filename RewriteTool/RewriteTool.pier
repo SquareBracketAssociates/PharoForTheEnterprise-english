@@ -532,6 +532,8 @@ List of all available options (may be changed):
 - Ignore selector
 - Undo on node
 
+""... Update list of options ...""
+
 !!!!""Abstract actions""
 
 Any of abstract action replaces selected object(s) with metavariable that
@@ -884,8 +886,9 @@ matches any message, literal or block node of AST, which is really important to 
 
 !!Architecture of Rewrite Tool
 
-This section covers the architecture of Rewrite Tool, explains each class responsibilities.
-Also it gives a clear understanding of class hierarchy, which is present in Rewrite Tool.
+This section covers the architecture of Rewrite Tool, explains responsibilities of classes.
+Also it gives a clear understanding of class hierarchy, which is present in Rewrite Tool. 
+In addition to this, methods are covered too.
 
 !!!Hierarchy of panel classes
 
@@ -894,7 +897,7 @@ To begin with, let's take a look at one of the key hierarchy - an ''AbstractPane
 !!!!AbstractPanel class
 
 Clearly, ''AbstractPanel'' is an abstract class,
-which represents a panel that contains text field and a label (""label is not there yet =)"").
+which represents a panel that contains text field and a label.
 Text field contains a code, which is considered later as an AST in order to make further manipulations with code possible.
 Also in ''AbstractPanel'' class is implemented basic behavior of all actions,
 that were described in paragraph ""4.1. Menu options"".
@@ -902,25 +905,169 @@ Why "basic behavior", you might ask?
 That is so, because each of ''AbstractPanel'' subclasses shares this behavior, however its not complete in the abstract class.
 Its subclasses represent four panels of builder and they are: ''SourcePanel'', ''MatchPanel'', ''TransformPanel'', ''ResultPanel'',
 which were mentioned in ""2.1. Rewrite rule builder"" section.
-To sum up, 
-''AbstractPanel'' class is responsible for implementation of all actions that can be applied to AST nodes in builder.
-Moreover it implements an update method, which, obviously, updates AST and code in text field, which is displayed.
+Moreover ''AbstractPanel'' class implements update methods, which, obviously, update different information such as AST, text, current metavariables names etc.
+
+Methods of ''AbstractPanel'' class:
+
+1. ==#parse:== parses a string as rewrite expression or method. This choise depends on return of ==#isParsingExpression==. 
+
+2. ==#executeCommand:atIndex:withSource:== is used to execute any command, class of which is passed as an argument.
+This particular command is executed for each node that is equal to currently selected node.
+Also, this method adds changes to undo dictionary, that holds all previous changes that were made.
+After command is executed, update methods are invoked.
+
+3. ==#updateAst== updates AST of current panel.
+
+4. ==#updateText== updates text of current panel, that is displayed.
+
+5. ==#updateInfoFor:withOld:andNew:== updates text, ast of panel. 
+Also updates ==#oldNodes== property of all nodes in AST.
+Invokes method, which responsibility is to update next panel. 
+Next panel is Transform Panel for Match Panel, and Result Panel for Transform Panel. 
+
+6. ==#getAllMetavariables== returns a collection of all metavariables that are used in current panel.
+
+7. ==#difference:with:== returns a mathematical difference of sets, however works not with sets but with collections, so duplicates are possible. 
+
+8. ==#isReplacementPossibleFor:== checks a complicated condition. If it returns true, than execution of current action is permited, else it is restricted. 
+The condition is: 
+
+[[[
+"if after action is applied to selected (meta)variable, there still will be the same (meta)variable left in ''MatchPanel''"
+	((self difference: allMetavars with: selectedMetavars) & selectedMetavars) size == selectedMetavars size
+		and: [ 
+
+"if selected (meta)variable is used in ''TransformPanel'' or: if there are no metavars in ''MatchPanel'' and ''TransformPanel'' at all"
+			((selectedMetavars & usedMetavars) isNotEmpty or: [ (selectedMetavars | usedMetavars) isEmpty ])
+
+"if among selected variables there are no metavariables"
+				or: [ selectedMetavars isEmpty ] ]
+]]]
+
+9. ==#isSelectedAll== returns ==true== if all code in current panel is selected. 
+
+10. ==#manageUndoDictFor:== adds an instance of RewriteRuleChange class to ==undoDict== instance variable, which holds all changes for ''Undo'' action. 
+This variable is discussed later. Also this method enables ==undoButton==. 
+
+All following methods open up alert windows with different message each.
+
+==#changeInvalidAlert==, ==#classNotCreatedAlert==, ==#noMetavariablesAlert==, ==#replacementNotPossibleAlert==, ==#varNotChosenAlert==. 
 
 Next, we may examine subclasses of ''AbstractPanel''.
 
 !!!!SourcePanel class
 
 Holds source code of expression that should be transformed into something new.
-Actually, ''SourcePanel'' does not implement any other functionality than it inherits from ''AbstractPanel''.
-This class only states that there are no available options in this panel by action-clicking (right click). 
-It's done in method #menuActions, which returns an empty array. (Not really true now, as it will have Smart Suggestions options)
+Actually, ''SourcePanel'' implements onle one new feature that is not inherited from ''AbstractPanel''.
+This class states that by action-clicking (right click) there are available options in this panel - Smart Suggestions (by Gisela). 
+It's done in method #menuActions, which returns an array. 
 
 [[[
     menuActions
-	^ {}
-]]] (Change this piece of code later)
+	| options |
+	options := OrderedCollection new.
+	options add: #('Smart Suggestions' #smartSuggestions).
+	^ options
+]]] 
 
 To remind, instance of ''SourcePanel'' class is located on top left of builder.
 
 !!!!ResultPanel class
 
+Presents disabled text field, which means that user can not edit text contained in this panel. 
+Result Panel holds result of applying rewrite rule to source code.
+Located in top right part of RewriteRuleBuilder. 
+
+[[[
+    initialize
+	super initialize.
+	self templateText disable
+]]]
+
+!!!!MatchPanel class
+
+''MatchPanel'' class is a subclass of ''AbstractPanel'', instance of which holds matching part of rewrite rule (i.e. left hand side part of rule). 
+To begin with, this class coontrols all indexes that are added after each (including some of them) metavariable name. 
+When any action is taken, that creates new metavariable in rule, ''MatchPanel'' adds index at the end of metavariable name. 
+Than index of coresponding metavariable group is incremented. 
+For example, ==MatchPanel >> #abstractVariable==
+
+[[[
+    abstractVariable
+	"first the action is executed, thus new metavariable is created"
+	super abstractVariable.
+	"than index is incremented by one"
+	self varIndex: self varIndex + 1
+]]]
+
+All other actions are implemented in similar way. 
+Also ''MatchPanel'' has an instance variable ==varNames== which represents a collection of all metavariables that are currently present in rewrite rule. 
+This variable helps to ensure, that transform part of rewrite rule (i.e. right hand side) uses only already existing metavariables. 
+As use of non existing metavariables in right hand side of rewrite rule would lead to an error. 
+More information about usage of ==varNames== instance variable is given in next section about ''TransformPanel'' class. 
+
+Methods of ''MatchPanel'' class:
+
+1. ==#isReplaceAvailableFor:== returns a boolean, which says if it is possible to replace aNode (an argument of this method), 
+or it should be reassigned.
+
+2. ==#addChanges== any action that changes AST of instance of ''MatchPanel'' class, 
+is recorded into instance variable ==undoDict== of instance of ''TransformationRule'' class. 
+Generally, ==undoDict== is a collection of all changes made with ''MatchPanel'' and/or ''TransformPanel''. 
+This variable is described in following sections in more details. 
+
+3. ==#updateVarNames== updates ==varNames== instance variable, so it holds only existing metavariables in ''MatchPanel''. 
+
+4. ==#updateTransformPanelFor:== does a pass on AST that is held by ''TransformPanel''. 
+Replaces all nodes, that are equal to node that previous action in ''MatchPanel'' was applied, in ''TransformPanel'' with a new metavariable node. 
+Than the displayed text and AST of ''TransformPanel'' are updated. 
+For example, we have this code in ''MatchPanel'':
+
+[[[
+	super foo.
+	`@variable1 doSomething
+]]]
+
+and following code in ''TransformPanel'':
+
+[[[
+	`@variable1 foo.
+	`@variable1 bar
+]]]
+
+If user applies ''Recurse into'' action to ==`@variable1== in ''MatchPanel'', as a result ''TransformPanel'' will show next code:
+
+[[[
+	``@variable1 foo.
+	``@variable1 bar
+]]]
+
+5. ==#updateNextPanelForNode:== is invoked after the current panel is updated in method ==#updateInfoFor:withOld:andNew:==. 
+First of all, this method updates ==varNames== instance variable. 
+After this, ''TransformPanel'' itself is updated via ==#updateTransformPanelFor:== method. 
+Than, ==statusBar== color and information text are updated. 
+==statusBar== instance variable is explained later. 
+In the end, ==#updateNextPanelForNode:== is invoked for ''TransformPanel'', so the ''ResultPanel'' is updated. 
+
+!!!!TransformPanel class
+
+''TransformPanel'' class is a subclass of ''AbstractPanel'', instance of which holds transforming part of rewrite rule (i.e. right hand side part of rule). 
+In ''TransformPanel'' not all options are available. For example, you can not ''Recurse into'',
+ due to the fact that metavariable that you are about to create does not exist. 
+
+Methods of ''TransformPanel'' class:
+
+1. ==#menuActions== removes all unavailable uptions from ''TransformPanel'' menu via ==#removeUnavailableOptions:== method. 
+
+2. ==#removeUnavailableOptions:== removes such options as ''As list'', ''Recurse into'' and ''Undo on node''. 
+
+3. ==#addOldNodes:== updating information about ==oldNodes== for each node in AST of ''TransformPanel''. 
+==oldNodes== propery of AST holds all nodes that where replaced up to the current node. 
+
+4. ==#chooseMetavariablesForNode:== when user applies action such as ''Abstract variable'' in ''TransformPanel'' window is opened. 
+In this window user can choose one of available metavariables to replace current node with it. 
+
+5. ==#chooseTempsForNode:== same as ==#chooseMetavariablesForNode:==, but is used when ''Abstract temporaries list'' action is invoked. 
+
+6. ==#updateNextPanelForNode:== applies rewrite rule from ''MatchPanel'' and ''TransformPanel'' to AST of ''SourcePanel''. 
+As a result we have new AST. Code of this AST is displayed in ''ResultPanel''. 
