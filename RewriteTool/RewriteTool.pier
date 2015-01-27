@@ -1070,4 +1070,49 @@ In this window user can choose one of available metavariables to replace current
 5. ==#chooseTempsForNode:== same as ==#chooseMetavariablesForNode:==, but is used when ''Abstract temporaries list'' action is invoked. 
 
 6. ==#updateNextPanelForNode:== applies rewrite rule from ''MatchPanel'' and ''TransformPanel'' to AST of ''SourcePanel''. 
-As a result we have new AST. Code of this AST is displayed in ''ResultPanel''. 
+As a result we have new AST. Code of this AST is displayed in ''ResultPanel''.
+
+!!!!TransformationRule class
+
+
+
+!!!!RRTextModel class
+
+''RRTextModel'' is a subclass of TextModel. It has some features that are needed for RewriteRuleBuilder, like AST and support of custom menu. 
+Instances of ''RRTextModel'' are used in each of four panels: ''SourcePanel'', ''MatchPanel'', ''TransformPanel'', ''ResultPanel''. 
+Each panel stores instance of this class in ==textModel== instance variable. 
+==textModel== stores AST and gives acces to custom menu, which can be invoked by right clicking on panel. 
+
+Methods of ''RRTextModel'' class:
+
+1. ==#actionsForSelection== performs ==#menuOptions== for panel that is storet in ==model== instance variable. 
+==#menuOptionsSelector== fills right click menu with all available actions for selected node. 
+
+2. ==#getSelectedNode== returns node, which is currently selected in ==textModel==. 
+
+3. ==#codePaneMenu:shifted:== forms a menu due to ==#actionsForSelection== method. 
+
+!!!!RewriteRuleChange class
+
+A ''RewriteRuleChange'' is class that holds changes that were made in Builder panels. 
+Instances of this class are stored in collection - the instance variable ==undoDict== of ''TransformationRule''. 
+The implementation of this class is very simple: it has only two instance variables - ==panel== and ==ast==. 
+==panel== is one of four panels of Builder, and ==ast== is an AST of this panel. 
+
+!!!!ActivePolygonMorph class
+
+''ActivePolygonMorph'' is a subclass of ''PolygonMorph'', that adds new functionality to ''PolygonMorph''. 
+It recognizes two events: ==#mouseEnter:== and ==#mouseLeave:==. 
+Also it has ==infoText== instance variable, which contains text information,
+ that says if AST of ''SourcePanel'' matches left hand side rule part (AST of ''MatchPanel'') or not. 
+
+Methods of ''ActivePolygonMorph'' class:
+
+1. ==#infoMorph== constructs morph, which is a ''BorderedMorph'' with ''StringMorph'' submorph. 
+Contents of ''StringMorph'' is assigned to ==infoText== instance variable, that is described before. 
+
+2. ==#mouseEnter:== adds to self a submorph, that was created in ==#infoMorph== method. 
+
+3. ==#mouseLeave:== removes from self a submorph, that was created in ==#infoMorph== method. 
+
+4. ==#handlesMouseOver:== states that ''ActivePolygonMorph'' handles mouse over events, as it returns ==true==. 
