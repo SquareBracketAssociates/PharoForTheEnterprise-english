@@ -102,8 +102,8 @@ the only one that is not editable, so it is read only. Later, this pane is refer
 - "Undo" button is a general undo for the three editable panes: Source, Match
   and Transform. All changes, that were made in one of these panes, are
   stacked. If you click on "Undo" button, the last change that was made in any
-  of these panes, will be retreived. Also there is local undo for each pane
-  separately (''DESCRIBED LATER'').
+  of these panes, will be reverted. Also there is local undo for each pane
+  separately.
 - "Generate rule" button creates new class which is a subclass of
   ''RBTransformationRule'' using information from two bottom panes. After the
   rule is created using this button, you can apply it to specific scope.
@@ -890,11 +890,7 @@ This section covers the architecture of Rewrite Tool, explains responsibilities 
 Also it gives a clear understanding of class hierarchy, which is present in Rewrite Tool. 
 In addition to this, methods are covered too.
 
-!!!Hierarchy of panel classes
-
-To begin with, let's take a look at one of the key hierarchy - an ''AbstractPanel'' class and its subclasses.
-
-!!!!AbstractPanel class
+!!!AbstractPanel class
 
 Clearly, ''AbstractPanel'' is an abstract class,
 which represents a panel that contains text field and a label.
@@ -909,27 +905,27 @@ Moreover ''AbstractPanel'' class implements update methods, which, obviously, up
 
 Methods of ''AbstractPanel'' class:
 
-1. ==#parse:== parses a string as rewrite expression or method. This choise depends on return of ==#isParsingExpression==. 
+1. ""==#parse:=="" parses a string as rewrite expression or method. This choise depends on return of ==#isParsingExpression==. 
 
-2. ==#executeCommand:atIndex:withSource:== is used to execute any command, class of which is passed as an argument.
+2. ""==#executeCommand:atIndex:withSource:=="" is used to execute any command, class of which is passed as an argument.
 This particular command is executed for each node that is equal to currently selected node.
 Also, this method adds changes to undo dictionary, that holds all previous changes that were made.
 After command is executed, update methods are invoked.
 
-3. ==#updateAst== updates AST of current panel.
+3. ""==#updateAst=="" updates AST of current panel.
 
-4. ==#updateText== updates text of current panel, that is displayed.
+4. ""==#updateText=="" updates text of current panel, that is displayed.
 
-5. ==#updateInfoFor:withOld:andNew:== updates text, ast of panel. 
+5. ""==#updateInfoFor:withOld:andNew:=="" updates text, ast of panel. 
 Also updates ==#oldNodes== property of all nodes in AST.
 Invokes method, which responsibility is to update next panel. 
 Next panel is Transform Panel for Match Panel, and Result Panel for Transform Panel. 
 
-6. ==#getAllMetavariables== returns a collection of all metavariables that are used in current panel.
+6. ""==#getAllMetavariables=="" returns a collection of all metavariables that are used in current panel.
 
-7. ==#difference:with:== returns a mathematical difference of sets, however works not with sets but with collections, so duplicates are possible. 
+7. ""==#difference:with:=="" returns a mathematical difference of sets, however works not with sets but with collections, so duplicates are possible. 
 
-8. ==#isReplacementPossibleFor:== checks a complicated condition. If it returns true, than execution of current action is permited, else it is restricted. 
+8. ""==#isReplacementPossibleFor:=="" checks a complicated condition. If it returns true, than execution of current action is permited, else it is restricted. 
 The condition is: 
 
 [[[
@@ -944,9 +940,9 @@ The condition is:
 				or: [ selectedMetavars isEmpty ] ]
 ]]]
 
-9. ==#isSelectedAll== returns ==true== if all code in current panel is selected. 
+9. ""==#isSelectedAll=="" returns ==true== if all code in current panel is selected. 
 
-10. ==#manageUndoDictFor:== adds an instance of RewriteRuleChange class to ==undoDict== instance variable, which holds all changes for ''Undo'' action. 
+10. ""==#manageUndoDictFor:=="" adds an instance of RewriteRuleChange class to ==undoDict== instance variable, which holds all changes for ''Undo'' action. 
 This variable is discussed later. Also this method enables ==undoButton==. 
 
 All following methods open up alert windows with different message each.
@@ -955,7 +951,7 @@ All following methods open up alert windows with different message each.
 
 Next, we may examine subclasses of ''AbstractPanel''.
 
-!!!!SourcePanel class
+!!!SourcePanel class
 
 Holds source code of expression that should be transformed into something new.
 Actually, ''SourcePanel'' implements onle one new feature that is not inherited from ''AbstractPanel''.
@@ -972,7 +968,7 @@ It's done in method #menuActions, which returns an array.
 
 To remind, instance of ''SourcePanel'' class is located on top left of builder.
 
-!!!!ResultPanel class
+!!!ResultPanel class
 
 Presents disabled text field, which means that user can not edit text contained in this panel. 
 Result Panel holds result of applying rewrite rule to source code.
@@ -984,7 +980,7 @@ Located in top right part of RewriteRuleBuilder.
 	self templateText disable
 ]]]
 
-!!!!MatchPanel class
+!!!MatchPanel class
 
 ''MatchPanel'' class is a subclass of ''AbstractPanel'', instance of which holds matching part of rewrite rule (i.e. left hand side part of rule). 
 To begin with, this class coontrols all indexes that are added after each (including some of them) metavariable name. 
@@ -1008,17 +1004,16 @@ More information about usage of ==varNames== instance variable is given in next 
 
 Methods of ''MatchPanel'' class:
 
-1. ==#isReplaceAvailableFor:== returns a boolean, which says if it is possible to replace aNode (an argument of this method), 
+1. ""==#isReplaceAvailableFor:=="" returns a boolean, which says if it is possible to replace aNode (an argument of this method), 
 or it should be reassigned.
 
-2. ==#addChanges== any action that changes AST of instance of ''MatchPanel'' class, 
+2. ""==#addChanges=="" any action that changes AST of instance of ''MatchPanel'' class, 
 is recorded into instance variable ==undoDict== of instance of ''TransformationRule'' class. 
 Generally, ==undoDict== is a collection of all changes made with ''MatchPanel'' and/or ''TransformPanel''. 
-This variable is described in following sections in more details. 
 
-3. ==#updateVarNames== updates ==varNames== instance variable, so it holds only existing metavariables in ''MatchPanel''. 
+3. ""==#updateVarNames=="" updates ==varNames== instance variable, so it holds only existing metavariables in ''MatchPanel''. 
 
-4. ==#updateTransformPanelFor:== does a pass on AST that is held by ''TransformPanel''. 
+4. ""==#updateTransformPanelFor:=="" does a pass on AST that is held by ''TransformPanel''. 
 Replaces all nodes, that are equal to node that previous action in ''MatchPanel'' was applied, in ''TransformPanel'' with a new metavariable node. 
 Than the displayed text and AST of ''TransformPanel'' are updated. 
 For example, we have this code in ''MatchPanel'':
@@ -1042,14 +1037,14 @@ If user applies ''Recurse into'' action to ==`@variable1== in ''MatchPanel'', as
 	``@variable1 bar
 ]]]
 
-5. ==#updateNextPanelForNode:== is invoked after the current panel is updated in method ==#updateInfoFor:withOld:andNew:==. 
+5. ""==#updateNextPanelForNode:=="" is invoked after the current panel is updated in method ==#updateInfoFor:withOld:andNew:==. 
 First of all, this method updates ==varNames== instance variable. 
 After this, ''TransformPanel'' itself is updated via ==#updateTransformPanelFor:== method. 
 Than, ==statusBar== color and information text are updated. 
 ==statusBar== instance variable is explained later. 
 In the end, ==#updateNextPanelForNode:== is invoked for ''TransformPanel'', so the ''ResultPanel'' is updated. 
 
-!!!!TransformPanel class
+!!!TransformPanel class
 
 ''TransformPanel'' class is a subclass of ''AbstractPanel'', instance of which holds transforming part of rewrite rule (i.e. right hand side part of rule). 
 In ''TransformPanel'' not all options are available. For example, you can not ''Recurse into'',
@@ -1057,26 +1052,143 @@ In ''TransformPanel'' not all options are available. For example, you can not ''
 
 Methods of ''TransformPanel'' class:
 
-1. ==#menuActions== removes all unavailable uptions from ''TransformPanel'' menu via ==#removeUnavailableOptions:== method. 
+1. ""==#menuActions=="" removes all unavailable uptions from ''TransformPanel'' menu via ==#removeUnavailableOptions:== method. 
 
-2. ==#removeUnavailableOptions:== removes such options as ''As list'', ''Recurse into'' and ''Undo on node''. 
+2. ""==#removeUnavailableOptions:=="" removes such options as ''As list'', ''Recurse into'' and ''Undo on node''. 
 
-3. ==#addOldNodes:== updating information about ==oldNodes== for each node in AST of ''TransformPanel''. 
+3. ""==#addOldNodes:=="" updating information about ==oldNodes== for each node in AST of ''TransformPanel''. 
 ==oldNodes== propery of AST holds all nodes that where replaced up to the current node. 
 
-4. ==#chooseMetavariablesForNode:== when user applies action such as ''Abstract variable'' in ''TransformPanel'' window is opened. 
+4. ""==#chooseMetavariablesForNode:=="" when user applies action such as ''Abstract variable'' in ''TransformPanel'' window is opened. 
 In this window user can choose one of available metavariables to replace current node with it. 
 
-5. ==#chooseTempsForNode:== same as ==#chooseMetavariablesForNode:==, but is used when ''Abstract temporaries list'' action is invoked. 
+5. ""==#chooseTempsForNode:=="" same as ==#chooseMetavariablesForNode:==, but is used when ''Abstract temporaries list'' action is invoked. 
 
-6. ==#updateNextPanelForNode:== applies rewrite rule from ''MatchPanel'' and ''TransformPanel'' to AST of ''SourcePanel''. 
+6. ""==#updateNextPanelForNode:=="" applies rewrite rule from ''MatchPanel'' and ''TransformPanel'' to AST of ''SourcePanel''. 
 As a result we have new AST. Code of this AST is displayed in ''ResultPanel''.
 
-!!!!TransformationRule class
+!!!TransformationRule class
 
+''TransformationRule'' is model that represents bottom part of Builder. 
+It contains ''MatchPanel'', ''TransformPanel'' all buttons (undo, redo, generate rule, browse rules). 
+Plus it has ==undoDict== and ==redoDict== instance variables. 
+This variables are collections of instances of ''RewriteRuleChange'' class. 
+Each change, that is made in one of three editable panel of Builder is recorded in ==undoDict==. 
+Obviously, ==undoDict== instance variable is used in implementation of ==#undo== action. 
+When undoing a change, it is removed from ==undoDict== and added to ==redoDict==, which is used for implementation of ==#redo== action. 
+For example, if code was edited in ''SourcePanel'' manually, than ''RewriteRuleChange'' is added to ==undoDict== as follows: 
 
+[[[
+	"obviously, transformationRule , sourcePanel andsourcePanel ast may be accessed some other way, but here it is not considered for easier explanation"
 
-!!!!RRTextModel class
+	transformationRule 
+		undoDict add:
+		(RewriteRuleChange new
+		panel: sourcePanel asOrderedCollection;
+		ast: (sourcePanel ast) asOrderedCollection;
+		yourself)
+]]]
+
+Another example is, if user applies ''Abstract variable'' action to ==self== variable in next code in ''MatchPanel'': 
+
+[[[
+	self foo.
+	^ self
+]]]
+
+when in ''TransformPanel'' we have:
+
+[[[
+	super bar.
+	self doSomething.
+	^ self
+]]]
+
+Than, as a result to ==undoDict== will be added following ''RewriteRuleChange'' instance:
+
+[[[
+	RewriteRuleChange new
+	panel: { matchPanel. transformPanel } asOrderedCollection;
+	ast: { matchPanel ast. transformPanel ast } asOrderedCollection;
+	yourself	
+]]]
+
+To understand why we added two panel and two ast to ''RewriteRuleChange'', let us take a look at what has happened in Builder. 
+
+[[[
+	"MatchPanel code"
+	`variable1 foo.
+	^ `variable1
+
+	"TransformPanel code"
+	super bar.
+	`variable1 doSomething.
+	^ `variable1
+]]]
+
+As you see, both panels have changed at the same time, so this changes are considered as one. 
+Thus, these changes are added to ==undoDict== as one. 
+
+Methods of ''TransformationRule'' class: 
+
+1. ""==#addChangeForPanel:=="" adds a change to ==undoDict==. 
+Change is initialized with panel, passed to this method, and its AST. 
+
+2. ""==#browseRules=="" opens up Browser. 
+
+3. ""==#generateRewriteRuleClass=="" basically it generates new subclass of RBTransformationRule. 
+This class is stored in a ''RewriteRulesCustom'' category. 
+Also it has only one method - ==#initialize==. 
+Code of this method is generated by ==#getRuleInitString== method, which is explained next. 
+The name of class is specified by user, initially it is ''MyRule''. 
+
+4. ""==#getRuleInitString=="" forms and returns a string, that is a code of ==#initialize== method of ''RBTransformationRule'' subclass. 
+
+5. ""==#matchPanelChanged=="" is invoked when text in ''MatchPanel'' is accepted. 
+First of all, it adds change made in ''MatchPanel'' to ==undoDict== and enables ==undoButton==. 
+Also it updates AST and displayed text of ''MathcPanel''. 
+Than it updates information related to ==statusBar== - color and text. 
+==statusBar== is an instance variable of ''RewriteRuleBuilder'' class (or just Builder). 
+In the end, the ''ResultPanel'' info is updated. 
+
+6. ""==#transformPanelChanged=="" is similar to ==#matchPanelChanged== method, but does not update information about ==statusBar==. 
+It is invoked when text in ''TransformPanel'' is accepted. 
+First of all, it adds change made in ''TransformPanel'' to ==undoDict== and enables ==undoButton==. 
+Also it updates AST and displayed text of ''MathcPanel''. 
+In the end, the ''ResultPanel'' info is updated. 
+
+7. ""==#undo=="" reverts last change made in either ''SourcePanel'', ''MatchPanel'' or ''TransformPanel'', and removes this change from ==undoDict==. 
+Also it adds just undone change to ==redoDict==. 
+Next it updates displayed text and AST for each panel where changes were reverted. 
+Finally the ==#updateAfterUndoOrRedo== method is invoked. 
+
+8. ""==#redo=="" does undone change again to each panel influenced by ==#undo==. 
+Also it adds just redone change to ==undoDict==. 
+Next it updates displayed text and AST for each panel where changes were reverted. 
+Finally the ==#updateAfterUndoOrRedo== method is invoked. 
+
+""Note:"" as we see from two previous methods, that ==#undo== and ==#redo== can be done infinit number of times. 
+
+9. ""==#ruleLabel==""  is an instance of ''StringMorph'', that is displayed above ''MatchPanel'' and ''TransformPanel''.  
+
+10. ""==#statusBarForRule=="" returns an arrow that is placed between ''MatchPanel'' and ''TransformPanel''. 
+
+11. ""==#updateAfterUndoOrRedo=="" enables or disables undo and redo buttons. 
+Also updates text and color for ==statusBar== instance variable of ''RewriteRuleBuilder''. 
+In the end, ''ResultPanel'' code is updated, as rewrite rule may have changed. 
+
+12. ""==updateUndoDictFor:=="" adds a change to ==undoDict==. 
+
+13. ""==updateRedoDictFor:=="" adds a change to ==redoDict==. 
+
+Class side:
+
+14. ""==#arrowMorph:=="" is an instance of ''PolygonMorph'' or ''ActivePolygonMorph''. 
+It is shaped in form of arrow. 
+
+15. ""==#defaultSpec=="" creates a layout for all components. 
+
+!!!RRTextModel class
 
 ''RRTextModel'' is a subclass of TextModel. It has some features that are needed for RewriteRuleBuilder, like AST and support of custom menu. 
 Instances of ''RRTextModel'' are used in each of four panels: ''SourcePanel'', ''MatchPanel'', ''TransformPanel'', ''ResultPanel''. 
@@ -1085,21 +1197,21 @@ Each panel stores instance of this class in ==textModel== instance variable.
 
 Methods of ''RRTextModel'' class:
 
-1. ==#actionsForSelection== performs ==#menuOptions== for panel that is storet in ==model== instance variable. 
+1. ""==#actionsForSelection=="" performs ==#menuOptions== for panel that is storet in ==model== instance variable. 
 ==#menuOptionsSelector== fills right click menu with all available actions for selected node. 
 
-2. ==#getSelectedNode== returns node, which is currently selected in ==textModel==. 
+2. ""==#getSelectedNode=="" returns node, which is currently selected in ==textModel==. 
 
-3. ==#codePaneMenu:shifted:== forms a menu due to ==#actionsForSelection== method. 
+3. ""==#codePaneMenu:shifted:=="" forms a menu due to ==#actionsForSelection== method. 
 
-!!!!RewriteRuleChange class
+!!!RewriteRuleChange class
 
-A ''RewriteRuleChange'' is class that holds changes that were made in Builder panels. 
+''RewriteRuleChange'' is class that holds changes that were made in Builder panels. 
 Instances of this class are stored in collection - the instance variable ==undoDict== of ''TransformationRule''. 
 The implementation of this class is very simple: it has only two instance variables - ==panel== and ==ast==. 
 ==panel== is one of four panels of Builder, and ==ast== is an AST of this panel. 
 
-!!!!ActivePolygonMorph class
+!!!ActivePolygonMorph class
 
 ''ActivePolygonMorph'' is a subclass of ''PolygonMorph'', that adds new functionality to ''PolygonMorph''. 
 It recognizes two events: ==#mouseEnter:== and ==#mouseLeave:==. 
@@ -1108,11 +1220,66 @@ Also it has ==infoText== instance variable, which contains text information,
 
 Methods of ''ActivePolygonMorph'' class:
 
-1. ==#infoMorph== constructs morph, which is a ''BorderedMorph'' with ''StringMorph'' submorph. 
+1. ""==#infoMorph=="" constructs morph, which is a ''BorderedMorph'' with ''StringMorph'' submorph. 
 Contents of ''StringMorph'' is assigned to ==infoText== instance variable, that is described before. 
 
-2. ==#mouseEnter:== adds to self a submorph, that was created in ==#infoMorph== method. 
+2. ""==#mouseEnter:=="" adds to self a submorph, that was created in ==#infoMorph== method. 
 
-3. ==#mouseLeave:== removes from self a submorph, that was created in ==#infoMorph== method. 
+3. ""==#mouseLeave:=="" removes from self a submorph, that was created in ==#infoMorph== method. 
 
-4. ==#handlesMouseOver:== states that ''ActivePolygonMorph'' handles mouse over events, as it returns ==true==. 
+4. ""==#handlesMouseOver:=="" states that ''ActivePolygonMorph'' handles mouse over events, as it returns ==true==. 
+
+!!!RewriteRuleBuilder class
+
+Is a class that represents a Builder as one complete object. 
+''RewriteRuleBuilder'' contains ''SourcePanel'', ''ResultPanel'' and the most important part of Builder instance of ''TransformationRule'' class. 
+This class is responsible for GUI and layouting all elements of Builder. 
+Also it holds labels that are displayed in Builder. 
+
+==statusBar== instance variable is an ''ActivePolygonMorph'' that shows if AST of ''SourcePanel'' matches AST of ''MatchPanel''. 
+Firstly, its color is green or red, which, clearly, depends on matching. 
+This color is returned by ==#matchColor== method. 
+Secondly, when mouse is over it, the ''StringMorph'' shows up with text from ==#matchLabel==. 
+
+Methods of ''RewriteRuleBuilder'' class:
+
+1. ""==#matchLabel=="" returns a string that says if AST of ''SourcePanel'' matches AST of ''MatchPanel'' or not. 
+
+2. ""==#resultLabel=="" returns an information string for indicating a ''ResultPanel''. 
+
+3. ""==#rules=="" is a collection of all subclasses of ''RBTransformationRule'' class. 
+
+4. ""==#matchColor=="" returns green or red color for ==statusBar==. 
+
+5. ""==#sourcePanelChanged=="" is invoked when text is accepted in ''SourcePanel''. 
+It adds a change, that was made and accepted, to ==undoDict== and enables undo button. 
+Also updates displayed text and AST of ''SourcePanel''. 
+After that, it assigns right color and text to ==statusBar== properies. 
+Finally, this method updates code of ''ResultPanel''. 
+
+6. ""==#code:=="" assigns a string to ==code== of each panel in Builder. 
+
+7. ""==#statusBarForMatch=="" is a method used to initialize ==statusBar== instance variable. 
+Basically, it returns an instance of ''ActivePolygonMorph'' ==#asSpecAdapter==, so it can be used in GUI built with Spec. 
+
+8. ""==#statusBarForResult=="" returns an instance of ''ActivePolygonMorph'' ==#asSpecAdapter==. 
+This morph is used to indicate ''ResultPanel''. 
+When mouse is over, shows a label with ==#resultLabel== text. 
+
+9. ""==#isMatching=="" returns a boolean, that is ==true== when AST of ''SourcePanel'' matches AST of ''MatchPanel'', and ==false== when it does not. 
+
+Class side: 
+
+10. ""==#withCode:=="" creates an instance of ''RewriteRuleBuilder''. 
+Each panel ==code== is initiialized with a string that is passed as an argument. 
+
+11. ""==#defaultSpec=="" creates a layout for all components. 
+
+12. ""==#menuCommandOn:=="" adds Builder to a world menu under ''Tools'' tab. 
+
+13. ""==#shiftedSourceCodeMenu:=="" adds Builder to a Nautilus context menu under ''Source code refactoring'' tab. 
+Each panel ==code== instance variable in Builder is initialized with selected code in Nautilus. 
+
+!!!Command class
+
+
