@@ -1,7 +1,7 @@
 ﻿!Rewrite Tool
 
-'''TODO: layout figures/sections; dev documentation: architecture, etc.; change
-option naming (as list, recurse into)'''
+'''""TODO:"" do a full pass on this chapter, fill in where indicated; layout figures/sections; 
+change option naming (as list, recurse into);'''
 
 The purpose of this chapter is to explain what is Rewrite Tool, why do we need
 it and how to use it properly. It also helps to understand better how Rewrite
@@ -1336,18 +1336,9 @@ Basically, it invokes ==#abstractWithName:andIndex:== method, and as arguments p
 1) its ==#abstractName==;
 2) index of specific metavariable type (it may be block, variable, statement, etc.)
 
-!!!AbstractBlockCommand class
+You can see which metavariable is created in ==#abstractName== method. 
+For example, ''AbstractBlockCommand'' creates ==`@block== metavariable. 
+Thus, rewrite engine will match any block. 
 
-''AbstractBlockCommand'', as a subclass of  ''AbstractCommand '' class, 
-implements ""==#abstractName=="" method. 
-It returns =='`@block'==, which matches any block when used by rewrite engine. 
-
-Obviously, it also has an ""==#execute=="" method, 
-that is implemented similarly in each subclass of ''AbstractBlockCommand'' class. 
-It is described in ''AbstractBlockCommand'' class. 
-
-!!!AbstractConditionCommand class
-
-
-
-
+''RenameCommand'' class works exactly like rename refactoring, 
+but with this class you can rename/change any node, not just variable. 
