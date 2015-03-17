@@ -12,6 +12,8 @@ Authors:
 - Gisela Decuzzi
 - Stéphane Ducasse
 - Camille Teruel
+- Anne Etien
+- Jean-Christophe Bach
 
 % http://pharorwrules.wordpress.com/2013/08/06/just-want-to-match/
 
@@ -19,7 +21,13 @@ Authors:
 
 !!Basic Knowledge on AST and other concepts
 
-An abstract syntax tree (AST in short) is a data structure that is semantically equivalent to some source code. While source code is just a string of characters, an AST is a tree whose nodes correspond to the syntactic constructs of the parsed language. In Pharo, an AST node can represent a message, a method, a variable, a block, an assignment, etc... Such a tree is much easier to process than a plain string. That is why this data structure is used by most tools that have to deal with code.
+An abstract syntax tree (AST in short) is a data structure that is semantically
+equivalent to some source code. While source code is just a string of
+characters, an AST is a tree whose nodes correspond to the syntactic constructs
+of the parsed language. In Pharo, an AST node can represent a method, a
+message, a variable, a block, an assignment, etc. Such a tree is much easier
+to process than a plain string. That is why this data structure is used by most
+tools that have to deal with code.
 
 Let's met our first AST. Consider the following method. 
 
@@ -106,10 +114,155 @@ Let's look at a few examples. If X and Y denote meta-variables, the pattern ==se
 
 
 
+!! Pattern syntax
+
+The ==`== character (backquote) creates a variable to match. Several options
+can be used to specify the search: 
+
+||!keyword  |! Meaning
+|| @ | the searched node is optional or can be repeated
+|| . | the searched node is a statement
+|| # | the searched node is a literal
+|| \{ \} | to match nodes that satisfies the enclosed SmallTalk code
+|| ` | to search recursively
+
+
+{{{latex:\noindent }}}Let's explain each construct by using it in a concrete context:
+
+==`== introduces the most basic meta-variable. ==`foo== only matches single
+variables.
+
+Examples: 
+
+==`foo bar== matches the following expressions:
+
+|! Input   ||! Result          |! Explanation
+| x bar    || =={ foo=x }==    | ==x== is a variable
+| self bar || =={ foo=self }== | ==self== is a RBSelfNode, that is considered as a variable
+| OrderedCollection bar || =={ foo=OrderedCollection }== | ==OrderedCollection== is considered as a variable
+| x toto ; bar || =={ foo=x }== | ==x toto; bar== is a RBCascadeNode composed of two message nodes ==x toto== and ==x bar==
+
+
+==`foo bar== does not match the following expressions:
+
+|! Input       |! Explanation
+| bar          | The pattern must contain one and only variable on which the bar selector is called
+| 3 bar        | ==3== is a literal (not a variable)
+| #(2 3) bar   | ==#(2 3)== is a literal array
+| {2 3} bar    | =={2 3}== is an array
+| #at bar      | ==#at== is a literal
+| [true] bar   | ==[true]== is a block
+| (x:=1) bar   | ==(x:=1)== is a statement
+| self foo bar | ==self foo== is a RBMessageNode
 
 
 
-!! Pattern syntax: One example of matching expression 
+It is possible to elaborate more complex patterns. For instance ==self `msg:
+`arg== matches any one-argument message sent to self:
+
+[[[
+self as: Array
+self instVarAt: 2
+]]]
+
+!!! Matching a list of zero or more nodes
+
+==`@nodes== To match a list of zero or more nodes (like message args or temps).
+
+
+Examples:
+
+==`@receiver foo== matches
+
+[[[
+self foo
+self size foo
+(self at: 1) foo
+]]]
+
+==self `@msg: `@args== matches any message sent to self:
+
+[[[
+self class
+self at: 4
+self perform: #at: with: 4
+]]]
+
+!!! Recursive Search
+
+==``== supports recursive search. For example, ==``@receiver parent== matches
+==x parent parent== twice:
+- the first time with the mapping: receiver -> x
+- the second time eith the mapping: receiver -> x parent
+
+
+[[[
+methodNode := OpalCompiler new parse: 'test
+x parent parent.'.
+searcher := RBParseTreeSearcher new.
+searcher
+matches: '``receiver parent'
+do: [ :aNode :answer | answer add: aNode ; yourself].
+searcher executeTree: methodNode initialAnswer: OrderedCollection new.
+searcher answer.
+]]]
+
+
+The following table summarizes the use of ==`==, ==@== and ==``== with a
+concrete input:
+
+
+
+
+|!Pattern |! Input ||! Result 
+%| `r parent | x parent | Matches with ==x== as r
+| `r parent | x parent || =={ x }==
+%| `@r parent | x parent | Matches with ==x== as r
+| `@r parent | x parent || =={ x }==
+%| ``@r parent | x parent | Matches with ==x== as r
+| ``@r parent | x parent || =={ x }==
+%| ``r parent | x parent | Matches with ==x== as r
+| ``r parent | x parent || =={ x }==
+%| `r parent | x parent parent | Matches with ==x== as r
+| `r parent | x parent parent || =={ x }==
+%| `@r parent | x parent parent | Matches with ==x parent== as r
+| `@r parent | x parent parent || =={ x parent }==
+%| ``@r parent | x parent parent | Matches with ==x== as r and ==x parent== as r
+| ``@r parent | x parent parent || =={ x, x parent }==
+%| ``r parent | x parent parent | Matches with ==x== as r
+| ``r parent | x parent parent || =={ x }==
+
+
+
+!!! Matching Literals
+
+==`#literal== To match literals. 
+
+==`#literal size== matches any message sent to a literal whose selector is size 
+
+[[[
+3 size
+'foo' size
+#(a b c) size
+]]]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+!! One example of matching expression 
 To express patterns, the rewriter uses a special syntax that extends the standard Pharo syntax with meta-variables. There is several kinds of meta-variables depending on what nodes you want to match. They all start with a backquote ==`==. 
 
 !!! Loading Flamel
@@ -335,14 +488,6 @@ self perform: #at: with: 4
 ]]]
 
 
-!!! Recursive Search
-
-==``== supports recursive search. For example, ==``@receiver parent== matches
-==x parent parent== twice:
-- the first time with the mapping: receiver -> x
-- the second time eith the mapping: receiver -> x parent
-
-
 
 !! Matching Methods
 
@@ -386,7 +531,7 @@ x + y'.
 searcher := RBParseTreeSearcher new.
 searcher
 	matches: 'self at: `#literal'
-      do: [ :aNode :answer | answer add: aNode ].
+      do: [ :aNode :answer | answer add: aNode ; yourself ].
 searcher executeTree: methodNode initialAnswer: Set new.
 searcher answer
 ]]]
