@@ -1,7 +1,7 @@
 ﻿!Rewrite Tool
 
-'''TODO: layout figures/sections; dev documentation: architecture, etc.; change
-option naming (as list, recurse into)'''
+'''""TODO:"" do a full pass on this chapter, fill in where indicated; layout figures/sections; 
+change option naming (as list, recurse into);'''
 
 The purpose of this chapter is to explain what is Rewrite Tool, why do we need
 it and how to use it properly. It also helps to understand better how Rewrite
@@ -1282,4 +1282,63 @@ Each panel ==code== instance variable in Builder is initialized with selected co
 
 !!!Command class
 
+A ''Command'' abstract class and its subclasses are implemented similar to Command pattern. 
+However there are differences between this implementation and conventional one. 
+Despite this fact, ''Command'' class has instance variable ==commandReceiver== which is a reciever of action that should be performed. 
+==commandReceiver== is a node of AST of panel. 
+Another important element of ''Command'' class is ==#execute== method. 
+It is a generic method that is hard-coded for each subclass of ''Command'' class. 
+Therefore for each action in Command pattern there is implemented one specific subclass of ''Command'' class with its own ==#execute== method. 
+==panel== instance variable presents ''MatchPanel'' or ''TransformPanel''. 
+It depends on to which panel ==commandReceiver== belongs. 
 
+Methods of ''Command'' class: 
+
+1. ""==#execute=="" is responsible for executing an action. 
+Each subclass must implement this method. 
+
+2. ""==#change:For:=="" replaces first argument for second. Both arguments are nodes of AST. 
+So for replacement this method uses either assignement or ==#replaceWith:== method. 
+
+3. ""==#changeCommandReceiverFor:=="" uses ==#change:For:== method with a first argument ==commandReceiver==. 
+
+Class side: 
+
+4. ""==#receiver:panel:index:withSource:=="" creates new instance of ''Command'' class initialized using arguments. 
+
+5. ""==#isAccepted:=="" returns ==true==, explained in subclasses. 
+
+6. ""==#isSequenceNeeded=="" returns ==false==, explained in subclasses. 
+
+!!!AbstractCommand class 
+
+''AbstractCommand'' class implements common functionality for actions (commands) which, 
+in result, create new metavariable. 
+
+Methods of ''AbstractCommand'' class: 
+
+1. ""==#abstractName=="" is a name of metavariable, that may be created with specific command. 
+Each subclass must implement this method. 
+
+2. ""==#length=="" returns length of metavariable name, that may be created with specific command. 
+
+3. ""==#abstractWithName:andIndex:=="" creates metavariable named ==#abstractName==. 
+Than replaces ==commandReceiver== with this metavariable.
+
+Each subclass of this class implements ""==#execute=="" method almos identically to each other. 
+
+[[[
+	execute
+		^ self abstractWithName: self abstractName andIndex: self panel "someIndex"
+]]]
+
+Basically, it invokes ==#abstractWithName:andIndex:== method, and as arguments passes: 
+1) its ==#abstractName==;
+2) index of specific metavariable type (it may be block, variable, statement, etc.)
+
+You can see which metavariable is created in ==#abstractName== method. 
+For example, ''AbstractBlockCommand'' creates ==`@block== metavariable. 
+Thus, rewrite engine will match any block. 
+
+''RenameCommand'' class works exactly like rename refactoring, 
+but with this class you can rename/change any node, not just variable. 
