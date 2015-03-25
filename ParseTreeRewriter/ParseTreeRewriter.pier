@@ -129,33 +129,182 @@ can be used to specify the search:
 
 {{{latex:\noindent }}}Let's explain each construct by using it in a concrete context:
 
+!!! Single variables
+
 ==`== introduces the most basic meta-variable. ==`foo== only matches single
 variables.
 
 Examples: 
 
-==`foo bar== matches the following expressions:
+The following code enables to define a method node in which we want to find the
+pattern. An RBParseTreeSearcher enables to define a pattern containing the
+meta-variables. The resulting substitutions are gathered into the ==answer==
+variable:
 
-|! Input   ||! Result          |! Explanation
+[[[
+| methodNode searcher |
+methodNode := OpalCompiler new parse: 'test
+x bar'.
+searcher := RBParseTreeSearcher new.
+searcher
+matches: '`foo bar'
+do: [ :aNode :answer | answer add: aNode ; yourself].
+searcher executeTree: methodNode initialAnswer: Set new.
+searcher answer.
+]]]
+
+In the following tables, only the code corresponding to the method node is
+changed.
+
+
+==`foo bar== ""matches"" the following expressions:
+
+|! Input   ||! Result        |! Explanation
 | x bar    || =={ foo=x }==    | ==x== is a variable
 | self bar || =={ foo=self }== | ==self== is a RBSelfNode, that is considered as a variable
 | OrderedCollection bar || =={ foo=OrderedCollection }== | ==OrderedCollection== is considered as a variable
 | x toto ; bar || =={ foo=x }== | ==x toto; bar== is a RBCascadeNode composed of two message nodes ==x toto== and ==x bar==
+| x bar. y bar    || =={ foo=x, foo=y }==    | ==x== and ==y== are variables
+| self x bar. y bar || =={ foo=y }==  | ==y== is variable and ==self x== is not a single variable
 
 
-==`foo bar== does not match the following expressions:
+==`foo bar== ""does not match"" the following expressions:
 
-|! Input       |! Explanation
-| bar          | The pattern must contain one and only variable on which the bar selector is called
-| 3 bar        | ==3== is a literal (not a variable)
-| #(2 3) bar   | ==#(2 3)== is a literal array
-| {2 3} bar    | =={2 3}== is an array
-| #at bar      | ==#at== is a literal
-| [true] bar   | ==[true]== is a block
-| (x:=1) bar   | ==(x:=1)== is a statement
-| self foo bar | ==self foo== is a RBMessageNode
+|! Input     |! Explanation
+| bar        | The pattern must contain one and only variable on which the bar selector is called
+| 3 bar      | ==3== is a literal (not a variable)
+| #(2 3) bar | ==#(2 3)== is a literal array
+| {2. 3} bar | =={2. 3}== is an array
+| #at bar    | ==#at== is a literal
+| [true] bar | ==[true]== is a block
+| (x:=1) bar | ==(x:=1)== is a statement
+| self x bar | ==self x== is a RBMessageNode
 
 
+!!! Literal variables
+
+==`#lit== matches literals, e.g. numbers, string, literal arrays, booleans.
+
+In this part, the following snippet of code is used. The matching expression is
+changed to ==`#lit bar==:
+
+[[[
+| methodNode searcher |
+methodNode := OpalCompiler new parse: 'test
+3 bar'.
+searcher := RBParseTreeSearcher new.
+searcher
+matches: '`#lit bar'
+do: [ :aNode :answer | answer add: aNode ; yourself].
+searcher executeTree: methodNode initialAnswer: Set new.
+searcher answer.
+]]]
+
+
+==`#lit bar== ""matches"" the following expressions:
+
+|! Input   ||! Result        |! Explanation
+| 3 bar    || =={ lit=3 }==    | ==3== is a number
+| 'foo' bar || =={ lit='foo' }== | =='foo'== is a string
+| #at bar || =={lit=#at}== | ==#at== is a ByteSymbol
+| #(a b c) bar || =={ lit=#(a b c)}== | ==#(a b c)== is a literal array
+| true bar || =={lit=true}== |  ==true== is a boolean
+
+
+==`#lit bar== ""does not match"" the following expressions:
+|! Input  |! Explanation
+| { 1. 2. 3 } bar | =={1. 2. 3}== is a collection
+| (1/2) bar |  ==(1/2)== is a message (and not considered as a number)
+| (1=1) bar |  ==(1=1)== is a message (and not considered as a boolean)
+
+
+!!! Statements
+
+==`.stmt== matches a single statement.
+
+==`.stmt bar== ""matches"" the following expressions:
+|! Input    |! Result 
+| 3        | =={ stmt=3 }== 
+| x:=1     | =={ stmt=x:=1 }== 
+| x ifTrue: [ doSomething] | =={stmt=x ifTrue: [ doSomething]}==
+| x:=1. ^x     | =={ stmt=x:=1, stmt=^x}== 
+
+!!! Conditional matching
+
+==`{ :node | ''conditionOnNode'' }== matches a node satisfying
+''conditionOnNode'' which is expressed in Pharo. The parsed code being not
+executed, the condition concerns the characteristic of the node but cannot
+refer to computed values of this code. 
+
+The following snippets of code illustrate the conditional matching:
+
+[[[
+methodNode := OpalCompiler new parse: 'test
+a := 1.
+^a'.
+searcher := RBParseTreeSearcher new.
+searcher
+matches: '`{ :node | node name = #a}'
+do: [ :aNode :answer | answer add: aNode ; yourself].
+searcher executeTree: methodNode initialAnswer: OrderedCollection new.
+searcher answer.
+]]]
+
+Figure *conditionalMatchingInspector1* shows the inspector on answer. Two nodes
+match the condition: the left-hand side of the assignment and the returned
+variable.
+
++Inspector on answer>file://figures/conditionalMatchingInspector1.png|label=conditionalMatchingInspector1+
+
+If the condition is changed as following:
+[[[
+methodNode := OpalCompiler new parse: 'test
+a := 1.
+^a'.
+searcher := RBParseTreeSearcher new.
+searcher
+matches: '`{ :node | node value = 1}'
+do: [ :aNode :answer | answer add: aNode ; yourself].
+searcher executeTree: methodNode initialAnswer: OrderedCollection new.
+searcher answer.
+]]]
+
+Only one node matches the condition: the right-hand side of the assignment.
+Since the code of the parsed method is not executed, nodes corresponding to
+==a== variable are not matched.
+
+The condition can for example be used to only select node of a specific type
+(==node isInstance== enables to select instance variables).
+
+!!! List variables
+
+==`@subtree== matches any subtree. This construct can only be used in first
+position. For instance, ==bar `@subtree== is not a valid pattern.
+
+==`@subtree bar== ""matches"" the following expressions:
+|! Input        |! Result 
+| self bar      | =={subtree=self}== 
+| 3 bar         | =={subtree=3}==  
+| #(2 3) bar    | =={subtree=#(2 3)}== 
+| {2. 3} bar    | =={subtree={2. 3}}== 
+| #at bar       | =={subtree=#at}== 
+| [true] bar    | =={subtree=[true]}== 
+| (x:=1) bar    | =={subtree=(x:=1)}== 
+| self foo bar  | =={subtree=self foo}== 
+
+
+
+==`@subtree bar== ""does not match"" the following expressions:
+|! Input  |! Explanation
+| bar      | The empty node is not a subtree
+
+
+!!! Recursive search
+
+==``==
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
 
 It is possible to elaborate more complex patterns. For instance ==self `msg:
 `arg== matches any one-argument message sent to self:
@@ -235,17 +384,6 @@ concrete input:
 
 
 !!! Matching Literals
-
-==`#literal== To match literals. 
-
-==`#literal size== matches any message sent to a literal whose selector is size 
-
-[[[
-3 size
-'foo' size
-#(a b c) size
-]]]
-
 
 
 
