@@ -147,8 +147,8 @@ methodNode := OpalCompiler new parse: 'test
 x bar'.
 searcher := RBParseTreeSearcher new.
 searcher
-matches: '`foo bar'
-do: [ :aNode :answer | answer add: aNode ; yourself].
+	matches: '`foo bar'
+	do: [ :aNode :answer | answer add: aNode ; yourself].
 searcher executeTree: methodNode initialAnswer: Set new.
 searcher answer.
 ]]]
@@ -194,8 +194,8 @@ methodNode := OpalCompiler new parse: 'test
 3 bar'.
 searcher := RBParseTreeSearcher new.
 searcher
-matches: '`#lit bar'
-do: [ :aNode :answer | answer add: aNode ; yourself].
+	matches: '`#lit bar'
+	do: [ :aNode :answer | answer add: aNode ; yourself].
 searcher executeTree: methodNode initialAnswer: Set new.
 searcher answer.
 ]]]
@@ -244,8 +244,8 @@ a := 1.
 ^a'.
 searcher := RBParseTreeSearcher new.
 searcher
-matches: '`{ :node | node name = #a}'
-do: [ :aNode :answer | answer add: aNode ; yourself].
+	matches: '`{ :node | node name = #a}'
+	do: [ :aNode :answer | answer add: aNode ; yourself].
 searcher executeTree: methodNode initialAnswer: OrderedCollection new.
 searcher answer.
 ]]]
@@ -263,8 +263,8 @@ a := 1.
 ^a'.
 searcher := RBParseTreeSearcher new.
 searcher
-matches: '`{ :node | node value = 1}'
-do: [ :aNode :answer | answer add: aNode ; yourself].
+	matches: '`{ :node | node value = 1}'
+	do: [ :aNode :answer | answer add: aNode ; yourself].
 searcher executeTree: methodNode initialAnswer: OrderedCollection new.
 searcher answer.
 ]]]
