@@ -278,6 +278,8 @@ The condition can for example be used to only select node of a specific type
 
 !!! List variables
 
+FIXME - TODO: first position is false, but bug 15272
+
 ==`@subtree== matches any subtree. This construct can only be used in first
 position. For instance, ==bar `@subtree== is not a valid pattern.
 
@@ -301,7 +303,33 @@ position. For instance, ==bar `@subtree== is not a valid pattern.
 
 !!! Recursive search
 
-==``==
+==``== allows the recursive search. It means that the search is applied on the
+initial input and then on the results.
+To be relevant, the result should be complex enough that it is possible to find
+again the pattern in it. However, to define a complex pattern it is necessary
+to use ==@==. As a conclusion, ==``== is barely used alone, without ==@==. 
+
+==``==  used alone may match a simple leaf node as in the following example:
+==``foo bar== matches ==x bar bar== once and returns the result =={x=foo}==.
+
+
+The following example illustrates a real use of ==``==:
+[[[
+varNode := (RBParser parseExpression: 'self add: (x add:3)').
+searcher := RBParseTreeSearcher new.
+searcher
+  matches: '`rcv add: ``@arg'
+  do: [ :aNode :answer | answer add: aNode ; yourself].
+searcher executeTree: varNode initialAnswer: OrderedCollection new.
+searcher answer.
+]]]
+
+==`rcv add: ``@arg'== matches ==self add:(x add:3)== with ==rcv=self== and
+==arg=(x add:3)==. Due to the use of ==``== with ==arg==, the pattern is also
+searched in the expression matching ==arg==. Therefore ==`rcv add: ``@arg'==
+matches ==x add:3== with ==rcv=x== and ==arg=3==.
+
+FIXME - TODO: add another example (complex one)
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
