@@ -72,43 +72,21 @@ selector: arg1 and: arg2
 !!!Basic Knowledge on ProgramNode and its Subclasses
 
 Different kinds of nodes correspond to different classes. These classes form a hierarchy whose root is ==RBProgramNode==. This class implements several useful methods such as: ==parent==, ==nodesDo:==, ==isVariable==.... Browse it and its subclasses to discover the structure and the capabilities of Pharo ASTs. 
-There is a visitor class that supports the walking through ASTs.
+%There is a visitor class that supports the walking through ASTs.
 
 Here is a view on the ProgramNode hierarchy showing the classes and their instance variables. 
-(Camille: showing instance variables is maybe not good since it is subject to change in the near future)
+%(Camille: showing instance variables is maybe not good since it is subject to change in the near future)
 
-[[[
-RBProgramNode #('parent' 'comments' 'properties')
-	RBMethodNode ('scope' 'selector' 'selectorParts' 'body' 'source' 'arguments' 'pragmas' 'replacements' 'nodeReplacements' 'compilationContext')
-	RBParseErrorNode ('token' 'errorMessage')
-	RBPragmaNode ('selector' 'selectorParts' 'arguments' 'left' 'right')
-	RBReturnNode ('return' 'value')
-	RBSequenceNode ('leftBar' 'rightBar' 'statements' 'periods' 'temporaries')
-	RBValueNode ('parentheses')
-		RBArrayNode ('left' 'right' 'statements' 'periods')
-		RBAssignmentNode ('variable' 'assignment' 'value')
-		RBBlockNode ('left' 'right' 'colons' 'arguments' 'bar' 'body' 'scope')
-		RBCascadeNode ('messages' 'semicolons')
-		RBLiteralNode 
-			RBLiteralArrayNode ('isByteArray' 'stop' 'contents' 'start')
-			RBLiteralValueNode ('token')
-		RBMessageNode ('receiver' 'selector' 'selectorParts' 'arguments')
-			RBPatternMessageNode ('isList' 'isCascadeList')
-		RBVariableNode ('token')
-			RBArgumentNode 
-			RBClassReference 
-			RBSelfNode 
-			RBSuperNode 
-			RBTemporaryNode 
-			RBThisContextNode 
-]]]
++RBProgramNode class hierarchy>file://figures/classDiagram.jpg|width=100|label=programnode+
 
-Note that its name can be misleading but ==RBPatternMessageNode== is for a method with a signature and a body.
+%TODO: image not clean, with pdf ok but does not work in html
 
 !!Unification
 The pattern matching algorithm in the engine rewriter is accomplished by a unification algorithm. This algorithm takes as input a pattern (that describes what we look for) and a tree (that could or not match the pattern). A pattern is a tree containing special nodes called meta-variables. A meta-variable is a variable whose value will be set by the unification algorithm. For example, a meta-variable can be used to match a variable while another can be used to match messages.
 
-The output of the algorithm is either false (there is no match found) or true. If it is true, that means that at least one match has been found. A match is a mapping from meta-variable to AST nodes of the input tree. These mappings correspond to the values the meta-variables of the pattern should take for the pattern to be equal to the input tree. 
+%The output of the algorithm is either false (there is no match found) or true.
+%If it is true, that means that at least one match has been found. 
+A match is a mapping from meta-variable to AST nodes of the input tree. These mappings correspond to the values the meta-variables of the pattern should take for the pattern to be equal to the input tree. 
 
 Let's look at a few examples. If X and Y denote meta-variables, the pattern ==self X== matches ==self open== with the mapping: X -> 'open'. The pattern ==X Y== matches ==self open== with the mapping: Y -> 'self', Y -> 'open'. As a failing example, ==X X== doesn't match ==self open== because X cannot be at the same time 'self' and 'open'.
 
@@ -120,7 +98,8 @@ The ==`== character (backquote) creates a variable to match. Several options
 can be used to specify the search: 
 
 ||!keyword  |! Meaning
-|| @ | the searched node is optional or can be repeated
+|| @ | used alone: the searched node is a subtree
+||   | used with an other keyword: the searched node is optional or can be repeated
 || . | the searched node is a statement
 || # | the searched node is a literal
 || \{ \} | to match nodes that satisfies the enclosed SmallTalk code
@@ -136,12 +115,13 @@ variables.
 
 Examples: 
 
-The following code enables to define a method node in which we want to find the
-pattern. An RBParseTreeSearcher enables to define a pattern containing the
-meta-variables. The resulting substitutions are gathered into the ==answer==
-variable:
+The following code enables to define a method node (lines 2 and 3) in which we
+want to find the pattern ==`foo bar== (line 5) where ==`foo== can be any simple
+receiver. The pattern containing the meta-variables ==`foo== is defined using
+an RBParseTreeSearcher (lines 4 to 6). The resulting substitutions are gathered
+into the ==answer== variable (line 7):
 
-[[[
+[[[lineNumber=true
 | methodNode searcher |
 methodNode := OpalCompiler new parse: 'test
 x bar'.
@@ -171,7 +151,7 @@ changed.
 ==`foo bar== ""does not match"" the following expressions:
 
 |! Input     |! Explanation
-| bar        | The pattern must contain one and only variable on which the bar selector is called
+| bar        | The pattern must contain one and only one variable on which the bar selector is called
 | 3 bar      | ==3== is a literal (not a variable)
 | #(2 3) bar | ==#(2 3)== is a literal array
 | {2. 3} bar | =={2. 3}== is an array
@@ -186,7 +166,7 @@ changed.
 ==`#lit== matches literals, e.g. numbers, string, literal arrays, booleans.
 
 In this part, the following snippet of code is used. The matching expression is
-changed to ==`#lit bar==:
+changed to ==`#lit bar==.
 
 [[[
 | methodNode searcher |
@@ -251,7 +231,8 @@ expression. There is ""no"" subtree to unify the pattern and the expression.
 
 %TODO: image of the tree
 
-Used with another option, ==@== denotes lists of 0 or more items.
+Used with another option, ==@== denotes lists of 0 or more items. Examples are
+given in each following subsection.
 
 
 !!! Statements
@@ -267,8 +248,12 @@ Used with another option, ==@== denotes lists of 0 or more items.
 
 
 The ==.== option can be used with ==@== in order to build a pattern with
-possibly several statements. The following code illustrates the search of
-duplicated statements, for instance to remove one of them:
+possibly several statements. In that case, ==`.@stmt== ""matches"" the
+expression ==x:=1. ^x== with ==stmt== equals the whole expression ==x:=1. ^x==.
+
+
+The following code illustrates the search of duplicated statements, for
+instance to remove one of them:
 
 [[[
 | methodNode searcher codeToParse |
@@ -290,11 +275,10 @@ searcher executeTree: methodNode initialAnswer: Set new.
 searcher answer.
 ]]]
 
-This snippet of code searches for duplicated statements among other pieces of
-code. These other pieces of code have to be explicitly specified in the
-pattern. Thus, the pattern is composed of temporary variable declarations,
-possibly a list of statements, the duplicated statement and possibly a list of
-other statements.
+This snippet of code aims to search for duplicated statements in a piece of
+code whose structure has to be explicitly specified in the pattern. Thus, the
+pattern is composed of temporary variable declarations, possibly a list of
+statements, the duplicated statement and possibly a list of other statements.
 
 This pattern matches the content of ==codeToParse== variable with the following
 substitutions:
@@ -314,7 +298,7 @@ substitutions:
 executed, the condition concerns the characteristic of the node but cannot
 refer to computed values of this code. 
 
-The following snippets of code illustrate the conditional matching:
+The following snippet of code illustrates the conditional matching:
 
 [[[
 methodNode := OpalCompiler new parse: 'test
@@ -352,14 +336,14 @@ Since the code of the parsed method is not executed, nodes corresponding to
 ==a== variable are not matched.
 
 The condition can for example be used to only select node of a specific type
-(==node isInstance== enables to select instance variables).
+(''e.g.'' ==node isInstance== enables to select instance variables).
 
 
 
 !!! Recursive search
 
 ==``== allows the recursive search. It means that the search is applied on the
-initial input and then on the results.
+initial input and then on the results and so on.
 
 ==``==  used alone may match a simple leaf node as in the following example:
 ==``foo bar== matches ==x bar bar== once and returns the result =={x=foo}==.
@@ -374,20 +358,21 @@ to use ==@==.
 The following example illustrates a real use of ==``== where the ==add:==
 message is recursively searched: 
 [[[
-varNode := (RBParser parseExpression: 'self add: (x add:3)').
+varNode := (RBParser parseExpression: '(self add: 4) add: (x add:3)').
 searcher := RBParseTreeSearcher new.
 searcher
-  matches: '`rcv add: ``@arg'
+  matches: '`@rcv add: ``@arg'
   do: [ :aNode :answer | answer add: aNode ; yourself].
 searcher executeTree: varNode initialAnswer: OrderedCollection new.
 searcher answer.
 ]]]
 
 
-==`rcv add: ``@arg'== matches ==self add:(x add:3)== with ==rcv=self== and
-==arg=(x add:3)==. Due to the use of ==``== with ==arg==, the pattern is also
-searched in the expression matching ==arg==. Therefore ==`rcv add: ``@arg'==
-matches ==x add:3== with ==rcv=x== and ==arg=3==.
+==`@rcv add: ``@arg'== matches ==(self add: 4) add:(x add:3)== with ==rcv=self
+add:4== and ==arg=(x add:3)==. Due to the use of ==``== with ==arg==, the
+pattern is also searched in the expression matching ==arg==. Therefore ==`@rcv
+add: ``@arg'== matches ==x add:3== with ==rcv=x== and ==arg=3==. The pattern is
+not searched in the expression matching ==rcv== since only one quote is used.
 
 As a conclusion, ==``== is barely used alone, without ==@==. 
 
@@ -423,19 +408,8 @@ As a conclusion, ==``== is barely used alone, without ==@==.
 
 
 !! One example of matching expression 
-To express patterns, the rewriter uses a special syntax that extends the standard Pharo syntax with meta-variables. There is several kinds of meta-variables depending on what nodes you want to match. They all start with a backquote ==`==. 
 
-!!! Loading Flamel
-
-Executing rules using the default refactoring rule engine is a bit arcane so we will load first a nice extension called Flamel developed by Gisela Decuzzi. Execute the following expression to get Flamel loaded.
-
-[[[
-Gofer it
-	  smalltalkhubUser: 'gisela' project: 'Flamel';
-	  configurationOf: 'Flamel';
-	  loadVersion: #development.
-]]].
-
+TODO: delete let's, ref to Flamel, examples to refactor
 !!! Step by Step
 
 Let's start it with an example, imagine that we want to identify all the places where we have ==anObject globals at:==.
@@ -452,11 +426,7 @@ are not sending ==at:== but ==at:ifAbsent:== or ==at:put:== or even nothing to d
 
 !!!!Let's write our first matching pattern.
 
-First you want any object, it could be Smalltalk or another one so we use the ==`== operation to create a (meta)variable that we name ==anObject==.
-A meta variable is a variable that we will unified against the AST elements. 
-
-So we get 
-
+First you want any object, it could be Smalltalk or another one so we use the ==`== operation to create a (meta)variable that we name ==anObject==. So we get 
 [[[
 `anObject
 ]]]
@@ -467,14 +437,17 @@ Then since we want the message ==globals== we add it and obtain.
 `anObject globals
 ]]]
 
-Note here that we do not annotate it with an operator because we do not want any message selector but just ==globals==.
-We redo the same for ==at:== so we obtain the following pattern.
+Note here that we do not annotate it with an operator because we do not want
+any message selector but just ==globals==.  We redo the same for ==at:== so we
+obtain the following pattern.
 
 
 [[[
 `anObject globals at: 
 ]]]
-But this expression is not complete and it is missing an argument to be a full Pharo expressions. So we add another meta-variable that will match anything. 
+
+But this expression is not complete; an argument is missing to be a full Pharo
+expressions. So we add another meta-variable that will match anything. 
 
 [[[
 `anObject globals at: `anything
@@ -498,6 +471,9 @@ You get an RBParseTreeEnvironment and the results are in classSelectors and meta
 Let us explain the script, once the rule object is created we specify the expression using ==matchingExpression:==, then we specify that we want to match an expression (and not a complete method as we will explain in Section *MatchingMethods*, then we run the rule and ask for its results. 
 
 !!!! Refining the scope
+
+TODO: check if the scope can be refined directly in RB
+
 Sometimes you do not want to look in the complete system but in a restricted environment. To do so we use the message ==scope:==
 
 
@@ -515,29 +491,16 @@ Now if we want to restrict the search to a subset of the environment.
 
 
 
-
-
-!!! Using Flamel Search Tool
-
-
-
-Blablabblababl
-
-
-
-
 !!! Dealing extras messages
-When you look at the results of the previous pattern and you compare with the system you will see that we are missing some of the cases.
-For example we are missing the following method. 
 
-What you see here is in the ==RBRenameClassChange>>changeClass== is that the pattern did not match because `anything matches only one element and here we get ==newName asSymbol== which is not a single element.
+When you look at the results of the previous pattern and you compare with the
+system you will see that we are missing some of the cases.  For example we are
+missing the following method. 
 
-[[[
-RBRenameClassChange>>changeClass
-	^ Smalltalk globals at: oldName asSymbol ifAbsent: [ Smalltalk globals at: newName asSymbol ]
-]]]
+What you see here is in the ==ConfigurationGenerator>>configurationClass== is
+that the pattern did not match because `anything matches only one element and
+here we get ==newName asSymbol== which is not a single element.
 
-Similar for ==configurationClass== we get a complex expression ==workingCopy package name asSymbol== instead of a simple element.
 
 [[[
 ConfigurationGenerator>>configurationClass
@@ -551,9 +514,12 @@ RBAddClass>>definitionClass
 	^ Smalltalk globals at: (self superclassName ifNil: [ ^ ProtoObject ])
 ]]]
 
-OK how do we address this problem, we use the ==@== operator in addition to ==`==. ==@== means that the element is optional and can be repeated.
-The optional is not illustrated by the example here but we will see later that you need it to express that there could be zero or more elements
-or expressing that you can at least one unary messages. Let us come back to our case we add ==@== to the pattern as follows:
+This problem can be addressed by using the ==@== operator in addition to ==`==.
+==@== means that the element is optional and can be repeated.  The optional is
+not illustrated by the example here but we will see later that you need it to
+express that there could be zero or more elements or expressing that you can at
+least one unary messages. Let us come back to our case we add ==@== to the
+pattern as follows:
 
 
 [[[
@@ -570,84 +536,19 @@ FlamelRule new
    result
 ]]]
 
-!!! Dealing with Literals
-todo 
-
-[[[
-	`anObject globals at: #foo
-]]]
-
 
 !!! Recursive matches
+
+TODO: continue the example with recursive matches 
+[[[
+RBRenameClassChange>>changeClass
+  ^Smalltalk globals at: oldName asSymbol ifAbsent: [ Smalltalk globals at: newName asSymbol ]
+]]]
+
 What's happen if a variable matches a complex expression that also contains the expression we are looking for.
 For example 
 
 Finally when trying to match an expression, there is another operator ==``== which supports recurvise match.
-
-
-!! Matching Expressions
-
-
-
-!!! Defining a meta-variable: Matching any node
-
-==`node== This is the most basic meta-variable. It matches any node.
-
-Examples
-
-==`receiver foo== matches the following expressions:
-
-[[[
-self foo
-x foo
-OrderedCollection foo
-]]]
-
-
-==self `msg: `arg== matches any one-argument message sent to self:
-
-[[[
-self as: Array
-self instVarAt: 2
-]]]
-
-!!! Matching a list of zero or more nodes
-
-- ==`@nodes== To match a list of zero or more nodes (like message args or temps). 
-
-Examples:
-
-==`@receiver foo== matches
-
-[[[
-self foo
-self size foo
-(self at: 1) foo
-]]]
-
-==self `@msg: `@args== matches any message sent to self:
-
-[[[
-self class
-self at: 4
-self perform: #at: with: 4
-]]]
-
-
-
-!!! Matching Literals
-
-==`#literal== To match literals. 
-
-==`#literal size== matches any message sent to a literal whose selector is size 
-
-[[[
-3 size
-'foo' size
-#(a b c) size
-]]]
-
-
 
 !! Matching Methods
 
