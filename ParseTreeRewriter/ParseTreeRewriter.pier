@@ -217,17 +217,95 @@ searcher answer.
 | (1/2) bar |  ==(1/2)== is a message (and not considered as a number)
 | (1=1) bar |  ==(1=1)== is a message (and not considered as a boolean)
 
+!!! Subtree or list  variables
+
+%FIXME - TODO: first position is false, but bug 15272
+
+==@== has several meanings depending it is used alone or with other option.
+
+Used alone ==`@subtree== matches any subtree. 
+
+==`@subtree bar== ""matches"" the following expressions:
+|! Input        |! Result 
+| self bar      | =={subtree=self}== 
+| 3 bar         | =={subtree=3}==  
+| #(2 3) bar    | =={subtree=#(2 3)}== 
+| {2. 3} bar    | =={subtree={2. 3}}== 
+| #at bar       | =={subtree=#at}== 
+| [true] bar    | =={subtree=[true]}== 
+| (x:=1) bar    | =={subtree=(x:=1)}== 
+| self foo bar  | =={subtree=self foo}== 
+
+
+
+==`@subtree bar== ""does not match"" the following expressions:
+|! Input  |! Explanation
+| bar      | The empty node is not a subtree
+
+It has to be noticed that ==bar `@subtree== is not a valid pattern to look for
+unary messages sequentially sent to ==bar== variable (''e.g.'' ==bar second
+second third isEmpty== with ==bar== a collection of collections of
+collections...). Figure XXXX is the tree representation of the previous
+expression. There is ""no"" subtree to unify the pattern and the expression.
+
+
+%TODO: image of the tree
+
+Used with another option, ==@== denotes lists of 0 or more items.
+
 
 !!! Statements
 
 ==`.stmt== matches a single statement.
 
-==`.stmt bar== ""matches"" the following expressions:
+==`.stmt== ""matches"" the following expressions:
 |! Input    |! Result 
 | 3        | =={ stmt=3 }== 
 | x:=1     | =={ stmt=x:=1 }== 
 | x ifTrue: [ doSomething] | =={stmt=x ifTrue: [ doSomething]}==
 | x:=1. ^x     | =={ stmt=x:=1, stmt=^x}== 
+
+
+The ==.== option can be used with ==@== in order to build a pattern with
+possibly several statements. The following code illustrates the search of
+duplicated statements, for instance to remove one of them:
+
+[[[
+| methodNode searcher codeToParse |
+codeToParse := '|x|
+    x:=0.
+    x increase.
+    x=1 ifTrue: [x bar].
+    x=1 ifTrue: [x bar]'.
+methodNode := RBParser parseExpression: codeToParse.
+searcher := RBParseTreeSearcher new.
+searcher
+  matches: '|`@temporaries|
+    `@.Statement1.
+    `.Duplicate.
+    `.Duplicate.
+    `@.Statement2'
+  do: [ :aNode :answer | answer add: aNode ; yourself].
+searcher executeTree: methodNode initialAnswer: Set new.
+searcher answer.
+]]]
+
+This snippet of code searches for duplicated statements among other pieces of
+code. These other pieces of code have to be explicitly specified in the
+pattern. Thus, the pattern is composed of temporary variable declarations,
+possibly a list of statements, the duplicated statement and possibly a list of
+other statements.
+
+This pattern matches the content of ==codeToParse== variable with the following
+substitutions:
+
+|! Metavariables (pattern) |! Matched code
+| ==`@temporaries==        | ==x==
+| ==`@.Statement1==        | ==x:=0. x increase.==
+| ==`.Duplicate==          | ==x=1 ifTrue: [x bar]==
+| ==`@.Statement2==        | =={}==
+
+
 
 !!! Conditional matching
 
@@ -276,44 +354,25 @@ Since the code of the parsed method is not executed, nodes corresponding to
 The condition can for example be used to only select node of a specific type
 (==node isInstance== enables to select instance variables).
 
-!!! List variables
-
-FIXME - TODO: first position is false, but bug 15272
-
-==`@subtree== matches any subtree. This construct can only be used in first
-position. For instance, ==bar `@subtree== is not a valid pattern.
-
-==`@subtree bar== ""matches"" the following expressions:
-|! Input        |! Result 
-| self bar      | =={subtree=self}== 
-| 3 bar         | =={subtree=3}==  
-| #(2 3) bar    | =={subtree=#(2 3)}== 
-| {2. 3} bar    | =={subtree={2. 3}}== 
-| #at bar       | =={subtree=#at}== 
-| [true] bar    | =={subtree=[true]}== 
-| (x:=1) bar    | =={subtree=(x:=1)}== 
-| self foo bar  | =={subtree=self foo}== 
-
-
-
-==`@subtree bar== ""does not match"" the following expressions:
-|! Input  |! Explanation
-| bar      | The empty node is not a subtree
 
 
 !!! Recursive search
 
 ==``== allows the recursive search. It means that the search is applied on the
 initial input and then on the results.
-To be relevant, the result should be complex enough that it is possible to find
-again the pattern in it. However, to define a complex pattern it is necessary
-to use ==@==. As a conclusion, ==``== is barely used alone, without ==@==. 
 
 ==``==  used alone may match a simple leaf node as in the following example:
 ==``foo bar== matches ==x bar bar== once and returns the result =={x=foo}==.
 
 
-The following example illustrates a real use of ==``==:
+
+To be relevant, the result should be complex enough that it is possible to find
+again the pattern in it. However, to define a complex pattern it is necessary
+to use ==@==. 
+
+
+The following example illustrates a real use of ==``== where the ==add:==
+message is recursively searched: 
 [[[
 varNode := (RBParser parseExpression: 'self add: (x add:3)').
 searcher := RBParseTreeSearcher new.
@@ -324,108 +383,43 @@ searcher executeTree: varNode initialAnswer: OrderedCollection new.
 searcher answer.
 ]]]
 
+
 ==`rcv add: ``@arg'== matches ==self add:(x add:3)== with ==rcv=self== and
 ==arg=(x add:3)==. Due to the use of ==``== with ==arg==, the pattern is also
 searched in the expression matching ==arg==. Therefore ==`rcv add: ``@arg'==
 matches ==x add:3== with ==rcv=x== and ==arg=3==.
 
-FIXME - TODO: add another example (complex one)
+As a conclusion, ==``== is barely used alone, without ==@==. 
+
+
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-It is possible to elaborate more complex patterns. For instance ==self `msg:
-`arg== matches any one-argument message sent to self:
-
-[[[
-self as: Array
-self instVarAt: 2
-]]]
-
-!!! Matching a list of zero or more nodes
-
-==`@nodes== To match a list of zero or more nodes (like message args or temps).
-
-
-Examples:
-
-==`@receiver foo== matches
-
-[[[
-self foo
-self size foo
-(self at: 1) foo
-]]]
-
-==self `@msg: `@args== matches any message sent to self:
-
-[[[
-self class
-self at: 4
-self perform: #at: with: 4
-]]]
-
-!!! Recursive Search
-
-==``== supports recursive search. For example, ==``@receiver parent== matches
-==x parent parent== twice:
-- the first time with the mapping: receiver -> x
-- the second time eith the mapping: receiver -> x parent
-
-
-[[[
-methodNode := OpalCompiler new parse: 'test
-x parent parent.'.
-searcher := RBParseTreeSearcher new.
-searcher
-matches: '``receiver parent'
-do: [ :aNode :answer | answer add: aNode ; yourself].
-searcher executeTree: methodNode initialAnswer: OrderedCollection new.
-searcher answer.
-]]]
-
-
-The following table summarizes the use of ==`==, ==@== and ==``== with a
-concrete input:
-
-
-
-
-|!Pattern |! Input ||! Result 
-%| `r parent | x parent | Matches with ==x== as r
-| `r parent | x parent || =={ x }==
-%| `@r parent | x parent | Matches with ==x== as r
-| `@r parent | x parent || =={ x }==
-%| ``@r parent | x parent | Matches with ==x== as r
-| ``@r parent | x parent || =={ x }==
-%| ``r parent | x parent | Matches with ==x== as r
-| ``r parent | x parent || =={ x }==
-%| `r parent | x parent parent | Matches with ==x== as r
-| `r parent | x parent parent || =={ x }==
-%| `@r parent | x parent parent | Matches with ==x parent== as r
-| `@r parent | x parent parent || =={ x parent }==
-%| ``@r parent | x parent parent | Matches with ==x== as r and ==x parent== as r
-| ``@r parent | x parent parent || =={ x, x parent }==
-%| ``r parent | x parent parent | Matches with ==x== as r
-| ``r parent | x parent parent || =={ x }==
-
-
-
-!!! Matching Literals
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+%The following table summarizes the use of ==`==, ==@== and ==``== with a
+%concrete input:
+%
+%
+%|!Pattern |! Input ||! Result 
+%%| `r parent | x parent | Matches with ==x== as r
+%| `r parent | x parent || =={ x }==
+%%| `@r parent | x parent | Matches with ==x== as r
+%| `@r parent | x parent || =={ x }==
+%%| ``@r parent | x parent | Matches with ==x== as r
+%| ``@r parent | x parent || =={ x }==
+%%| ``r parent | x parent | Matches with ==x== as r
+%| ``r parent | x parent || =={ x }==
+%%| `r parent | x parent parent | Matches with ==x== as r
+%| `r parent | x parent parent || =={ x }==
+%%| `@r parent | x parent parent | Matches with ==x parent== as r
+%| `@r parent | x parent parent || =={ x parent }==
+%%| ``@r parent | x parent parent | Matches with ==x== as r and ==x parent== as r
+%| ``@r parent | x parent parent || =={ x, x parent }==
+%%| ``r parent | x parent parent | Matches with ==x== as r
+%| ``r parent | x parent parent || =={ x }==
+%
 
 
 !! One example of matching expression 
