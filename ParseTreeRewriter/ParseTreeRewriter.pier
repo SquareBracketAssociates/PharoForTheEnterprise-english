@@ -141,17 +141,21 @@ changed.
 
 |! Input   ||! Result        |! Explanation
 | x bar    || =={ foo=x }==    | ==x== is a variable
-| self bar || =={ foo=self }== | ==self== is a RBSelfNode, that is considered as a variable
-| OrderedCollection bar || =={ foo=OrderedCollection }== | ==OrderedCollection== is considered as a variable
-| x toto ; bar || =={ foo=x }== | ==x toto; bar== is a RBCascadeNode composed of two message nodes ==x toto== and ==x bar==
+| self bar || =={ foo=self }== | ==self== is a RBSelfNode, that is 
+| || | considered as a variable
+| OrderedCollection bar || =={ foo=OrderedCollection }== | ==OrderedCollection== is considered 
+| || | as a variable
+| x toto ; bar || =={ foo=x }== | ==x toto; bar== is a RBCascadeNode 
+| || |  composed of two message nodes ==x toto== and ==x bar==
 | x bar. y bar    || =={ foo=x, foo=y }==    | ==x== and ==y== are variables
-| self x bar. y bar || =={ foo=y }==  | ==y== is variable and ==self x== is not a single variable
-
+| self x bar. y bar || =={ foo=y }==  | ==y== is variable and ==self x== is not
+| || |  a single variable
 
 ==`foo bar== ""does not match"" the following expressions:
 
 |! Input     |! Explanation
-| bar        | The pattern must contain one and only one variable on which the bar selector is called
+| bar        | The pattern must contain one and only one variable on 
+| | which the bar selector is called
 | 3 bar      | ==3== is a literal (not a variable)
 | #(2 3) bar | ==#(2 3)== is a literal array
 | {2. 3} bar | =={2. 3}== is an array
