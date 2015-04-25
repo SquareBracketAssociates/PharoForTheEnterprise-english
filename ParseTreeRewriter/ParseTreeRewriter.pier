@@ -31,7 +31,7 @@ tools that have to deal with code.
 
 Let's met our first AST. Consider the following method. 
 
-[[[
+[[[lineNumber=true
 Point >> < aPoint 
 	"Answer whether the receiver is above and to the left of aPoint."
 
@@ -58,7 +58,7 @@ Sending the message body ==body== to the ast returns the body of the method (as 
 
 For example the AST of the following method is displayed in Figure *methodnode*.
 
-[[[
+[[[lineNumber=true
 selector: arg1 and: arg2
 		  | temp1 temp2 |
 		  temp1 := OrderedCollection new.
@@ -168,7 +168,7 @@ changed.
 In this part, the following snippet of code is used. The matching expression is
 changed to ==`#lit bar==.
 
-[[[
+[[[lineNumber=true
 | methodNode searcher |
 methodNode := OpalCompiler new parse: 'test
 3 bar'.
@@ -199,7 +199,7 @@ searcher answer.
 
 !!! Subtree or list  variables
 
-%FIXME - TODO: first position is false, but bug 15272
+%FIXME - TODO: bug 15272
 
 ==@== has several meanings depending it is used alone or with other option.
 
@@ -225,11 +225,17 @@ Used alone ==`@subtree== matches any subtree.
 It has to be noticed that ==bar `@subtree== is not a valid pattern to look for
 unary messages sequentially sent to ==bar== variable (''e.g.'' ==bar second
 second third isEmpty== with ==bar== a collection of collections of
-collections...). Figure XXXX is the tree representation of the previous
-expression. There is ""no"" subtree to unify the pattern and the expression.
+collections...). 
 
+Figure *exp-and-pattern* illustrates this expression will not be matched by the
+pattern. The left tree is the representation of the previous expression, the
+right one is the pattern ==bar `@subtree==. There is ""no"" subtree to unify
+the pattern and the expression: trees are similar, but in this situation,
+==`@subtree== would represent an upper part of the tree instead of a
+""sub""tree, meaning that ==bar== is the subtree instead of the metavariable
+==subtree==.
 
-%TODO: image of the tree
++Illustration of an invalid pattern for a specific expression>file://figures/expression_and_pattern.jpg|width=100|label=exp-and-pattern+
 
 Used with another option, ==@== denotes lists of 0 or more items. Examples are
 given in each following subsection.
@@ -255,7 +261,7 @@ expression ==x:=1. ^x== with ==stmt== equals the whole expression ==x:=1. ^x==.
 The following code illustrates the search of duplicated statements, for
 instance to remove one of them:
 
-[[[
+[[[lineNumber=true
 | methodNode searcher codeToParse |
 codeToParse := '|x|
     x:=0.
@@ -300,7 +306,7 @@ refer to computed values of this code.
 
 The following snippet of code illustrates the conditional matching:
 
-[[[
+[[[lineNumber=true
 methodNode := OpalCompiler new parse: 'test
 a := 1.
 ^a'.
@@ -319,7 +325,7 @@ variable.
 +Inspector on answer>file://figures/conditionalMatchingInspector1.png|label=conditionalMatchingInspector1+
 
 If the condition is changed as following:
-[[[
+[[[lineNumber=true
 methodNode := OpalCompiler new parse: 'test
 a := 1.
 ^a'.
@@ -357,7 +363,7 @@ to use ==@==.
 
 The following example illustrates a real use of ==``== where the ==add:==
 message is recursively searched: 
-[[[
+[[[lineNumber=true
 varNode := (RBParser parseExpression: '(self add: 4) add: (x add:3)').
 searcher := RBParseTreeSearcher new.
 searcher
@@ -457,7 +463,7 @@ expressions. So we add another meta-variable that will match anything.
 Now we have the pattern but we should execute it to get the matches. For now we will use a nice extension of the Refactoring rule engine called Flamel. 
 
 
-[[[
+[[[lineNumber=true
 FlamelRule new
    matchingExpression: '`anObject globals at: `anything';
    matchExpression;
@@ -477,7 +483,7 @@ TODO: check if the scope can be refined directly in RB
 Sometimes you do not want to look in the complete system but in a restricted environment. To do so we use the message ==scope:==
 
 
-[[[
+[[[lineNumber=true
 FlamelRule new
    matchingExpression: '`anObject globals at: `anything';
    matchExpression;
@@ -528,7 +534,7 @@ pattern as follows:
 
 Rexecute the query to see that you now get all the cases.
 
-[[[
+[[[lineNumber=true
 FlamelRule new
    matchingExpression: '`anObject globals at: `@anything';
    matchExpression;
@@ -580,7 +586,7 @@ The pattern ==`@.stmts== matches any list of statements.
 !!!Examples
 
 
-[[[
+[[[lineNumber=true
 | methodNode searcher  |
 methodNode := OpalCompiler new parse: 'test 
 | x |
@@ -598,7 +604,7 @@ searcher answer
 ]]]
 
 
-[[[
+[[[lineNumber=true
 | rbMethodNode |
 rbMethodNode := OpalCompiler new parse: 'test 
 | x |
@@ -628,7 +634,7 @@ RBSmalllintChecker runRule: rule onEnvironment: (environment)
 
 
 
-[[[
+[[[lineNumber=true
 | rbMethodNode |
 rbMethodNode := OpalCompiler new parse: 'test 
 | x |
@@ -652,7 +658,7 @@ x + y'.
 
 
 
-[[[
+[[[lineNumber=true
 | className realClass replacer category |
 className := #MyClass.
 realClass := Smalltalk at: className.
@@ -673,7 +679,8 @@ strings, numbers, ...) and `{ ... adds a constraint on the preceeding
 match.
 
 
-[[[| className realClass replacer category |
+[[[lineNumber=true
+| className realClass replacer category |
 
 className := #MyClass.
 realClass := Smalltalk at: className.
@@ -723,7 +730,7 @@ In our example:
 
 we want to match, so let's create an object that extends: RBParseTreeLintRule:
 
-[[[
+[[[lineNumber=true
 RBParseTreeLintRule subclass: #SearchGlobalsAtUsage
 	instanceVariableNames: ''
     classVariableNames: ''
@@ -741,7 +748,7 @@ SearchGlobalsAtUsage>>name
 I want to match an expression type because I do not care about the rest of the method, I want everything that contains the messages: #globals #at:, we also have to say what to do with the matching node in this example I will open an inspector:
 
 
-[[[
+[[[lineNumber=true
 SearchGlobalsAtUsage>>initialize
 		super initialize.
 		self matcher
@@ -770,7 +777,7 @@ So, as we can see this is quite complex, and in the sinposis you can see that be
 
 The equivalent code (with a restricted environment) using Flamel for all this is:
 
-[[[
+[[[lineNumber=true
 FlamelRule new
  matchingExpression: '``@lotOfStuffBefore globals at: ``@lotOfStuffAfter';
  scope: environment;
@@ -827,7 +834,7 @@ Si l'on veut identifier les expressions de type ==aDict at: aKey ifAbsent: aBloc
 suivante : ==``@aDict at: ``@aKey ifAbsent: ``@aBlock.==
 Une telle expression identifie par exemple les expressions suivantes :
 
-[[[
+[[[lineNumber=true
 instVarMap at: aClass name ifAbsent: [oldClass instVarNames]
 deepCopier references at: argumentTarget ifAbsent: [argumentTarget]
 bestGuesses at: anInstVarName ifAbsent: [self typesFor: anInstVarName]
@@ -842,14 +849,14 @@ distribution de base, ce qui peut sensiblement ralentir le traitement.
 Voici quelques exemples d'
 expressions qui pourraient être avantageusement transformées :
 
-[[[
+[[[lineNumber=true
 | `@Temps | ``@.Statements. ``@Boolean ifTrue: [^false]. ^true
 | `@Temps | ``@.Statements. ^``@Boolean not
 ``@object not ifTrue: ``@block
 ``@object ifFalse: ``@block.
 ]]]
 
-[[[
+[[[lineNumber=true
 RBParseTreeRewriter new
  	replace: '``@aDictionary at: ``@key
  		ifAbsent:
@@ -863,7 +870,7 @@ RBParseTreeRewriter new
 	yourself
 ]]]
 
-[[[
+[[[lineNumber=true
 rule := RBUnderscoreAssignmentRule new.
 environment := BrowserEnvironment new forPackageNames: #('PackageA'
 'PackageB' ...).
@@ -871,7 +878,7 @@ SmalllintChecker runRule: rule onEnvironment: environment.
 rule open
 ]]]
 
-[[[
+[[[lineNumber=true
 ORLintBrowser
 	openRule: (RBCompositeLintRule rules: (RBCompositeLintRule
 rulesGroupedFor: RBSpellingRule) name: 'Spelling')

@@ -1,0 +1,110 @@
+\documentclass{article}
+\def\xcolorversion{2.00}
+\def\xkeyvalversion{1.8}
+
+\usepackage[version=0.96]{pgf}
+\usepackage{tikz}
+\usetikzlibrary{automata}
+\usetikzlibrary{arrows}
+\usetikzlibrary{backgrounds}
+\usetikzlibrary{fit}
+%\usetikzlibrary{matrix}
+\usetikzlibrary{patterns}
+\usetikzlibrary{petri}
+\usetikzlibrary{positioning}
+\usetikzlibrary{shapes}
+\usetikzlibrary{shapes.arrows}
+\usetikzlibrary{shapes.multipart}
+\usetikzlibrary{decorations}
+\usetikzlibrary{decorations.pathreplacing}
+%\usetikzlibrary{snakes}
+
+\usepackage[latin1]{inputenc}
+\usepackage{verbatim}
+
+\pgfrealjobname{ex_terme}
+\begin{document}
+
+\begin{comment}
+:Title: Tree
+\end{comment}
+
+\begin{center}
+\beginpgfgraphicnamed{expression_and_pattern}
+  \begin{tikzpicture}[>=latex, node distance=1cm, on grid, auto]
+    \tikzstyle{node}=[fill=white, text centered]
+%  %\begin{scope}
+%    \node [node] (mn1) {$MessageNode$};
+%    \path (mn1)+(-1.1,-1.5)  node (bar) [node] {$bar$};
+%    \path (mn1)+(1.1,-1.5)  node (vn1) [node] {$VariableNode$};
+%    \path (vn1)+(0.0,-1) node (foo) [node] {$foo$};
+%
+%  % Draw arrows between elements
+%	  \path [draw, -] (mn1.south)+(-0.2,0.0) -- node	[above] {} (bar);
+%	  \path [draw, -] (mn1.south)+(0.2,0.0) -- node	[above] {} (vn1);
+%	  \path [draw, -] (vn1.south)+(0.0,0.0)-- node 	[above] {} (foo);
+  %\end{scope}
+%MN(VN(foo),bar)
+%
+%     MN
+%    /  \
+%  VN    bar
+%   |
+%  foo
+%  \end{tikzpicture}
+
+
+%\begin{tikzpicture}[>=latex, node distance=1cm, on grid, auto]
+%  \tikzstyle{node}=[fill=white, text centered]
+ %  \begin{scope}
+ %bar second second third isEmpty
+  \node [node] (mn1) {MessageNode};
+    \path (mn1)+(-1.1,-1.5)  node (mn2) [node] {MessageNode};
+    \path (mn1)+(-2.2,-3.0)  node (mn3) [node] {MessageNode};
+    \path (mn1)+(-3.3,-4.5)  node (vn4) [node] {VariableNode};
+
+    %\path (mn1)+(1.1,-1.5)  node (s1) [node] {$\emptyset$};
+    \path (mn1)+(1.1,-1.5)  node (s1) [node] {isEmpty};
+    \path (mn2)+(1.1,-1.5)  node (s2) [node] {third};
+    \path (mn3)+(1.1,-1.5)  node (s3) [node] {second};
+    \path (vn4)+(0.0,-1.5) node (s4) [node] {bar};
+
+  % Draw arrows between elements
+	  \path [draw, -] (mn1.south)+(-0.2,0.0) -- node	[above,rotate=53] {\scriptsize{$receiver$}} (mn2);
+	  \path [draw, -] (mn2.south)+(-0.2,0.0) -- node	[above,rotate=53] {\scriptsize{$receiver$}} (mn3);
+	  \path [draw, -] (mn3.south)+(-0.2,0.0) -- node	[above,rotate=53] {\scriptsize{$receiver$}} (vn4);
+	  \path [draw, -] (mn1.south)+(0.2,0.0) -- node	[above,rotate=-53] {\scriptsize{$selector$}} (s1);
+	  \path [draw, -] (mn2.south)+(0.2,0.0)-- node 	[above,rotate=-53] {\scriptsize{$selector$}} (s2);
+	  \path [draw, -] (mn3.south)+(0.2,0.0)-- node 	[above,rotate=-53] {\scriptsize{$selector$}} (s3);
+	  \path [draw, -] (vn4.south)+(0.0,0.0)-- node 	[above,rotate=90] {\scriptsize{$name$}} (s4);
+    %\node [node] (labelname) {$name$};
+%  \end{scope}
+
+
+%%%%%%%%%%
+    \begin{scope}[xshift=7cm]
+
+  \node [node] (p1) {};
+    \path (p1)+(-1.1,-1.5)  node (p2) [node] {MessageNode};
+    \path (p2)+(-1.1,-1.5)  node (p3) [node] {VariableNode};
+
+    \path (p1)+(1.1,-1.5)  node (ps1) [node] {};
+    \path (p2)+(1.1,-1.5)  node (ps2) [node] {\ldots};
+    \path (p3)+(0.0,-1.5) node (ps3) [node] {bar};
+
+  % Draw arrows between elements
+	  \path [draw, dotted] (p1.south)+(-0.2,0.0) -- node	[above,rotate=53] {} (p2);
+	  \path [draw, dotted] (p2.south)+(-0.2,0.0) -- node	[above,rotate=53] {\scriptsize{$receiver$}} (p3);
+	  \path [draw, dotted] (p2.south)+(0.2,0.0)-- node 	[above,rotate=-53] {\scriptsize{$selector$}} (ps2);
+	  \path [draw, -] (p3.south)+(0.0,0.0)-- node 	[above,rotate=90] {\scriptsize{$name$}} (ps3);
+
+    \end{scope}
+
+    \node [node] (c1) [below of=s4,xshift=2cm] {\large{$expression$}};
+    \node [node] (c2) [right of=c1,xshift=6cm] {\large{$pattern$}};
+
+  \end{tikzpicture}
+\endpgfgraphicnamed
+\end{center}
+
+\end{document}
