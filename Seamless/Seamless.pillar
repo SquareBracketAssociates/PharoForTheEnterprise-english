@@ -684,6 +684,9 @@ Options can include: full serialization, shallow serialization, proxying, etc..
 It is the little things in life that will make you mad. Here are some do's and dont's while using Seamless. 
 These ''papercuts'' will incrementally go away as we advance to more stable releases.
 
+NEW: ''Latest Development Branch Solves UIProcess, Workspace and Morphic unresponsiveness under
+heavy messaging''
+
 !!!The UI Process
 
 All ui applications of Pharo are naturally ''event-driven''. What this means is that their application logic is ''triggered'' by input events such as keyboard-strokes and mouse-clicks. Upon the invocation of such events application callbacks are evaluated from within the UI Process. Essentially this results in all front-end applications being handled by a single green thread, unless otherwise instructed by the programmer of the callback. 
@@ -713,7 +716,7 @@ Once we move to a stable release we will be porting remote reflection facilities
 
 - More Documentation / Testing / Refactoring: The Seamless code-base requires some additional love. Being for most of its life time an engineering part of a larger research prototype ''there can be dragons here''.
 - Papercuts: See Section *PaperCuts* above. A stable release should not suffer from these annoyances.
-- Shared-Memory: As seen in Figure *spectrum* there is a special and very interesting case where the ''mostly utopic'' transparent distribution end of the communication spectrum makes sense. We are currently working on that.
+- Shared-Memory: As seen in Figure *spectrum* there is a special and very interesting case where the ''mostly utopic'' transparent distribution end of the communication spectrum makes sense. We are currently working on that. Current experiments in development branch include NanoMsg and pure posix shared-memory transporters.
 
 !!!Mid-Term
 
@@ -732,7 +735,7 @@ Once we move to a stable release we will be porting remote reflection facilities
 %Low-level: There are a bunch of low-level libraries out there that may be more reliable or fast than SocketStream for our use cases. See for eg http://zeromq.org/ (write a plugin and measure). Does it worth it ?
 %Meta-Description & Discovery: Discover Services (aka connect to one repo that knows the rest) and provide meta-descriptions
 %Review distribution policies use traits (to mark classes) / special methods for policies and or annotations
-% Rest / DCOM / RMI examples
+% Rest / DCOM / RMI examples -- Migrate Teapot examples and TinyChat to Seamless for Pharo 2 Pharo scenarios
 % Same image optimizations and usages (for even more incremental prototyping / profiling)
 % Incremental prototyping and profiling might be a possible middle-ground between tr. distribution and rest
 % Review bibliography and see automatic extraction of policies from tests
