@@ -27,7 +27,7 @@ function mypdflatex() {
   pdflatex -halt-on-error -file-line-error -interaction batchmode "$pillar_file" 2>&1 1>/dev/null
   ret=$?
   if [[ $ret -ne 0 ]]; then
-    cat $pillar_file.log
+    cat ${pillar_file%.*}.log
     echo "Can't generate the PDF!"
     exit 1
   fi
