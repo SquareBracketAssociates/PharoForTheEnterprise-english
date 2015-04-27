@@ -1,4 +1,5 @@
 ! Seamless: A Reflective Middleware for Pharo (DRAFT) 
+{{{latex:{\begin{flushright}\large{\textit{by Nick Papoulias}}\\\end{flushright}} }}}
 
 Seamless {{{latex:\footnote{\url{http://ss3.gemstone.com/ss/Seamless.html}} }}} 
 is a reflective communication middleware for Pharo
