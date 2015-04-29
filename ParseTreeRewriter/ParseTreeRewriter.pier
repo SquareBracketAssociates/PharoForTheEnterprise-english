@@ -29,7 +29,7 @@ message, a variable, a block, an assignment, etc. Such a tree is much easier
 to process than a plain string. That is why this data structure is used by most
 tools that have to deal with code.
 
-Let's met our first AST. Consider the following method. 
+In order to illustrate the structure of AST, consider the following method. 
 
 [[[lineNumber=true
 Point >> < aPoint 
@@ -38,58 +38,76 @@ Point >> < aPoint
 	^x < aPoint x and: [y < aPoint y]	
 ]]]	
 
-You can get the AST of this method with the following expression. 
+The AST of this method can be obtained with the following expression:
 
-[[[
+[[[language=smalltalk
 (Point >> #<) ast
 ]]]
 
-The root of the AST is a method node whose child is a return node. This return node has a message node and this message node has a receiver (the AST of the expression ==x < aPoint x==), a selector (==and:==) and a block node as argument. Explore this AST to get familiar with its structure. You can also inspect the ASTs of other methods of the system.
+Note that the ==ast== message is available only for compiled methods.
+
++An inspector on an AST >file://figures/ASTInspector.png|width=100|label=astinspector+
 
 
-+An inspector on an AST >file://figures/ASTInspector.pdf|width=50|label=astinspector+
+The root of the AST is a method node which has two children, an argument node
+and a sequence node (1) corresponding to the body of the method. This sequence
+node has a single child, a return node (2). This return node has a message node
+(3) corresponding to the expression ==x < aPoint x and: [y < aPoint y]==. This
+message node has a receiver (a message node (4) corresponding to the AST of the
+expression ==x < aPoint x==) and a block node (5) as argument (==[y < aPoint
+y]==). 
+
+Node (4) has two children: a variable node ==x==, corresponding to the
+receiver, and a message node (==aPoint x==) corresponding to the argument. This
+argument has a single child ==aPoint== corresponding to the argument.
+
+The block node (5) has a single child (6) corresponding to the sequence node.
+This also has a child (7) which has the same structure as (4).
+
+The selectors do not appear in the tree representation because they are
+properties of the message nodes. Thus, for example, the selector ==<== of the
+message node (4) does not appear in this tree representation but is obviously
+accessible from the message node though the ==selector== message.  
 
 
-Sending the message body ==body== to the ast returns the body of the method (as shown in Figure *astinspector* and ==selector== the method selector. 
 
-[[[
-(Point >> #<) ast body 
-]]]
+Explore this AST to get familiar with its structure. You can also inspect the ASTs of other methods of the system.
 
-For example the AST of the following method is displayed in Figure *methodnode*.
 
-[[[lineNumber=true
-selector: arg1 and: arg2
-		  | temp1 temp2 |
-		  temp1 := OrderedCollection new.
-		  temp2 := arg1, arg2.
-		  ^ temp1 + temp2
-]]]
 
-+The AST of the method ==selector:and:== >file://figures/methodnode.png|width=50|label=methodnode+
 
 
 !!!Basic Knowledge on ProgramNode and its Subclasses
 
-Different kinds of nodes correspond to different classes. These classes form a hierarchy whose root is ==RBProgramNode==. This class implements several useful methods such as: ==parent==, ==nodesDo:==, ==isVariable==.... Browse it and its subclasses to discover the structure and the capabilities of Pharo ASTs. 
-%There is a visitor class that supports the walking through ASTs.
-
-Here is a view on the ProgramNode hierarchy showing the classes and their instance variables. 
-%(Camille: showing instance variables is maybe not good since it is subject to change in the near future)
+Different kinds of nodes correspond to different classes. These classes form a
+hierarchy whose root is ==RBProgramNode==. This class implements several useful
+methods such as: ==parent==, ==nodesDo:==, ==isVariable==.... Browse it and its
+subclasses to discover the structure and the capabilities of Pharo ASTs.
+Figure *programnode* illustrates the ProgramNode hierarchy. 
 
 +RBProgramNode class hierarchy>file://figures/classDiagram.jpg|width=100|label=programnode+
 
 %TODO: image not clean, with pdf ok but does not work in html
 
 !!Unification
-The pattern matching algorithm in the engine rewriter is accomplished by a unification algorithm. This algorithm takes as input a pattern (that describes what we look for) and a tree (that could or not match the pattern). A pattern is a tree containing special nodes called meta-variables. A meta-variable is a variable whose value will be set by the unification algorithm. For example, a meta-variable can be used to match a variable while another can be used to match messages.
 
-%The output of the algorithm is either false (there is no match found) or true.
-%If it is true, that means that at least one match has been found. 
-A match is a mapping from meta-variable to AST nodes of the input tree. These mappings correspond to the values the meta-variables of the pattern should take for the pattern to be equal to the input tree. 
+The pattern matching algorithm in the engine rewriter is accomplished by a
+unification algorithm. This algorithm takes as input a pattern (that describes
+what we look for) and a tree (that could or not match the pattern). A pattern
+is a tree containing special nodes called meta-variables. A meta-variable is a
+variable whose value will be set by the unification algorithm. For example, a
+meta-variable can be used to match a variable while another can be used to
+match messages.
 
-Let's look at a few examples. If X and Y denote meta-variables, the pattern ==self X== matches ==self open== with the mapping: X -> 'open'. The pattern ==X Y== matches ==self open== with the mapping: Y -> 'self', Y -> 'open'. As a failing example, ==X X== doesn't match ==self open== because X cannot be at the same time 'self' and 'open'.
+A match is a mapping from meta-variable to AST nodes of the input tree. These
+mappings correspond to the values the meta-variables of the pattern should take
+for the pattern to be equal to the input tree. 
 
+Consider the following examples: if X and Y denote meta-variables, the pattern
+==self X== matches ==self open== with the mapping: ==X -> open==. The pattern
+==X Y== matches ==self open== with the mapping: ==X -> self==, ==Y -> open==.
+As a failing example, ==X X== does not match ==self open== because X cannot be
+at the same time ==self== and ==open==.
 
 
 !! Pattern syntax
@@ -99,24 +117,24 @@ can be used to specify the search:
 
 ||!keyword  |! Meaning
 || @ | used alone: the searched node is a subtree
-||   | used with an other keyword: the searched node is optional or can be repeated
+||   | used with an other keyword: the searched node is optional 
+||   | or can be repeated
 || . | the searched node is a statement
 || # | the searched node is a literal
 || \{ \} | to match nodes that satisfies the enclosed SmallTalk code
 || ` | to search recursively
 
 
-{{{latex:\noindent }}}Let's explain each construct by using it in a concrete context:
+Each construct is explained in the following section by
+using it in concrete examples.
 
 !!! Single variables
 
 ==`== introduces the most basic meta-variable. ==`foo== only matches single
 variables.
 
-Examples: 
-
 The following code enables to define a method node (lines 2 and 3) in which we
-want to find the pattern ==`foo bar== (line 5) where ==`foo== can be any simple
+want to find the pattern ==`foo bar== (line 6) where ==`foo== can be any simple
 receiver. The pattern containing the meta-variables ==`foo== is defined using
 an RBParseTreeSearcher (lines 4 to 6). The resulting substitutions are gathered
 into the ==answer== variable (line 7):
@@ -138,17 +156,17 @@ changed.
 
 
 ==`foo bar== ""matches"" the following expressions:
-
 |! Input   ||! Result        |! Explanation
-| x bar    || =={ foo=x }==    | ==x== is a variable
-| self bar || =={ foo=self }== | ==self== is a RBSelfNode, that is 
+| x bar    || =={ foo->x }==    | ==x== is a variable
+| self bar || =={ foo->self }== | ==self== is a RBSelfNode, that is 
 | || | considered as a variable
-| OrderedCollection bar || =={ foo=OrderedCollection }== | ==OrderedCollection== is considered 
-| || | as a variable
-| x toto ; bar || =={ foo=x }== | ==x toto; bar== is a RBCascadeNode 
-| || |  composed of two message nodes ==x toto== and ==x bar==
-| x bar. y bar    || =={ foo=x, foo=y }==    | ==x== and ==y== are variables
-| self x bar. y bar || =={ foo=y }==  | ==y== is variable and ==self x== is not
+| Array bar || =={ foo->Array }== | ==Array== is considered  as a variable
+%| || | as a variable
+| x toto ; bar || =={ foo->x }== | ==x toto; bar== is a RBCascadeNode 
+| || | composed of two message nodes 
+| || | ==x toto== and ==x bar==
+| x bar. y bar    || =={ foo->x, foo->y }==    | ==x== and ==y== are variables
+| self x bar. y bar || =={ foo->y }==  | ==y== is variable and ==self x== is not
 | || |  a single variable
 
 ==`foo bar== ""does not match"" the following expressions:
@@ -231,10 +249,10 @@ unary messages sequentially sent to ==bar== variable (''e.g.'' ==bar second
 second third isEmpty== with ==bar== a collection of collections of
 collections...). 
 
-Figure *exp-and-pattern* illustrates this expression will not be matched by the
-pattern. The left tree is the representation of the previous expression, the
-right one is the pattern ==bar `@subtree==. There is ""no"" subtree to unify
-the pattern and the expression: trees are similar, but in this situation,
+Figure *exp-and-pattern* illustrates this expression that will not be matched
+by the pattern. The left tree is the representation of the previous expression,
+the right one is the pattern ==bar `@subtree==. There is ""no"" subtree to
+unify the pattern and the expression: trees are similar, but in this situation,
 ==`@subtree== would represent an upper part of the tree instead of a
 ""sub""tree, meaning that ==bar== is the subtree instead of the metavariable
 ==subtree==.
@@ -287,8 +305,9 @@ searcher answer.
 
 This snippet of code aims to search for duplicated statements in a piece of
 code whose structure has to be explicitly specified in the pattern. Thus, the
-pattern is composed of temporary variable declarations, possibly a list of
-statements, the duplicated statement and possibly a list of other statements.
+pattern is composed of temporary variable declarations (line 10), possibly a
+list of statements (line 11), the duplicated statement (lines 12 and 13) and
+possibly a list of other statements (line 14).
 
 This pattern matches the content of ==codeToParse== variable with the following
 substitutions:
@@ -387,69 +406,38 @@ not searched in the expression matching ==rcv== since only one quote is used.
 As a conclusion, ==``== is barely used alone, without ==@==. 
 
 
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
-%The following table summarizes the use of ==`==, ==@== and ==``== with a
-%concrete input:
-%
-%
-%|!Pattern |! Input ||! Result 
-%%| `r parent | x parent | Matches with ==x== as r
-%| `r parent | x parent || =={ x }==
-%%| `@r parent | x parent | Matches with ==x== as r
-%| `@r parent | x parent || =={ x }==
-%%| ``@r parent | x parent | Matches with ==x== as r
-%| ``@r parent | x parent || =={ x }==
-%%| ``r parent | x parent | Matches with ==x== as r
-%| ``r parent | x parent || =={ x }==
-%%| `r parent | x parent parent | Matches with ==x== as r
-%| `r parent | x parent parent || =={ x }==
-%%| `@r parent | x parent parent | Matches with ==x parent== as r
-%| `@r parent | x parent parent || =={ x parent }==
-%%| ``@r parent | x parent parent | Matches with ==x== as r and ==x parent== as r
-%| ``@r parent | x parent parent || =={ x, x parent }==
-%%| ``r parent | x parent parent | Matches with ==x== as r
-%| ``r parent | x parent parent || =={ x }==
-%
+!! A new example of matching expression 
 
-
-!! One example of matching expression 
-
-TODO: delete let's, ref to Flamel, examples to refactor
 !!! Step by Step
 
-Let's start it with an example, imagine that we want to identify all the places where we have ==anObject globals at:==.
+This example illustrates how to identify all the places where ==anObject
+globals at:== is used.
 
-We want to identify message as the ones in the ==configurationClass== method below.
+The ==configurationClass== method below is one of the expected results.
 
 [[[
 configurationClass
 	^ Smalltalk globals at: self configurationName asSymbol
 ]]]
 
-First try to look for the senders of the message ==globals==. You will see that you get couple hundreds of them and plenty of them 
-are not sending ==at:== but ==at:ifAbsent:== or ==at:put:== or even nothing to do with ==at:==.
+Looking for the senders of the message ==globals== shows hundreds of messages
+and plenty of them are not sending ==at:== but ==at:ifAbsent:== or ==at:put:==
+or even nothing to do with ==at:==.
 
-!!!!Let's write our first matching pattern.
+!!!!Writing the matching pattern.
 
-First you want any object, it could be Smalltalk or another one so we use the ==`== operation to create a (meta)variable that we name ==anObject==. So we get 
-[[[
-`anObject
-]]]
-
-Then since we want the message ==globals== we add it and obtain.
+To match any object (''e.g.'' Smalltalk or another one) sent to the message
+==globals== we use the ==`== operation to create a (meta)variable named
+==anObject== and obtain.
 
 [[[
 `anObject globals
 ]]]
 
-Note here that we do not annotate it with an operator because we do not want
-any message selector but just ==globals==.  We redo the same for ==at:== so we
-obtain the following pattern.
+Note here that ==globals== is not annotated with an operator because we do not
+want any message selector but just ==globals==.  The same is done for ==at:==.
 
 
 [[[
@@ -457,65 +445,84 @@ obtain the following pattern.
 ]]]
 
 But this expression is not complete; an argument is missing to be a full Pharo
-expressions. So we add another meta-variable that will match anything. 
+expression. A new meta-variable matching anything is added. 
 
 [[[
 `anObject globals at: `anything
 ]]]
 
-!!!!Executing the rule
-Now we have the pattern but we should execute it to get the matches. For now we will use a nice extension of the Refactoring rule engine called Flamel. 
+!!!!Defining a rule
 
+Looking for pattern can be stored in a rule. For this purpose, a subclass of
+RBParseTreeLintRule, RBGlobalsAtRule is created. 
 
 [[[lineNumber=true
-FlamelRule new
-   matchingExpression: '`anObject globals at: `anything';
-   matchExpression;
-   run;
-   result
+RBParseTreeLintRule subclass: #RBGlobalsAtRule 
+	instanceVariableNames: ''
+    classVariableNames: ''
+    poolDictionaries: ''
+    category: 'RB-example'
+]]]
+
+The abstract methods ==initialize== and ==name== should be implemented.  The
+==initialize== method is the following. Line 4 corresponds to the searched
+expression.
+
+[[[lineNumber=true
+RBGlobalsAtRule>>initialize
+	super initialize.
+	self matcher 
+		matches: '`anObject globals at: `anything'
+		do: [ :node :answer | node ]
+]]]
+
+The ==name== method should also be added.
+
+[[[
+RBGlobalsAtRule>>name
+	^ 'Find all potential wrong usage in with globals'
 ]]]
 
 
-Execute and inspect the result. It may take some minutes because it is matching all the methods of the system. 
-You get an RBParseTreeEnvironment and the results are in classSelectors and metaSelectors.
-Let us explain the script, once the rule object is created we specify the expression using ==matchingExpression:==, then we specify that we want to match an expression (and not a complete method as we will explain in Section *MatchingMethods*, then we run the rule and ask for its results. 
+!!!!Executing the rule
+To get the matches, the rule should be executed. 
+
+WARNING: this can take a time because the whole system is checked.
+
+[[[
+RBGlobalsAtRule new run.
+]]]
+
+
+Execute and inspect the result. It may take some minutes because it is matching
+all the methods of the system.  The results are in ==classSelectors== and
+==metaSelectors== of the ==RBParseTreeEnvironment==. 
+
 
 !!!! Refining the scope
 
-TODO: check if the scope can be refined directly in RB
+To avoid looking in the complete system, the environment of the rule can be
+restricted using the ==runRule:onEnvironment:== message as the following:
 
-Sometimes you do not want to look in the complete system but in a restricted environment. To do so we use the message ==scope:==
-
-
-[[[lineNumber=true
-FlamelRule new
-   matchingExpression: '`anObject globals at: `anything';
-   matchExpression;
-   scope: (RBPackageEnvironment packageName: 'Kernel');
-   run;
-   result
+[[[
+rule := SearchGlobalsAtUsage new.
+environment := RBClassEnvironment class: Result.
+RBSmalllintChecker runRule: rule onEnvironment: (RBPackageEnvironment packageName: 'KernelTests').
 ]]]
-
-
-Now if we want to restrict the search to a subset of the environment.
-
 
 
 !!! Dealing extras messages
 
-When you look at the results of the previous pattern and you compare with the
-system you will see that we are missing some of the cases.  For example we are
-missing the following method. 
-
-What you see here is in the ==ConfigurationGenerator>>configurationClass== is
-that the pattern did not match because `anything matches only one element and
-here we get ==newName asSymbol== which is not a single element.
-
+Some cases are missing such as ==ConfigurationGenerator>>configurationClass==.
 
 [[[
 ConfigurationGenerator>>configurationClass
 	^ Smalltalk globals at: workingCopy package name asSymbol 
 ]]]
+
+The pattern did not match because ==`anything== matches only one element and
+==newName asSymbol== is not a single element.
+
 
 Finally another variation of the problem is the following one:
 
@@ -524,368 +531,135 @@ RBAddClass>>definitionClass
 	^ Smalltalk globals at: (self superclassName ifNil: [ ^ ProtoObject ])
 ]]]
 
-This problem can be addressed by using the ==@== operator in addition to ==`==.
-==@== means that the element is optional and can be repeated.  The optional is
-not illustrated by the example here but we will see later that you need it to
-express that there could be zero or more elements or expressing that you can at
-least one unary messages. Let us come back to our case we add ==@== to the
-pattern as follows:
-
-
-[[[
-`anobject globals at: `@anything
-]]]
-
-Rexecute the query to see that you now get all the cases.
+These problems can be addressed by using the ==@== operator in addition to
+==`==. Modify the ==initialize== message of RBGlobalsAtRule as follows:
 
 [[[lineNumber=true
-FlamelRule new
-   matchingExpression: '`anObject globals at: `@anything';
-   matchExpression;
-   run;
-   result
+RBGlobalsAtRule>>initialize
+	super initialize.
+	self matcher 
+		matches: '`anObject globals at: `@anything'
+		do: [ :node :answer | node ]
 ]]]
+
+Execute again the rule to see that the result contains all the cases.
 
 
 !!! Recursive matches
 
-TODO: continue the example with recursive matches 
+Result is not complete for example ==RBRenameClassChange>>changeClass==
+matches only once whereas ==Smalltalk globals at:== appears twice in the
+body of the method:
+
 [[[
 RBRenameClassChange>>changeClass
   ^Smalltalk globals at: oldName asSymbol ifAbsent: [ Smalltalk globals at: newName asSymbol ]
 ]]]
 
-What's happen if a variable matches a complex expression that also contains the expression we are looking for.
-For example 
-
-Finally when trying to match an expression, there is another operator ==``== which supports recurvise match.
-
-!! Matching Methods
-
-@MatchingMethods
-
-While matching expressions does not care of the whole context (such temporaries, assignment and method signatures), matching a complete method requires more advanced matching. For example if an expression is inside a block if we care about the fact that the methods
-has temporaries.
-
-
-- ==`.stmts== To match statements. The pattern ==`.Sta1.== matches
-
-[[[
-x := 1.
-]]]
-
-Combined with ==@==, you can match e list of statements. 
-The pattern ==`@.stmts== matches any list of statements.
-
-
-- ==`{ :node | ... }== To match the nodes that satisfy the enclosed Smalltalk code. The pattern ==`{ :node | node isInstance }== matches instance variables.
-
-
-
-
-
-
-
-
-!!!Examples
-
+This problem is addressed by using the ==``== operator. Modify the
+==initialize== message of RBGlobalsAtRule as follows:
 
 [[[lineNumber=true
-| methodNode searcher  |
-methodNode := OpalCompiler new parse: 'test 
-| x |
-x := 1. 
-y := 2.
-z := (self at: #x) size.
-x + y'.
-
-searcher := RBParseTreeSearcher new.
-searcher
-	matches: 'self at: `#literal'
-      do: [ :aNode :answer | answer add: aNode ; yourself ].
-searcher executeTree: methodNode initialAnswer: Set new.
-searcher answer
+RBGlobalsAtRule>>initialize
+	super initialize.
+	self matcher 
+		matches: '`anObject globals at: ``@anything'
+		do: [ :node :answer | node ]
 ]]]
 
-
-[[[lineNumber=true
-| rbMethodNode |
-rbMethodNode := OpalCompiler new parse: 'test 
-| x |
-x := 1. 
-y := 2.
-z := (self at: #x) size.
-x + y'.
-
-(RBParseTreeSearcher new
-        matches: '`{:node | node isVariable }'
-        do: [ :aNode :answer | answer add: aNode; yourself ] )
-               executeTree: rbMethodNode initialAnswer: Set new.
-
-]]]
-
-
-
-
-self matcher
-matches: '``@lotOfStuffBefore globals at: ``@lotOfStuffAfter'
-do: [:theMatch :theOwner | theMatch inspect].
-
-rule := SearchGlobalsAtUsage new.
-environment := RBClassEnvironment class: Result.
-RBSmalllintChecker runRule: rule onEnvironment: (environment)
-
-
-
-
-[[[lineNumber=true
-| rbMethodNode |
-rbMethodNode := OpalCompiler new parse: 'test 
-| x |
-x := 1. 
-y := 2.
-x + y'.
-
-(RBParseTreeSearcher new
-        matches: '`{:node | node isVariable }'
-        do: [ :aNode :answer | answer add: aNode; yourself ] )
-               executeTree: rbMethodNode initialAnswer: Set new.
-
-]]]
-
-
-
-
-
-
-
-
-
-
-[[[lineNumber=true
-| className realClass replacer category |
-className := #MyClass.
-realClass := Smalltalk at: className.
-category := #accessing.
-]]]
-
-If you really just want the string 'tabs', the string 'tabs' with the
-quotes is the search expression.
-
-If you want to find it as part of a substring use something along:
-[[[
-   `#string `{ :node | node value isString and: [ node value
-includesSubString: 'tabs' ] }
-]]]
-
-The ==`#string== is a literal pattern (booleans, characters, arrays,
-strings, numbers, ...) and `{ ... adds a constraint on the preceeding
-match.
-
-
-[[[lineNumber=true
-| className realClass replacer category |
-
-className := #MyClass.
-realClass := Smalltalk at: className.
-category := #accessing.
-
-replacer := RBParseTreeRewriter new
-				replace: '`receiver oldMessage' with: '`receiver newMessage';
-				yourself.
-(realClass organization listAtCategoryNamed: category)
-	collect: [:sel |
-		| parseTree |
-		parseTree := ( realClass >> sel) parseTree.
-		(replacer executeTree: parseTree)
-			ifTrue: [ realClass compile: replacer tree newSource " [1] " ] ]
-]]]
-
-
-
-
-
-
-
-
-!! Expressing and Executing Rules Without Flamel 
-
-		Show the execution of the first example without Flamel
-		- 
-
-Before start you should choose if you want to:
-perform a search
-do a match
-Implement your rules because all of them are abstract, probably you will end up using the Tree rules because are more automatics and powerfull than to basics.
-When you are defining your rule:
-- give a name for it
-- define if you will use a method or an expression type pattern (use matches: or matchesMethod:)
-- write your patterns and add them to the rule
-- if you are in a search rule to the matcher
-- if you are in a transformation rule rewriteRule
-- define what to do with a result
-run your rule
-use your results
-if you want to reuse it reset your rule, again if it's a search rule, reset the matcher, if it's a transformation rule the rewriteRule.
-
-
-
-In our example:
-
-we want to match, so let's create an object that extends: RBParseTreeLintRule:
-
-[[[lineNumber=true
-RBParseTreeLintRule subclass: #SearchGlobalsAtUsage
-	instanceVariableNames: ''
-    classVariableNames: ''
-    poolDictionaries: ''
-    category: 'Blog-example'
-]]]
-
-We have to implement the abstract methods:
-
-[[[
-SearchGlobalsAtUsage>>name
-	^ 'Find all potential wrong usage in with globals'
-]]]
-
-I want to match an expression type because I do not care about the rest of the method, I want everything that contains the messages: #globals #at:, we also have to say what to do with the matching node in this example I will open an inspector:
-
-
-[[[lineNumber=true
-SearchGlobalsAtUsage>>initialize
-		super initialize.
-		self matcher
-			 matches: '``@lotOfStuffBefore globals at: ``@lotOfStuffAfter'
-			 do: [:theMatch :theOwner | theMatch inspect].
-]]]
-
-now we should run the rule:
-WARNING: this can take a time because you will check the whole system
-
-[[[
-SearchGlobalsAtUsage new run.
-]]]
-To avoid this you can restrict the environment for your rule, an example:
-
-
-[[[
-rule := SearchGlobalsAtUsage new.
-environment := RBClassEnvironment class: Result.
-RBSmalllintChecker runRule: rule onEnvironment: (environment).
-]]]
-If you have matches then you will see the inspector.
-
-So, as we can see this is quite complex, and in the sinposis you can see that before doing anything you have to make too many decisions, the idea behind Flamel is to make it easier.
-
-
-The equivalent code (with a restricted environment) using Flamel for all this is:
-
-[[[lineNumber=true
-FlamelRule new
- matchingExpression: '``@lotOfStuffBefore globals at: ``@lotOfStuffAfter';
- scope: environment;
- run;
- result
-]]]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-!!Junk
-
-- Variable. Un schéma peut contenir des variables en utilisant
-  le backquote ou accent grave. Ainsi, ==`key== représente n'importe
-  quelle variable, mais pas une expression.
-
-- Liste. Pour représenter une expression potentiellement
-  complexe, on utilise ==@== qui caractérise une liste. Ainsi, `@key
-  peut représenter aussi bien une variable simple comme temp qu'une
-  expression comme ==(aDict at: self keyForDict)==. Par exemple, | `@Temps
-  | reconnaît une liste de variables temporaires. Le point . reconnaît
-  une instruction dans une séquence de code.==`@.Statements==
-  reconnaît une liste d'instructions. Par exemple, foo `@message:
-  ==`@args== reconnaît n'importe quel message envoyé à  foo.
-
-- Récursion. Pour que la reconnaissance s'effectue aussi à 
-  l'intérieur de l'expression, il faut doubler la quote. La seconde
-  quote représente la récursion du schéma cherché. Ainsi,
-  ==``@object foo== reconnaît foo, à  quelque objet qu'il soit envoyé,
-  mais observe également pour chaque reconnaissance si une
-  reconnaissance est possible dans la partie représentée par la
-  variable ==``@object==.
-
--	Littéraux. ==#== représente les littéraux. ainsi, ==`#literal==
-  reconnaît n'importe quel littéral, par exemple 1, ==#()==, "unechaine"
-  ou ==#unSymbol==.
-
-
-!!!Des exemples d'identification de schémas
-
-Si l'on veut identifier les expressions de type ==aDict at: aKey ifAbsent: aBlock== dans lesquelles les variables peuvent être des expressions composées, on écrit l'expression
-suivante : ==``@aDict at: ``@aKey ifAbsent: ``@aBlock.==
-Une telle expression identifie par exemple les expressions suivantes :
-
-[[[lineNumber=true
-instVarMap at: aClass name ifAbsent: [oldClass instVarNames]
-deepCopier references at: argumentTarget ifAbsent: [argumentTarget]
-bestGuesses at: anInstVarName ifAbsent: [self typesFor: anInstVarName]
-object at: (keyArray at: selectionIndex) ifAbsent: [nil]
-]]]
-
-Comme l'interface en Squeak ne permet pas encore de sélectionner les
-classes sur lesquelles on veut travailler, le système analyse les 1
-934 classes et quelque 42 869 méthodes qui sont disponibles dans la
-distribution de base, ce qui peut sensiblement ralentir le traitement.
-
-Voici quelques exemples d'
-expressions qui pourraient être avantageusement transformées :
-
-[[[lineNumber=true
-| `@Temps | ``@.Statements. ``@Boolean ifTrue: [^false]. ^true
-| `@Temps | ``@.Statements. ^``@Boolean not
-``@object not ifTrue: ``@block
-``@object ifFalse: ``@block.
-]]]
-
-[[[lineNumber=true
-RBParseTreeRewriter new
- 	replace: '``@aDictionary at: ``@key
- 		ifAbsent:
- 			[| `@Temps |
- 			``@.Statements.
- 			``@aDictionary at: ``@key put: ``@value]' with: '``@aDictionary at: ``@key
- 		ifAbsentPut:
- 			[| `@Temps |
- 			``@.Statements.
- 			``@value]';
-	yourself
-]]]
-
-[[[lineNumber=true
-rule := RBUnderscoreAssignmentRule new.
-environment := BrowserEnvironment new forPackageNames: #('PackageA'
-'PackageB' ...).
-SmalllintChecker runRule: rule onEnvironment: environment.
-rule open
-]]]
-
-[[[lineNumber=true
-ORLintBrowser
-	openRule: (RBCompositeLintRule rules: (RBCompositeLintRule
-rulesGroupedFor: RBSpellingRule) name: 'Spelling')
-	environment: (BrowserEnvironment new forPackageNames: #('Kernel'
-'Collections-Abstract'))
-]]]
+Execute again the rule to see that the result contains all the cases.
+
+!!! Notes
+
+In the previous example the results are only expressions. To get methods, the
+==matches:== message should be replaced by ==matchesAnyMethodOf:== in the
+==initialize== method. In that case, the full method should be described with
+potential temporary variables, optional statements, etc.
+
+
+%
+%!!Junk
+%
+%- Variable. Un schéma peut contenir des variables en utilisant
+%  le backquote ou accent grave. Ainsi, ==`key== représente n'importe
+%  quelle variable, mais pas une expression.
+%
+%- Liste. Pour représenter une expression potentiellement
+%  complexe, on utilise ==@== qui caractérise une liste. Ainsi, `@key
+%  peut représenter aussi bien une variable simple comme temp qu'une
+%  expression comme ==(aDict at: self keyForDict)==. Par exemple, | `@Temps
+%  | reconnaît une liste de variables temporaires. Le point . reconnaît
+%  une instruction dans une séquence de code.==`@.Statements==
+%  reconnaît une liste d'instructions. Par exemple, foo `@message:
+%  ==`@args== reconnaît n'importe quel message envoyé à  foo.
+%
+%- Récursion. Pour que la reconnaissance s'effectue aussi à 
+%  l'intérieur de l'expression, il faut doubler la quote. La seconde
+%  quote représente la récursion du schéma cherché. Ainsi,
+%  ==``@object foo== reconnaît foo, à  quelque objet qu'il soit envoyé,
+%  mais observe également pour chaque reconnaissance si une
+%  reconnaissance est possible dans la partie représentée par la
+%  variable ==``@object==.
+%
+%-	Littéraux. ==#== représente les littéraux. ainsi, ==`#literal==
+%  reconnaît n'importe quel littéral, par exemple 1, ==#()==, "unechaine"
+%  ou ==#unSymbol==.
+%
+%
+%!!!Des exemples d'identification de schémas
+%
+%Si l'on veut identifier les expressions de type ==aDict at: aKey ifAbsent: aBlock== dans lesquelles les variables peuvent être des expressions composées, on écrit l'expression
+%suivante : ==``@aDict at: ``@aKey ifAbsent: ``@aBlock.==
+%Une telle expression identifie par exemple les expressions suivantes :
+%
+%[[[lineNumber=true
+%instVarMap at: aClass name ifAbsent: [oldClass instVarNames]
+%deepCopier references at: argumentTarget ifAbsent: [argumentTarget]
+%bestGuesses at: anInstVarName ifAbsent: [self typesFor: anInstVarName]
+%object at: (keyArray at: selectionIndex) ifAbsent: [nil]
+%]]]
+%
+%Comme l'interface en Squeak ne permet pas encore de sélectionner les
+%classes sur lesquelles on veut travailler, le système analyse les 1
+%934 classes et quelque 42 869 méthodes qui sont disponibles dans la
+%distribution de base, ce qui peut sensiblement ralentir le traitement.
+%
+%Voici quelques exemples d'
+%expressions qui pourraient être avantageusement transformées :
+%
+%[[[lineNumber=true
+%| `@Temps | ``@.Statements. ``@Boolean ifTrue: [^false]. ^true
+%| `@Temps | ``@.Statements. ^``@Boolean not
+%``@object not ifTrue: ``@block
+%``@object ifFalse: ``@block.
+%]]]
+%
+%[[[lineNumber=true
+%RBParseTreeRewriter new
+% 	replace: '``@aDictionary at: ``@key
+% 		ifAbsent:
+% 			[| `@Temps |
+% 			``@.Statements.
+% 			``@aDictionary at: ``@key put: ``@value]' with: '``@aDictionary at: ``@key
+% 		ifAbsentPut:
+% 			[| `@Temps |
+% 			``@.Statements.
+% 			``@value]';
+%	yourself
+%]]]
+%
+%[[[lineNumber=true
+%rule := RBUnderscoreAssignmentRule new.
+%environment := BrowserEnvironment new forPackageNames: #('PackageA'
+%'PackageB' ...).
+%SmalllintChecker runRule: rule onEnvironment: environment.
+%rule open
+%]]]
+%
+%[[[lineNumber=true
+%ORLintBrowser
+%	openRule: (RBCompositeLintRule rules: (RBCompositeLintRule
+%rulesGroupedFor: RBSpellingRule) name: 'Spelling')
+%	environment: (BrowserEnvironment new forPackageNames: #('Kernel'
+%'Collections-Abstract'))
+%]]]
