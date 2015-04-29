@@ -1,4 +1,4 @@
-!Checking and Transforming Programs with Rewrite Engine
+!Checking Programs with Rewrite Engine
 
 
 Manipulating programs automatically is a really powerful tool. A refactoring tool is a typical example. Another example is a rule checking engine such as the one presented in Chapter XXX. 
