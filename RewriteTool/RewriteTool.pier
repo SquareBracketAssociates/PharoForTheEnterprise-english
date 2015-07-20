@@ -1,73 +1,85 @@
-﻿!Rewrite Tool
+﻿!The Rewrite Tool
 
 '''""TODO:"" do a full pass on this chapter, fill in where indicated; layout figures/sections; 
-change option naming (as list, recurse into);'''
-
-The purpose of this chapter is to explain what is Rewrite Tool, why do we need
-it and how to use it properly. It also helps to understand better how Rewrite
-Tool works. Inasmuch it uses rewrite engine, its general concepts are
-described. This engine, which is really powerful and very useful, is used by
-Pharo to match and transform expressions or methods.  Often we encounter a
-situation when we want to transform some part of code in a lot of different
-places into another code.  For example, if you want to change 
-
-[[[ label = matchExample | language = Smalltalk
-    self isNil ifTrue: [ ^ true ] 
-]]]
-to next code:
-[[[ label = transformExample | language = Smalltalk
-    self ifNil: [ ^ true ]
-]]]
-in each and every method of your package.  It may take a lot of time and nerves
-to manage this manually. However, you can use rewrite engine to transform all
-of your methods in the way you want, if only you know how. The syntax of
-rewrite engine is not that straightforward, thus to create specific matching
-and transforming rules with it you will have to spend some time. Moreover, even
-if you know engine syntax perfectly, it is very easy to miss a dot or misspell
-some part of rewrite expression. As you may have guessed, Rewrite Tool helps us
-to solve such a problem. It provides a GUI which allows user to create rewrite
-rules without knowledge of rewrite engine syntax. After rule is created you may
-simply apply it to scope that you want: packages, classes, methods.
-
-In this chapter, we describe the tool itself in general. Then, we will take a
-look at examples that will show you Rewrite Tool at work. After that, we will
-go in more details about tool and how it works.
-
-!! Getting started
-
-To begin, you need to retrieve the RewriteTool which is a part of PharoExtra on
-Smalltalkhub. In order to do this, add and configure the repository in your
-Monticello browser as following:
-
-[[[
-MCHttpRepository
-	location: 'http://smalltalkhub.com/mc/PharoExtras/RewriteTool/main'
-	user: ''
-	password: ''
-]]]
-
-If you are more comfortable with Gofer, an alternative way to retrieve and load
-the RewriteTool is to enter the following code:
-
-[[[
-Gofer new
-  url: 'http://smalltalkhub.com/mc/PharoExtras/RewriteTool/main'
-  configuration;
-  load.
-ConfigurationOfRewriteTool loadDevelopment
-]]]
-
+change option naming (as list, recurse into etc.);'''
 
 !!Introduction
 
-Rewrite Tool includes two parts. First is a rewrite rule builder (in the rest of this chapter it is referenced as ''Builder''), which, obviously, lets user create (build) rewrite rules.
-And second part is rewrite rule browser(next as ''"Browser"''), in which user can select previously created rule and apply it to specific scope.
+The purpose of this chapter is to explain what is The Rewrite Tool, why do we need
+it and how to use it properly. In this chapter we also explain how The Rewrite
+Tool works. Inasmuch our tool uses The Rewrite Engine we describe its general concepts. 
+With this engine we are able to create expressions which can be used to match and transform code. 
+Often we encounter a situation when we want to transform some part of code in many different places 
+to improve its quality and readability. Also code transformations are performed in order to change an API. 
+Let us look at simple example of code transformation. 
 
-!!!Rewrite rule builder
+[[[ 
+  "Source code"
+  self isNil ifTrue: [ ^ true ] 
+  
+  "Resulting code"
+  self ifNil: [ ^ true ]
+]]]
+
+Consider that we want to transform all code, that has same structure as source code, 
+within few specific packages, into a code, that would have the same structure as a resulting code in example. 
+To carry out this code transformation manually on a big system, i.e. with large code base, 
+one would have to spend a lot of time. Also manual code transformation is an error-prone and complex process, 
+inasmuch one can easily miss a code, that matches source code structure. The last, but not the least problem 
+of manual code transformation is following: if one transforms code (consider transformation from example) by hand 
+and after some time wants to do same or similar transformation on other packages, he has to redo all the work. 
+This means, that transformation implemented previously is not saved, thus it is not reusable.
+However, you can use The Rewrite Engine to transform all of code in the way you want, if only you know how. 
+The syntax of DSL (domain specific language) of The Rewrite Engine is not very straightforward and sometimes even confusing, 
+that is why it may be a problem to create specific rules to match and transform code. 
+Moreover, even if you know engine syntax perfectly, it is very easy to make a simple but important mistake, 
+for instance, miss a dot or misspell some part of rewrite expression. Such a mistake may have a huge impact 
+on the result of code transformation, however you will not be notified by system about an error. 
+
+As you may have guessed, The Rewrite Tool helps to solve such a problems. 
+It provides an intuitive GUI (graphical user interface) which allows user to create rewrite rules 
+without knowledge of specific syntax, that is used in DSL of The Rewrite Engine. Moreover, after rule is created 
+the tool ebables user to apply it to desired environment scope: packages, classes, methods. 
+In addition, The Rewrite Tool saves all the rules in your image. This allows you to reuse transformation rules 
+in future for same or similar code transformations. 
+Also, you are able to modify rules later, as they are stored as classes.
+
+In this chapter, we describe the tool itself in general. Then, we will take a look at examples that will show 
+you The Rewrite Tool in work. After that, we will go in more details about tool and how it works.
+
+!! Getting started
+
+To begin, you need to load The Rewrite Tool into your image. In order to do this, 
+execute one of the following scripts.
+
+[[[
+  "Stable version for Pharo 4"
+  Metacello new 
+    smalltalkhubUser: 'Pharo' project: 'MetaRepoForPharo40';
+    configuration: 'RewriteTool';
+    load
+	
+  "Development version for Pharo 5"
+  Metacello new 
+    smalltalkhubUser: 'MarkRizun' project: 'RewriteTool';
+    configuration: 'RewriteTool';
+    version: #development;
+    load
+]]]
+
+An alternative way to retrieve and load The Rewrite Tool is to use the Configuration Browser in Pharo 4 
+(Catalog Browser in Pharo 5). Just type in the search pane "RewriteTool" (without quotes) 
+like on the figure 1.1 and load the project.
+
++Configuration Browser in Pharo 4>file://figures/configurationBrowser.png|label=fig:configurationBrowser+
+
+!!Rewrite rule builder
 
 
-The builder can be launched by typing the following code in your Pharo
-workspace:
+""everything below not yet reviewed""
+
+As soon as you have loaded The Rewrite Tool into your image, two new options appear under the "Tools" tab in world menu. 
+
 
 [[[
 RewriteRuleBuilder new openWithSpec.
@@ -77,7 +89,7 @@ As illustrated in figure *rewriteRuleBuilder*, builder has four panes and three
 buttons, and each of this items has its own functions.  It provides a
 possibility, with simple GUI, to build rewrite rules dynamically.
 
-+Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=rewriteRuleBuilder+
++Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=fig:rewriteRuleBuilder+
 
 ""Panes""
 
@@ -131,7 +143,7 @@ appears. You can accept or cancel them.
 
 To browse selected rewrite rule class, click "Browse selected rule" button.
 
-+Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=rewriteRuleBrowser+
++Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=fig:rewriteRuleBrowser+
 
 !!Examples
 
@@ -142,13 +154,13 @@ Following examples are meant to teach you basics of using Builder.
 
 Back to example, we would like to transform the following snippet of code:
 
-[[[ label = matchExample | language = Smalltalk
+[[[ label = scr:matchExample 
     self isNil ifTrue: [ ^ true ] 
 ]]]
 
 into:
 
-[[[ label = transformExample | language = Smalltalk
+[[[ label = scr:transformExample 
     self ifNil: [ ^ true ]
 ]]]
 
@@ -185,19 +197,19 @@ You need ''"Abstract variable"'', inasmuch it changes ''self'' into
 metavariable, as illustrated in figure *simpleExample1-2*.
 +End of step 1 of simple example>file://figures/simpleExample1-2.png|width=60|label=simpleExample1-2+
 
-You can read more about metavariables and rewrite engine ''""HERE""''.
+You can read more about metavariables and The Rewrite Engine ''""HERE""''.
 
 This metavariable will match any object for example: ''self'', ''Color'' (classes are objects too), ''someTempVar''.
 After this change we should have:
 
-[[[ label = matchExampleStep1 | language = Smalltalk
+[[[ label = scr:matchExampleStep1 
     `variable1 isNil ifTrue: [ ^ true ] 
 ]]]
 
 And status bar also has to be unchanged, saying: ''matches''.
 As you may noticed Transform pane text also was changed in following way:
 
-[[[ label = transformExampleStep1 | language = Smalltalk
+[[[ label = scr:transformExampleStep1 
     `variable1 ifNil: [ ^ true ]
 ]]]
 
@@ -217,7 +229,7 @@ is not a variable selected, but selector. So, click on ''Ignore selector''
 option. It will remove ''isNil'' from Transform pane.
 Also, Result pane was updated.%:
 
-%[[[ label = resultExampleStep1 | language = Smalltalk
+%[[[ label = scr:resultExampleStep1 
 %    self ifTrue: [ ^ true ]
 %]]]
 
@@ -248,7 +260,7 @@ the same rule as in *simpleExample1-6*.
 
 You can see the result of applying rewrite rule to source code in Result pane.
 
-[[[ label = resultExampleStep2 | language = Smalltalk
+[[[ label = scr:resultExampleStep2 
     self ifNil: [ ^ true ]
 ]]]
 
@@ -271,7 +283,7 @@ many rules that are similar to each other. Thus let us take a look only at one
 of them. Suppose we have a snippet of code which returns the max of two objects
 and which is written as follows:
 
-[[[ label=secondExample1 | language = Smalltalk
+[[[ label=secondExample1 
     temp := a < b
 	ifTrue: [ a ]
 	ifFalse: [ b ]
@@ -294,7 +306,7 @@ In order to create a rule that will do the transformation as presented before, w
 First of all, launch the Builder and type this input code into Source and Match
 panes (the left ones):
 
-[[[ label = secondExample3 | language = Smalltalk
+[[[ label = scr:secondExample3 
     temp := a < b
 	ifTrue: [ a ]
 	ifFalse: [ b ]
@@ -302,7 +314,7 @@ panes (the left ones):
 
 Then enter this code into the Transform pane (the bottom right one):
 
-[[[ label = secondExample4 | language = Smalltalk
+[[[ label = scr:secondExample4 
     temp := a max: b
 ]]]
 
@@ -314,7 +326,7 @@ the contextual menu (right click). Apply the same operation on ''a'' and ''b''.
 After this step, your Match panel should look like the following snippet of
 code:
 
-[[[ label = secondExample5 | language = Smalltalk
+[[[ label = scr:secondExample5 
     `variable1 := `variable2 < `variable3
 	ifTrue: [ `variable2 ]
 	ifFalse: [ `variable3 ]
@@ -325,7 +337,7 @@ trying this example.
 
 As for the Transform panel, it should be very similar to the following code:
 
-[[[ label = secondExample6 | language = Smalltalk
+[[[ label = scr:secondExample6 
     `variable1 := `variable2 max: `variable3
 ]]]
 If you want to match and transform only expressions where ''a'' and ''b'' are
@@ -340,7 +352,7 @@ go on with the example.  Select ''`variable2'' and mark it as ''As list'' with
 the contextual menu. Then apply ''Recurse into'' on ''`@variable2'' which
 results in the following snippet of code in Match panel:
 
-[[[ label = secondExample7 | language = Smalltalk
+[[[ label = scr:secondExample7 
   `variable1 := ``@variable2 < `variable3
 	ifTrue: [ ``@variable2 ]
 	ifFalse: [ `variable3 ]
@@ -348,7 +360,7 @@ results in the following snippet of code in Match panel:
 
 And in the Transform panel:
 
-[[[ label = secondExample8 | language = Smalltalk
+[[[ label = scr:secondExample8 
     `variable1 := ``@variable2 max: `variable3
 ]]]
 
@@ -366,7 +378,7 @@ it in the Browser.
 
 !!!Third example
 
-""...Probably we have to put explanation to rewrite engine before examples, or just give some link...""
+""...Probably we have to put explanation to The Rewrite Engine before examples, or just give some link...""
 
 Class ==RBMinMaxRule== is a subclass of ==RBTransformationRule==, which has other not less interesting examples of rewrite rules. 
 That is why we will examine ==RBAtIfAbsentRule==. 
@@ -376,7 +388,7 @@ This one works with collections and blocks, so its implementation may be more co
 Again, open ==RBAtIfAbsentRule>>#initialize== method, and you will see few, similar to each other, rules. 
 Here is one of them:
 
-[[[ label=thirdExample1 | language = Smalltalk
+[[[ label=thirdExample1 
     self rewriteRule
 	"..."
 	replace: '``@dictionary at: ``@key
@@ -393,7 +405,7 @@ Here is one of them:
 At first look it may seem too complex, but after we generate it with builder, you will clearly know the responsibilities of each part of this rule.
 With such a rule we can do followning transformation:
 
-[[[ label=thirdExample2 | language = Smalltalk
+[[[ label=thirdExample2 
     	"before rule is applied"
 
 	| myDictionary |
@@ -462,7 +474,7 @@ Now we do exactly the same actions with a key, which is equal to 3.
 
 Apply ''Abstract statement'' action to next snippet:
 
-[[[ label=thirdExample3 | language = Smalltalk
+[[[ label=thirdExample3 
     	"..."
 
 	``@variable1 := Dictionary new
@@ -473,7 +485,7 @@ Apply ''Abstract statement'' action to next snippet:
 	"..."
 ]]]
 
-Basically, we want to match here pretty much everything, so let's do ''As List'' and ''Recurse into'' on ==`.Statement1==, and as a result we have ==``@.Statement1==.
+Basically, we want to match here pretty much everything, so let us do ''As List'' and ''Recurse into'' on ==`.Statement1==, and as a result we have ==``@.Statement1==.
 To finish with initialization part of this code, select declaration of temporary variable ==| myDictionary |== and do on it ''Abstract temporaries list''.
 Note, that ==| myDictionary |== in Transform panel wasn't transformed to ==| ``@temporaries |==, so we have to do it ourselves. 
 Select ==| myDictionary |== in Transform panel, and apply ''Abstract temporaries list''. 
@@ -487,7 +499,7 @@ Also we have to do same actions in Transform panel, but now in opened window cho
 
 Apply ''Abstract statement""s""'' action to next snippet:
 
-[[[ label=thirdExample4 | language = Smalltalk
+[[[ label=thirdExample4 
     	"..."
 
 	temp1 := 'c'.
@@ -510,9 +522,9 @@ If you wish, now it is possible to ''Generate'' a class, that will hold this rul
 ""... Again, maybe explained Browser ...""
 
 
-!!Rewrite Tool in details
+!!The Rewrite Tool in details
 
-In this section we describe each and every part of rewrite tool. It is grounded
+In this section we describe each and every part of The Rewrite Tool. It is grounded
 on many important ideas that are explained here. A good understanding of this
 ideas is crucial to increase users effectiveness, while working with the tool.
 
@@ -547,7 +559,7 @@ reasons it is not displayed in the examples below.
 
 Matches any block.
 
-[[[ label = blockExample | language = Smalltalk
+[[[ label = scr:blockExample 
     [ "a lot of stuff here" ] "replaced with" `@block
 ]]]
 
@@ -556,7 +568,7 @@ Matches any block.
 
 Matches any condition.
 
-[[[ label = conditionExample | language = Smalltalk
+[[[ label = scr:conditionExample 
     self isNil ifTrue: [ ^ true ] "is replaced with" `@condition ifTrue: [ ^ true ]
 ]]]
 
@@ -564,7 +576,7 @@ Matches any condition.
 
 Matches any literal.
 
-[[[ label = literalExample | language = Smalltalk
+[[[ label = scr:literalExample 
     true "is replaced with" `#literal
     119 "is replaced with" `#literal
 ]]]
@@ -573,7 +585,7 @@ Matches any literal.
 
 Matches any statement, but not list of statements.
 
-[[[ label = statementExample | language = Smalltalk
+[[[ label = scr:statementExample 
     self isNil ifTrue: [ ^ true ] "is replaced with" `.Statement
 ]]]
 
@@ -581,7 +593,7 @@ Matches any statement, but not list of statements.
 
 Matches any variable.
 
-[[[ label = variableExample | language = Smalltalk
+[[[ label = scr:variableExample 
     self "is replaced with" `variable
 ]]]
 
@@ -592,7 +604,7 @@ Matches any variable.
 Metavariable represented as list matches practically anything.
 
 
-[[[ label = asListExample | language = Smalltalk
+[[[ label = scr:asListExample 
     `variable "is replaced with" `@variable
 ]]]
 
@@ -604,7 +616,7 @@ But recursive metavariable in expression ''``@variable size'' matches ''self siz
 First time ''``@variable'' is ''self size'' and second time it is ''self''.
 
 
-[[[ label = asListExample | language = Smalltalk
+[[[ label = scr:asListExample 
     `@variable "is replaced with" ``@variable
 ]]]
 
@@ -632,7 +644,7 @@ Removes selector of selected node of AST.
 Sets selected node of AST in previous state.
 
 
-[[[ label = undoOnNodeExample | language = Smalltalk
+[[[ label = scr:undoOnNodeExample 
     self "Abstract variable =>" `variable
     `variable "Undo on node =>" self
 ]]]
@@ -640,7 +652,7 @@ Sets selected node of AST in previous state.
 !!!Working with rewrite rules
 
 This section provides useful tips about working in rewrite rule builder.
-It will help you to understand the mechanics of building rule with ''Rewrite tool''.
+It will help you to understand the mechanics of building rule with ''The Rewrite Tool''.
 
 !!!!""Equal nodes""
 
@@ -650,7 +662,7 @@ If it is applied in ''Transform rule'' pane, only objects in it are transformed,
 When I say "same object", it means equal nodes of AST.
 Example:
 
-[[[ label = tipsExample1 | language = Smalltalk
+[[[ label = scr:tipsExample1 
     "Code below is useless - just an example"
 
     "Match rule pane:"
@@ -667,7 +679,7 @@ Example:
 Select ''self'' in ''Match rule'' pane and apply ''Abstract variable'' action.
 You will, see the next result:
 
-[[[ label = tipsExample2 | language = Smalltalk
+[[[ label = scr:tipsExample2 
     "Code below is useless - just an example"
 
     "Match rule pane:"
@@ -691,7 +703,7 @@ that you are not able to apply, for example, ''Abstract block'' action in
 If there is one, system will suggest you to choose name from existing
 metavariables. Let us take previous example:
 
-[[[ label = tipsExample1 | language = Smalltalk
+[[[ label = scr:tipsExample1 
     "Code below is useless - just an example"
 
     "Match rule pane:"
@@ -715,7 +727,7 @@ With other actions like ''Abstract literal'', ''Abstract condition'' etc. happen
 
 One more important thing is that creating rewrite rules with manual editing, instead of action click menu options, is not recommended.
 First of all, you will not have general ''Undo'' as well as ''Undo on node'' options available.
-Moreover you may make mistake in rewrite engine syntax.
+Moreover you may make mistake in The Rewrite Engine syntax.
 And also, it is possible to get errors from, for example, creating non-existing metavariables.
 To sum up, rewrite rule builder allows you to edit rules, but do it only if really necessary.
 
@@ -723,20 +735,20 @@ To sum up, rewrite rule builder allows you to edit rules, but do it only if real
 
 !!!Details of rewrite rule browser
 
-[[[ label = nothing | language = Smalltalk
+[[[ label = scr:nothing 
     "Nothing here for now"
 ]]]
 
 "IN DEVELOPEMENT!"
 
-!!!Rewrite engine
+!!!The Rewrite Engine
 
-Builder uses rewrite engine to parse rules, to match and transform code. This engine works with strings, that are recognized on level of abstract syntax tree.
+Builder uses The Rewrite Engine to parse rules, to match and transform code. This engine works with strings, that are recognized on level of abstract syntax tree.
 As a result, each part of matching or transforming string becomes a node of AST, which makes this engine very powerful.
-So, rewrite engine makes it possible to get an AST representation of any rule.
+So, The Rewrite Engine makes it possible to get an AST representation of any rule.
 It means, user can easily match or replace(transform) any part of code as a node.
 
-The syntax of rewrite engine may seem a bit confusing, however it contains only few key symbols.
+The syntax of The Rewrite Engine may seem a bit confusing, however it contains only few key symbols.
 These symbols are:
 -backquote(`)
 -dot(.)
@@ -773,7 +785,7 @@ myVar
 myAnotherVar
 ]]]
 It means, that name of metavariable is important, as it is unique.
-Each metavariable has it's own AST node representation.
+Each metavariable has its own AST node representation.
 Conclusion is, that different metavariables match different variables.
 And one metavariable matches the same variable many times.
 
@@ -782,7 +794,7 @@ Also backquote symbol is responsible for recursing into message sends, statement
 ``@variable1 size
 ]]]
 This rule will match any object that has a sender size.
-Moreover, whenever match is found, rewrite engine looks inside of matched node for more matches.
+Moreover, whenever match is found, The Rewrite Engine looks inside of matched node for more matches.
 It means that engine will search for this construction
 [[[
 ``@variable1 size
@@ -812,7 +824,7 @@ self
 [[[
 .
 ]]]
-It has the simplest role in rewrite engine.
+It has the simplest role in The Rewrite Engine.
 Dot is used to match statement in sequence node.
 [[[
 `.Statement1
@@ -822,7 +834,7 @@ matches with
 myVar asString size
 ]]]
 Obviously, it is also used as end of statement.
-Working with rewrite engine syntax requires a lot of attention and patience, as if you miss dot somewhere, 
+Working with The Rewrite Engine syntax requires a lot of attention and patience, as if you miss dot somewhere, 
 it will match nothing or something you didn't want to.
 In case you are using builder, it will automatically place all dots you need.
 If you have couple of statements like this:
@@ -830,7 +842,7 @@ If you have couple of statements like this:
 myVar := 123.
 myVar asString size.
 ]]]
-it matches next rewrite engine expression:
+it matches next The Rewrite Engine expression:
 [[[
 `.Statement1.
 `.Statement2
@@ -857,13 +869,13 @@ Finally, we will examine functions of at sign:
 @
 ]]]
 
-At sign, as an element of rewrite engine syntax, is used to indicate list of something: temporary variables, statements, arguments or keywords in message send.
+At sign, as an element of The Rewrite Engine syntax, is used to indicate list of something: temporary variables, statements, arguments or keywords in message send.
 To match any message send you have to specify any number of keywords and any number of arguments like this:
 [[[
 myObject `@message: `@keyword
 ]]]
 matches any message sent to myObject.
-If you want to match more than one statement which are one after another it's not necessary to write:
+If you want to match more than one statement which are one after another it is not necessary to write:
 [[[
 `.Statement1.
 `.Statement2.
@@ -874,7 +886,7 @@ Instead use at sign together with dot symbol, and you will get equal to previous
 [[[
 `@.Statements
 ]]]
-Also, it's possible to match list of temps this way:
+Also, it is possible to match list of temps this way:
 [[[
 | `@temporaries |
 ]]]
@@ -884,10 +896,10 @@ In general, at symbol used with backquote
 ]]]
 matches any message, literal or block node of AST, which is really important to know.
 
-!!Architecture of Rewrite Tool
+!!Architecture of The Rewrite Tool
 
-This section covers the architecture of Rewrite Tool, explains responsibilities of classes.
-Also it gives a clear understanding of class hierarchy, which is present in Rewrite Tool. 
+This section covers the architecture of The Rewrite Tool, explains responsibilities of classes.
+Also it gives a clear understanding of class hierarchy, which is present in The Rewrite Tool. 
 In addition to this, methods are covered too.
 
 !!!AbstractPanel class
@@ -956,7 +968,7 @@ Next, we may examine subclasses of ''AbstractPanel''.
 Holds source code of expression that should be transformed into something new.
 Actually, ''SourcePanel'' implements onle one new feature that is not inherited from ''AbstractPanel''.
 This class states that by action-clicking (right click) there are available options in this panel - Smart Suggestions (by Gisela). 
-It's done in method #menuActions, which returns an array. 
+It is done in method #menuActions, which returns an array. 
 
 [[[
     menuActions
@@ -1338,7 +1350,7 @@ Basically, it invokes ==#abstractWithName:andIndex:== method, and as arguments p
 
 You can see which metavariable is created in ==#abstractName== method. 
 For example, ''AbstractBlockCommand'' creates ==`@block== metavariable. 
-Thus, rewrite engine will match any block. 
+Thus, The Rewrite Engine will match any block. 
 
 ''RenameCommand'' class works exactly like rename refactoring, 
 but with this class you can rename/change any node, not just variable. 
