@@ -39,11 +39,11 @@ With this engine we are able to create expressions which can be used to match an
 Often we encounter a situation when we want to transform some part of code in many different places 
 to improve its quality and readability. Also code transformations are performed in order to change an API. 
 Let us look at simple example of code transformation. </p>
-<p><figure><pre><code class="smalltalk">  &quot;Source code&quot;
-  self isNil ifTrue: [ ^ true ] 
-  
-  &quot;Resulting code&quot;
-  self ifNil: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
+<p><figure><pre><code class="smalltalk">	&quot;Source code&quot;
+	self isNil ifTrue: [ ^ true ] 
+
+	&quot;Resulting code&quot;
+	self ifNil: [ ^ true ]</code></pre><figcaption><a name="scr:simpleTransformation"></a>1.1. Simple transformation</figcaption></figure></p>
 <p>Consider that we want to transform all code, that has same structure as source code, 
 within few specific packages, into a code, that would have the same structure as a resulting code in example. 
 To carry out this code transformation manually on a big system, i.e. with large code base, 
@@ -70,18 +70,18 @@ you The Rewrite Tool in work. After that, we will go in more details about tool 
 <h3>I.2.  Getting started</h3>
 <p>To begin, you need to load The Rewrite Tool into your image. In order to do this, 
 execute one of the following scripts.</p>
-<p><figure><pre><code class="smalltalk">  &quot;Stable version for Pharo 4&quot;
-  Metacello new 
-    smalltalkhubUser: 'Pharo' project: 'MetaRepoForPharo40';
-    configuration: 'RewriteTool';
-    load
-	
-  &quot;Development version for Pharo 5&quot;
-  Metacello new 
-    smalltalkhubUser: 'MarkRizun' project: 'RewriteTool';
-    configuration: 'RewriteTool';
-    version: #development;
-    load</code></pre><figcaption></figcaption></figure></p>
+<p><figure><pre><code class="smalltalk">	&quot;Stable version for Pharo 4&quot;
+	Metacello new 
+		smalltalkhubUser: 'Pharo' project: 'MetaRepoForPharo40';
+		configuration: 'RewriteTool';
+		load
+
+	&quot;Development version for Pharo 5&quot;
+	Metacello new 
+		smalltalkhubUser: 'MarkRizun' project: 'RewriteTool';
+		configuration: 'RewriteTool';
+		version: #development;
+		load</code></pre><figcaption><a name="scr:gettingStarted"></a>1.2. How to load The Rewrite Tool</figcaption></figure></p>
 <p>An alternative way to retrieve and load The Rewrite Tool is to use the Configuration Browser in Pharo 4 
 (Catalog Browser in Pharo 5). Just type in the search pane &quot;RewriteTool&quot; (without quotes) 
 like on the figure <a href="#fig:configurationBrowser">1.1 </a> and install stable version of the project.</p>
@@ -92,7 +92,7 @@ First one is rewrite rule builder - a part of The Rewrite Tool which provides an
 to create transformation rules dynamically, with immediate feedback. 
 The second option opens rewrite rule browser which we discuss in the section <a href="#sec:rewriteRuleBuilder">1.3 </a>.
 If you do not like to use world menu to open builder, you can always open it by executing following code: </p>
-<p><figure><pre><code class="smalltalk">  RewriteRuleBuilder new openWithSpec</code></pre><figcaption></figcaption></figure></p>
+<p><figure><pre><code class="smalltalk">	RewriteRuleBuilder new openWithSpec</code></pre><figcaption><a name="scr:builderOpen"></a>1.3. Open the builder</figcaption></figure></p>
 <p>As illustrated in figure <a href="#fig:rewriteRuleBuilder">1.2 </a>, builder has four panes.</p>
 <p><a name="fig:rewriteRuleBuilder"></a><figure><img src="figures/rewriteRuleBuilder.png"></img><figcaption>1.2. Rewrite rule builder</figcaption></figure></p>
 <p>Bottom half of the builder entitled &quot;Transformation rule&quot; is your main workspace - here you create transformation rule. 
@@ -112,7 +112,7 @@ This option creates an abstraction (`@block1) which matches any instance of bloc
 <p>Rewrite rule browser is the second part of The Rewrite Tool. It provides an access to all transformation rules, 
 that are present in your image. You can select one of them and apply it to any environment scope you want. 
 The browser can be launched via world menu from &quot;Tools&quot; tab, or by executing following code:</p>
-<p><figure><pre><code class="smalltalk">  RewriteRuleBrowser new openWithSpec</code></pre><figcaption></figcaption></figure></p>
+<p><figure><pre><code class="smalltalk">	RewriteRuleBrowser new openWithSpec</code></pre><figcaption><a name="scr:browserOpen"></a>1.4. Open the browser</figcaption></figure></p>
 <p>The browser is shown on figure <a href="#fig:rewriteRuleBrowser">1.3 </a>. All rules are available in drop down list at bottom of the window. 
 Above you can see all packages, classes and methods, that are present in the image. 
 After you clicked an &quot;Apply rule:&quot; button, a confirmation window will be opened. 
@@ -124,11 +124,11 @@ In particular, we describe how to create transformation rule with builder and ap
 <h4>I.5.A. First example</h4>
 <p>Consider, that we want to do a transformation described in following listing. 
 Basically, here we replace isNil ifTrue: [ ] construction with ifNil: [ ] message send. </p>
-<p><figure><pre><code class="smalltalk">    &quot;Source code&quot;
-    self isNil ifTrue: [ ^ true ] 
-	
+<p><figure><pre><code class="smalltalk">	&quot;Source code&quot;
+	self isNil ifTrue: [ ^ true ] 
+
 	&quot;Resulting code&quot;
-    self ifNil: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
+	self ifNil: [ ^ true ]</code></pre><figcaption><a name="scr:firstExmple"></a>1.5. First example of transformation</figcaption></figure></p>
 <h5>I.5.A.a. Step 1</h5>
 <p>First, you need to open a builder and input a source code into two panes: top left and bottom left. 
 Now you have a LHS part of rule, that matches an input code (green arrow indicates this). 
@@ -169,74 +169,60 @@ In the result of this action the argument will be replaced with new metavariable
 (<em>`@block1</em>) as shown in figure <a href="#example1-3">1.6 </a>.</p>
 <p><a name="example1-3"></a><figure><img src="figures/example1-3.png"></img><figcaption>1.6. Step 2 of simple example</figcaption></figure></p>
 <p>You can see the result of applying rewrite rule to source code in Result pane.</p>
-<p><figure><pre><code class="smalltalk">    self ifNil: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
-<p>You can click on &quot;Generate rule&quot; button to automatically generate a class that will represent your new rule.
-Than click on &quot;Browse rules&quot; button, that will open the browser. </p>
-<p><strong>below not yet reviewed</strong></p>
-<p><strong>...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...</strong></p>
-
+<p><figure><pre><code class="smalltalk">	self ifNil: [ ^ true ]</code></pre><figcaption><a name="scr:firstResult"></a>1.6. Result of transformation</figcaption></figure></p>
+<p>You can click on &quot;Generate rule&quot; button to automatically generate a class that will represent your new rule. 
+Give an appropriate name for your rule, for instance &quot;IsNilIfTrueToIfNil&quot; and click &quot;Ok&quot; button. 
+After click on &quot;Browse rules&quot; button to open the browser. </p>
+<p>In the bottom part of the browser you can see drop down list with all transformation rules, 
+that are present in your image. Right next to this list, there is a tick which says &quot;Only custom rules&quot;. 
+Check it in order to see only those rules, that you have created, 
+and select a newly created rule named &quot;IsNilIfTrueToIfNil&quot;. 
+Than select packages/classes on which you would like to perform a transformation and simply click &quot;Apply rule:&quot; button. 
+As a result you will see a window, that contains all the changes, that are going to be made after transformation. </p>
 <h4>I.5.B. Second example</h4>
-<p>To understand the following example, the previous one which transforms <em>isNil
-ifTrue:[ ... ]</em> into <em>ifNil[ ... ]</em> has to be understood. If not, please
-take your time and go back to be sure you know the basics.</p>
 <p>This time we are going to recreate one of rules that already exists in Critic
-Browser. We choose the one called <code>RBMinMaxRule</code>. It has a method initialize
-where all rules are initialized. There you can see that <code>RBMinMaxRule</code> has
-many rules that are similar to each other. Thus let us take a look only at one
-of them. Suppose we have a snippet of code which returns the max of two objects
-and which is written as follows:</p>
-<p><figure><pre><code class="smalltalk">    temp := a &lt; b
-	ifTrue: [ a ]
-	ifFalse: [ b ]</code></pre><figcaption></figcaption></figure></p>
-<p>where <em>temp</em> is a temporary variable. Let us suppose that the objects <em>a</em>
-and <em>b</em> are comparable, for instance integers.  This piece of code does
-simple assignment of bigger number (<em>a</em> or <em>b</em>) to the temporary variable
-<em>temp</em>. However it is written in a bad way.  We would rather write a simpler
-and more beautiful snippet of code as illustrated in the following script:</p>
-<p><figure><pre><code class="Smalltalk">    temp := a max: b</code></pre><figcaption></figcaption></figure></p>
-<p>This version is more readable and other people can easily understand what this code does.
-In order to create a rule that will do the transformation as presented before, we will use our Builder.</p>
-<h5>I.5.B.a. Step 1:</h5><p>First of all, launch the Builder and type this input code into Source and Match
-panes (the left ones):</p>
-<p><figure><pre><code class="smalltalk">    temp := a &lt; b
-	ifTrue: [ a ]
-	ifFalse: [ b ]</code></pre><figcaption></figcaption></figure></p>
-<p>Then enter this code into the Transform pane (the bottom right one):</p>
-<p><figure><pre><code class="smalltalk">    temp := a max: b</code></pre><figcaption></figcaption></figure></p>
-<p><a name="example2-1"></a><figure><img src="figures/example2-1.png" width="60%"></img><figcaption>1.7. Step 1 of max transformation example</figcaption></figure></p>
-<h5>I.5.B.b. Step 2:</h5><p>Now select <em>temp</em> in Match pane and mark it as an <em>Abstract variable</em> with
-the contextual menu (right click). Apply the same operation on <em>a</em> and <em>b</em>.
-After this step, your Match panel should look like the following snippet of
-code:</p>
+Browser. We choose the one called <em>RBMinMaxRule</em>. This class has a method initialize
+where all rules are initialized. There you can see that <em>RBMinMaxRule</em> has
+many similar rules. Thus let us recreate only one of them. 
+Suppose we have a snippet of code that compares two object and returns the greater one of them.</p>
+<p><figure><pre><code class="smalltalk">	| a b result |
+	a := 5.
+	b := 3.
+	result := a &gt; b
+		ifTrue: [ a ]
+		ifFalse: [ b ].
+	^ result</code></pre><figcaption><a name="scr:secondExampleSource"></a>1.7. Second example - source code</figcaption></figure></p>
+<p>This piece of code is not very well implemented, so we would rather transform it into a simpler and more 
+readable snippet of code as illustrated in the following listing. </p>
+<p><figure><pre><code class="smalltalk">	| a b result |
+	a := 5.
+	b := 3.
+	result := a max: b.
+	^ result</code></pre><figcaption><a name="scr:secondExampleResult"></a>1.8. Second example - resulting code</figcaption></figure></p>
+<p>Essentially, we can simplify described transformation to more general case shown in listing <a href="#scr:desiredTransformation">1.9 </a>.</p>
+<p><figure><pre><code class="smalltalk">	&quot;Source code&quot;
+	result := a &gt; b
+		ifTrue: [ a ]
+		ifFalse: [ b ].
+	
+	&quot;Resulting code&quot;
+	result := a max: b.</code></pre><figcaption><a name="scr:desiredTransformation"></a>1.9. Desired transformation</figcaption></figure></p>
+<h5>I.5.B.a. Step 1</h5><p>First of all, launch the builder and type the source code from listing <a href="#scr:desiredTransformation">1.9 </a> 
+into top and bottom left panes. Than enter the resulting code from listing <a href="#scr:desiredTransformation">1.9 </a> 
+into the bottom right pane. </p>
+<p><a name="example2-1"></a><figure><img src="figures/example2-1.png"></img><figcaption>1.7. Step 1 of second example</figcaption></figure></p>
+<h5>I.5.B.b. Step 2:</h5><p>Now select <em>result</em> variable in LHS part of the rule use an <em>Abstract object</em> action on it. 
+Apply the same operation on <em>a</em> and <em>b</em> variables.
+After this steps the builder has to look like in the figure <a href="#example2-2">1.8 </a>.</p>
 <p><figure><pre><code class="smalltalk">    `variable1 := `variable2 &lt; `variable3
 	ifTrue: [ `variable2 ]
 	ifFalse: [ `variable3 ]</code></pre><figcaption></figcaption></figure></p>
-<p><strong>Note:</strong> Variable names may be different if you did other changes before
+<p><a name="example2-2"></a><figure><img src="figures/example2-2.png"></img><figcaption>1.8. Step 2 of second example</figcaption></figure></p>
+<p><strong>Note:</strong> Metavariable indexes (number in the end of name) may be different if you did other changes before
 trying this example.</p>
-<p>As for the Transform panel, it should be very similar to the following code:</p>
-<p><figure><pre><code class="smalltalk">    `variable1 := `variable2 max: `variable3</code></pre><figcaption></figcaption></figure>
-If you want to match and transform only expressions where <em>a</em> and <em>b</em> are
-simple variables, this rule is sufficient. </p>
-<p><a name="example2-2"></a><figure><img src="figures/example2-2.png" width="60%"></img><figcaption>1.8. Step 2 of max transformation example</figcaption></figure></p>
-<h5>I.5.B.c. Step 3:</h5><p>However if you need something more complex, for instance <em>a</em> is some
-expression that does calculations and that returns a result, you will have to
-go on with the example.  Select <em>`variable2</em> and mark it as <em>As list</em> with
-the contextual menu. Then apply <em>Recurse into</em> on <em>`@variable2</em> which
-results in the following snippet of code in Match panel:</p>
-<p><figure><pre><code class="smalltalk">  `variable1 := ``@variable2 &lt; `variable3
-	ifTrue: [ ``@variable2 ]
-	ifFalse: [ `variable3 ]</code></pre><figcaption></figcaption></figure></p>
-<p>And in the Transform panel:</p>
-<p><figure><pre><code class="smalltalk">    `variable1 := ``@variable2 max: `variable3</code></pre><figcaption></figcaption></figure></p>
-<p>If necessary, you can do exactly the same thing with <em>b</em> (<em>`variable3</em> in
-the previous snippet). After few simple actions we got the result which we
-expected.</p>
-<p><a name="example2-3a"></a><figure><img src="figures/example2-3a.png" width="60%"></img><figcaption>1.9. Step 3 (a) of max transformation example</figcaption></figure>
-<a name="example2-3b"></a><figure><img src="figures/example2-3b.png" width="60%"></img><figcaption>1.10. Step 3 (b) of max transformation example</figcaption></figure></p>
-<h5>I.5.B.d. Step 4:</h5><p>Use <em>Generate rule</em> button to generate the class of this rule in order to use
-it in the Browser.</p>
-
+<p>Use <em>Generate rule</em> button to generate the class for this rule in order to use it in the Browser.</p>
 <h4>I.5.C. Third example</h4>
+<p><strong>below not yet reviewed</strong></p>
 <p><strong>...Probably we have to put explanation to The Rewrite Engine before examples, or just give some link...</strong></p>
 <p>Class <code>RBMinMaxRule</code> is a subclass of <code>RBTransformationRule</code>, which has other not less interesting examples of rewrite rules. 
 That is why we will examine <code>RBAtIfAbsentRule</code>. 
@@ -295,7 +281,7 @@ Or you can just open Builder through <em>World menu &gt;&gt; Tools &gt;&gt; Buil
  and than copy and paste first part of code in Source and Match panels, and second part - in Transform panel.
 Next copy second part of code, and paste it into Transform panel. 
 Now we are ready to implement the rule.</p>
-<p><a name="example3-1"></a><figure><img src="figures/example3-1.png" width="60%"></img><figcaption>1.11. Step 1 of ifAbsent: transformation example</figcaption></figure></p>
+<p><a name="example3-1"></a><figure><img src="figures/example3-1.png" width="60%"></img><figcaption>1.9. Step 1 of ifAbsent: transformation example</figcaption></figure></p>
 <h5>I.5.C.b. Step 2:</h5><p>Required code is inside of the Builder, so it is time to begin creating the rule.
 As always, all following actions are done in Match panel, unless other panel is specified. 
 To start with, select any reference of <code>myDictionary</code>, except one that is a variable declaration,
@@ -306,7 +292,7 @@ The result is <code>``@variable1</code>, and all in all it is: </p>
 <p>Despite tha fact, that we don't need recursion and list symbol in this particular situation, 
 we still use them, because of next reasons:</p><ul><li> to get exactly the same rule as we have in <code>RBAtIfAbsentRule</code>;</li><li> to create a rule that can be used in general situation, not only in particular one;</li><li> to learn which actions Builder is able to perform.</li></ul>
 <p>Now we do exactly the same actions with a key, which is equal to 3.</p>
-<p><a name="example3-2"></a><figure><img src="figures/example3-2.png" width="60%"></img><figcaption>1.12. Step 2 of ifAbsent: transformation example</figcaption></figure></p>
+<p><a name="example3-2"></a><figure><img src="figures/example3-2.png" width="60%"></img><figcaption>1.10. Step 2 of ifAbsent: transformation example</figcaption></figure></p>
 <h5>I.5.C.c. Step 3:</h5>
 <p>Apply <em>Abstract statement</em> action to next snippet:</p>
 <p><figure><pre><code class="smalltalk">    	&quot;...&quot;
@@ -339,7 +325,7 @@ Next, back to Match panel, on <code>`@.Statements2</code> node do <em>Recurse in
 The rule is almost ready, there is one variable left that we have to change - <code>temp3</code>. 
 Select it and use <em>Abstract variable</em>, <em>As List</em> and <em>Recurse into</em> actions one after another, and that is how you get <code>``@variable3</code>. 
 Finally we have our rule, which does exactly what we wanted - transformation that is mentioned in the beginning of this example. </p>
-<p><a name="example3-4"></a><figure><img src="figures/example3-4.png" width="60%"></img><figcaption>1.13. Step 4 of ifAbsent: transformation example</figcaption></figure></p>
+<p><a name="example3-4"></a><figure><img src="figures/example3-4.png" width="60%"></img><figcaption>1.11. Step 4 of ifAbsent: transformation example</figcaption></figure></p>
 <p>If you wish, now it is possible to <em>Generate</em> a class, that will hold this rule, so afterwars you can use it in Browser. </p>
 <p><strong>... Again, maybe explained Browser ...</strong></p>
 

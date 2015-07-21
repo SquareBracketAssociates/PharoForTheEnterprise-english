@@ -13,12 +13,12 @@ Often we encounter a situation when we want to transform some part of code in ma
 to improve its quality and readability. Also code transformations are performed in order to change an API. 
 Let us look at simple example of code transformation. 
 
-[[[ 
-  "Source code"
-  self isNil ifTrue: [ ^ true ] 
-  
-  "Resulting code"
-  self ifNil: [ ^ true ]
+[[[caption=Simple transformation|label=scr:simpleTransformation
+	"Source code"
+	self isNil ifTrue: [ ^ true ] 
+
+	"Resulting code"
+	self ifNil: [ ^ true ]
 ]]]
 
 Consider that we want to transform all code, that has same structure as source code, 
@@ -52,19 +52,19 @@ you The Rewrite Tool in work. After that, we will go in more details about tool 
 To begin, you need to load The Rewrite Tool into your image. In order to do this, 
 execute one of the following scripts.
 
-[[[
-  "Stable version for Pharo 4"
-  Metacello new 
-    smalltalkhubUser: 'Pharo' project: 'MetaRepoForPharo40';
-    configuration: 'RewriteTool';
-    load
-	
-  "Development version for Pharo 5"
-  Metacello new 
-    smalltalkhubUser: 'MarkRizun' project: 'RewriteTool';
-    configuration: 'RewriteTool';
-    version: #development;
-    load
+[[[caption=How to load The Rewrite Tool|label=scr:gettingStarted
+	"Stable version for Pharo 4"
+	Metacello new 
+		smalltalkhubUser: 'Pharo' project: 'MetaRepoForPharo40';
+		configuration: 'RewriteTool';
+		load
+
+	"Development version for Pharo 5"
+	Metacello new 
+		smalltalkhubUser: 'MarkRizun' project: 'RewriteTool';
+		configuration: 'RewriteTool';
+		version: #development;
+		load
 ]]]
 
 An alternative way to retrieve and load The Rewrite Tool is to use the Configuration Browser in Pharo 4 
@@ -81,8 +81,8 @@ to create transformation rules dynamically, with immediate feedback.
 The second option opens rewrite rule browser which we discuss in the section *@sec:rewriteRuleBuilder*.
 If you do not like to use world menu to open builder, you can always open it by executing following code: 
 
-[[[
-  RewriteRuleBuilder new openWithSpec
+[[[caption=Open the builder|label=scr:builderOpen
+	RewriteRuleBuilder new openWithSpec
 ]]]
 
 As illustrated in figure *@fig:rewriteRuleBuilder*, builder has four panes.
@@ -113,8 +113,8 @@ Rewrite rule browser is the second part of The Rewrite Tool. It provides an acce
 that are present in your image. You can select one of them and apply it to any environment scope you want. 
 The browser can be launched via world menu from "Tools" tab, or by executing following code:
 
-[[[
-  RewriteRuleBrowser new openWithSpec
+[[[caption=Open the browser|label=scr:browserOpen
+	RewriteRuleBrowser new openWithSpec
 ]]]
 
 The browser is shown on figure *@fig:rewriteRuleBrowser*. All rules are available in drop down list at bottom of the window. 
@@ -134,12 +134,12 @@ In particular, we describe how to create transformation rule with builder and ap
 Consider, that we want to do a transformation described in following listing. 
 Basically, here we replace isNil ifTrue: [ ] construction with ifNil: [ ] message send. 
 
-[[[
-    "Source code"
-    self isNil ifTrue: [ ^ true ] 
-	
+[[[caption=First example of transformation|label=scr:firstExmple
+	"Source code"
+	self isNil ifTrue: [ ^ true ] 
+
 	"Resulting code"
-    self ifNil: [ ^ true ]
+	self ifNil: [ ^ true ]
 ]]]
 
 !!!!Step 1
@@ -197,73 +197,73 @@ In the result of this action the argument will be replaced with new metavariable
 
 You can see the result of applying rewrite rule to source code in Result pane.
 
-[[[
-    self ifNil: [ ^ true ]
+[[[caption=Result of transformation|label=scr:firstResult
+	self ifNil: [ ^ true ]
 ]]]
 
-You can click on "Generate rule" button to automatically generate a class that will represent your new rule.
-Than click on "Browse rules" button, that will open the browser. 
+You can click on "Generate rule" button to automatically generate a class that will represent your new rule. 
+Give an appropriate name for your rule, for instance "IsNilIfTrueToIfNil" and click "Ok" button. 
+After click on "Browse rules" button to open the browser. 
 
-""below not yet reviewed""
-
-""...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...""
-
+In the bottom part of the browser you can see drop down list with all transformation rules, 
+that are present in your image. Right next to this list, there is a tick which says "Only custom rules". 
+Check it in order to see only those rules, that you have created, 
+and select a newly created rule named "IsNilIfTrueToIfNil". 
+Than select packages/classes on which you would like to perform a transformation and simply click "Apply rule:" button. 
+As a result you will see a window, that contains all the changes, that are going to be made after transformation. 
 
 !!!Second example
 
-To understand the following example, the previous one which transforms ''isNil
-ifTrue:[ ... ]'' into ''ifNil[ ... ]'' has to be understood. If not, please
-take your time and go back to be sure you know the basics.
-
 This time we are going to recreate one of rules that already exists in Critic
-Browser. We choose the one called ==RBMinMaxRule==. It has a method initialize
-where all rules are initialized. There you can see that ==RBMinMaxRule== has
-many rules that are similar to each other. Thus let us take a look only at one
-of them. Suppose we have a snippet of code which returns the max of two objects
-and which is written as follows:
+Browser. We choose the one called ''RBMinMaxRule''. This class has a method initialize
+where all rules are initialized. There you can see that ''RBMinMaxRule'' has
+many similar rules. Thus let us recreate only one of them. 
+Suppose we have a snippet of code that compares two object and returns the greater one of them.
 
-[[[ label=secondExample1 
-    temp := a < b
-	ifTrue: [ a ]
-	ifFalse: [ b ]
+[[[caption=Second example - source code|label=scr:secondExampleSource
+	| a b result |
+	a := 5.
+	b := 3.
+	result := a > b
+		ifTrue: [ a ]
+		ifFalse: [ b ].
+	^ result
 ]]]
 
-where ''temp'' is a temporary variable. Let us suppose that the objects ''a''
-and ''b'' are comparable, for instance integers.  This piece of code does
-simple assignment of bigger number (''a'' or ''b'') to the temporary variable
-''temp''. However it is written in a bad way.  We would rather write a simpler
-and more beautiful snippet of code as illustrated in the following script:
+This piece of code is not very well implemented, so we would rather transform it into a simpler and more 
+readable snippet of code as illustrated in the following listing. 
 
-[[[ label=secondExample2|language=Smalltalk
-    temp := a max: b
+[[[caption=Second example - resulting code|label=scr:secondExampleResult
+	| a b result |
+	a := 5.
+	b := 3.
+	result := a max: b.
+	^ result
 ]]]
 
-This version is more readable and other people can easily understand what this code does.
-In order to create a rule that will do the transformation as presented before, we will use our Builder.
+Essentially, we can simplify described transformation to more general case shown in listing *@scr:desiredTransformation*.
 
-!!!!Step 1:
-First of all, launch the Builder and type this input code into Source and Match
-panes (the left ones):
-
-[[[ label = scr:secondExample3 
-    temp := a < b
-	ifTrue: [ a ]
-	ifFalse: [ b ]
+[[[caption=Desired transformation|label=scr:desiredTransformation
+	"Source code"
+	result := a > b
+		ifTrue: [ a ]
+		ifFalse: [ b ].
+	
+	"Resulting code"
+	result := a max: b.
 ]]]
 
-Then enter this code into the Transform pane (the bottom right one):
+!!!!Step 1
+First of all, launch the builder and type the source code from listing *@scr:desiredTransformation* 
+into top and bottom left panes. Than enter the resulting code from listing *@scr:desiredTransformation* 
+into the bottom right pane. 
 
-[[[ label = scr:secondExample4 
-    temp := a max: b
-]]]
-
-+Step 1 of max transformation example>file://figures/example2-1.png|width=60|label=example2-1+
++Step 1 of second example>file://figures/example2-1.png|label=example2-1+
 
 !!!!Step 2:
-Now select ''temp'' in Match pane and mark it as an ''Abstract variable'' with
-the contextual menu (right click). Apply the same operation on ''a'' and ''b''.
-After this step, your Match panel should look like the following snippet of
-code:
+Now select ''result'' variable in LHS part of the rule use an ''Abstract object'' action on it. 
+Apply the same operation on ''a'' and ''b'' variables.
+After this steps the builder has to look like in the figure *@example2-2*.
 
 [[[ label = scr:secondExample5 
     `variable1 := `variable2 < `variable3
@@ -271,51 +271,16 @@ code:
 	ifFalse: [ `variable3 ]
 ]]]
 
-""Note:"" Variable names may be different if you did other changes before
++Step 2 of second example>file://figures/example2-2.png|label=example2-2+
+
+""Note:"" Metavariable indexes (number in the end of name) may be different if you did other changes before
 trying this example.
 
-As for the Transform panel, it should be very similar to the following code:
-
-[[[ label = scr:secondExample6 
-    `variable1 := `variable2 max: `variable3
-]]]
-If you want to match and transform only expressions where ''a'' and ''b'' are
-simple variables, this rule is sufficient. 
-
-+Step 2 of max transformation example>file://figures/example2-2.png|width=60|label=example2-2+
-
-!!!!Step 3:
-However if you need something more complex, for instance ''a'' is some
-expression that does calculations and that returns a result, you will have to
-go on with the example.  Select ''`variable2'' and mark it as ''As list'' with
-the contextual menu. Then apply ''Recurse into'' on ''`@variable2'' which
-results in the following snippet of code in Match panel:
-
-[[[ label = scr:secondExample7 
-  `variable1 := ``@variable2 < `variable3
-	ifTrue: [ ``@variable2 ]
-	ifFalse: [ `variable3 ]
-]]]
-
-And in the Transform panel:
-
-[[[ label = scr:secondExample8 
-    `variable1 := ``@variable2 max: `variable3
-]]]
-
-If necessary, you can do exactly the same thing with ''b'' (''`variable3'' in
-the previous snippet). After few simple actions we got the result which we
-expected.
-
-+Step 3 (a) of max transformation example>file://figures/example2-3a.png|width=60|label=example2-3a+
-+Step 3 (b) of max transformation example>file://figures/example2-3b.png|width=60|label=example2-3b+
-
-!!!!Step 4:
-Use ''Generate rule'' button to generate the class of this rule in order to use
-it in the Browser.
-
+Use ''Generate rule'' button to generate the class for this rule in order to use it in the Browser.
 
 !!!Third example
+
+""below not yet reviewed""
 
 ""...Probably we have to put explanation to The Rewrite Engine before examples, or just give some link...""
 
