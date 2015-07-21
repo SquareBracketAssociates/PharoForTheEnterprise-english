@@ -84,126 +84,98 @@ execute one of the following scripts.</p>
     load</code></pre><figcaption></figcaption></figure></p>
 <p>An alternative way to retrieve and load The Rewrite Tool is to use the Configuration Browser in Pharo 4 
 (Catalog Browser in Pharo 5). Just type in the search pane &quot;RewriteTool&quot; (without quotes) 
-like on the figure 1.1 and load the project.</p>
+like on the figure <a href="#fig:configurationBrowser">1.1 </a> and install stable version of the project.</p>
 <p><a name="fig:configurationBrowser"></a><figure><img src="figures/configurationBrowser.png"></img><figcaption>1.1. Configuration Browser in Pharo 4</figcaption></figure></p>
 <h3>I.3. Rewrite rule builder</h3>
-
-<p><strong>everything below not yet reviewed</strong></p>
-<p>As soon as you have loaded The Rewrite Tool into your image, two new options appear under the &quot;Tools&quot; tab in world menu. </p>
-
-<p><figure><pre><code class="smalltalk">RewriteRuleBuilder new openWithSpec.</code></pre><figcaption></figcaption></figure></p>
-<p>As illustrated in figure <a href="rewriteRuleBuilder"></a>, builder has four panes and three
-buttons, and each of this items has its own functions.  It provides a
-possibility, with simple GUI, to build rewrite rules dynamically.</p>
+<p>As soon as you have loaded The Rewrite Tool into your image, two new options appear under the &quot;Tools&quot; tab in world menu. 
+First one is rewrite rule builder - a part of The Rewrite Tool which provides an intuitive GUI 
+to create transformation rules dynamically, with immediate feedback. 
+The second option opens rewrite rule browser which we discuss in the section <a href="#sec:rewriteRuleBuilder">1.3 </a>.
+If you do not like to use world menu to open builder, you can always open it by executing following code: </p>
+<p><figure><pre><code class="smalltalk">  RewriteRuleBuilder new openWithSpec</code></pre><figcaption></figcaption></figure></p>
+<p>As illustrated in figure <a href="#fig:rewriteRuleBuilder">1.2 </a>, builder has four panes.</p>
 <p><a name="fig:rewriteRuleBuilder"></a><figure><img src="figures/rewriteRuleBuilder.png"></img><figcaption>1.2. Rewrite rule builder</figcaption></figure></p>
-<p><strong>Panes</strong></p>
-<p><em>TODO: rename panes labels when it will be done in the software</em></p>
-<ul><li>Top left pane, labeled <em>&quot;Source expression&quot;</em>, contains source code of expression which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as <em>Source pane</em>.</li></ul>
-<ul><li>Bottom left pane with label <em>&quot;Match rule&quot;</em>, is your playground. Here you will create matching part — the pattern — of rewrite rule. You can change the pattern either using action-click menu or manually changing the code. Later it is referenced as <em>Match pane</em>.</li></ul>
-<ul><li>Bottom right pane is pretty much the same as previous one. Here you have label</li></ul><p><em>&quot;Transform rule&quot;</em>. It is a second part of rewrite rule. In this pane you can
-create the action of the transformation rule also with options in action-click
-menu, or just manually typing code. Similar to previous one it is called in rest of chapter <em>Transform pane</em>.</p>
-<ul><li>The last one, but not the least important, is top right pane - <em>&quot;Result
-expression&quot;</em>. It displays the result of applying a rewrite rule, composed of</li></ul><p>the two bottom panes, to a source expression. You should note that this pane is
-the only one that is not editable, so it is read only. Later, this pane is referenced as <em>Result pane</em>.</p>
-<p><strong>Buttons</strong></p>
-<ul><li> &quot;Undo&quot; button is a general undo for the three editable panes: Source, Match</li></ul><p>  and Transform. All changes, that were made in one of these panes, are
-  stacked. If you click on &quot;Undo&quot; button, the last change that was made in any
-  of these panes, will be reverted. Also there is local undo for each pane
-  separately.</p><ul><li> &quot;Generate rule&quot; button creates new class which is a subclass of</li></ul><p>  <em>RBTransformationRule</em> using information from two bottom panes. After the
-  rule is created using this button, you can apply it to specific scope.</p><ul><li> &quot;Browse rules&quot; button opens up &quot;Rewrite rule browser&quot;, which allows you to</li></ul><p>  browse created rules, and apply them to scope that you want.</p>
-<h4>I.3.A. Rewrite rule browser</h4>
-<p>The browser can be launched by typing the following code in your Pharo
-workspace:
-<figure><pre><code class="smalltalk">RewriteRuleBrowser new openWithSpec.</code></pre><figcaption></figcaption></figure></p>
-<p>The browser is shown on figure <a href="rewriteRuleBrowser"></a>. This tool contains all
-previously created rewrite rules in most left pane. It also displays all
-packages, classes, protocols and methods that are present in the current image.</p>
-<p>You can select a rewrite rule that you want to apply. Then choose a scope,
-which you want to be transformed with this rule and click &quot;Apply rule to
-selected scope&quot; button. A multiple selection can be done by pressing <em>Shift</em>
-key while clicking on the first and the last package, class, protocol or
-method. After applying a rule, a confirmation window which shows changes
-appears. You can accept or cancel them.</p>
-<p>To browse selected rewrite rule class, click &quot;Browse selected rule&quot; button.</p>
+<p>Bottom half of the builder entitled &quot;Transformation rule&quot; is your main workspace - here you create transformation rule. 
+The transformation rule consists of two parts - LHS (left-hand side) part of the rule and 
+RHS (right-hand side) part of the rule. LHS part is used to match source code 
+which is displayed in top left pane with label &quot;Input&quot;. Green arrow indicates that LHS part of the rule matches source code. 
+If the arrow becomes red it means, that LHS part of the transformation rule does not match source code. 
+In case arrow is green, i.e. the rule matches source code, transformation rule is automatically applied to source code. 
+The resulting code of this transformation is displayed in the top right panel with label &quot;Output&quot;. 
+You should note, that this pane is the only one that is read only, meaning it is not editable.
+Transformation rule can be created two ways:</p><ul><li> via action-click contextual menu;</li><li> directly typing the code of rule.</li></ul>
+<p>We strongly recommend to use <em>only</em> first option, as it is much more reliable and easier. 
+When some item is selected in LHS part of rule contextual menu will provide appropriate list of options. 
+For instance, if you select a block ([ ^ true ]), the the tool will propose an option &quot;Abstract block&quot;. 
+This option creates an abstraction (`@block1) which matches any instance of block. </p>
+<a id="sec:rewriteRuleBuilder"></a><h3>I.4. Rewrite rule browser</h3>
+<p>Rewrite rule browser is the second part of The Rewrite Tool. It provides an access to all transformation rules, 
+that are present in your image. You can select one of them and apply it to any environment scope you want. 
+The browser can be launched via world menu from &quot;Tools&quot; tab, or by executing following code:</p>
+<p><figure><pre><code class="smalltalk">  RewriteRuleBrowser new openWithSpec</code></pre><figcaption></figcaption></figure></p>
+<p>The browser is shown on figure <a href="#fig:rewriteRuleBrowser">1.3 </a>. All rules are available in drop down list at bottom of the window. 
+Above you can see all packages, classes and methods, that are present in the image. 
+After you clicked an &quot;Apply rule:&quot; button, a confirmation window will be opened. 
+It shows changes which are going to be made, so you can conveniently preview them. </p>
 <p><a name="fig:rewriteRuleBrowser"></a><figure><img src="figures/rewriteRuleBrowser.png"></img><figcaption>1.3. Rewrite rule browser</figcaption></figure></p>
-<h3>I.4. Examples</h3>
-<p>In this part you can find useful examples, that will help you to understand how to create your own rule using Builder.
-Following examples are meant to teach you basics of using Builder.</p>
-<h4>I.4.A. First example</h4>
-<p>Back to example, we would like to transform the following snippet of code:</p>
-<p><figure><pre><code class="smalltalk">    self isNil ifTrue: [ ^ true ] </code></pre><figcaption></figcaption></figure></p>
-<p>into:</p>
-<p><figure><pre><code class="smalltalk">    self ifNil: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
-<h5>I.4.A.a. Step 1:</h5>
-<p>First, you need to input template source code in Source pane of Builder. If you
-launched the builder with the previously given line, the input code is the one
-of our example. In all panes you get exactly the same code. If you want to
-create your own rewrite rule, just type or copy-paste the code on which you
-would like to apply a transformation in the Source pane. Be sure to save any
-changes in the pane in order to have the right result.</p>
-<p>To start with, look at status bar in Match pane. Obviously, for now it says &quot;matches&quot;, as source code and match rule are equal.
-This status bar will help you to create rule, that will really correspond to source code.
-If it changes to &quot;doesn't match&quot;, you probably should use &quot;Undo&quot; button, and rethink your next move.
-As was mentioned earlier, your main playground is Match pane.
-Thus, almost all next actions are made in this pane, and also in Transform pane.
-In our example we don't care about the concerned object (<em>self</em>).
-It can be <em>self</em> or maybe just some temporary variable.
-That is why you have to select <em>self</em> and right click on it, which opens a
-menu.</p>
-<p><a name="simpleExample1-1"></a><figure><img src="figures/simpleExample1-1.png" width="60%"></img><figcaption>1.4. Step 1 of simple example</figcaption></figure>
-As shown in figure <a href="simpleExample1-1"></a>, it displays all actions that can be
-applied to selected object. Actually this object is represented as a node of
-an AST (abstract syntax tree). In Builder each node of AST has its own set of
-options we will note detail here. For more information on abstract syntax tree
-<em><strong>you may read HERE</strong></em>.
-In this particular case it will contain following options:</p><ul><li> Ignore</li><li> Change</li><li> Abstract variable </li></ul><p>You need <em>&quot;Abstract variable&quot;</em>, inasmuch it changes <em>self</em> into
-metavariable, as illustrated in figure <a href="simpleExample1-2"></a>.
-<a name="simpleExample1-2"></a><figure><img src="figures/simpleExample1-2.png" width="60%"></img><figcaption>1.5. End of step 1 of simple example</figcaption></figure></p>
-<p>You can read more about metavariables and The Rewrite Engine <em><strong>HERE</strong></em>.</p>
-<p>This metavariable will match any object for example: <em>self</em>, <em>Color</em> (classes are objects too), <em>someTempVar</em>.
-After this change we should have:</p>
-<p><figure><pre><code class="smalltalk">    `variable1 isNil ifTrue: [ ^ true ] </code></pre><figcaption></figcaption></figure></p>
-<p>And status bar also has to be unchanged, saying: <em>matches</em>.
-As you may noticed Transform pane text also was changed in following way:</p>
-<p><figure><pre><code class="smalltalk">    `variable1 ifNil: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
-<p>It means that in result on the place of <em>self</em> we will get <em>self</em>.
-In case you want to have in result something else, for example
-<em>anotherObject</em> use an option <em>Change</em> on a `variable1 in Transform pane
-(or manually type it, but it is not recommended).
-But for now, we don't want that.</p>
-
-<h5>I.4.A.b. Step 2:</h5><p><a name="simpleExample1-3"></a><figure><img src="figures/simpleExample1-3.png" width="60%"></img><figcaption>1.6. Step 2 of simple example</figcaption></figure></p>
-<p>The next step concerns <em>isNil</em>: select it in Transform pane and right-click
-to open a menu. The options in this case are different from previous one, as it
-is not a variable selected, but selector. So, click on <em>Ignore selector</em>
-option. It will remove <em>isNil</em> from Transform pane.
-Also, Result pane was updated.%:</p>
-
-<h5>I.4.A.c. Step 3:</h5>
-<p><a name="simpleExample1-4"></a><figure><img src="figures/simpleExample1-4.png" width="60%"></img><figcaption>1.7. Step 3 of simple example</figcaption></figure></p>
+<h3>I.5. Examples</h3>
+<p>In this part you can find useful examples, that will help you to understand how to use The Rewrite Tool. 
+In particular, we describe how to create transformation rule with builder and apply it using browser. </p>
+<h4>I.5.A. First example</h4>
+<p>Consider, that we want to do a transformation described in following listing. 
+Basically, here we replace isNil ifTrue: [ ] construction with ifNil: [ ] message send. </p>
+<p><figure><pre><code class="smalltalk">    &quot;Source code&quot;
+    self isNil ifTrue: [ ^ true ] 
+	
+	&quot;Resulting code&quot;
+    self ifNil: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
+<h5>I.5.A.a. Step 1</h5>
+<p>First, you need to open a builder and input a source code into two panes: top left and bottom left. 
+Now you have a LHS part of rule, that matches an input code (green arrow indicates this). 
+After that, input the resulting code into bottom right pane. 
+As a result you will see the same code in the top right pane.
+Be sure to save any changes which you make in any pane in order to update the resulting code.</p>
+<p>To start with, look at status arrow. Obviously, for now it says &quot;matches&quot;, as source code and match rule are equal.
+This status arrow will help you to create rule, that will really correspond to source code.
+If it changes to &quot;does not match&quot;, you probably should use &quot;Undo&quot; button, and rethink your next step.
+As was mentioned earlier, your main playground is bottom half of builder, and in particular LHS part of rule. 
+Thus, almost all next actions are made in the bottom left pane.
+In our example we want to transform the structure of the code, 
+however we do not care about receiver (<em>self</em>) or argument (<em>[ ^ true ]</em>). 
+The receiver can be <em>self</em> or maybe just some temporary variable <em>myVar</em>, 
+or even some message send like <em>Color red</em>. The argument has to be a block, but we are not interested in its contents. 
+That is why we want to replace the receiver with some kind of abstraction which will match any object. 
+Also we want to have an abstraction, that matches any block, instead of argument. 
+In order to do that, you have to select receiver and action-click on it.</p>
+<p><a name="example1-1"></a><figure><img src="figures/example1-1.png"></img><figcaption>1.4. Step 1 of first example</figcaption></figure></p>
+<p>As shown in figure <a href="#example1-1">1.4 </a>, it displays all actions that can be
+applied to selected object. In builder each object has its own set of options. 
+In this particular case we see following options:</p><ul><li> Change / Rename</li><li> Abstract object </li></ul>
+<p>In this case we need to select <em>Abstract object</em>, inasmuch it changes <em>self</em> into an abstraction, 
+that matches any object. This abstraction is called a metavariable and as you can see in figure <a href="#example1-2">1.5 </a> 
+the tool replaced receiver with a <em>``@variable1</em>. </p>
+<p><a name="example1-2"></a><figure><img src="figures/example1-2.png"></img><figcaption>1.5. After step 1 of first example</figcaption></figure></p>
+<p>You can read more about metavariables and The Rewrite Engine in the section <a href="#sec:theRewriteEngine">1.6.3 </a>.</p>
+<p>Status arrow has to be unchanged, saying: <em>matches</em>.
+As you may noticed RHS part of rule was automatically changed - the receiver was replaced with same abstraction. 
+It means that in result of the transformation the receiver (<em>self</em>) will not be changed.</p>
+<h5>I.5.A.b. Step 2</h5>
 <p>Now let us work with our block: <em>[ ^ true ]</em>. We have the same situation as
-we had with <em>self</em>. Once again, we don't care about which block is passed as
-an argument to <em>ifTrue:</em> or <em>ifNil:</em>. Therefore in Match pane, we select
-our block (be sure to include the brackets) and choose the option <em>Abstract
-block</em> as examplefied in figure <a href="simpleExample1-4"></a>. In result it will be
-changed into <em>`@block1</em>.</p>
-<h5>I.4.A.d. Step 4:</h5>
-<p><a name="simpleExample1-5"></a><figure><img src="figures/simpleExample1-5.png" width="60%"></img><figcaption>1.8. Step 4 of simple example</figcaption></figure></p>
-<p>Finally, select <em>ifTrue:</em> in Transform pane, and apply <em>Change selector</em>
-option from menu. Type in recently opened window: <em>ifNil:</em>, and press <em>Ok</em>
-button as shown by figure <a href="simpleExample1-5"></a>. </p>
-<p>You can also select <em>super size</em> and ignore it in Match and Transform panes,
-and then delete it in the source one to finish the transformation and obtaining
-the same rule as in <a href="simpleExample1-6"></a>.</p>
-<p><a name="simpleExample1-6"></a><figure><img src="figures/simpleExample1-6.png" width="60%"></img><figcaption>1.9. Step 5 of simple example</figcaption></figure></p>
+we had with the receiver. Once again, we are not interested about contents of block, that is passed as
+an argument to <em>ifTrue:</em> or <em>ifNil:</em>. However it is important to make sure the the argument is actually a block. 
+Therefore in LHS part of transformation rule select the argument (<em>[ ^ true ]</em> - be sure to include the brackets) 
+and choose the option <em>Abstract block</em>. 
+In the result of this action the argument will be replaced with new metavariable 
+(<em>`@block1</em>) as shown in figure <a href="#example1-3">1.6 </a>.</p>
+<p><a name="example1-3"></a><figure><img src="figures/example1-3.png"></img><figcaption>1.6. Step 2 of simple example</figcaption></figure></p>
 <p>You can see the result of applying rewrite rule to source code in Result pane.</p>
 <p><figure><pre><code class="smalltalk">    self ifNil: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
-<p>You can click on <em>Generate rule</em> button to automatically generate a class for your new rule.
-Than click on <em>Browse rules</em> button, and you will see that your new class is in Browser.</p>
+<p>You can click on &quot;Generate rule&quot; button to automatically generate a class that will represent your new rule.
+Than click on &quot;Browse rules&quot; button, that will open the browser. </p>
+<p><strong>below not yet reviewed</strong></p>
 <p><strong>...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...</strong></p>
 
-<h4>I.4.B. Second example</h4>
+<h4>I.5.B. Second example</h4>
 <p>To understand the following example, the previous one which transforms <em>isNil
 ifTrue:[ ... ]</em> into <em>ifNil[ ... ]</em> has to be understood. If not, please
 take your time and go back to be sure you know the basics.</p>
@@ -224,15 +196,15 @@ and more beautiful snippet of code as illustrated in the following script:</p>
 <p><figure><pre><code class="Smalltalk">    temp := a max: b</code></pre><figcaption></figcaption></figure></p>
 <p>This version is more readable and other people can easily understand what this code does.
 In order to create a rule that will do the transformation as presented before, we will use our Builder.</p>
-<h5>I.4.B.a. Step 1:</h5><p>First of all, launch the Builder and type this input code into Source and Match
+<h5>I.5.B.a. Step 1:</h5><p>First of all, launch the Builder and type this input code into Source and Match
 panes (the left ones):</p>
 <p><figure><pre><code class="smalltalk">    temp := a &lt; b
 	ifTrue: [ a ]
 	ifFalse: [ b ]</code></pre><figcaption></figcaption></figure></p>
 <p>Then enter this code into the Transform pane (the bottom right one):</p>
 <p><figure><pre><code class="smalltalk">    temp := a max: b</code></pre><figcaption></figcaption></figure></p>
-<p><a name="example2-1"></a><figure><img src="figures/example2-1.png" width="60%"></img><figcaption>1.10. Step 1 of max transformation example</figcaption></figure></p>
-<h5>I.4.B.b. Step 2:</h5><p>Now select <em>temp</em> in Match pane and mark it as an <em>Abstract variable</em> with
+<p><a name="example2-1"></a><figure><img src="figures/example2-1.png" width="60%"></img><figcaption>1.7. Step 1 of max transformation example</figcaption></figure></p>
+<h5>I.5.B.b. Step 2:</h5><p>Now select <em>temp</em> in Match pane and mark it as an <em>Abstract variable</em> with
 the contextual menu (right click). Apply the same operation on <em>a</em> and <em>b</em>.
 After this step, your Match panel should look like the following snippet of
 code:</p>
@@ -245,8 +217,8 @@ trying this example.</p>
 <p><figure><pre><code class="smalltalk">    `variable1 := `variable2 max: `variable3</code></pre><figcaption></figcaption></figure>
 If you want to match and transform only expressions where <em>a</em> and <em>b</em> are
 simple variables, this rule is sufficient. </p>
-<p><a name="example2-2"></a><figure><img src="figures/example2-2.png" width="60%"></img><figcaption>1.11. Step 2 of max transformation example</figcaption></figure></p>
-<h5>I.4.B.c. Step 3:</h5><p>However if you need something more complex, for instance <em>a</em> is some
+<p><a name="example2-2"></a><figure><img src="figures/example2-2.png" width="60%"></img><figcaption>1.8. Step 2 of max transformation example</figcaption></figure></p>
+<h5>I.5.B.c. Step 3:</h5><p>However if you need something more complex, for instance <em>a</em> is some
 expression that does calculations and that returns a result, you will have to
 go on with the example.  Select <em>`variable2</em> and mark it as <em>As list</em> with
 the contextual menu. Then apply <em>Recurse into</em> on <em>`@variable2</em> which
@@ -259,12 +231,12 @@ results in the following snippet of code in Match panel:</p>
 <p>If necessary, you can do exactly the same thing with <em>b</em> (<em>`variable3</em> in
 the previous snippet). After few simple actions we got the result which we
 expected.</p>
-<p><a name="example2-3a"></a><figure><img src="figures/example2-3a.png" width="60%"></img><figcaption>1.12. Step 3 (a) of max transformation example</figcaption></figure>
-<a name="example2-3b"></a><figure><img src="figures/example2-3b.png" width="60%"></img><figcaption>1.13. Step 3 (b) of max transformation example</figcaption></figure></p>
-<h5>I.4.B.d. Step 4:</h5><p>Use <em>Generate rule</em> button to generate the class of this rule in order to use
+<p><a name="example2-3a"></a><figure><img src="figures/example2-3a.png" width="60%"></img><figcaption>1.9. Step 3 (a) of max transformation example</figcaption></figure>
+<a name="example2-3b"></a><figure><img src="figures/example2-3b.png" width="60%"></img><figcaption>1.10. Step 3 (b) of max transformation example</figcaption></figure></p>
+<h5>I.5.B.d. Step 4:</h5><p>Use <em>Generate rule</em> button to generate the class of this rule in order to use
 it in the Browser.</p>
 
-<h4>I.4.C. Third example</h4>
+<h4>I.5.C. Third example</h4>
 <p><strong>...Probably we have to put explanation to The Rewrite Engine before examples, or just give some link...</strong></p>
 <p>Class <code>RBMinMaxRule</code> is a subclass of <code>RBTransformationRule</code>, which has other not less interesting examples of rewrite rules. 
 That is why we will examine <code>RBAtIfAbsentRule</code>. 
@@ -316,15 +288,15 @@ With such a rule we can do followning transformation:</p>
 	^ myDictionary</code></pre><figcaption></figcaption></figure></p>
 <p>This code contains all keywords that are present in rule such as: #at:ifAbsent:, and #at:ifAbsentPut:. 
 Current example is using this code, to implement the rule, that we selected earlier.</p>
-<h5>I.4.C.a. Step 1:</h5>
+<h5>I.5.C.a. Step 1:</h5>
 <p>In order to open Builder with previous code inside of it, select first part of code (the one that is before rule is applied)
  in Nautilus workspace, go to <em>Source code refactoring</em> and select <em>RewriteRuleBuilder</em> option. 
 Or you can just open Builder through <em>World menu &gt;&gt; Tools &gt;&gt; Builder</em>,
  and than copy and paste first part of code in Source and Match panels, and second part - in Transform panel.
 Next copy second part of code, and paste it into Transform panel. 
 Now we are ready to implement the rule.</p>
-<p><a name="example3-1"></a><figure><img src="figures/example3-1.png" width="60%"></img><figcaption>1.14. Step 1 of ifAbsent: transformation example</figcaption></figure></p>
-<h5>I.4.C.b. Step 2:</h5><p>Required code is inside of the Builder, so it is time to begin creating the rule.
+<p><a name="example3-1"></a><figure><img src="figures/example3-1.png" width="60%"></img><figcaption>1.11. Step 1 of ifAbsent: transformation example</figcaption></figure></p>
+<h5>I.5.C.b. Step 2:</h5><p>Required code is inside of the Builder, so it is time to begin creating the rule.
 As always, all following actions are done in Match panel, unless other panel is specified. 
 To start with, select any reference of <code>myDictionary</code>, except one that is a variable declaration,
  and apply <em>Abstract variable</em> option. 
@@ -334,8 +306,8 @@ The result is <code>``@variable1</code>, and all in all it is: </p>
 <p>Despite tha fact, that we don't need recursion and list symbol in this particular situation, 
 we still use them, because of next reasons:</p><ul><li> to get exactly the same rule as we have in <code>RBAtIfAbsentRule</code>;</li><li> to create a rule that can be used in general situation, not only in particular one;</li><li> to learn which actions Builder is able to perform.</li></ul>
 <p>Now we do exactly the same actions with a key, which is equal to 3.</p>
-<p><a name="example3-2"></a><figure><img src="figures/example3-2.png" width="60%"></img><figcaption>1.15. Step 2 of ifAbsent: transformation example</figcaption></figure></p>
-<h5>I.4.C.c. Step 3:</h5>
+<p><a name="example3-2"></a><figure><img src="figures/example3-2.png" width="60%"></img><figcaption>1.12. Step 2 of ifAbsent: transformation example</figcaption></figure></p>
+<h5>I.5.C.c. Step 3:</h5>
 <p>Apply <em>Abstract statement</em> action to next snippet:</p>
 <p><figure><pre><code class="smalltalk">    	&quot;...&quot;
 
@@ -350,7 +322,7 @@ To finish with initialization part of this code, select declaration of temporary
 Note, that <code>| myDictionary |</code> in Transform panel wasn't transformed to <code>| ``@temporaries |</code>, so we have to do it ourselves. 
 Select <code>| myDictionary |</code> in Transform panel, and apply <em>Abstract temporaries list</em>. 
 In opened window select <code>| ``@temporaries |</code> option.</p>
-<h5>I.4.C.d. Step 4:</h5>
+<h5>I.5.C.d. Step 4:</h5>
 <p>After this steps, lets take a look at the argument of <code>#ifAbsent:</code> - a block. 
 With temporaries declaration <code>| temp1 temp2 temp3 |</code> we do exactly the same thing as in previous step. 
 Also we have to do same actions in Transform panel, but now in opened window choose <code>| ``@temporaries2 |</code> instead of <code>| ``@temporaries1 |</code>. </p>
@@ -367,18 +339,18 @@ Next, back to Match panel, on <code>`@.Statements2</code> node do <em>Recurse in
 The rule is almost ready, there is one variable left that we have to change - <code>temp3</code>. 
 Select it and use <em>Abstract variable</em>, <em>As List</em> and <em>Recurse into</em> actions one after another, and that is how you get <code>``@variable3</code>. 
 Finally we have our rule, which does exactly what we wanted - transformation that is mentioned in the beginning of this example. </p>
-<p><a name="example3-4"></a><figure><img src="figures/example3-4.png" width="60%"></img><figcaption>1.16. Step 4 of ifAbsent: transformation example</figcaption></figure></p>
+<p><a name="example3-4"></a><figure><img src="figures/example3-4.png" width="60%"></img><figcaption>1.13. Step 4 of ifAbsent: transformation example</figcaption></figure></p>
 <p>If you wish, now it is possible to <em>Generate</em> a class, that will hold this rule, so afterwars you can use it in Browser. </p>
 <p><strong>... Again, maybe explained Browser ...</strong></p>
 
-<h3>I.5. The Rewrite Tool in details</h3>
+<h3>I.6. The Rewrite Tool in details</h3>
 <p>In this section we describe each and every part of The Rewrite Tool. It is grounded
 on many important ideas that are explained here. A good understanding of this
 ideas is crucial to increase users effectiveness, while working with the tool.</p>
-<h4>I.5.A. Menu options</h4>
+<h4>I.6.A. Menu options</h4>
 <p>List of all available options (may be changed):</p><ul><li> Abstract block</li><li> Abstract condition</li><li> Abstract literal</li><li> Abstract statement</li><li> Abstract variable</li><li> As list</li><li> Recurse into</li><li> Change</li><li> Change selector</li><li> Ignore</li><li> Ignore selector</li><li> Undo on node</li></ul>
 <p><strong>... Update list of options ...</strong></p>
-<h5>I.5.A.a. <strong>Abstract actions</strong></h5>
+<h5>I.6.A.a. <strong>Abstract actions</strong></h5>
 <p>Any of abstract action replaces selected object(s) with metavariable that
 corresponds to selected node of AST. Next is described what can be matched with
 the metavariable in each case.</p>
@@ -401,7 +373,7 @@ reasons it is not displayed in the examples below.</p>
 <p><em><strong>Abstract variable</strong></em></p>
 <p>Matches any variable.</p>
 <p><figure><pre><code class="smalltalk">    self &quot;is replaced with&quot; `variable</code></pre><figcaption></figcaption></figure></p>
-<h5>I.5.A.b. <strong>Other actions</strong></h5>
+<h5>I.6.A.b. <strong>Other actions</strong></h5>
 <p><em><strong>As list</strong></em></p>
 <p>Metavariable represented as list matches practically anything.</p>
 
@@ -429,10 +401,10 @@ not useful or relevant for the pattern.</p>
 
 <p><figure><pre><code class="smalltalk">    self &quot;Abstract variable =&gt;&quot; `variable
     `variable &quot;Undo on node =&gt;&quot; self</code></pre><figcaption></figcaption></figure></p>
-<h4>I.5.B. Working with rewrite rules</h4>
+<h4>I.6.B. Working with rewrite rules</h4>
 <p>This section provides useful tips about working in rewrite rule builder.
 It will help you to understand the mechanics of building rule with <em>The Rewrite Tool</em>.</p>
-<h5>I.5.B.a. <strong>Equal nodes</strong></h5>
+<h5>I.6.B.a. <strong>Equal nodes</strong></h5>
 <p>First thing worth mentioning is that any action, except <em>Ignore</em> actions, applied in <em>Match rule</em> pane,
 also applies to all same object in <em>Match rule</em> pane and <em>Transform rule</em> pane.
 If it is applied in <em>Transform rule</em> pane, only objects in it are transformed, but not in <em>Match rule</em> pane.
@@ -463,7 +435,7 @@ You will, see the next result:</p>
     `variable1 ifNotNil: [ `variable1 children last remove ].
     ^ super size</code></pre><figcaption></figcaption></figure>
 Create new metavariable</p>
-<h5>I.5.B.b. <strong>Non-existing metavariables</strong></h5>
+<h5>I.6.B.b. <strong>Non-existing metavariables</strong></h5>
 <p>Another thing, that you shuld know is that you can't create new metavariable in
 <em>Transform rule</em> pane, if it is not created in <em>Match rule</em> pane. Meaning,
 that you are not able to apply, for example, <em>Abstract block</em> action in
@@ -486,24 +458,24 @@ But if you previously done this process in <em>Match rule</em> pane with <em>sel
 it is possible now to create metavariables in <em>Transform rule</em> pane.
 If you now select <em>super</em> in  <em>Transform rule</em> pane and apply <em>Abstract variable</em> action window will be displayed.
 With other actions like <em>Abstract literal</em>, <em>Abstract condition</em> etc. happens exactly the same thing.</p>
-<h5>I.5.B.c. <strong>Manual editing</strong></h5>
+<h5>I.6.B.c. <strong>Manual editing</strong></h5>
 <p>One more important thing is that creating rewrite rules with manual editing, instead of action click menu options, is not recommended.
 First of all, you will not have general <em>Undo</em> as well as <em>Undo on node</em> options available.
 Moreover you may make mistake in The Rewrite Engine syntax.
 And also, it is possible to get errors from, for example, creating non-existing metavariables.
 To sum up, rewrite rule builder allows you to edit rules, but do it only if really necessary.</p>
 <p>&quot;IN DEVELOPEMENT!&quot;</p>
-<h4>I.5.C. Details of rewrite rule browser</h4>
+<h4>I.6.C. Details of rewrite rule browser</h4>
 <p><figure><pre><code class="smalltalk">    &quot;Nothing here for now&quot;</code></pre><figcaption></figcaption></figure></p>
 <p>&quot;IN DEVELOPEMENT!&quot;</p>
-<h4>I.5.D. The Rewrite Engine</h4>
+<a id="sec:theRewriteEngine"></a><h4>I.6.D. The Rewrite Engine</h4>
 <p>Builder uses The Rewrite Engine to parse rules, to match and transform code. This engine works with strings, that are recognized on level of abstract syntax tree.
 As a result, each part of matching or transforming string becomes a node of AST, which makes this engine very powerful.
 So, The Rewrite Engine makes it possible to get an AST representation of any rule.
 It means, user can easily match or replace(transform) any part of code as a node.</p>
 <p>The syntax of The Rewrite Engine may seem a bit confusing, however it contains only few key symbols.
 These symbols are:</p><ul><li>backquote(`)</li><li>dot(.)</li><li>number sign(#)</li><li>at sign(@)</li></ul>
-<h5>I.5.D.a. Backquote symbol</h5><p><figure><pre><code class="smalltalk">`</code></pre><figcaption></figcaption></figure>
+<h5>I.6.D.a. Backquote symbol</h5><p><figure><pre><code class="smalltalk">`</code></pre><figcaption></figcaption></figure>
 It represents any metavariable, and other symbols specify whic kind of metavariable it is.
 For example, it can be
 <figure><pre><code class="smalltalk">`variable1</code></pre><figcaption></figcaption></figure>
@@ -541,7 +513,7 @@ matches with reciever of size:
 <figure><pre><code class="smalltalk">self size</code></pre><figcaption></figcaption></figure>
 And than, our metavariable matches with
 <figure><pre><code class="smalltalk">self</code></pre><figcaption></figcaption></figure></p>
-<h5>I.5.D.b. Dot symbol</h5><p><figure><pre><code class="smalltalk">.</code></pre><figcaption></figcaption></figure>
+<h5>I.6.D.b. Dot symbol</h5><p><figure><pre><code class="smalltalk">.</code></pre><figcaption></figcaption></figure>
 It has the simplest role in The Rewrite Engine.
 Dot is used to match statement in sequence node.
 <figure><pre><code class="smalltalk">`.Statement1</code></pre><figcaption></figcaption></figure>
@@ -558,13 +530,13 @@ it matches next The Rewrite Engine expression:
 <figure><pre><code class="smalltalk">`.Statement1.
 `.Statement2</code></pre><figcaption></figcaption></figure>
 As was mentioned earlier, backquote states that it is metavariable, and unique name of each metavariable indicates that matched AST nodes are different.</p>
-<h5>I.5.D.c. Number sign</h5><p><figure><pre><code class="smalltalk">#</code></pre><figcaption></figcaption></figure>
+<h5>I.6.D.c. Number sign</h5><p><figure><pre><code class="smalltalk">#</code></pre><figcaption></figcaption></figure>
 This symbol says that metavariable should match only literal nodes of AST.
 Example:
 <figure><pre><code class="smalltalk">`#literal1</code></pre><figcaption></figcaption></figure>
 mathces any literal:
 <figure><pre><code class="smalltalk">#(1, 2, 3) &quot;or&quot; #foo &quot;or&quot; 19 &quot;etc.&quot;</code></pre><figcaption></figcaption></figure></p>
-<h5>I.5.D.d. At symbol</h5><p>Finally, we will examine functions of at sign:
+<h5>I.6.D.d. At symbol</h5><p>Finally, we will examine functions of at sign:
 <figure><pre><code class="smalltalk">@</code></pre><figcaption></figcaption></figure></p>
 <p>At sign, as an element of The Rewrite Engine syntax, is used to indicate list of something: temporary variables, statements, arguments or keywords in message send.
 To match any message send you have to specify any number of keywords and any number of arguments like this:
@@ -582,11 +554,11 @@ Also, it is possible to match list of temps this way:
 In general, at symbol used with backquote
 <figure><pre><code class="smalltalk">`@object</code></pre><figcaption></figcaption></figure>
 matches any message, literal or block node of AST, which is really important to know.</p>
-<h3>I.6. Architecture of The Rewrite Tool</h3>
+<h3>I.7. Architecture of The Rewrite Tool</h3>
 <p>This section covers the architecture of The Rewrite Tool, explains responsibilities of classes.
 Also it gives a clear understanding of class hierarchy, which is present in The Rewrite Tool. 
 In addition to this, methods are covered too.</p>
-<h4>I.6.A. AbstractPanel class</h4>
+<h4>I.7.A. AbstractPanel class</h4>
 <p>Clearly, <em>AbstractPanel</em> is an abstract class,
 which represents a panel that contains text field and a label.
 Text field contains a code, which is considered later as an AST in order to make further manipulations with code possible.
@@ -628,7 +600,7 @@ This variable is discussed later. Also this method enables <code>undoButton</cod
 <p>All following methods open up alert windows with different message each.</p>
 <p><code>#changeInvalidAlert</code>, <code>#classNotCreatedAlert</code>, <code>#noMetavariablesAlert</code>, <code>#replacementNotPossibleAlert</code>, <code>#varNotChosenAlert</code>. </p>
 <p>Next, we may examine subclasses of <em>AbstractPanel</em>.</p>
-<h4>I.6.B. SourcePanel class</h4>
+<h4>I.7.B. SourcePanel class</h4>
 <p>Holds source code of expression that should be transformed into something new.
 Actually, <em>SourcePanel</em> implements onle one new feature that is not inherited from <em>AbstractPanel</em>.
 This class states that by action-clicking (right click) there are available options in this panel - Smart Suggestions (by Gisela). 
@@ -639,14 +611,14 @@ It is done in method #menuActions, which returns an array. </p>
 	options add: #('Smart Suggestions' #smartSuggestions).
 	^ options</code></pre><figcaption></figcaption></figure> </p>
 <p>To remind, instance of <em>SourcePanel</em> class is located on top left of builder.</p>
-<h4>I.6.C. ResultPanel class</h4>
+<h4>I.7.C. ResultPanel class</h4>
 <p>Presents disabled text field, which means that user can not edit text contained in this panel. 
 Result Panel holds result of applying rewrite rule to source code.
 Located in top right part of RewriteRuleBuilder. </p>
 <p><figure><pre><code class="smalltalk">    initialize
 	super initialize.
 	self templateText disable</code></pre><figcaption></figcaption></figure></p>
-<h4>I.6.D. MatchPanel class</h4>
+<h4>I.7.D. MatchPanel class</h4>
 <p><em>MatchPanel</em> class is a subclass of <em>AbstractPanel</em>, instance of which holds matching part of rewrite rule (i.e. left hand side part of rule). 
 To begin with, this class coontrols all indexes that are added after each (including some of them) metavariable name. 
 When any action is taken, that creates new metavariable in rule, <em>MatchPanel</em> adds index at the end of metavariable name. 
@@ -687,7 +659,7 @@ After this, <em>TransformPanel</em> itself is updated via <code>#updateTransform
 Than, <code>statusBar</code> color and information text are updated. 
 <code>statusBar</code> instance variable is explained later. 
 In the end, <code>#updateNextPanelForNode:</code> is invoked for <em>TransformPanel</em>, so the <em>ResultPanel</em> is updated. </p>
-<h4>I.6.E. TransformPanel class</h4>
+<h4>I.7.E. TransformPanel class</h4>
 <p><em>TransformPanel</em> class is a subclass of <em>AbstractPanel</em>, instance of which holds transforming part of rewrite rule (i.e. right hand side part of rule). 
 In <em>TransformPanel</em> not all options are available. For example, you can not <em>Recurse into</em>,
  due to the fact that metavariable that you are about to create does not exist. </p>
@@ -701,7 +673,7 @@ In this window user can choose one of available metavariables to replace current
 <p>5. <strong><code>#chooseTempsForNode:</code></strong> same as <code>#chooseMetavariablesForNode:</code>, but is used when <em>Abstract temporaries list</em> action is invoked. </p>
 <p>6. <strong><code>#updateNextPanelForNode:</code></strong> applies rewrite rule from <em>MatchPanel</em> and <em>TransformPanel</em> to AST of <em>SourcePanel</em>. 
 As a result we have new AST. Code of this AST is displayed in <em>ResultPanel</em>.</p>
-<h4>I.6.F. TransformationRule class</h4>
+<h4>I.7.F. TransformationRule class</h4>
 <p><em>TransformationRule</em> is model that represents bottom part of Builder. 
 It contains <em>MatchPanel</em>, <em>TransformPanel</em> all buttons (undo, redo, generate rule, browse rules). 
 Plus it has <code>undoDict</code> and <code>redoDict</code> instance variables. 
@@ -782,7 +754,7 @@ In the end, <em>ResultPanel</em> code is updated, as rewrite rule may have chang
 <p>14. <strong><code>#arrowMorph:</code></strong> is an instance of <em>PolygonMorph</em> or <em>ActivePolygonMorph</em>. 
 It is shaped in form of arrow. </p>
 <p>15. <strong><code>#defaultSpec</code></strong> creates a layout for all components. </p>
-<h4>I.6.G. RRTextModel class</h4>
+<h4>I.7.G. RRTextModel class</h4>
 <p><em>RRTextModel</em> is a subclass of TextModel. It has some features that are needed for RewriteRuleBuilder, like AST and support of custom menu. 
 Instances of <em>RRTextModel</em> are used in each of four panels: <em>SourcePanel</em>, <em>MatchPanel</em>, <em>TransformPanel</em>, <em>ResultPanel</em>. 
 Each panel stores instance of this class in <code>textModel</code> instance variable. 
@@ -792,12 +764,12 @@ Each panel stores instance of this class in <code>textModel</code> instance vari
 <code>#menuOptionsSelector</code> fills right click menu with all available actions for selected node. </p>
 <p>2. <strong><code>#getSelectedNode</code></strong> returns node, which is currently selected in <code>textModel</code>. </p>
 <p>3. <strong><code>#codePaneMenu:shifted:</code></strong> forms a menu due to <code>#actionsForSelection</code> method. </p>
-<h4>I.6.H. RewriteRuleChange class</h4>
+<h4>I.7.H. RewriteRuleChange class</h4>
 <p><em>RewriteRuleChange</em> is class that holds changes that were made in Builder panels. 
 Instances of this class are stored in collection - the instance variable <code>undoDict</code> of <em>TransformationRule</em>. 
 The implementation of this class is very simple: it has only two instance variables - <code>panel</code> and <code>ast</code>. 
 <code>panel</code> is one of four panels of Builder, and <code>ast</code> is an AST of this panel. </p>
-<h4>I.6.I. ActivePolygonMorph class</h4>
+<h4>I.7.I. ActivePolygonMorph class</h4>
 <p><em>ActivePolygonMorph</em> is a subclass of <em>PolygonMorph</em>, that adds new functionality to <em>PolygonMorph</em>. 
 It recognizes two events: <code>#mouseEnter:</code> and <code>#mouseLeave:</code>. 
 Also it has <code>infoText</code> instance variable, which contains text information,
@@ -808,7 +780,7 @@ Contents of <em>StringMorph</em> is assigned to <code>infoText</code> instance v
 <p>2. <strong><code>#mouseEnter:</code></strong> adds to self a submorph, that was created in <code>#infoMorph</code> method. </p>
 <p>3. <strong><code>#mouseLeave:</code></strong> removes from self a submorph, that was created in <code>#infoMorph</code> method. </p>
 <p>4. <strong><code>#handlesMouseOver:</code></strong> states that <em>ActivePolygonMorph</em> handles mouse over events, as it returns <code>true</code>. </p>
-<h4>I.6.J. RewriteRuleBuilder class</h4>
+<h4>I.7.J. RewriteRuleBuilder class</h4>
 <p>Is a class that represents a Builder as one complete object. 
 <em>RewriteRuleBuilder</em> contains <em>SourcePanel</em>, <em>ResultPanel</em> and the most important part of Builder instance of <em>TransformationRule</em> class. 
 This class is responsible for GUI and layouting all elements of Builder. 
@@ -841,7 +813,7 @@ Each panel <code>code</code> is initiialized with a string that is passed as an 
 <p>12. <strong><code>#menuCommandOn:</code></strong> adds Builder to a world menu under <em>Tools</em> tab. </p>
 <p>13. <strong><code>#shiftedSourceCodeMenu:</code></strong> adds Builder to a Nautilus context menu under <em>Source code refactoring</em> tab. 
 Each panel <code>code</code> instance variable in Builder is initialized with selected code in Nautilus. </p>
-<h4>I.6.K. Command class</h4>
+<h4>I.7.K. Command class</h4>
 <p>A <em>Command</em> abstract class and its subclasses are implemented similar to Command pattern. 
 However there are differences between this implementation and conventional one. 
 Despite this fact, <em>Command</em> class has instance variable <code>commandReceiver</code> which is a reciever of action that should be performed. 
@@ -861,7 +833,7 @@ So for replacement this method uses either assignement or <code>#replaceWith:</c
 <p>4. <strong><code>#receiver:panel:index:withSource:</code></strong> creates new instance of <em>Command</em> class initialized using arguments. </p>
 <p>5. <strong><code>#isAccepted:</code></strong> returns <code>true</code>, explained in subclasses. </p>
 <p>6. <strong><code>#isSequenceNeeded</code></strong> returns <code>false</code>, explained in subclasses. </p>
-<h4>I.6.L. AbstractCommand class </h4>
+<h4>I.7.L. AbstractCommand class </h4>
 <p><em>AbstractCommand</em> class implements common functionality for actions (commands) which, 
 in result, create new metavariable. </p>
 <p>Methods of <em>AbstractCommand</em> class: </p>

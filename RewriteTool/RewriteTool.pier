@@ -69,203 +69,142 @@ execute one of the following scripts.
 
 An alternative way to retrieve and load The Rewrite Tool is to use the Configuration Browser in Pharo 4 
 (Catalog Browser in Pharo 5). Just type in the search pane "RewriteTool" (without quotes) 
-like on the figure 1.1 and load the project.
+like on the figure *@fig:configurationBrowser* and install stable version of the project.
 
 +Configuration Browser in Pharo 4>file://figures/configurationBrowser.png|label=fig:configurationBrowser+
 
 !!Rewrite rule builder
 
-
-""everything below not yet reviewed""
-
 As soon as you have loaded The Rewrite Tool into your image, two new options appear under the "Tools" tab in world menu. 
-
+First one is rewrite rule builder - a part of The Rewrite Tool which provides an intuitive GUI 
+to create transformation rules dynamically, with immediate feedback. 
+The second option opens rewrite rule browser which we discuss in the section *@sec:rewriteRuleBuilder*.
+If you do not like to use world menu to open builder, you can always open it by executing following code: 
 
 [[[
-RewriteRuleBuilder new openWithSpec.
+  RewriteRuleBuilder new openWithSpec
 ]]]
 
-As illustrated in figure *rewriteRuleBuilder*, builder has four panes and three
-buttons, and each of this items has its own functions.  It provides a
-possibility, with simple GUI, to build rewrite rules dynamically.
+As illustrated in figure *@fig:rewriteRuleBuilder*, builder has four panes.
 
 +Rewrite rule builder>file://figures/rewriteRuleBuilder.png|label=fig:rewriteRuleBuilder+
 
-""Panes""
+Bottom half of the builder entitled "Transformation rule" is your main workspace - here you create transformation rule. 
+The transformation rule consists of two parts - LHS (left-hand side) part of the rule and 
+RHS (right-hand side) part of the rule. LHS part is used to match source code 
+which is displayed in top left pane with label "Input". Green arrow indicates that LHS part of the rule matches source code. 
+If the arrow becomes red it means, that LHS part of the transformation rule does not match source code. 
+In case arrow is green, i.e. the rule matches source code, transformation rule is automatically applied to source code. 
+The resulting code of this transformation is displayed in the top right panel with label "Output". 
+You should note, that this pane is the only one that is read only, meaning it is not editable.
+Transformation rule can be created two ways:
+- via action-click contextual menu;
+- directly typing the code of rule.
 
-''TODO: rename panes labels when it will be done in the software''
+We strongly recommend to use ''only'' first option, as it is much more reliable and easier. 
+When some item is selected in LHS part of rule contextual menu will provide appropriate list of options. 
+For instance, if you select a block ([ ^ true ]), the the tool will propose an option "Abstract block". 
+This option creates an abstraction (`@block1) which matches any instance of block. 
 
--Top left pane, labeled ''"Source expression"'', contains source code of expression which will be matched and then transformed. It means, that you should input in this pane whatever you want to transform into something else. Next it is called as ''Source pane''.
+@sec:rewriteRuleBuilder
+!!Rewrite rule browser
 
--Bottom left pane with label ''"Match rule"'', is your playground. Here you will create matching part — the pattern — of rewrite rule. You can change the pattern either using action-click menu or manually changing the code. Later it is referenced as ''Match pane''.
+Rewrite rule browser is the second part of The Rewrite Tool. It provides an access to all transformation rules, 
+that are present in your image. You can select one of them and apply it to any environment scope you want. 
+The browser can be launched via world menu from "Tools" tab, or by executing following code:
 
--Bottom right pane is pretty much the same as previous one. Here you have label
-''"Transform rule"''. It is a second part of rewrite rule. In this pane you can
-create the action of the transformation rule also with options in action-click
-menu, or just manually typing code. Similar to previous one it is called in rest of chapter ''Transform pane''.
-
--The last one, but not the least important, is top right pane - ''"Result
-expression"''. It displays the result of applying a rewrite rule, composed of
-the two bottom panes, to a source expression. You should note that this pane is
-the only one that is not editable, so it is read only. Later, this pane is referenced as ''Result pane''.
-
-""Buttons""
-
-- "Undo" button is a general undo for the three editable panes: Source, Match
-  and Transform. All changes, that were made in one of these panes, are
-  stacked. If you click on "Undo" button, the last change that was made in any
-  of these panes, will be reverted. Also there is local undo for each pane
-  separately.
-- "Generate rule" button creates new class which is a subclass of
-  ''RBTransformationRule'' using information from two bottom panes. After the
-  rule is created using this button, you can apply it to specific scope.
-- "Browse rules" button opens up "Rewrite rule browser", which allows you to
-  browse created rules, and apply them to scope that you want.
-
-!!!Rewrite rule browser
-
-The browser can be launched by typing the following code in your Pharo
-workspace:
 [[[
-RewriteRuleBrowser new openWithSpec.
+  RewriteRuleBrowser new openWithSpec
 ]]]
 
-The browser is shown on figure *rewriteRuleBrowser*. This tool contains all
-previously created rewrite rules in most left pane. It also displays all
-packages, classes, protocols and methods that are present in the current image.
-
-You can select a rewrite rule that you want to apply. Then choose a scope,
-which you want to be transformed with this rule and click "Apply rule to
-selected scope" button. A multiple selection can be done by pressing ''Shift''
-key while clicking on the first and the last package, class, protocol or
-method. After applying a rule, a confirmation window which shows changes
-appears. You can accept or cancel them.
-
-To browse selected rewrite rule class, click "Browse selected rule" button.
+The browser is shown on figure *@fig:rewriteRuleBrowser*. All rules are available in drop down list at bottom of the window. 
+Above you can see all packages, classes and methods, that are present in the image. 
+After you clicked an "Apply rule:" button, a confirmation window will be opened. 
+It shows changes which are going to be made, so you can conveniently preview them. 
 
 +Rewrite rule browser>file://figures/rewriteRuleBrowser.png|label=fig:rewriteRuleBrowser+
 
 !!Examples
 
-In this part you can find useful examples, that will help you to understand how to create your own rule using Builder.
-Following examples are meant to teach you basics of using Builder.
+In this part you can find useful examples, that will help you to understand how to use The Rewrite Tool. 
+In particular, we describe how to create transformation rule with builder and apply it using browser. 
 
 !!!First example
 
-Back to example, we would like to transform the following snippet of code:
+Consider, that we want to do a transformation described in following listing. 
+Basically, here we replace isNil ifTrue: [ ] construction with ifNil: [ ] message send. 
 
-[[[ label = scr:matchExample 
+[[[
+    "Source code"
     self isNil ifTrue: [ ^ true ] 
-]]]
-
-into:
-
-[[[ label = scr:transformExample 
+	
+	"Resulting code"
     self ifNil: [ ^ true ]
 ]]]
 
-!!!!Step 1:
+!!!!Step 1
 
-First, you need to input template source code in Source pane of Builder. If you
-launched the builder with the previously given line, the input code is the one
-of our example. In all panes you get exactly the same code. If you want to
-create your own rewrite rule, just type or copy-paste the code on which you
-would like to apply a transformation in the Source pane. Be sure to save any
-changes in the pane in order to have the right result.
+First, you need to open a builder and input a source code into two panes: top left and bottom left. 
+Now you have a LHS part of rule, that matches an input code (green arrow indicates this). 
+After that, input the resulting code into bottom right pane. 
+As a result you will see the same code in the top right pane.
+Be sure to save any changes which you make in any pane in order to update the resulting code.
 
-To start with, look at status bar in Match pane. Obviously, for now it says "matches", as source code and match rule are equal.
-This status bar will help you to create rule, that will really correspond to source code.
-If it changes to "doesn't match", you probably should use "Undo" button, and rethink your next move.
-As was mentioned earlier, your main playground is Match pane.
-Thus, almost all next actions are made in this pane, and also in Transform pane.
-In our example we don't care about the concerned object (''self'').
-It can be ''self'' or maybe just some temporary variable.
-That is why you have to select ''self'' and right click on it, which opens a
-menu.
+To start with, look at status arrow. Obviously, for now it says "matches", as source code and match rule are equal.
+This status arrow will help you to create rule, that will really correspond to source code.
+If it changes to "does not match", you probably should use "Undo" button, and rethink your next step.
+As was mentioned earlier, your main playground is bottom half of builder, and in particular LHS part of rule. 
+Thus, almost all next actions are made in the bottom left pane.
+In our example we want to transform the structure of the code, 
+however we do not care about receiver (''self'') or argument (''[ ^ true ]''). 
+The receiver can be ''self'' or maybe just some temporary variable ''myVar'', 
+or even some message send like ''Color red''. The argument has to be a block, but we are not interested in its contents. 
+That is why we want to replace the receiver with some kind of abstraction which will match any object. 
+Also we want to have an abstraction, that matches any block, instead of argument. 
+In order to do that, you have to select receiver and action-click on it.
 
-+Step 1 of simple example>file://figures/simpleExample1-1.png|width=60|label=simpleExample1-1+
-As shown in figure *simpleExample1-1*, it displays all actions that can be
-applied to selected object. Actually this object is represented as a node of
-an AST (abstract syntax tree). In Builder each node of AST has its own set of
-options we will note detail here. For more information on abstract syntax tree
-''""you may read HERE""''.
-In this particular case it will contain following options:
-- Ignore
-- Change
-- Abstract variable 
-You need ''"Abstract variable"'', inasmuch it changes ''self'' into
-metavariable, as illustrated in figure *simpleExample1-2*.
-+End of step 1 of simple example>file://figures/simpleExample1-2.png|width=60|label=simpleExample1-2+
++Step 1 of first example>file://figures/example1-1.png|label=example1-1+
 
-You can read more about metavariables and The Rewrite Engine ''""HERE""''.
+As shown in figure *@example1-1*, it displays all actions that can be
+applied to selected object. In builder each object has its own set of options. 
+In this particular case we see following options:
+- Change / Rename
+- Abstract object 
 
-This metavariable will match any object for example: ''self'', ''Color'' (classes are objects too), ''someTempVar''.
-After this change we should have:
+In this case we need to select ''Abstract object'', inasmuch it changes ''self'' into an abstraction, 
+that matches any object. This abstraction is called a metavariable and as you can see in figure *@example1-2* 
+the tool replaced receiver with a ''``@variable1''. 
 
-[[[ label = scr:matchExampleStep1 
-    `variable1 isNil ifTrue: [ ^ true ] 
-]]]
++After step 1 of first example>file://figures/example1-2.png|label=example1-2+
 
-And status bar also has to be unchanged, saying: ''matches''.
-As you may noticed Transform pane text also was changed in following way:
+You can read more about metavariables and The Rewrite Engine in the section *@sec:theRewriteEngine*.
 
-[[[ label = scr:transformExampleStep1 
-    `variable1 ifNil: [ ^ true ]
-]]]
+Status arrow has to be unchanged, saying: ''matches''.
+As you may noticed RHS part of rule was automatically changed - the receiver was replaced with same abstraction. 
+It means that in result of the transformation the receiver (''self'') will not be changed.
 
-It means that in result on the place of ''self'' we will get ''self''.
-In case you want to have in result something else, for example
-''anotherObject'' use an option ''Change'' on a `variable1 in Transform pane
-(or manually type it, but it is not recommended).
-But for now, we don't want that.
-
-
-!!!!Step 2:
-+Step 2 of simple example>file://figures/simpleExample1-3.png|width=60|label=simpleExample1-3+
-
-The next step concerns ''isNil'': select it in Transform pane and right-click
-to open a menu. The options in this case are different from previous one, as it
-is not a variable selected, but selector. So, click on ''Ignore selector''
-option. It will remove ''isNil'' from Transform pane.
-Also, Result pane was updated.%:
-
-%[[[ label = scr:resultExampleStep1 
-%    self ifTrue: [ ^ true ]
-%]]]
-
-!!!!Step 3:
-
-+Step 3 of simple example>file://figures/simpleExample1-4.png|width=60|label=simpleExample1-4+
+!!!!Step 2
 
 Now let us work with our block: ''[ ^ true ]''. We have the same situation as
-we had with ''self''. Once again, we don't care about which block is passed as
-an argument to ''ifTrue:'' or ''ifNil:''. Therefore in Match pane, we select
-our block (be sure to include the brackets) and choose the option ''Abstract
-block'' as examplefied in figure *simpleExample1-4*. In result it will be
-changed into ''`@block1''.
+we had with the receiver. Once again, we are not interested about contents of block, that is passed as
+an argument to ''ifTrue:'' or ''ifNil:''. However it is important to make sure the the argument is actually a block. 
+Therefore in LHS part of transformation rule select the argument (''[ ^ true ]'' - be sure to include the brackets) 
+and choose the option ''Abstract block''. 
+In the result of this action the argument will be replaced with new metavariable 
+(''`@block1'') as shown in figure *@example1-3*.
 
-!!!!Step 4:
-
-+Step 4 of simple example>file://figures/simpleExample1-5.png|width=60|label=simpleExample1-5+
-
-Finally, select ''ifTrue:'' in Transform pane, and apply ''Change selector''
-option from menu. Type in recently opened window: ''ifNil:'', and press ''Ok''
-button as shown by figure *simpleExample1-5*. 
-
-You can also select ''super size'' and ignore it in Match and Transform panes,
-and then delete it in the source one to finish the transformation and obtaining
-the same rule as in *simpleExample1-6*.
-
-+Step 5 of simple example>file://figures/simpleExample1-6.png|width=60|label=simpleExample1-6+
++Step 2 of simple example>file://figures/example1-3.png|label=example1-3+
 
 You can see the result of applying rewrite rule to source code in Result pane.
 
-[[[ label = scr:resultExampleStep2 
+[[[
     self ifNil: [ ^ true ]
 ]]]
 
-You can click on ''Generate rule'' button to automatically generate a class for your new rule.
-Than click on ''Browse rules'' button, and you will see that your new class is in Browser.
+You can click on "Generate rule" button to automatically generate a class that will represent your new rule.
+Than click on "Browse rules" button, that will open the browser. 
+
+""below not yet reviewed""
 
 ""...(HERE MAY BE DESCRIBED HOW TO USE BROWSER)...""
 
@@ -741,6 +680,7 @@ To sum up, rewrite rule builder allows you to edit rules, but do it only if real
 
 "IN DEVELOPEMENT!"
 
+@sec:theRewriteEngine
 !!!The Rewrite Engine
 
 Builder uses The Rewrite Engine to parse rules, to match and transform code. This engine works with strings, that are recognized on level of abstract syntax tree.
