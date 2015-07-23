@@ -302,64 +302,83 @@ Finally we have our rule, which does exactly what we wanted -
 transformation that is mentioned in the beginning of this example. </p>
 <p><a name="example3-3"></a><figure><img src="figures/example3-3.png"></img><figcaption>1.11. Step 4 of ifAbsent: transformation example</figcaption></figure></p>
 <h3>I.6. The Rewrite Tool in details</h3>
-<p><strong>not yet reviewed below</strong></p>
-<p>In this section we describe each and every part of The Rewrite Tool. It is grounded
-on many important ideas that are explained here. A good understanding of this
-ideas is crucial to increase users effectiveness, while working with the tool.</p>
+<p>In this section we describe The Rewrite Tool in details: we explain how all features work, 
+provide some tips to improve your effectivenes in work with The Rewrite Tool. </p>
 <h4>I.6.A. Menu options</h4>
-<p>List of all available options (may be changed):</p><ul><li> Abstract block</li><li> Abstract condition</li><li> Abstract literal</li><li> Abstract statement</li><li> Abstract variable</li><li> As list</li><li> Recurse into</li><li> Change</li><li> Change selector</li><li> Ignore</li><li> Ignore selector</li><li> Undo on node</li></ul>
-<p><strong>... Update list of options ...</strong></p>
-<h5>I.6.A.a. <strong>Abstract actions</strong></h5>
-<p>Any of abstract action replaces selected object(s) with metavariable that
-corresponds to selected node of AST. Next is described what can be matched with
-the metavariable in each case.</p>
-<p><strong>Note:</strong> each metavariable name ends with an index, but for readability
-reasons it is not displayed in the examples below.</p>
+<p>List of all available options via contextual menu:</p><ul><li> Abstract object</li><li> Abstract literal</li><li> Abstract block</li><li> Abstract statement</li><li> Abstract statements</li><li> Abstract condition</li><li> Abstract temporaries list</li><li> Change / Rename</li><li> Undo on node</li></ul>
+<p>Any of abstract action replaces selected object(s) with metavariable - an abstraction to match nodes of AST. 
+Note, that each metavariable name ends with an index, but it is not displayed in the examples below.</p>
+<p><em><strong>Abstract object</strong></em></p>
+<p>Matches any object, even if it is represented by message send (e.g. <em>self</em>, <em>Object</em>, <em>123</em>, <em>myVar foo</em>).</p>
+<p><figure><pre><code class="smalltalk">	``@object &quot;or&quot; ``@variable
+	
+	&quot;matches&quot;
+	
+	myObject</code></pre><figcaption><a name="scr:abstractObject"></a>1.13. Metavariable, that is created by Abstract object action</figcaption></figure></p>
+<p><em><strong>Abstract literal</strong></em></p>
+<p>Matches any literal object (e.g. <em>1</em>, <em>'aString</em>', <em>#aSymbol</em>).</p>
+<p><figure><pre><code class="smalltalk">	`#literal
+
+	&quot;matches&quot;
+
+	true</code></pre><figcaption><a name="scr:abstractLiteral"></a>1.14. Metavariable, that is created by Abstract literal action</figcaption></figure></p>
 <p><em><strong>Abstract block</strong></em></p>
-<p>Matches any block.</p>
-<p><figure><pre><code class="smalltalk">    [ &quot;a lot of stuff here&quot; ] &quot;replaced with&quot; `@block</code></pre><figcaption></figcaption></figure></p>
+<p>Matches any block (e.g. <em>[ ^ true]</em>, <em>[ :each | each name ]</em>). </p>
+<p><figure><pre><code class="smalltalk">	`@block 
+
+	&quot;matches&quot;
+
+	[ :x :y | x + y ]</code></pre><figcaption><a name="scr:abstractBlock"></a>1.15. Metavariable, that is created by Abstract block action</figcaption></figure></p>
+<p><em><strong>Abstract statement</strong></em></p>
+<p>Matches any single statement (e.g. <em>self halt</em>, <em>self foo bar</em>, <em>self isNil ifTrue: [ ^ false ]</em>).</p>
+<p><figure><pre><code class="smalltalk">	`.@Statement
+	
+	&quot;matches&quot;
+
+	myVar name = 'CoolVar'
+		ifTrue: [ myVar := myVar + 1 ]
+		ifFalse: [ myVar := myVar - 1 ]</code></pre><figcaption><a name="scr:abstractStatement"></a>1.16. Metavariable, that is created by Abstract statement action</figcaption></figure></p>
+<p><em><strong>Abstract statements</strong></em></p>
+<p>Matches any sequence of statements including zero and one statement 
+(e.g. <em>result := 1 + 2. ^ result</em>, <em>self foo bar</em>, <em>&quot;nothing here but matches&quot;</em>).</p>
+<p><figure><pre><code class="smalltalk">	``@.Statements
+	
+	&quot;matches&quot;
+
+	myVar name = 'CoolVar'
+		ifTrue: [ myVar := myVar + 1 ]
+		ifFalse: [ myVar := myVar - 1 ].
+	^ myVar * 2</code></pre><figcaption><a name="scr:abstractStatements"></a>1.17. Metavariable, that is created by Abstract statements action</figcaption></figure></p>
 
 <p><em><strong>Abstract condition</strong></em></p>
-<p>Matches any condition.</p>
-<p><figure><pre><code class="smalltalk">    self isNil ifTrue: [ ^ true ] &quot;is replaced with&quot; `@condition ifTrue: [ ^ true ]</code></pre><figcaption></figcaption></figure></p>
-<p><em><strong>Abstract literal</strong></em></p>
-<p>Matches any literal.</p>
-<p><figure><pre><code class="smalltalk">    true &quot;is replaced with&quot; `#literal
-    119 &quot;is replaced with&quot; `#literal</code></pre><figcaption></figcaption></figure></p>
-<p><em><strong>Abstract statement</strong></em></p>
-<p>Matches any statement, but not list of statements.</p>
-<p><figure><pre><code class="smalltalk">    self isNil ifTrue: [ ^ true ] &quot;is replaced with&quot; `.Statement</code></pre><figcaption></figcaption></figure></p>
-<p><em><strong>Abstract variable</strong></em></p>
-<p>Matches any variable.</p>
-<p><figure><pre><code class="smalltalk">    self &quot;is replaced with&quot; `variable</code></pre><figcaption></figcaption></figure></p>
-<h5>I.6.A.b. <strong>Other actions</strong></h5>
-<p><em><strong>As list</strong></em></p>
-<p>Metavariable represented as list matches practically anything.</p>
+<p>Matches any message send, that is as a condition 
+(e.g. <em>self size = 5 ifTrue: [ ^ self name ]</em> - here the reciever of <em>#ifTrue:</em> message is a condition). 
+Actually, the <em>Abstract condition</em> option creates exactly the same metavariable as the <em>Abstract object</em> option. 
+But it is more convinient to have two separate options, and display each of them in corresponding situation. 
+Message send is considered a condition if it is a receiver of such message as <em>#ifTrue:</em>, <em>#ifFalse:</em>, <em>#ifNil:</em> etc. </p>
+<p><figure><pre><code class="smalltalk">	``@condition ifTrue: [ ^ true ]
+	
+	&quot;matches&quot;
 
-<p><figure><pre><code class="smalltalk">    `variable &quot;is replaced with&quot; `@variable</code></pre><figcaption></figcaption></figure></p>
+	self isNil ifTrue: [ ^ true ]</code></pre><figcaption><a name="scr:abstractCondition"></a>1.18. Metavariable, that is created by Abstract condition action</figcaption></figure></p>
+<p><em><strong>Abstract temporaries list</strong></em></p>
+<p>Matches any list of temporary variables declaration (e.g. <em>| a b result|</em>, | temp1 temp2 |). </p>
+<p><figure><pre><code class="smalltalk">	| ``@temporaries |
+	
+	&quot;matches&quot;
 
-<p><em><strong>Recurse into</strong></em></p>
-<p>Expression <em>`@variable size</em> matches <em>self size size</em> once, where <em>`@variable</em> is <em>self size</em>.
-But recursive metavariable in expression <em>``@variable size</em> matches <em>self size size</em> twice.
-First time <em>``@variable</em> is <em>self size</em> and second time it is <em>self</em>.</p>
+	| myVar1 myVar2 |</code></pre><figcaption><a name="scr:abstractCondition"></a>1.19. Metavariable, that is created by Abstract condition action</figcaption></figure></p>
+<p><em><strong>Change / Rename</strong></em></p>
+<p>Replaces selected node of AST with users input. Better than simple manual change, inasmuch all occurences are modified in the different panes.</p>
 
-<p><figure><pre><code class="smalltalk">    `@variable &quot;is replaced with&quot; ``@variable</code></pre><figcaption></figcaption></figure></p>
-
-<p><em><strong>Change</strong></em></p>
-<p>Replaces selected node of AST with users input. Contrary to a manual change,
-all occurences are modified in the different panes.</p>
-<p><em><strong>Change selector</strong></em></p>
-<p>Replaces selector of selected node of AST with users input.</p>
-<p><em><strong>Ignore</strong></em></p>
-<p>Removes selected node of AST. This option is used when a part of the code is
-not useful or relevant for the pattern.</p>
-<p><em><strong>Ignore selector</strong></em></p>
-<p>Removes selector of selected node of AST.</p>
 <p><em><strong>Undo on node</strong></em></p>
 <p>Sets selected node of AST in previous state.</p>
 
-<p><figure><pre><code class="smalltalk">    self &quot;Abstract variable =&gt;&quot; `variable
-    `variable &quot;Undo on node =&gt;&quot; self</code></pre><figcaption></figcaption></figure></p>
+<p><figure><pre><code class="smalltalk">    self ''Abstract object'' =&gt; ``@variable
+    ``@variable ''Undo on node'' =&gt; self</code></pre><figcaption><a name="scr:undoOnNode"></a>1.20. Example of applying the Undo on node action</figcaption></figure></p>
+
+<p><strong>not yet reviewed below</strong></p>
+
 <h4>I.6.B. Working with rewrite rules</h4>
 <p>This section provides useful tips about working in rewrite rule builder.
 It will help you to understand the mechanics of building rule with <em>The Rewrite Tool</em>.</p>

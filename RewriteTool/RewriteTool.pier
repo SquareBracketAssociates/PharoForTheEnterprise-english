@@ -384,132 +384,138 @@ transformation that is mentioned in the beginning of this example.
 
 !!The Rewrite Tool in details
 
-""not yet reviewed below""
-
-In this section we describe each and every part of The Rewrite Tool. It is grounded
-on many important ideas that are explained here. A good understanding of this
-ideas is crucial to increase users effectiveness, while working with the tool.
+In this section we describe The Rewrite Tool in details: we explain how all features work, 
+provide some tips to improve your effectivenes in work with The Rewrite Tool. 
 
 !!!Menu options
 
-List of all available options (may be changed):
-- Abstract block
-- Abstract condition
+List of all available options via contextual menu:
+- Abstract object
 - Abstract literal
+- Abstract block
 - Abstract statement
-- Abstract variable
-- As list
-- Recurse into
-- Change
-- Change selector
-- Ignore
-- Ignore selector
+- Abstract statements
+- Abstract condition
+- Abstract temporaries list
+- Change / Rename
 - Undo on node
 
-""... Update list of options ...""
+Any of abstract action replaces selected object(s) with metavariable - an abstraction to match nodes of AST. 
+Note, that each metavariable name ends with an index, but it is not displayed in the examples below.
 
-!!!!""Abstract actions""
+''""Abstract object""''
 
-Any of abstract action replaces selected object(s) with metavariable that
-corresponds to selected node of AST. Next is described what can be matched with
-the metavariable in each case.
+Matches any object, even if it is represented by message send (e.g. ''self'', ''Object'', ''123'', ''myVar foo'').
 
-""Note:"" each metavariable name ends with an index, but for readability
-reasons it is not displayed in the examples below.
+[[[caption=Metavariable, that is created by ''Abstract object'' action|label=scr:abstractObject
+	``@object "or" ``@variable
+	
+	"matches"
+	
+	myObject
+]]]
+
+''""Abstract literal""''
+
+Matches any literal object (e.g. ''1'', '''aString''', ''#aSymbol'').
+
+[[[caption=Metavariable, that is created by ''Abstract literal'' action|label=scr:abstractLiteral
+	`#literal
+
+	"matches"
+
+	true
+]]]
 
 ''""Abstract block""''
 
-Matches any block.
+Matches any block (e.g. ''[ ^ true]'', ''[ :each | each name ]''). 
 
-[[[ label = scr:blockExample 
-    [ "a lot of stuff here" ] "replaced with" `@block
+[[[caption=Metavariable, that is created by ''Abstract block'' action|label=scr:abstractBlock
+	`@block 
+
+	"matches"
+
+	[ :x :y | x + y ]
+]]]
+
+''""Abstract statement""''
+
+Matches any single statement (e.g. ''self halt'', ''self foo bar'', ''self isNil ifTrue: [ ^ false ]'').
+
+[[[caption=Metavariable, that is created by ''Abstract statement'' action|label=scr:abstractStatement
+	`.@Statement
+	
+	"matches"
+
+	myVar name = 'CoolVar'
+		ifTrue: [ myVar := myVar + 1 ]
+		ifFalse: [ myVar := myVar - 1 ]
+]]]
+
+''""Abstract statements""''
+
+Matches any sequence of statements including zero and one statement 
+(e.g. ''result := 1 + 2. ^ result'', ''self foo bar'', ''"nothing here but matches"'').
+
+[[[caption=Metavariable, that is created by ''Abstract statements'' action|label=scr:abstractStatements
+	``@.Statements
+	
+	"matches"
+
+	myVar name = 'CoolVar'
+		ifTrue: [ myVar := myVar + 1 ]
+		ifFalse: [ myVar := myVar - 1 ].
+	^ myVar * 2
 ]]]
 
 
 ''""Abstract condition""''
 
-Matches any condition.
+Matches any message send, that is as a condition 
+(e.g. ''self size = 5 ifTrue: [ ^ self name ]'' - here the reciever of ''#ifTrue:'' message is a condition). 
+Actually, the ''Abstract condition'' option creates exactly the same metavariable as the ''Abstract object'' option. 
+But it is more convinient to have two separate options, and display each of them in corresponding situation. 
+Message send is considered a condition if it is a receiver of such message as ''#ifTrue:'', ''#ifFalse:'', ''#ifNil:'' etc. 
 
-[[[ label = scr:conditionExample 
-    self isNil ifTrue: [ ^ true ] "is replaced with" `@condition ifTrue: [ ^ true ]
+[[[caption=Metavariable, that is created by ''Abstract condition'' action|label=scr:abstractCondition
+	``@condition ifTrue: [ ^ true ]
+	
+	"matches"
+
+	self isNil ifTrue: [ ^ true ]
 ]]]
 
-''""Abstract literal""''
+''""Abstract temporaries list""''
 
-Matches any literal.
+Matches any list of temporary variables declaration (e.g. ''| a b result|'', | temp1 temp2 |). 
 
-[[[ label = scr:literalExample 
-    true "is replaced with" `#literal
-    119 "is replaced with" `#literal
+[[[caption=Metavariable, that is created by ''Abstract condition'' action|label=scr:abstractCondition
+	| ``@temporaries |
+	
+	"matches"
+
+	| myVar1 myVar2 |
 ]]]
 
-''""Abstract statement""''
+''""Change / Rename""''
 
-Matches any statement, but not list of statements.
+Replaces selected node of AST with users input. Better than simple manual change, inasmuch all occurences are modified in the different panes.
 
-[[[ label = scr:statementExample 
-    self isNil ifTrue: [ ^ true ] "is replaced with" `.Statement
-]]]
-
-''""Abstract variable""''
-
-Matches any variable.
-
-[[[ label = scr:variableExample 
-    self "is replaced with" `variable
-]]]
-
-!!!!""Other actions""
-
-''""As list""''
-
-Metavariable represented as list matches practically anything.
-
-
-[[[ label = scr:asListExample 
-    `variable "is replaced with" `@variable
-]]]
-
-
-''""Recurse into""''
-
-Expression ''`@variable size'' matches ''self size size'' once, where ''`@variable'' is ''self size''.
-But recursive metavariable in expression ''``@variable size'' matches ''self size size'' twice.
-First time ''``@variable'' is ''self size'' and second time it is ''self''.
-
-
-[[[ label = scr:asListExample 
-    `@variable "is replaced with" ``@variable
-]]]
-
-
-''""Change""''
-
-Replaces selected node of AST with users input. Contrary to a manual change,
-all occurences are modified in the different panes.
-
-''""Change selector""''
-
-Replaces selector of selected node of AST with users input.
-
-''""Ignore""''
-
-Removes selected node of AST. This option is used when a part of the code is
-not useful or relevant for the pattern.
-
-''""Ignore selector""''
-
-Removes selector of selected node of AST.
 
 ''""Undo on node""''
 
 Sets selected node of AST in previous state.
 
 
-[[[ label = scr:undoOnNodeExample 
-    self "Abstract variable =>" `variable
-    `variable "Undo on node =>" self
+[[[caption=Example of applying the ''Undo on node'' action|label=scr:undoOnNode
+    self ''Abstract object'' => ``@variable
+    ``@variable ''Undo on node'' => self
 ]]]
+
+
+""not yet reviewed below""
+
 
 !!!Working with rewrite rules
 
