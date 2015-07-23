@@ -265,12 +265,6 @@ Now select ''result'' variable in LHS part of the rule use an ''Abstract object'
 Apply the same operation on ''a'' and ''b'' variables.
 After this steps the builder has to look like in the figure *@example2-2*.
 
-[[[ label = scr:secondExample5 
-    `variable1 := `variable2 < `variable3
-	ifTrue: [ `variable2 ]
-	ifFalse: [ `variable3 ]
-]]]
-
 +Step 2 of second example>file://figures/example2-2.png|label=example2-2+
 
 ""Note:"" Metavariable indexes (number in the end of name) may be different if you did other changes before
@@ -280,106 +274,72 @@ Use ''Generate rule'' button to generate the class for this rule in order to use
 
 !!!Third example
 
-""below not yet reviewed""
+In this section  we will examine another transformation rule, that is used in Critics Browser, ==RBAtIfAbsentRule==. 
+This rule works with collections and blocks, so its implementation may be more complicated than 
+implementation of rules in two previous examples. With this rule we can do following transformation:
 
-""...Probably we have to put explanation to The Rewrite Engine before examples, or just give some link...""
-
-Class ==RBMinMaxRule== is a subclass of ==RBTransformationRule==, which has other not less interesting examples of rewrite rules. 
-That is why we will examine ==RBAtIfAbsentRule==. 
-This one works with collections and blocks, so its implementation may be more complicated than implementation of rules in two previous examples,
- however it is still easy to understand. 
-
-Again, open ==RBAtIfAbsentRule>>#initialize== method, and you will see few, similar to each other, rules. 
-Here is one of them:
-
-[[[ label=thirdExample1 
-    self rewriteRule
-	"..."
-	replace: '``@dictionary at: ``@key
-		  ifAbsent: [| `@temps |
-	          ``@.Statements.
-	          ``@dictionary at: ``@key 
-                  put: ``@object]'
-	with:    '``@dictionary at: ``@key
-	          ifAbsentPut: [| `@temps |
-	          ``@.Statements.
-	          ``@object]'
-]]]
-
-At first look it may seem too complex, but after we generate it with builder, you will clearly know the responsibilities of each part of this rule.
-With such a rule we can do followning transformation:
-
-[[[ label=thirdExample2 
-    	"before rule is applied"
-
+[[[caption=Example of possible transformation with RBAtIfAbsentRule|label=scr:possibleTransformation
+	"Source code"
 	| myDictionary |
 	myDictionary := Dictionary new 
 		at: 1 put: 'a';
 		at: 2 put: 'b';
 		yourself.
 	myDictionary at: 3 ifAbsent: [
-	 | temp1 temp2 temp3 | 
-	 temp1 := 'c'.
-	 temp2 := 'd'.
-	 temp3 := temp1, temp2.
-	 myDictionary at: 3 put: temp3 ].
-	 ^ myDictionary
+		| temp1 temp2 temp3 | 
+		temp1 := 'c'.
+		temp2 := 'd'.
+		temp3 := temp1, temp2.
+		myDictionary at: 3 put: temp3 ].
+	^ myDictionary
 
-	"after rule is applied"
-
+	"Resulting code"
 	| myDictionary |
 	myDictionary := Dictionary new
 		at: 1 put: 'a';
 		at: 2 put: 'b';
 		yourself.
 	myDictionary at: 3 ifAbsentPut: [ 
-	 | temp1 temp2 temp3 |
-	 temp1 := 'c'.
-	 temp2 := 'd'.
-	 temp3 := temp1 , temp2.
-	 temp3 ].
+		| temp1 temp2 temp3 |
+		temp1 := 'c'.
+		temp2 := 'd'.
+		temp3 := temp1 , temp2.
+		temp3 ].
 	^ myDictionary
 ]]]
 
 This code contains all keywords that are present in rule such as: #at:ifAbsent:, and #at:ifAbsentPut:. 
-Current example is using this code, to implement the rule, that we selected earlier.
+Current example is using this code, to implement the ==RBAtIfAbsentRule== rule.
 
 !!!!Step 1:
 
-In order to open Builder with previous code inside of it, select first part of code (the one that is before rule is applied)
- in Nautilus workspace, go to ''Source code refactoring'' and select ''RewriteRuleBuilder'' option. 
-Or you can just open Builder through ''World menu >> Tools >> Builder'',
- and than copy and paste first part of code in Source and Match panels, and second part - in Transform panel.
-Next copy second part of code, and paste it into Transform panel. 
+To begin with copy and paste source code from listing *@scr:possibleTransformation* in top and bottom left panes. 
+After that copy resulting code from listing *@scr:possibleTransformation* in bottom right pane. 
 Now we are ready to implement the rule.
 
-+Step 1 of ifAbsent: transformation example>file://figures/example3-1.png|width=60|label=example3-1+
++Step 1 of ifAbsent: transformation example>file://figures/example3-1.png|label=example3-1+
 
 !!!!Step 2:
-Required code is inside of the Builder, so it is time to begin creating the rule.
-As always, all following actions are done in Match panel, unless other panel is specified. 
-To start with, select any reference of ==myDictionary==, except one that is a variable declaration,
- and apply ''Abstract variable'' option. 
-After that, do ''As List'' on newely created metavariable ==`variable1==. 
-You will get ==`@variabl1==, and finally, apply ''Recurse into'' to this one.
-The result is ==``@variable1==, and all in all it is: 
+To start with, select any reference of ''myDictionary'' in LHS part of the rule, 
+except one that is a variable declaration, and apply ''Abstract object'' option.
 
-Despite tha fact, that we don't need recursion and list symbol in this particular situation, 
-we still use them, because of next reasons:
-- to get exactly the same rule as we have in ==RBAtIfAbsentRule==;
-- to create a rule that can be used in general situation, not only in particular one;
-- to learn which actions Builder is able to perform.
+Now select literal object ''3'' - one of the keys, that we use in source code 
+and bring up the contextual menu. 
+Note, that here we have one additional option - ''Abstract literal''. 
+If you select this option, the tool creates an abstraction which matches any literal, 
+i.e. ''5'', '''myString''', ''#aSymbol'' etc. 
+However, if you select the ''Abstract object'' option, the tool creates an abstraction 
+which matches any objects. It may be a literal, temporary variable or even message send. 
+Clearly, the ''Abstract object'' option creates more generic abstraction, 
+thus we suggest to select this one. 
 
-Now we do exactly the same actions with a key, which is equal to 3.
-
-+Step 2 of ifAbsent: transformation example>file://figures/example3-2.png|width=60|label=example3-2+
++Step 2 of ifAbsent: transformation example>file://figures/example3-2.png|label=example3-2+
 
 !!!!Step 3:
+Apply ''Abstract statement'' action to code provided in listing *@scr:statementToAbstract*.
 
-Apply ''Abstract statement'' action to next snippet:
-
-[[[ label=thirdExample3 
-    	"..."
+[[[caption=Statement to abstract|label=scr:statementToAbstract
+	"..."
 
 	``@variable1 := Dictionary new
 	at: 1 put: 'a';
@@ -389,22 +349,24 @@ Apply ''Abstract statement'' action to next snippet:
 	"..."
 ]]]
 
-Basically, we want to match here pretty much everything, so let us do ''As List'' and ''Recurse into'' on ==`.Statement1==, and as a result we have ==``@.Statement1==.
-To finish with initialization part of this code, select declaration of temporary variable ==| myDictionary |== and do on it ''Abstract temporaries list''.
-Note, that ==| myDictionary |== in Transform panel wasn't transformed to ==| ``@temporaries |==, so we have to do it ourselves. 
-Select ==| myDictionary |== in Transform panel, and apply ''Abstract temporaries list''. 
-In opened window select ==| ``@temporaries |== option.
+Basically, it will match pretty much any statement, and as a result we have ''`@.Statement1''.
+To finish with initialization part of this code, 
+select declaration of temporary variable ''| myDictionary |'' and do on it ''Abstract temporaries list''.
+Apply the same action on the temporaries list in RHS part of the rule. 
+In opened window select ''| ``@temporaries1 |'' option.
 
 !!!!Step 4:
+After this steps, lets take a look at the argument of ''#ifAbsent:'' - a block. 
+With temporaries declaration ''| temp1 temp2 temp3 |'' we do exactly the same thing as in previous step. 
+Just apply the ''Abstract temporaries list'' option in both 
+LHS and RHS parts of the transformation rule. However, now in opened window choose 
+''| ``@temporaries2 |'' instead of ''| ``@temporaries1 |''. 
 
-After this steps, lets take a look at the argument of ==#ifAbsent:== - a block. 
-With temporaries declaration ==| temp1 temp2 temp3 |== we do exactly the same thing as in previous step. 
-Also we have to do same actions in Transform panel, but now in opened window choose ==| ``@temporaries2 |== instead of ==| ``@temporaries1 |==. 
+Apply the ''Abstract statement""s""'' action to next snippet of code presented 
+in the listing *@scr:statementsToAbstract*. Repeat the same action in RHS part and choose ''`@.Statements2''. 
 
-Apply ''Abstract statement""s""'' action to next snippet:
-
-[[[ label=thirdExample4 
-    	"..."
+[[[caption=Statement""s"" to abstract|label=scr:statementsToAbstract
+	"..."
 
 	temp1 := 'c'.
 	temp2 := 'd'.
@@ -413,20 +375,16 @@ Apply ''Abstract statement""s""'' action to next snippet:
 	"..."
 ]]]
 
-Than do it with same snippet in Transform panel, and choose ==`@.Statements2==. 
-Next, back to Match panel, on ==`@.Statements2== node do ''Recurse into''. 
-The rule is almost ready, there is one variable left that we have to change - ==temp3==. 
-Select it and use ''Abstract variable'', ''As List'' and ''Recurse into'' actions one after another, and that is how you get ==``@variable3==. 
-Finally we have our rule, which does exactly what we wanted - transformation that is mentioned in the beginning of this example. 
+The rule is almost ready, there is one variable left that we have to change - ''temp3''. 
+Select it and use ''Abstract object'', and that is how you get ''``@variable3''. 
+Finally we have our rule, which does exactly what we wanted - 
+transformation that is mentioned in the beginning of this example. 
 
-+Step 4 of ifAbsent: transformation example>file://figures/example3-4.png|width=60|label=example3-4+
-
-If you wish, now it is possible to ''Generate'' a class, that will hold this rule, so afterwars you can use it in Browser. 
-
-""... Again, maybe explained Browser ...""
-
++Step 4 of ifAbsent: transformation example>file://figures/example3-3.png|label=example3-3+
 
 !!The Rewrite Tool in details
+
+""not yet reviewed below""
 
 In this section we describe each and every part of The Rewrite Tool. It is grounded
 on many important ideas that are explained here. A good understanding of this
