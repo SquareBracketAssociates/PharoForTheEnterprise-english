@@ -86,7 +86,7 @@ execute one of the following scripts.</p>
 (Catalog Browser in Pharo 5). Just type in the search pane &quot;RewriteTool&quot; (without quotes) 
 like on the figure <a href="#fig:configurationBrowser">1.1 </a> and install stable version of the project.</p>
 <p><a name="fig:configurationBrowser"></a><figure><img src="figures/configurationBrowser.png"></img><figcaption>1.1. Configuration Browser in Pharo 4</figcaption></figure></p>
-<h3>I.3. Rewrite rule builder</h3>
+<a id="sec:rewriteRuleBuilder"></a><h3>I.3. Rewrite rule builder</h3>
 <p>As soon as you have loaded The Rewrite Tool into your image, two new options appear under the &quot;Tools&quot; tab in world menu. 
 First one is rewrite rule builder - a part of The Rewrite Tool which provides an intuitive GUI 
 to create transformation rules dynamically, with immediate feedback. 
@@ -155,7 +155,7 @@ In this particular case we see following options:</p><ul><li> Change / Rename</l
 that matches any object. This abstraction is called a metavariable and as you can see in figure <a href="#example1-2">1.5 </a> 
 the tool replaced receiver with a <em>``@variable1</em>. </p>
 <p><a name="example1-2"></a><figure><img src="figures/example1-2.png"></img><figcaption>1.5. After step 1 of first example</figcaption></figure></p>
-<p>You can read more about metavariables and The Rewrite Engine in the section <a href="#sec:theRewriteEngine">1.6.3 </a>.</p>
+<p>You can read more about metavariables and The Rewrite Engine in the section <strong>section reference</strong>.</p>
 <p>Status arrow has to be unchanged, saying: <em>matches</em>.
 As you may noticed RHS part of rule was automatically changed - the receiver was replaced with same abstraction. 
 It means that in result of the transformation the receiver (<em>self</em>) will not be changed.</p>
@@ -304,7 +304,7 @@ transformation that is mentioned in the beginning of this example. </p>
 <h3>I.6. The Rewrite Tool in details</h3>
 <p>In this section we describe The Rewrite Tool in details: we explain how all features work, 
 provide some tips to improve your effectivenes in work with The Rewrite Tool. </p>
-<h4>I.6.A. Menu options</h4>
+<a id="sec:menuOptions"></a><h4>I.6.A. Menu options</h4>
 <p>List of all available options via contextual menu:</p><ul><li> Abstract object</li><li> Abstract literal</li><li> Abstract block</li><li> Abstract statement</li><li> Abstract statements</li><li> Abstract condition</li><li> Abstract temporaries list</li><li> Change / Rename</li><li> Undo on node</li></ul>
 <p>Any of abstract action replaces selected object(s) with metavariable - an abstraction to match nodes of AST. 
 Note, that each metavariable name ends with an index, but it is not displayed in the examples below.</p>
@@ -376,461 +376,273 @@ Message send is considered a condition if it is a receiver of such message as <e
 
 <p><figure><pre><code class="smalltalk">    self ''Abstract object'' =&gt; ``@variable
     ``@variable ''Undo on node'' =&gt; self</code></pre><figcaption><a name="scr:undoOnNode"></a>1.20. Example of applying the Undo on node action</figcaption></figure></p>
-
-<p><strong>not yet reviewed below</strong></p>
-
 <h4>I.6.B. Working with rewrite rules</h4>
-<p>This section provides useful tips about working in rewrite rule builder.
-It will help you to understand the mechanics of building rule with <em>The Rewrite Tool</em>.</p>
-<h5>I.6.B.a. <strong>Equal nodes</strong></h5>
-<p>First thing worth mentioning is that any action, except <em>Ignore</em> actions, applied in <em>Match rule</em> pane,
-also applies to all same object in <em>Match rule</em> pane and <em>Transform rule</em> pane.
-If it is applied in <em>Transform rule</em> pane, only objects in it are transformed, but not in <em>Match rule</em> pane.
-When I say &quot;same object&quot;, it means equal nodes of AST.
-Example:</p>
-<p><figure><pre><code class="smalltalk">    &quot;Code below is useless - just an example&quot;
-
-    &quot;Match rule pane:&quot;
-    self children do: [ :each | each check ].
-    self ifNotNil: [ self children last remove ].
-    ^ self size
+<p>This section provides useful tips about working in builder.
+It will help you to understand the mechanics of building rule with The Rewrite Tool.</p>
+<p><em><strong>Equal nodes</strong></em></p>
+<p>First thing worth mentioning is that any action applied in LHS part of ruel,
+also applies to all references of this object in both LHS and RHS parts of transformation rule.
+If it is applied in RHS part, only objects in it are changed, but not in LHS part.</p>
+<p><em><strong>Non-existing metavariables</strong></em></p>
+<p>Another thing, that you shuld know is that you can not create new metavariable in RHS part of rule, 
+if it is not created in LHS part. Meaning, that you are not able to apply, for example, <em>Abstract block</em> action in RHS part, 
+if there is no metavariable in LHS part of the rule. 
+If there is one, the tool will suggest you to choose name from existing metavariables. 
+Let us consider example from listing <a href="#scr:nonExistingMetavariables">1.21 </a>.</p>
+<p><figure><pre><code class="smalltalk">	&quot;Source code&quot;
+	self children do: [ :each | each check ].
+	self ifNotNil: [ self children last remove ].
+	^ self size
     
-    &quot;Transform rule pane:&quot;
-    self children do: [ :each | each check ].
-    self ifNotNil: [ self children last remove ].
-    ^ super size</code></pre><figcaption></figcaption></figure></p>
-<p>Select <em>self</em> in <em>Match rule</em> pane and apply <em>Abstract variable</em> action.
-You will, see the next result:</p>
-<p><figure><pre><code class="smalltalk">    &quot;Code below is useless - just an example&quot;
-
-    &quot;Match rule pane:&quot;
-    `variable1 children do: [ :each | each check ].
-    `variable1 ifNotNil: [ `variable1 children last remove ].
-    ^ `variable1 size
-    
-    &quot;Transform rule pane:&quot;
-    `variable1 children do: [ :each | each check ].
-    `variable1 ifNotNil: [ `variable1 children last remove ].
-    ^ super size</code></pre><figcaption></figcaption></figure>
-Create new metavariable</p>
-<h5>I.6.B.b. <strong>Non-existing metavariables</strong></h5>
-<p>Another thing, that you shuld know is that you can't create new metavariable in
-<em>Transform rule</em> pane, if it is not created in <em>Match rule</em> pane. Meaning,
-that you are not able to apply, for example, <em>Abstract block</em> action in
-<em>Transform rule</em> pane, if there is no metavariable in <em>Match rule</em> pane.
-If there is one, system will suggest you to choose name from existing
-metavariables. Let us take previous example:</p>
-<p><figure><pre><code class="smalltalk">    &quot;Code below is useless - just an example&quot;
-
-    &quot;Match rule pane:&quot;
-    self children do: [ :each | each check ].
-    self ifNotNil: [ self children last remove ].
-    ^ self size
-    
-    &quot;Transform rule pane:&quot;
-    self children do: [ :each | each check ].
-    self ifNotNil: [ self children last remove ].
-    ^ super size</code></pre><figcaption></figcaption></figure></p>
-<p>In case you select <em>super</em> in <em>Transform rule</em> pane and apply <em>Abstract variable</em> action, an error will be raised.
-But if you previously done this process in <em>Match rule</em> pane with <em>self</em> variable,
-it is possible now to create metavariables in <em>Transform rule</em> pane.
-If you now select <em>super</em> in  <em>Transform rule</em> pane and apply <em>Abstract variable</em> action window will be displayed.
+	&quot;Resulting code&quot;
+	self children do: [ :each | each check ].
+	self ifNotNil: [ self children last remove ].
+	^ super size</code></pre><figcaption><a name="scr:nonExistingMetavariables"></a>1.21. Example of non existing metavariables</figcaption></figure></p>
+<p>In case you select <em>super</em> in RHS part and apply <em>Abstract object</em> action, you will see the alert window, 
+indicating, that there are no available metavariables for this action. 
+But if you previously done this action in LHS part with <em>self</em> object, 
+it is possible now to create metavariables in RHS part.
 With other actions like <em>Abstract literal</em>, <em>Abstract condition</em> etc. happens exactly the same thing.</p>
-<h5>I.6.B.c. <strong>Manual editing</strong></h5>
+<p><em><strong>Manual editing</strong></em></p>
 <p>One more important thing is that creating rewrite rules with manual editing, instead of action click menu options, is not recommended.
 First of all, you will not have general <em>Undo</em> as well as <em>Undo on node</em> options available.
-Moreover you may make mistake in The Rewrite Engine syntax.
-And also, it is possible to get errors from, for example, creating non-existing metavariables.
-To sum up, rewrite rule builder allows you to edit rules, but do it only if really necessary.</p>
-<p>&quot;IN DEVELOPEMENT!&quot;</p>
-<h4>I.6.C. Details of rewrite rule browser</h4>
-<p><figure><pre><code class="smalltalk">    &quot;Nothing here for now&quot;</code></pre><figcaption></figcaption></figure></p>
-<p>&quot;IN DEVELOPEMENT!&quot;</p>
-<a id="sec:theRewriteEngine"></a><h4>I.6.D. The Rewrite Engine</h4>
-<p>Builder uses The Rewrite Engine to parse rules, to match and transform code. This engine works with strings, that are recognized on level of abstract syntax tree.
-As a result, each part of matching or transforming string becomes a node of AST, which makes this engine very powerful.
-So, The Rewrite Engine makes it possible to get an AST representation of any rule.
-It means, user can easily match or replace(transform) any part of code as a node.</p>
-<p>The syntax of The Rewrite Engine may seem a bit confusing, however it contains only few key symbols.
-These symbols are:</p><ul><li>backquote(`)</li><li>dot(.)</li><li>number sign(#)</li><li>at sign(@)</li></ul>
-<h5>I.6.D.a. Backquote symbol</h5><p><figure><pre><code class="smalltalk">`</code></pre><figcaption></figcaption></figure>
-It represents any metavariable, and other symbols specify whic kind of metavariable it is.
-For example, it can be
-<figure><pre><code class="smalltalk">`variable1</code></pre><figcaption></figcaption></figure>
-This expression will match any simple object like: Object, super, etc. (but not literal)
-Up to this point it seems to be simple, however, there is one tricky place.
-<figure><pre><code class="smalltalk">`variable1
-&quot;Some code&quot;
-`variable2</code></pre><figcaption></figcaption></figure>
-This expression will not match
-<figure><pre><code class="smalltalk">myVar
-&quot;Some code&quot;
-myVar</code></pre><figcaption></figcaption></figure>
-because we use different metavariables and equal variables.
-But it will match
-<figure><pre><code class="smalltalk">myVar
-&quot;Some code&quot;
-myAnotherVar</code></pre><figcaption></figcaption></figure>
-It means, that name of metavariable is important, as it is unique.
-Each metavariable has its own AST node representation.
-Conclusion is, that different metavariables match different variables.
-And one metavariable matches the same variable many times.</p>
-<p>Also backquote symbol is responsible for recursing into message sends, statements, objects etc.
-<figure><pre><code class="smalltalk">``@variable1 size</code></pre><figcaption></figcaption></figure>
-This rule will match any object that has a sender size.
-Moreover, whenever match is found, The Rewrite Engine looks inside of matched node for more matches.
-It means that engine will search for this construction
-<figure><pre><code class="smalltalk">``@variable1 size</code></pre><figcaption></figcaption></figure>
-inside of this node:
-<figure><pre><code class="smalltalk">``@variable1</code></pre><figcaption></figcaption></figure>
-So, if you have 
-<figure><pre><code class="smalltalk">self size size</code></pre><figcaption></figcaption></figure>
-you will get two matches. First of all, 
-<figure><pre><code class="smalltalk">``@variable1</code></pre><figcaption></figcaption></figure>
-matches with reciever of size:
-<figure><pre><code class="smalltalk">self size</code></pre><figcaption></figcaption></figure>
-And than, our metavariable matches with
-<figure><pre><code class="smalltalk">self</code></pre><figcaption></figcaption></figure></p>
-<h5>I.6.D.b. Dot symbol</h5><p><figure><pre><code class="smalltalk">.</code></pre><figcaption></figcaption></figure>
-It has the simplest role in The Rewrite Engine.
-Dot is used to match statement in sequence node.
-<figure><pre><code class="smalltalk">`.Statement1</code></pre><figcaption></figcaption></figure>
-matches with
-<figure><pre><code class="smalltalk">myVar asString size</code></pre><figcaption></figcaption></figure>
-Obviously, it is also used as end of statement.
-Working with The Rewrite Engine syntax requires a lot of attention and patience, as if you miss dot somewhere, 
-it will match nothing or something you didn't want to.
-In case you are using builder, it will automatically place all dots you need.
-If you have couple of statements like this:
-<figure><pre><code class="smalltalk">myVar := 123.
-myVar asString size.</code></pre><figcaption></figcaption></figure>
-it matches next The Rewrite Engine expression:
-<figure><pre><code class="smalltalk">`.Statement1.
-`.Statement2</code></pre><figcaption></figcaption></figure>
-As was mentioned earlier, backquote states that it is metavariable, and unique name of each metavariable indicates that matched AST nodes are different.</p>
-<h5>I.6.D.c. Number sign</h5><p><figure><pre><code class="smalltalk">#</code></pre><figcaption></figcaption></figure>
-This symbol says that metavariable should match only literal nodes of AST.
-Example:
-<figure><pre><code class="smalltalk">`#literal1</code></pre><figcaption></figcaption></figure>
-mathces any literal:
-<figure><pre><code class="smalltalk">#(1, 2, 3) &quot;or&quot; #foo &quot;or&quot; 19 &quot;etc.&quot;</code></pre><figcaption></figcaption></figure></p>
-<h5>I.6.D.d. At symbol</h5><p>Finally, we will examine functions of at sign:
-<figure><pre><code class="smalltalk">@</code></pre><figcaption></figcaption></figure></p>
-<p>At sign, as an element of The Rewrite Engine syntax, is used to indicate list of something: temporary variables, statements, arguments or keywords in message send.
-To match any message send you have to specify any number of keywords and any number of arguments like this:
-<figure><pre><code class="smalltalk">myObject `@message: `@keyword</code></pre><figcaption></figcaption></figure>
-matches any message sent to myObject.
-If you want to match more than one statement which are one after another it is not necessary to write:
-<figure><pre><code class="smalltalk">`.Statement1.
-`.Statement2.
-`.Statement3.
-&quot;etc.&quot;</code></pre><figcaption></figcaption></figure>
-Instead use at sign together with dot symbol, and you will get equal to previous expression:
-<figure><pre><code class="smalltalk">`@.Statements</code></pre><figcaption></figcaption></figure>
-Also, it is possible to match list of temps this way:
-<figure><pre><code class="smalltalk">| `@temporaries |</code></pre><figcaption></figcaption></figure>
-In general, at symbol used with backquote
-<figure><pre><code class="smalltalk">`@object</code></pre><figcaption></figcaption></figure>
-matches any message, literal or block node of AST, which is really important to know.</p>
+Moreover you may make mistake in The Rewrite Engine syntax. 
+And also, it is possible to get errors from, for example, creating non-existing metavariables by hand. 
+To sum up, rewrite rule builder allows you to edit rules, but do it only if really necessary. </p>
 <h3>I.7. Architecture of The Rewrite Tool</h3>
 <p>This section covers the architecture of The Rewrite Tool, explains responsibilities of classes.
-Also it gives a clear understanding of class hierarchy, which is present in The Rewrite Tool. 
-In addition to this, methods are covered too.</p>
-<h4>I.7.A. AbstractPanel class</h4>
-<p>Clearly, <em>AbstractPanel</em> is an abstract class,
-which represents a panel that contains text field and a label.
+Also it gives a clear understanding of class hierarchy of The Rewrite Tool. </p>
+<h4>I.7.A. AbstractPanel</h4>
+<p><em>AbstractPanel</em> is an abstract class,
+which represents a panel that contains text field.
 Text field contains a code, which is considered later as an AST in order to make further manipulations with code possible.
 Also in <em>AbstractPanel</em> class is implemented basic behavior of all actions,
-that were described in paragraph <strong>4.1. Menu options</strong>.
+that were described in <a href="#sec:menuOptions">1.6 </a>.
 Why &quot;basic behavior&quot;, you might ask?
 That is so, because each of <em>AbstractPanel</em> subclasses shares this behavior, however its not complete in the abstract class.
 Its subclasses represent four panels of builder and they are: <em>SourcePanel</em>, <em>MatchPanel</em>, <em>TransformPanel</em>, <em>ResultPanel</em>,
-which were mentioned in <strong>2.1. Rewrite rule builder</strong> section.
-Moreover <em>AbstractPanel</em> class implements update methods, which, obviously, update different information such as AST, text, current metavariables names etc.</p>
-<p>Methods of <em>AbstractPanel</em> class:</p>
-<p>1. <strong><code>#parse:</code></strong> parses a string as rewrite expression or method. This choise depends on return of <code>#isParsingExpression</code>. </p>
-<p>2. <strong><code>#executeCommand:atIndex:withSource:</code></strong> is used to execute any command, class of which is passed as an argument.
+which were mentioned in <a href="#sec:rewriteRuleBuilder">1.3 </a>.
+Moreover <em>AbstractPanel</em> class implements update methods, that, update different information such as an AST, 
+text, current metavariables names etc. </p>
+<p>Methods of <em>AbstractPanel</em>:</p>
+<p>1. <strong><code>#parse:</code></strong> parses a string as rewrite expression. </p>
+<p>2. <strong><code>#executeCommand:withSource:</code></strong> is used to execute any command, class of which is passed as an argument.
 This particular command is executed for each node that is equal to currently selected node.
 Also, this method adds changes to undo dictionary, that holds all previous changes that were made.
 After command is executed, update methods are invoked.</p>
 <p>3. <strong><code>#updateAst</code></strong> updates AST of current panel.</p>
-<p>4. <strong><code>#updateText</code></strong> updates text of current panel, that is displayed.</p>
-<p>5. <strong><code>#updateInfoFor:withOld:andNew:</code></strong> updates text, ast of panel. 
-Also updates <code>#oldNodes</code> property of all nodes in AST.
+<p>4. <strong><code>#updateText</code></strong> updates text (code) of current panel, that is displayed.</p>
+<p>5. <strong><code>#updateInfoFor:withOld:andNew:</code></strong> updates text and ast of panel. 
+Also updates <em>oldNodes</em> property of all nodes in AST.
 Invokes method, which responsibility is to update next panel. 
 Next panel is Transform Panel for Match Panel, and Result Panel for Transform Panel. </p>
 <p>6. <strong><code>#getAllMetavariables</code></strong> returns a collection of all metavariables that are used in current panel.</p>
-<p>7. <strong><code>#difference:with:</code></strong> returns a mathematical difference of sets, however works not with sets but with collections, so duplicates are possible. </p>
-<p>8. <strong><code>#isReplacementPossibleFor:</code></strong> checks a complicated condition. If it returns true, than execution of current action is permited, else it is restricted. 
-The condition is: </p>
-<p><figure><pre><code class="smalltalk">&quot;if after action is applied to selected (meta)variable, there still will be the same (meta)variable left in ''MatchPanel''&quot;
-	((self difference: allMetavars with: selectedMetavars) &amp; selectedMetavars) size == selectedMetavars size
-		and: [ 
-
-&quot;if selected (meta)variable is used in ''TransformPanel'' or: if there are no metavars in ''MatchPanel'' and ''TransformPanel'' at all&quot;
-			((selectedMetavars &amp; usedMetavars) isNotEmpty or: [ (selectedMetavars | usedMetavars) isEmpty ])
-
-&quot;if among selected variables there are no metavariables&quot;
-				or: [ selectedMetavars isEmpty ] ]</code></pre><figcaption></figcaption></figure></p>
-<p>9. <strong><code>#isSelectedAll</code></strong> returns <code>true</code> if all code in current panel is selected. </p>
-<p>10. <strong><code>#manageUndoDictFor:</code></strong> adds an instance of RewriteRuleChange class to <code>undoDict</code> instance variable, which holds all changes for <em>Undo</em> action. 
-This variable is discussed later. Also this method enables <code>undoButton</code>. </p>
-<p>All following methods open up alert windows with different message each.</p>
-<p><code>#changeInvalidAlert</code>, <code>#classNotCreatedAlert</code>, <code>#noMetavariablesAlert</code>, <code>#replacementNotPossibleAlert</code>, <code>#varNotChosenAlert</code>. </p>
-<p>Next, we may examine subclasses of <em>AbstractPanel</em>.</p>
-<h4>I.7.B. SourcePanel class</h4>
-<p>Holds source code of expression that should be transformed into something new.
-Actually, <em>SourcePanel</em> implements onle one new feature that is not inherited from <em>AbstractPanel</em>.
-This class states that by action-clicking (right click) there are available options in this panel - Smart Suggestions (by Gisela). 
-It is done in method #menuActions, which returns an array. </p>
-<p><figure><pre><code class="smalltalk">    menuActions
-	| options |
-	options := OrderedCollection new.
-	options add: #('Smart Suggestions' #smartSuggestions).
-	^ options</code></pre><figcaption></figcaption></figure> </p>
-<p>To remind, instance of <em>SourcePanel</em> class is located on top left of builder.</p>
-<h4>I.7.C. ResultPanel class</h4>
+<p>7. <strong><code>#difference:with:</code></strong> returns a mathematical difference of sets, however works not with sets but with collections, 
+so duplicates are possible. </p>
+<p>8. <strong><code>#isSelectedAll</code></strong> returns <em>true</em> if all code in current panel is selected. </p>
+<p>9. <strong><code>#manageUndoDictFor:</code></strong> adds an instance of RewriteRuleChange class to <em>undoDict</em> instance variable, 
+which holds all changes for <em>Undo</em> action. 
+This variable is discussed later. Also this method enables <em>undoButton</em>. 
+Next, we examine subclasses of <em>AbstractPanel</em>.</p>
+<h4>I.7.B. SourcePanel</h4>
+<p>Instance of this class holds source code of expression, that can be transformed.
+Actually, <em>SourcePanel</em> implements only one new feature that is not inherited from <em>AbstractPanel</em>.
+By action-clicking in source panel user is able to rename any variable. 
+This feature is handy in case you have many references of one variable and want to rename this variable.</p>
+<h4>I.7.C. ResultPanel</h4>
 <p>Presents disabled text field, which means that user can not edit text contained in this panel. 
-Result Panel holds result of applying rewrite rule to source code.
-Located in top right part of RewriteRuleBuilder. </p>
-<p><figure><pre><code class="smalltalk">    initialize
-	super initialize.
-	self templateText disable</code></pre><figcaption></figcaption></figure></p>
-<h4>I.7.D. MatchPanel class</h4>
-<p><em>MatchPanel</em> class is a subclass of <em>AbstractPanel</em>, instance of which holds matching part of rewrite rule (i.e. left hand side part of rule). 
-To begin with, this class coontrols all indexes that are added after each (including some of them) metavariable name. 
-When any action is taken, that creates new metavariable in rule, <em>MatchPanel</em> adds index at the end of metavariable name. 
+<em>ResultPanel</em> holds result of applying transformation rule to source code.</p>
+<p><figure><pre><code class="smalltalk">	initialize
+		super initialize.
+		self templateText disable</code></pre><figcaption></figcaption></figure></p>
+<h4>I.7.D. MatchPanel</h4>
+<p>Instance of <em>MatchPanel</em> holds matching part of rewrite rule (i.e. LHS part of transformation rule). 
+To begin with, this class controls all indexes that are added after each metavariable name. 
+When user makes any action, that creates new metavariable in rule, <em>MatchPanel</em> adds index at the end of metavariable name. 
 Than index of coresponding metavariable group is incremented. 
-For example, <code>MatchPanel &gt;&gt; #abstractVariable</code></p>
-<p><figure><pre><code class="smalltalk">    abstractVariable
-	&quot;first the action is executed, thus new metavariable is created&quot;
-	super abstractVariable.
-	&quot;than index is incremented by one&quot;
-	self varIndex: self varIndex + 1</code></pre><figcaption></figcaption></figure></p>
+For example, <em>MatchPanel &gt;&gt; #abstractBlock</em></p>
+<p><figure><pre><code class="smalltalk">	abstractBlock
+		&quot;first the action is executed, thus new metavariable is created&quot;
+		super abstractBlock.
+		&quot;than index is incremented by one&quot;
+		self blockIndex: self blockIndex + 1</code></pre><figcaption></figcaption></figure></p>
 <p>All other actions are implemented in similar way. 
-Also <em>MatchPanel</em> has an instance variable <code>varNames</code> which represents a collection of all metavariables that are currently present in rewrite rule. 
-This variable helps to ensure, that transform part of rewrite rule (i.e. right hand side) uses only already existing metavariables. 
-As use of non existing metavariables in right hand side of rewrite rule would lead to an error. 
-More information about usage of <code>varNames</code> instance variable is given in next section about <em>TransformPanel</em> class. </p>
-<p>Methods of <em>MatchPanel</em> class:</p>
-<p>1. <strong><code>#isReplaceAvailableFor:</code></strong> returns a boolean, which says if it is possible to replace aNode (an argument of this method), 
-or it should be reassigned.</p>
-<p>2. <strong><code>#addChanges</code></strong> any action that changes AST of instance of <em>MatchPanel</em> class, 
-is recorded into instance variable <code>undoDict</code> of instance of <em>TransformationRule</em> class. 
-Generally, <code>undoDict</code> is a collection of all changes made with <em>MatchPanel</em> and/or <em>TransformPanel</em>. </p>
-<p>3. <strong><code>#updateVarNames</code></strong> updates <code>varNames</code> instance variable, so it holds only existing metavariables in <em>MatchPanel</em>. </p>
-<p>4. <strong><code>#updateTransformPanelFor:</code></strong> does a pass on AST that is held by <em>TransformPanel</em>. 
-Replaces all nodes, that are equal to node that previous action in <em>MatchPanel</em> was applied, in <em>TransformPanel</em> with a new metavariable node. 
-Than the displayed text and AST of <em>TransformPanel</em> are updated. 
-For example, we have this code in <em>MatchPanel</em>:</p>
-<p><figure><pre><code class="smalltalk">	super foo.
-	`@variable1 doSomething</code></pre><figcaption></figcaption></figure></p>
-<p>and following code in <em>TransformPanel</em>:</p>
-<p><figure><pre><code class="smalltalk">	`@variable1 foo.
-	`@variable1 bar</code></pre><figcaption></figcaption></figure></p>
-<p>If user applies <em>Recurse into</em> action to <code>`@variable1</code> in <em>MatchPanel</em>, as a result <em>TransformPanel</em> will show next code:</p>
-<p><figure><pre><code class="smalltalk">	``@variable1 foo.
-	``@variable1 bar</code></pre><figcaption></figcaption></figure></p>
-<p>5. <strong><code>#updateNextPanelForNode:</code></strong> is invoked after the current panel is updated in method <code>#updateInfoFor:withOld:andNew:</code>. 
-First of all, this method updates <code>varNames</code> instance variable. 
-After this, <em>TransformPanel</em> itself is updated via <code>#updateTransformPanelFor:</code> method. 
-Than, <code>statusBar</code> color and information text are updated. 
-<code>statusBar</code> instance variable is explained later. 
-In the end, <code>#updateNextPanelForNode:</code> is invoked for <em>TransformPanel</em>, so the <em>ResultPanel</em> is updated. </p>
-<h4>I.7.E. TransformPanel class</h4>
-<p><em>TransformPanel</em> class is a subclass of <em>AbstractPanel</em>, instance of which holds transforming part of rewrite rule (i.e. right hand side part of rule). 
-In <em>TransformPanel</em> not all options are available. For example, you can not <em>Recurse into</em>,
- due to the fact that metavariable that you are about to create does not exist. </p>
-<p>Methods of <em>TransformPanel</em> class:</p>
-<p>1. <strong><code>#menuActions</code></strong> removes all unavailable uptions from <em>TransformPanel</em> menu via <code>#removeUnavailableOptions:</code> method. </p>
-<p>2. <strong><code>#removeUnavailableOptions:</code></strong> removes such options as <em>As list</em>, <em>Recurse into</em> and <em>Undo on node</em>. </p>
-<p>3. <strong><code>#addOldNodes:</code></strong> updating information about <code>oldNodes</code> for each node in AST of <em>TransformPanel</em>. 
-<code>oldNodes</code> propery of AST holds all nodes that where replaced up to the current node. </p>
-<p>4. <strong><code>#chooseMetavariablesForNode:</code></strong> when user applies action such as <em>Abstract variable</em> in <em>TransformPanel</em> window is opened. 
+Also <em>MatchPanel</em> has an instance variable <em>varNames</em> which represents a collection of all metavariables, 
+that are currently present in transformation rule. 
+This variable helps to ensure, that RHS part of rule uses only already existing metavariables. 
+As use of non existing metavariables in right hand side part of rule would lead to an error. 
+More information about usage of <em>varNames</em> instance variable is given in next section about <em>TransformPanel</em> class. </p>
+<p>Methods of <em>MatchPanel</em>:</p>
+<p>1. <strong><code>#addChanges</code></strong> any action, that changes AST of instance of <em>MatchPanel</em> class, 
+is recorded into instance variable <em>undoDict</em> of instance of <em>TransformationRule</em> class. 
+Generally, <em>undoDict</em> is a collection of all changes made within <em>MatchPanel</em> and/or <em>TransformPanel</em>. </p>
+<p>2. <strong><code>#updateVarNames</code></strong> updates <em>varNames</em> instance variable, so it holds only existing metavariables from <em>MatchPanel</em>. </p>
+<p>3. <strong><code>#updateTransformPanelFor:</code></strong> does a pass on AST, that is held by <em>TransformPanel</em>. 
+Replaces nodes in <em>TransformPanel</em>, that are equal to node which was just changed in <em>MatchPanel</em>.
+Than the displayed text and AST of <em>TransformPanel</em> are updated. </p>
+<p>4. <strong><code>#updateNextPanelForNode:</code></strong> is invoked after the current panel is updated in method <em>#updateInfoFor:withOld:andNew:</em>. 
+First of all, this method updates <em>varNames</em> instance variable. 
+After this, <em>TransformPanel</em> itself is updated via <em>#updateTransformPanelFor:</em> method. 
+Than, <em>statusBar</em> color and information text are updated. 
+<em>statusBar</em> instance variable is explained later. 
+In the end, <code>#updateNextPanelForNode:</code> is invoked for <em>TransformPanel</em>, so the <em>ResultPanel</em> is updated as well. </p>
+<h4>I.7.E. TransformPanel</h4>
+<p><em>TransformPanel</em> class is a subclass of <em>AbstractPanel</em>, instance of which holds RHS part of transformation rule. </p>
+<p>Methods of <em>TransformPanel</em>:</p>
+<p>1. <strong><code>#addOldNodes:</code></strong> updating information about <em>oldNodes</em> for each node in AST of <em>TransformPanel</em>. 
+<em>oldNodes</em> propery of AST holds all nodes, that where replaced up to the current node. </p>
+<p>2. <strong><code>#chooseMetavariablesForNode:</code></strong> when user applies action such as <em>Abstract object</em> in <em>TransformPanel</em> window is opened. 
 In this window user can choose one of available metavariables to replace current node with it. </p>
-<p>5. <strong><code>#chooseTempsForNode:</code></strong> same as <code>#chooseMetavariablesForNode:</code>, but is used when <em>Abstract temporaries list</em> action is invoked. </p>
-<p>6. <strong><code>#updateNextPanelForNode:</code></strong> applies rewrite rule from <em>MatchPanel</em> and <em>TransformPanel</em> to AST of <em>SourcePanel</em>. 
-As a result we have new AST. Code of this AST is displayed in <em>ResultPanel</em>.</p>
-<h4>I.7.F. TransformationRule class</h4>
-<p><em>TransformationRule</em> is model that represents bottom part of Builder. 
-It contains <em>MatchPanel</em>, <em>TransformPanel</em> all buttons (undo, redo, generate rule, browse rules). 
-Plus it has <code>undoDict</code> and <code>redoDict</code> instance variables. 
-This variables are collections of instances of <em>RewriteRuleChange</em> class. 
-Each change, that is made in one of three editable panel of Builder is recorded in <code>undoDict</code>. 
-Obviously, <code>undoDict</code> instance variable is used in implementation of <code>#undo</code> action. 
-When undoing a change, it is removed from <code>undoDict</code> and added to <code>redoDict</code>, which is used for implementation of <code>#redo</code> action. 
-For example, if code was edited in <em>SourcePanel</em> manually, than <em>RewriteRuleChange</em> is added to <code>undoDict</code> as follows: </p>
-<p><figure><pre><code class="smalltalk">	&quot;obviously, transformationRule , sourcePanel andsourcePanel ast may be accessed some other way, but here it is not considered for easier explanation&quot;
-
-	transformationRule 
-		undoDict add:
-		(RewriteRuleChange new
-		panel: sourcePanel asOrderedCollection;
-		ast: (sourcePanel ast) asOrderedCollection;
-		yourself)</code></pre><figcaption></figcaption></figure></p>
-<p>Another example is, if user applies <em>Abstract variable</em> action to <code>self</code> variable in next code in <em>MatchPanel</em>: </p>
-<p><figure><pre><code class="smalltalk">	self foo.
-	^ self</code></pre><figcaption></figcaption></figure></p>
-<p>when in <em>TransformPanel</em> we have:</p>
-<p><figure><pre><code class="smalltalk">	super bar.
-	self doSomething.
-	^ self</code></pre><figcaption></figcaption></figure></p>
-<p>Than, as a result to <code>undoDict</code> will be added following <em>RewriteRuleChange</em> instance:</p>
-<p><figure><pre><code class="smalltalk">	RewriteRuleChange new
-	panel: { matchPanel. transformPanel } asOrderedCollection;
-	ast: { matchPanel ast. transformPanel ast } asOrderedCollection;
-	yourself	</code></pre><figcaption></figcaption></figure></p>
-<p>To understand why we added two panel and two ast to <em>RewriteRuleChange</em>, let us take a look at what has happened in Builder. </p>
-<p><figure><pre><code class="smalltalk">	&quot;MatchPanel code&quot;
-	`variable1 foo.
-	^ `variable1
-
-	&quot;TransformPanel code&quot;
-	super bar.
-	`variable1 doSomething.
-	^ `variable1</code></pre><figcaption></figcaption></figure></p>
-<p>As you see, both panels have changed at the same time, so this changes are considered as one. 
-Thus, these changes are added to <code>undoDict</code> as one. </p>
-<p>Methods of <em>TransformationRule</em> class: </p>
-<p>1. <strong><code>#addChangeForPanel:</code></strong> adds a change to <code>undoDict</code>. 
+<p>3. <strong><code>#chooseTempsForNode:</code></strong> same as <em>#chooseMetavariablesForNode:</em>, but is used when <em>Abstract temporaries list</em> action is invoked. </p>
+<p>4. <strong><code>#updateNextPanelForNode:</code></strong> applies rewrite rule from <em>MatchPanel</em> and <em>TransformPanel</em> to AST of <em>SourcePanel</em>. 
+As result we have new AST. Code of this AST is displayed in <em>ResultPanel</em>.</p>
+<h4>I.7.F. TransformationRule</h4>
+<p><em>TransformationRule</em> is a model that represents bottom part of builder. 
+It contains <em>MatchPanel</em>, <em>TransformPanel</em> and all buttons (undo, redo, generate rule, browse rules). 
+Plus it has <em>undoDict</em> and <em>redoDict</em> instance variables. 
+This variables are collections of instances of <em>RewriteRuleChange</em>. 
+Each change, that is made in one of three editable panes of builder is recorded in <em>undoDict</em>. 
+Obviously, <em>undoDict</em> instance variable is used in implementation of <em>#undo</em> action. 
+When undoing a change, it is removed from <em>undoDict</em> and added to <em>redoDict</em>, which is used for implementation of <em>#redo</em> action. </p>
+<p>Methods of <em>TransformationRule</em>:</p>
+<p>1. <strong><code>#addChangeForPanel:</code></strong> adds a change to <em>undoDict</em>. 
 Change is initialized with panel, passed to this method, and its AST. </p>
-<p>2. <strong><code>#browseRules</code></strong> opens up Browser. </p>
-<p>3. <strong><code>#generateRewriteRuleClass</code></strong> basically it generates new subclass of RBTransformationRule. 
+<p>2. <strong><code>#browseRules</code></strong> opens up browser. </p>
+<p>3. <strong><code>#generateRewriteRuleClass</code></strong> generates new subclass of RBTransformationRule. 
 This class is stored in a <em>RewriteRulesCustom</em> category. 
-Also it has only one method - <code>#initialize</code>. 
-Code of this method is generated by <code>#getRuleInitString</code> method, which is explained next. 
+The generated class has only one method - <em>#initialize</em>. 
+Code of this method is generated by <em>#getRuleInitString</em> method, which is explained next. 
 The name of class is specified by user, initially it is <em>MyRule</em>. </p>
-<p>4. <strong><code>#getRuleInitString</code></strong> forms and returns a string, that is a code of <code>#initialize</code> method of <em>RBTransformationRule</em> subclass. </p>
+<p>4. <strong><code>#getRuleInitString</code></strong> forms and returns a string, that is a code of <em>#initialize</em> method of <em>RBTransformationRule</em> subclass. </p>
 <p>5. <strong><code>#matchPanelChanged</code></strong> is invoked when text in <em>MatchPanel</em> is accepted. 
-First of all, it adds change made in <em>MatchPanel</em> to <code>undoDict</code> and enables <code>undoButton</code>. 
-Also it updates AST and displayed text of <em>MathcPanel</em>. 
-Than it updates information related to <code>statusBar</code> - color and text. 
-<code>statusBar</code> is an instance variable of <em>RewriteRuleBuilder</em> class (or just Builder). 
+First of all, it adds change made in <em>MatchPanel</em> to <em>undoDict</em> and enables <em>undoButton</em>. 
+Also it updates AST and text of <em>MathcPanel</em>. 
+Than it updates information related to <em>statusBar</em> - color and text. 
+<em>statusBar</em> is an instance variable of <em>RewriteRuleBuilder</em>. It indicates if LHS part of rule matches source code. 
 In the end, the <em>ResultPanel</em> info is updated. </p>
-<p>6. <strong><code>#transformPanelChanged</code></strong> is similar to <code>#matchPanelChanged</code> method, but does not update information about <code>statusBar</code>. 
+<p>6. <strong><code>#transformPanelChanged</code></strong> is similar to <em>#matchPanelChanged</em> method, but does not update information about <em>statusBar</em>. 
 It is invoked when text in <em>TransformPanel</em> is accepted. 
-First of all, it adds change made in <em>TransformPanel</em> to <code>undoDict</code> and enables <code>undoButton</code>. 
-Also it updates AST and displayed text of <em>MathcPanel</em>. 
+First of all, it adds change made in <em>TransformPanel</em> to <em>undoDict</em> and enables <em>undoButton</em> if it is still disabled. 
+Also it updates AST and displayed text of <em>TransformPanel</em>. 
 In the end, the <em>ResultPanel</em> info is updated. </p>
-<p>7. <strong><code>#undo</code></strong> reverts last change made in either <em>SourcePanel</em>, <em>MatchPanel</em> or <em>TransformPanel</em>, and removes this change from <code>undoDict</code>. 
-Also it adds just undone change to <code>redoDict</code>. 
+<p>7. <strong><code>#undo</code></strong> reverts last change, that was made in either <em>SourcePanel</em>, <em>MatchPanel</em> or <em>TransformPanel</em>. 
+Removes this change from <em>undoDict</em>. Also it adds just undone change to <em>redoDict</em>. 
 Next it updates displayed text and AST for each panel where changes were reverted. 
-Finally the <code>#updateAfterUndoOrRedo</code> method is invoked. </p>
-<p>8. <strong><code>#redo</code></strong> does undone change again to each panel influenced by <code>#undo</code>. 
-Also it adds just redone change to <code>undoDict</code>. 
+Finally the <em>#updateAfterUndoOrRedo</em> method is invoked. </p>
+<p>8. <strong><code>#redo</code></strong> does undone change again to each panel influenced by <em>#undo</em>. 
+Also it adds just redone change to <em>undoDict</em>. 
 Next it updates displayed text and AST for each panel where changes were reverted. 
-Finally the <code>#updateAfterUndoOrRedo</code> method is invoked. </p>
-<p><strong>Note:</strong> as we see from two previous methods, that <code>#undo</code> and <code>#redo</code> can be done infinit number of times. </p>
+Finally the <em>#updateAfterUndoOrRedo</em> method is invoked. </p>
+<p><strong>Note:</strong> as we see from two previous methods, that <em>#undo</em> and <em>#redo</em> can be done infinit number of times. </p>
 <p>9. <strong><code>#ruleLabel</code></strong>  is an instance of <em>StringMorph</em>, that is displayed above <em>MatchPanel</em> and <em>TransformPanel</em>.  </p>
 <p>10. <strong><code>#statusBarForRule</code></strong> returns an arrow that is placed between <em>MatchPanel</em> and <em>TransformPanel</em>. </p>
 <p>11. <strong><code>#updateAfterUndoOrRedo</code></strong> enables or disables undo and redo buttons. 
-Also updates text and color for <code>statusBar</code> instance variable of <em>RewriteRuleBuilder</em>. 
-In the end, <em>ResultPanel</em> code is updated, as rewrite rule may have changed. </p>
-<p>12. <strong><code>updateUndoDictFor:</code></strong> adds a change to <code>undoDict</code>. </p>
-<p>13. <strong><code>updateRedoDictFor:</code></strong> adds a change to <code>redoDict</code>. </p>
-<p>Class side:</p>
+Also updates text and color for <em>statusBar</em> instance variable of <em>RewriteRuleBuilder</em>. 
+In the end, <em>ResultPanel</em> code is updated. </p>
+<p>12. <strong><code>updateUndoDictFor:</code></strong> adds a change to <em>undoDict</em>. </p>
+<p>13. <strong><code>updateRedoDictFor:</code></strong> adds a change to <em>redoDict</em>. </p>
+<p>Methods of <em>TransformationRule class</em>:</p>
 <p>14. <strong><code>#arrowMorph:</code></strong> is an instance of <em>PolygonMorph</em> or <em>ActivePolygonMorph</em>. 
 It is shaped in form of arrow. </p>
 <p>15. <strong><code>#defaultSpec</code></strong> creates a layout for all components. </p>
-<h4>I.7.G. RRTextModel class</h4>
-<p><em>RRTextModel</em> is a subclass of TextModel. It has some features that are needed for RewriteRuleBuilder, like AST and support of custom menu. 
-Instances of <em>RRTextModel</em> are used in each of four panels: <em>SourcePanel</em>, <em>MatchPanel</em>, <em>TransformPanel</em>, <em>ResultPanel</em>. 
-Each panel stores instance of this class in <code>textModel</code> instance variable. 
-<code>textModel</code> stores AST and gives acces to custom menu, which can be invoked by right clicking on panel. </p>
-<p>Methods of <em>RRTextModel</em> class:</p>
-<p>1. <strong><code>#actionsForSelection</code></strong> performs <code>#menuOptions</code> for panel that is storet in <code>model</code> instance variable. 
-<code>#menuOptionsSelector</code> fills right click menu with all available actions for selected node. </p>
-<p>2. <strong><code>#getSelectedNode</code></strong> returns node, which is currently selected in <code>textModel</code>. </p>
-<p>3. <strong><code>#codePaneMenu:shifted:</code></strong> forms a menu due to <code>#actionsForSelection</code> method. </p>
-<h4>I.7.H. RewriteRuleChange class</h4>
-<p><em>RewriteRuleChange</em> is class that holds changes that were made in Builder panels. 
-Instances of this class are stored in collection - the instance variable <code>undoDict</code> of <em>TransformationRule</em>. 
-The implementation of this class is very simple: it has only two instance variables - <code>panel</code> and <code>ast</code>. 
-<code>panel</code> is one of four panels of Builder, and <code>ast</code> is an AST of this panel. </p>
-<h4>I.7.I. ActivePolygonMorph class</h4>
-<p><em>ActivePolygonMorph</em> is a subclass of <em>PolygonMorph</em>, that adds new functionality to <em>PolygonMorph</em>. 
-It recognizes two events: <code>#mouseEnter:</code> and <code>#mouseLeave:</code>. 
-Also it has <code>infoText</code> instance variable, which contains text information,
- that says if AST of <em>SourcePanel</em> matches left hand side rule part (AST of <em>MatchPanel</em>) or not. </p>
-<p>Methods of <em>ActivePolygonMorph</em> class:</p>
+<h4>I.7.G. RRTextModel</h4>
+<p><em>RRTextModel</em> is a subclass of TextModel. It has some features which are needed for builder, as support of AST and custom menu. 
+Instances of <em>RRTextModel</em> are used in each of four panes: <em>SourcePanel</em>, <em>MatchPanel</em>, <em>TransformPanel</em> and <em>ResultPanel</em>. 
+Each pane stores instance of this class in <em>textModel</em> instance variable. 
+<em>textModel</em> stores AST and gives acces to custom menu, which can be invoked by right click inside of the pane. </p>
+<p>Methods of <em>RRTextModel</em>:</p>
+<p>1. <strong><code>#actionsForSelection</code></strong> performs <em>#menuOptions</em> for panel that is storet in <em>model</em> instance variable. 
+<em>#menuOptionsSelector</em> fills right click menu with all available actions for selected node. </p>
+<p>2. <strong><code>#getSelectedNode</code></strong> returns node, which is currently selected in <em>textModel</em>. </p>
+<p>3. <strong><code>#codePaneMenu:shifted:</code></strong> forms a menu due to <em>#actionsForSelection</em> method. </p>
+<h4>I.7.H. RewriteRuleChange</h4>
+<p><em>RewriteRuleChange</em> is class that holds changes which were made in builder panes. 
+Instances of this class are stored in collection <em>undoDict</em> - the instance variable of <em>TransformationRule</em>. 
+The implementation of this class is very simple: it has only two instance variables - <em>panel</em> and <em>ast</em>. 
+<em>panel</em> is one of four panes of builder, and <em>ast</em> is an AST of this panel. </p>
+<h4>I.7.I. ActivePolygonMorph</h4>
+<p><em>ActivePolygonMorph</em> is a subclass of <em>PolygonMorph</em>. 
+It recognizes two events - <em>#mouseEnter:</em> and <em>#mouseLeave:</em>. 
+Also it has <em>infoText</em> instance variable, which contains text information,
+ that says if AST of <em>SourcePanel</em> matches LHS part of the transformation rule (AST of <em>MatchPanel</em>). </p>
+<p>Methods of <em>ActivePolygonMorph</em>:</p>
 <p>1. <strong><code>#infoMorph</code></strong> constructs morph, which is a <em>BorderedMorph</em> with <em>StringMorph</em> submorph. 
-Contents of <em>StringMorph</em> is assigned to <code>infoText</code> instance variable, that is described before. </p>
-<p>2. <strong><code>#mouseEnter:</code></strong> adds to self a submorph, that was created in <code>#infoMorph</code> method. </p>
-<p>3. <strong><code>#mouseLeave:</code></strong> removes from self a submorph, that was created in <code>#infoMorph</code> method. </p>
-<p>4. <strong><code>#handlesMouseOver:</code></strong> states that <em>ActivePolygonMorph</em> handles mouse over events, as it returns <code>true</code>. </p>
-<h4>I.7.J. RewriteRuleBuilder class</h4>
-<p>Is a class that represents a Builder as one complete object. 
-<em>RewriteRuleBuilder</em> contains <em>SourcePanel</em>, <em>ResultPanel</em> and the most important part of Builder instance of <em>TransformationRule</em> class. 
-This class is responsible for GUI and layouting all elements of Builder. 
-Also it holds labels that are displayed in Builder. </p>
-<p><code>statusBar</code> instance variable is an <em>ActivePolygonMorph</em> that shows if AST of <em>SourcePanel</em> matches AST of <em>MatchPanel</em>. 
-Firstly, its color is green or red, which, clearly, depends on matching. 
-This color is returned by <code>#matchColor</code> method. 
-Secondly, when mouse is over it, the <em>StringMorph</em> shows up with text from <code>#matchLabel</code>. </p>
-<p>Methods of <em>RewriteRuleBuilder</em> class:</p>
+Contents of <em>StringMorph</em> is assigned to <em>infoText</em> instance variable, that is described before. </p>
+<p>2. <strong><code>#mouseEnter:</code></strong> adds to self a submorph, that was created in <em>#infoMorph</em> method. </p>
+<p>3. <strong><code>#mouseLeave:</code></strong> removes from self a submorph, that was created in <em>#infoMorph</em> method. </p>
+<p>4. <strong><code>#handlesMouseOver:</code></strong> states that <em>ActivePolygonMorph</em> handles mouse over events, i.e. returns <em>true</em>. </p>
+<h4>I.7.J. RewriteRuleBuilder</h4>
+<p>Instance of <em>RewriteRuleBuilder</em> class is a builder. 
+<em>RewriteRuleBuilder</em> contains instances of <em>SourcePanel</em>, <em>ResultPanel</em> 
+and the most important part of builder - instance of <em>TransformationRule</em>. 
+This class is responsible for graphical user interface and layout of all elements in builder. 
+Also it holds labels, that are displayed in builder. </p>
+<p><em>statusBar</em> instance variable is an <em>ActivePolygonMorph</em>, that shows if AST of <em>SourcePanel</em> matches AST of <em>MatchPanel</em>. 
+Firstly, its color is green (matches) or red (does not match).
+This color is returned by <em>#matchColor</em> method. 
+Secondly, when mouse is over it, the <em>StringMorph</em> shows up with text from <em>#matchLabel</em>. </p>
+<p>Methods of <em>RewriteRuleBuilder</em>:</p>
 <p>1. <strong><code>#matchLabel</code></strong> returns a string that says if AST of <em>SourcePanel</em> matches AST of <em>MatchPanel</em> or not. </p>
 <p>2. <strong><code>#resultLabel</code></strong> returns an information string for indicating a <em>ResultPanel</em>. </p>
 <p>3. <strong><code>#rules</code></strong> is a collection of all subclasses of <em>RBTransformationRule</em> class. </p>
-<p>4. <strong><code>#matchColor</code></strong> returns green or red color for <code>statusBar</code>. </p>
+<p>4. <strong><code>#matchColor</code></strong> returns green or red color for <em>statusBar</em>. </p>
 <p>5. <strong><code>#sourcePanelChanged</code></strong> is invoked when text is accepted in <em>SourcePanel</em>. 
-It adds a change, that was made and accepted, to <code>undoDict</code> and enables undo button. 
+It adds a change, that was made and accepted to <em>undoDict</em> and enables undo button. 
 Also updates displayed text and AST of <em>SourcePanel</em>. 
-After that, it assigns right color and text to <code>statusBar</code> properies. 
+After that, it assigns right color and text to <em>statusBar</em> properies. 
 Finally, this method updates code of <em>ResultPanel</em>. </p>
-<p>6. <strong><code>#code:</code></strong> assigns a string to <code>code</code> of each panel in Builder. </p>
-<p>7. <strong><code>#statusBarForMatch</code></strong> is a method used to initialize <code>statusBar</code> instance variable. 
-Basically, it returns an instance of <em>ActivePolygonMorph</em> <code>#asSpecAdapter</code>, so it can be used in GUI built with Spec. </p>
-<p>8. <strong><code>#statusBarForResult</code></strong> returns an instance of <em>ActivePolygonMorph</em> <code>#asSpecAdapter</code>. 
+<p>6. <strong><code>#code:</code></strong> assigns a string to <em>code</em> instance variable of each pane in builder. </p>
+<p>7. <strong><code>#statusBarForMatch</code></strong> is a method used to initialize <em>statusBar</em> instance variable. 
+Basically, it returns an instance of <em>ActivePolygonMorph</em> <em>#asSpecAdapter</em>. </p>
+<p>8. <strong><code>#statusBarForResult</code></strong> returns an instance of <em>ActivePolygonMorph</em> <em>#asSpecAdapter</em>. 
 This morph is used to indicate <em>ResultPanel</em>. 
-When mouse is over, shows a label with <code>#resultLabel</code> text. </p>
-<p>9. <strong><code>#isMatching</code></strong> returns a boolean, that is <code>true</code> when AST of <em>SourcePanel</em> matches AST of <em>MatchPanel</em>, and <code>false</code> when it does not. </p>
-<p>Class side: </p>
+When mouse is over, shows a label with <em>#resultLabel</em> text. </p>
+<p>9. <strong><code>#isMatching</code></strong> returns a boolean, that is <em>true</em> when AST of <em>SourcePanel</em> matches AST of <em>MatchPanel</em>, and <em>false</em> when it does not match. </p>
+<p>Methods of <em>RewriteRuleBuilder class</em>:</p>
 <p>10. <strong><code>#withCode:</code></strong> creates an instance of <em>RewriteRuleBuilder</em>. 
-Each panel <code>code</code> is initiialized with a string that is passed as an argument. </p>
+Each panel <em>code</em> is initiialized with a string, that is passed as an argument. </p>
 <p>11. <strong><code>#defaultSpec</code></strong> creates a layout for all components. </p>
-<p>12. <strong><code>#menuCommandOn:</code></strong> adds Builder to a world menu under <em>Tools</em> tab. </p>
-<p>13. <strong><code>#shiftedSourceCodeMenu:</code></strong> adds Builder to a Nautilus context menu under <em>Source code refactoring</em> tab. 
-Each panel <code>code</code> instance variable in Builder is initialized with selected code in Nautilus. </p>
-<h4>I.7.K. Command class</h4>
-<p>A <em>Command</em> abstract class and its subclasses are implemented similar to Command pattern. 
-However there are differences between this implementation and conventional one. 
-Despite this fact, <em>Command</em> class has instance variable <code>commandReceiver</code> which is a reciever of action that should be performed. 
-<code>commandReceiver</code> is a node of AST of panel. 
-Another important element of <em>Command</em> class is <code>#execute</code> method. 
+<p>12. <strong><code>#menuCommandOn:</code></strong> adds builder to a world menu under <em>Tools</em> tab. </p>
+<p>13. <strong><code>#shiftedSourceCodeMenu:</code></strong> adds builder to a Nautilus context menu under <em>Source code refactoring</em> tab. 
+Each panel <em>code</em> instance variable in builder is initialized with selected code in Nautilus. </p>
+<h4>I.7.K. Command</h4>
+<p><em>Command</em> (abstract class) and its subclasses are implemented similar to Command pattern. 
+However, there are differences between this implementation and conventional one. 
+<em>Command</em> class has instance variable <em>commandReceiver</em> which is a reciever of action that should be performed. 
+<em>commandReceiver</em> is a node of AST. 
+Another important element of <em>Command</em> class is <em>#execute</em> method. 
 It is a generic method that is hard-coded for each subclass of <em>Command</em> class. 
-Therefore for each action in Command pattern there is implemented one specific subclass of <em>Command</em> class with its own <code>#execute</code> method. 
-<code>panel</code> instance variable presents <em>MatchPanel</em> or <em>TransformPanel</em>. 
-It depends on to which panel <code>commandReceiver</code> belongs. </p>
-<p>Methods of <em>Command</em> class: </p>
+Therefore for each action in Command pattern there is implemented one specific subclass of <em>Command</em> class with its own <em>#execute</em> method. 
+<em>panel</em> instance variable presents <em>MatchPanel</em> or <em>TransformPanel</em>. 
+The <em>panel</em> is the owner of the <em>commandReceiver</em>. </p>
+<p>Methods of <em>Command</em>: </p>
 <p>1. <strong><code>#execute</code></strong> is responsible for executing an action. 
 Each subclass must implement this method. </p>
 <p>2. <strong><code>#change:For:</code></strong> replaces first argument for second. Both arguments are nodes of AST. 
-So for replacement this method uses either assignement or <code>#replaceWith:</code> method. </p>
-<p>3. <strong><code>#changeCommandReceiverFor:</code></strong> uses <code>#change:For:</code> method with a first argument <code>commandReceiver</code>. </p>
-<p>Class side: </p>
+So for replacement this method uses either assignement or <em>#replaceWith:</em> method, that is implemented in the <em>RBProgramNode</em> class. </p>
+<p>3. <strong><code>#changeCommandReceiverFor:</code></strong> uses <em>#change:For:</em> method with a first argument equal to <em>commandReceiver</em>. </p>
+<p>Methods of <em>Command class</em>: </p>
 <p>4. <strong><code>#receiver:panel:index:withSource:</code></strong> creates new instance of <em>Command</em> class initialized using arguments. </p>
-<p>5. <strong><code>#isAccepted:</code></strong> returns <code>true</code>, explained in subclasses. </p>
-<p>6. <strong><code>#isSequenceNeeded</code></strong> returns <code>false</code>, explained in subclasses. </p>
-<h4>I.7.L. AbstractCommand class </h4>
+<p>5. <strong><code>#isAccepted:</code></strong> returns <em>true</em>, explained in subclasses. </p>
+<p>6. <strong><code>#isSequenceNeeded</code></strong> returns <em>false</em>, explained in subclasses. </p>
+<h4>I.7.L. AbstractCommand</h4>
 <p><em>AbstractCommand</em> class implements common functionality for actions (commands) which, 
-in result, create new metavariable. </p>
-<p>Methods of <em>AbstractCommand</em> class: </p>
+in result, create new metavariable (abstraction for an object). </p>
+<p>Methods of <em>AbstractCommand</em>: </p>
 <p>1. <strong><code>#abstractName</code></strong> is a name of metavariable, that may be created with specific command. 
 Each subclass must implement this method. </p>
 <p>2. <strong><code>#length</code></strong> returns length of metavariable name, that may be created with specific command. </p>
-<p>3. <strong><code>#abstractWithName:andIndex:</code></strong> creates metavariable named <code>#abstractName</code>. 
-Than replaces <code>commandReceiver</code> with this metavariable.</p>
-<p>Each subclass of this class implements <strong><code>#execute</code></strong> method almos identically to each other. </p>
+<p>3. <strong><code>#abstractWithName:andIndex:</code></strong> creates metavariable named <em>#abstractName</em>. 
+Than replaces <em>commandReceiver</em> with this metavariable.</p>
+<p>Each subclass of this class implements <em>#execute</em> method almost identically to each other. </p>
 <p><figure><pre><code class="smalltalk">	execute
-		^ self abstractWithName: self abstractName andIndex: self panel &quot;someIndex&quot;</code></pre><figcaption></figcaption></figure></p>
-<p>Basically, it invokes <code>#abstractWithName:andIndex:</code> method, and as arguments passes: 
-1) its <code>#abstractName</code>;
+		^ self abstractWithName: self abstractName andIndex: self panel</code></pre><figcaption></figcaption></figure></p>
+<p>Basically, it invokes <em>#abstractWithName:andIndex:</em> method, and as arguments passes: 
+1) its <em>#abstractName</em>;
 2) index of specific metavariable type (it may be block, variable, statement, etc.)</p>
-<p>You can see which metavariable is created in <code>#abstractName</code> method. 
-For example, <em>AbstractBlockCommand</em> creates <code>`@block</code> metavariable. 
-Thus, The Rewrite Engine will match any block. </p>
-<p><em>RenameCommand</em> class works exactly like rename refactoring, 
-but with this class you can rename/change any node, not just variable. </p>
+<p>You can see which metavariable is created in <em>#abstractName</em> method. 
+For example, <em>AbstractBlockCommand</em> creates <em>`@block</em> metavariable. 
+Thus, The Rewrite Engine will match any block.</p>
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
