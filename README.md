@@ -1,3 +1,3 @@
-You are probably looking for EnterprisePhar :
+You are probably looking for EnterprisePharo :
 
 https://github.com/SquareBracketAssociates/EnterprisePharo
