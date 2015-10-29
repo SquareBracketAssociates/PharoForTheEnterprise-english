@@ -1,8 +1,0 @@
-language: pillar
-install:
-  - sudo apt-get update
-  - sudo apt-get install libc6-i386 texlive-latex-base texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra texlive-bibtex-extra
-  - ./download.sh
-
-script:
-  - ./compile.sh
